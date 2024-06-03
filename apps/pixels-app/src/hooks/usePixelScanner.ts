@@ -20,13 +20,14 @@ export function usePixelScanner(): {
   const needStopRef = React.useRef(false);
   React.useEffect(() => {
     central.addEventListener("availablePixels", setAvailablePixels);
-    central.addEventListener("scanError", setScanError);
+    const onScanError = ({ error }: { error: Error }) => setScanError(error);
+    central.addEventListener("onScanError", onScanError);
     const onScanStatus = (status: ScanStatus) =>
       status === "scanning" && setScanError(undefined);
     central.addEventListener("scanStatus", onScanStatus);
     return () => {
       central.removeEventListener("availablePixels", setAvailablePixels);
-      central.removeEventListener("scanError", setScanError);
+      central.removeEventListener("onScanError", onScanError);
       central.removeEventListener("scanStatus", onScanStatus);
       if (needStopRef.current) {
         needStopRef.current = false;

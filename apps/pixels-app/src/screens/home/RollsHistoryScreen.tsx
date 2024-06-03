@@ -33,7 +33,11 @@ import {
   newDieSessionOnRoll,
   removeDieSession,
 } from "~/features/store/diceStatsSlice";
-import { useConfirmActionSheet, useWatchedPixel } from "~/hooks";
+import {
+  useConfirmActionSheet,
+  useSetSelectedPairedDie,
+  useWatchedPixel,
+} from "~/hooks";
 import { RollsHistoryScreenProps } from "~/navigation";
 
 function toHHMMSS(ms: number): string {
@@ -168,8 +172,10 @@ function RollsHistoryPage({
   const showHelp = useAppSelector((state) => state.appSettings.showRollsHelp);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialShowHelp = React.useMemo(() => showHelp, []); // TODO need banner fix to not initially show empty view
+
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
+
   const sessionIds = useAppSelector(
     (state) => state.diceStats.entities[pairedDie.pixelId]?.sessions?.ids
   );
@@ -271,19 +277,14 @@ export function RollsHistoryScreen({
   },
   navigation,
 }: RollsHistoryScreenProps) {
-  const pairedDie = useAppSelector((state) =>
-    state.pairedDice.paired.find((p) => p.pixelId === pixelId)
-  );
-  React.useEffect(() => {
-    if (!pairedDie) {
-      navigation.goBack();
-    }
-  }, [navigation, pairedDie]);
+  const pairedDie = useSetSelectedPairedDie(pixelId);
+  if (!pairedDie) {
+    navigation.goBack();
+    return null;
+  }
   return (
     <AppBackground>
-      {pairedDie && (
-        <RollsHistoryPage pairedDie={pairedDie} navigation={navigation} />
-      )}
+      <RollsHistoryPage pairedDie={pairedDie} navigation={navigation} />
     </AppBackground>
   );
 }

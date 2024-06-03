@@ -12,7 +12,6 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { ProfileUsage } from "~/components/ProfileUsage";
@@ -23,10 +22,11 @@ import {
   getRollStateLabel,
 } from "~/features/profiles";
 import {
-  useActiveProfile,
   useHasFirmwareUpdate,
+  usePairedDieProfileUuid,
+  useProfile,
+  useSetSelectedPairedDie,
   useWatchedPixel,
-  usePixelDataTransfer,
 } from "~/hooks";
 import { DieDetailsScreenProps } from "~/navigation";
 
@@ -42,12 +42,13 @@ export function DieStatus({
   pixel,
   style,
   ...props
-}: { pixel: Pixel } & ViewProps) {
+}: { pixel?: Pixel } & ViewProps) {
   const status = usePixelStatus(pixel);
-  const [rssi] = usePixelEvent(pixel, "rssi");
-  const [batteryEv] = usePixelEvent(pixel, "battery");
+  const [rssi] = usePixelEvent(pixel, "rssi") ?? 0;
+  const [batteryEv] = usePixelEvent(pixel, "battery") ?? 0;
   const [rollEv] = usePixelEvent(pixel, "roll");
-  const transferProgress = usePixelDataTransfer(pixel);
+  const transferProgress =
+    usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>General</SectionTitle>
@@ -97,26 +98,26 @@ export function DieProfile({
 }
 
 function DieAdvancedInfo({
+  pairedDie,
   pixel,
   style,
   ...props
 }: {
-  pixel: Pixel;
-  onUnpair?: (pixel: Pixel) => void;
+  pairedDie: PairedDie;
+  pixel?: Pixel;
 } & ViewProps) {
-  const ledCount = usePixelProp(pixel, "ledCount");
-  const dieType = usePixelProp(pixel, "dieType");
-  const colorway = usePixelProp(pixel, "colorway");
   const firmwareDate = usePixelProp(pixel, "firmwareDate");
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>Die</SectionTitle>
       <View style={styles.paragraph}>
-        <Text>Pixel ID: {unsigned32ToHex(pixel.pixelId)}</Text>
+        <Text>Pixel ID: {unsigned32ToHex(pairedDie.pixelId)}</Text>
         <Text>Chip Model: nRF52810</Text>
-        <Text>LED Count: {ledCount ?? 0}</Text>
-        <Text>Die Type: {getDieTypeLabel(dieType ?? "unknown")}</Text>
-        <Text>Colorway: {getColorwayLabel(colorway ?? "unknown")}</Text>
+        <Text>LED Count: {pairedDie.ledCount ?? 0}</Text>
+        <Text>Die Type: {getDieTypeLabel(pairedDie.dieType ?? "unknown")}</Text>
+        <Text>
+          Colorway: {getColorwayLabel(pairedDie.colorway ?? "unknown")}
+        </Text>
         <Text>Total Usable Flash: 8192kB</Text>
         {/* <Text>Available Flash: 1212kB</Text>
         <Text>Last Connected: {new Date().toLocaleString()}</Text> */}
@@ -125,7 +126,9 @@ function DieAdvancedInfo({
       <View style={styles.paragraph}>
         <Text>
           Build Timestamp:{" "}
-          {firmwareDate?.getTime() ? firmwareDate.toLocaleString() : "unknown"}
+          {firmwareDate?.getTime()
+            ? firmwareDate.toLocaleString()
+            : new Date(pairedDie.firmwareTimestamp).toLocaleString()}
         </Text>
         {/* <Text>Firmware Version: 12.3</Text>
         <Text>Settings Version: 12.3</Text>
@@ -168,37 +171,29 @@ function DieDetailsPage({
   navigation: DieDetailsScreenProps["navigation"];
 }) {
   const pixel = useWatchedPixel(pairedDie);
-  const activeProfile = useActiveProfile(pairedDie);
-
+  const activeProfile = useProfile(usePairedDieProfileUuid(pairedDie));
   return (
     <View style={{ height: "100%" }}>
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
         {pairedDie.name}
       </PageHeader>
-      {pixel ? (
-        <GHScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 10,
-            paddingBottom: 20,
-            gap: 10,
-          }}
-        >
+      <GHScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 10,
+          paddingBottom: 20,
+          gap: 10,
+        }}
+      >
+        {pixel && (
           <FirmwareUpdateBanner
             pixel={pixel}
             onAction={() => navigation.replace("firmwareUpdate")}
           />
-          <DieStatus pixel={pixel} style={{ marginTop: 10 }} />
-          <DieProfile profile={activeProfile} />
-          <DieAdvancedInfo pixel={pixel} />
-        </GHScrollView>
-      ) : (
-        <Text
-          variant="bodyLarge"
-          style={{ alignSelf: "center", marginTop: 20 }}
-        >
-          Die not found, no information available.
-        </Text>
-      )}
+        )}
+        <DieStatus pixel={pixel} style={{ marginTop: 10 }} />
+        <DieProfile profile={activeProfile} />
+        <DieAdvancedInfo pairedDie={pairedDie} pixel={pixel} />
+      </GHScrollView>
     </View>
   );
 }
@@ -209,19 +204,14 @@ export function DieDetailsScreen({
   },
   navigation,
 }: DieDetailsScreenProps) {
-  const pairedDie = useAppSelector((state) =>
-    state.pairedDice.paired.find((p) => p.pixelId === pixelId)
-  );
-  React.useEffect(() => {
-    if (!pairedDie) {
-      navigation.goBack();
-    }
-  }, [navigation, pairedDie]);
+  const pairedDie = useSetSelectedPairedDie(pixelId);
+  if (!pairedDie) {
+    navigation.goBack();
+    return null;
+  }
   return (
     <AppBackground>
-      {pairedDie && (
-        <DieDetailsPage pairedDie={pairedDie} navigation={navigation} />
-      )}
+      <DieDetailsPage pairedDie={pairedDie} navigation={navigation} />
     </AppBackground>
   );
 }

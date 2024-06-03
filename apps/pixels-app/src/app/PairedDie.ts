@@ -7,8 +7,10 @@ export type PairedDie = Readonly<{
   systemId: string;
   pixelId: number;
   name: string;
-  dieType: PixelDieType;
+  ledCount: number;
   colorway: PixelColorway;
+  dieType: PixelDieType;
   firmwareTimestamp: number;
   profileUuid: string;
+  profileHash: number;
 }>;

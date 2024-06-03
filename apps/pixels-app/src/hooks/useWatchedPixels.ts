@@ -3,13 +3,19 @@ import React from "react";
 
 import { usePixelsCentral } from "./usePixelsCentral";
 
+import { PixelsCentralEventMap } from "~/features/dice";
+
 export function useWatchedPixels(): Readonly<Pixel[]> {
   const central = usePixelsCentral();
-  const [pixels, setPixels] = React.useState(central.pixels);
+  const [pixels, setPixels] = React.useState(
+    central.pixels.map((p) => central.getPixel(p.pixelId)!)
+  );
   React.useEffect(() => {
-    central.addEventListener("pixels", setPixels);
+    const onPixels = (pixels: PixelsCentralEventMap["pixels"]) =>
+      setPixels(pixels.map((p) => central.getPixel(p.pixelId)!));
+    central.addEventListener("pixels", onPixels);
     return () => {
-      central.removeEventListener("pixels", setPixels);
+      central.removeEventListener("pixels", onPixels);
     };
   }, [central]);
   return pixels;

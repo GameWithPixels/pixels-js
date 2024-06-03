@@ -1,33 +1,27 @@
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import {
-  PixelInfo,
-  Profiles,
-} from "@systemic-games/react-native-pixels-connect";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { useAppSelector } from "~/app/hooks";
+import { PairedDie } from "~/app/PairedDie";
 import { ProfilePicker } from "~/components/ProfilePicker";
-import { useBottomSheetBackHandler } from "~/hooks";
+import { useBottomSheetBackHandler, useIsTransferring } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetProps } from "~/themes";
 
 export function PickProfileBottomSheet({
-  pixel,
+  pairedDie,
   visible,
   onSelectProfile,
   onDismiss,
 }: {
-  pixel: PixelInfo;
+  pairedDie: PairedDie;
   visible: boolean;
   onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
   onDismiss: () => void;
 }) {
-  const profileUuid = useAppSelector(
-    (state) => state.diceTransient.transfer?.profileUuid
-  );
-
+  const transferring = useIsTransferring(pairedDie);
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
@@ -51,9 +45,9 @@ export function PickProfileBottomSheet({
       <RootSiblingParent>
         <ThemeProvider theme={theme}>
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
-            Select Profile for {pixel.name}
+            Select Profile for {pairedDie.name}
           </Text>
-          {profileUuid ? (
+          {transferring ? (
             <Text
               variant="bodyLarge"
               style={{ alignSelf: "center", paddingVertical: 20 }}
@@ -62,7 +56,7 @@ export function PickProfileBottomSheet({
             </Text>
           ) : (
             <ProfilePicker
-              dieType={pixel.dieType}
+              dieType={pairedDie.dieType}
               onSelectProfile={onSelectProfile}
               style={{
                 flex: 1,

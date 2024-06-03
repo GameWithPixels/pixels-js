@@ -26,7 +26,6 @@ import {
 import { CreateProfileBanner } from "~/components/banners";
 import { FloatingAddButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
-import { programProfile } from "~/features/dice";
 import {
   getCompatibleDiceTypes,
   getProfilesGroupingLabel,
@@ -36,6 +35,7 @@ import {
   ProfilesGroupingList,
   SortMode,
   SortModeList,
+  updatePairedDieProfileInfoWithProfile,
 } from "~/features/profiles";
 import {
   setProfilesGrouping,
@@ -157,7 +157,6 @@ function ProfilesListPage({
   navigation: ProfilesListScreenProps["navigation"];
 }) {
   const store = useAppStore();
-
   const profiles = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
   const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
@@ -258,9 +257,13 @@ function ProfilesListPage({
             : undefined
         }
         visible={!!profileToActivate}
-        onDismiss={(pixel) => {
-          if (pixel && profileToActivate) {
-            programProfile(pixel, profileToActivate, store);
+        onDismiss={(pairedDie) => {
+          if (pairedDie && profileToActivate) {
+            updatePairedDieProfileInfoWithProfile(
+              pairedDie.pixelId,
+              profileToActivate,
+              store.getState().appSettings.diceBrightnessFactor
+            );
           }
           setProfileToActivate(undefined);
         }}

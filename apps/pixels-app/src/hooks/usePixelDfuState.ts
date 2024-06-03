@@ -1,8 +1,9 @@
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
-import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { usePixelsCentral } from "./usePixelsCentral";
+
+import { PixelsCentralEventMap } from "~/features/dice";
 
 export function usePixelDfuState(pixelId: number): {
   state?: DfuState;
@@ -16,7 +17,10 @@ export function usePixelDfuState(pixelId: number): {
   React.useEffect(() => {
     setState(undefined);
     setProgress(undefined);
-    const onState = ({ pixel, state }: { pixel: Pixel; state: DfuState }) => {
+    const onState = ({
+      pixel,
+      state,
+    }: PixelsCentralEventMap["pixelDfuState"]) => {
       if (pixelId === pixel.pixelId) {
         setState(state);
         if (state !== "errored") {
@@ -28,16 +32,16 @@ export function usePixelDfuState(pixelId: number): {
     const onProgress = ({
       pixel,
       progress,
-    }: {
-      pixel: Pixel;
-      progress: number;
-    }) => {
+    }: PixelsCentralEventMap["pixelDfuProgress"]) => {
       if (pixelId === pixel.pixelId) {
         setProgress(progress);
       }
     };
     central.addEventListener("pixelDfuProgress", onProgress);
-    const onError = ({ pixel, error }: { pixel: Pixel; error: Error }) => {
+    const onError = ({
+      pixel,
+      error,
+    }: PixelsCentralEventMap["pixelDfuError"]) => {
       if (pixelId === pixel.pixelId) {
         setError(error);
       }

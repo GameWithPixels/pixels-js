@@ -6,28 +6,24 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
-  getPixel,
-  Pixel,
-  PixelInfo,
-  PixelScanner,
-  ScannedPixelNotifier,
-  PixelScannerEventMap,
-  PixelScannerStatusEvent,
   BluetoothNotAuthorizedError,
   BluetoothUnavailableError,
-  ScanStatus,
-  ScanStartFailed,
   Central,
-  PixelOwnMutableProps,
+  getPixel,
+  Pixel,
+  PixelScanner,
+  PixelScannerEventMap,
+  PixelScannerStatusEvent,
+  ScannedPixelNotifier,
+  ScanStartFailed,
+  ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import { Platform } from "expo-modules-core";
 
+import { PixelOperationParams, PixelScheduler } from "./PixelScheduler";
+
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { logError } from "~/features/utils";
-
-function pixelLog(pixel: Pick<PixelInfo, "name">, message: string) {
-  console.log(`[PixelsCentral ${pixel.name}]: ${message}`);
-}
 
 export interface PixelsCentralEventMap {
   // Props
@@ -37,24 +33,20 @@ export interface PixelsCentralEventMap {
   pixels: Pixel[];
   pixelInDFU: Pixel | undefined;
   // Events
-  scanError: Error;
-  pixelFound: { pixel: Pixel }; // Watched Pixel was found (scanned)
-  pixelRemoved: { pixel: Pixel }; // Found Pixel was removed (unwatched)
+  onScanError: { error: Error };
+  onPixelFound: { pixel: Pixel }; // Watched Pixel was found (scanned)
+  onPixelRemoved: { pixel: Pixel }; // Found Pixel was removed (unwatched)
   pixelDfuState: { pixel: Pixel; state: DfuState; error?: Error };
   pixelDfuProgress: { pixel: Pixel; progress: number };
   pixelDfuError: { pixel: Pixel; error: Error };
-}
-
-interface WatchedPixel {
-  pixel: Pixel;
-  connect: () => void;
-  unwatch: () => void;
 }
 
 // Watched Pixels are added to the "pixels" list whenever they are found (= scanned)
 export class PixelsCentral {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelsCentralEventMap>();
+
+  // Scanner
   private _onScannerReady?: (b: boolean) => void;
   private _onScanStatus?: (s: ScanStatus) => void;
   private readonly _scanner = new PixelScanner();
@@ -62,9 +54,15 @@ export class PixelsCentral {
   private readonly _connectFromScan = new Map<number, number>(); // List of Pixels to connect to when scanning
   private readonly _scanTimeoutIds: ReturnType<typeof setTimeout>[] = [];
   private _manualScan = false; // Whether the scanner was started manually (and not by  connectToMissingPixels)
-  private readonly _watched = new Map<number, "watched" | WatchedPixel>();
-  private _pixelInDFU?: Pixel; // The die for which we are currently doing a DFU
   private _scannerUnhook?: () => void;
+
+  // Connection
+  private readonly _allSchedulers = new Map<number, PixelScheduler>(); // All schedulers created so far
+  private readonly _watched = new Map<number, "watched" | Pixel>();
+  private readonly _disposers = new Map<number, () => void>();
+
+  // DFU
+  private _pixelInDFU?: Pixel; // The die for which we are currently doing a DFU
 
   get isReady(): boolean {
     return this._scanner.isReady;
@@ -89,19 +87,10 @@ export class PixelsCentral {
     const pixels: Pixel[] = [];
     for (const entry of this._watched.values()) {
       if (typeof entry === "object") {
-        pixels.push(entry.pixel);
+        pixels.push(entry);
       }
     }
     return pixels;
-  }
-
-  get hasMissingPixels(): boolean {
-    for (const entry of this._watched.values()) {
-      if (entry === "watched") {
-        return true;
-      }
-    }
-    return false;
   }
 
   get pixelInDFU(): Pixel | undefined {
@@ -132,17 +121,18 @@ export class PixelsCentral {
       !this._onScannerReady
     ) {
       this._onScannerReady = (isReady: boolean) => {
+        // We use this event to know if Bluetooth is available for use
         if (isReady) {
           console.log("[PixelsCentral] Scanner is ready");
           for (const pixelId of this.watchedPixelsIds) {
             const entry = this._watched.get(pixelId);
-            if (typeof entry === "object") {
-              const { pixel } = entry;
-              pixel
-                // TODO fix for some Android phones that won't reconnect if they were already in connecting stat
-                .disconnect()
-                .catch((e) => pixelLog(pixel, `Disconnect error ${e}`))
-                .finally(() => entry.connect());
+            if (typeof entry === "object" && entry !== this._pixelInDFU) {
+              // TODO fix for some Android phones that won't reconnect when in connecting state
+              // while Bluetooth was unavailable
+              this._schedule(entry.pixelId, {
+                type: "connect",
+                mode: "reconnect",
+              });
             }
           }
         }
@@ -173,27 +163,27 @@ export class PixelsCentral {
     type: K,
     listener: EventReceiver<PixelsCentralEventMap[K]>
   ): void {
+    this._evEmitter.removeListener(type, listener);
     if (
       type === "isReady" &&
       this._onScannerReady &&
-      this._evEmitter.listenerCount(type) <= 1
+      this._evEmitter.listenerCount(type) <= 0
     ) {
       this._scanner.removeEventListener("isReady", this._onScannerReady);
       this._onScannerReady = undefined;
     } else if (
       type === "scanStatus" &&
       this._onScanStatus &&
-      this._evEmitter.listenerCount(type) <= 1
+      this._evEmitter.listenerCount(type) <= 0
     ) {
       this._scanner.removeEventListener("status", this._onScanStatus);
       this._onScanStatus = undefined;
     }
-    this._evEmitter.removeListener(type, listener);
   }
 
-  getPixel(pixelId?: number): Pixel | undefined {
-    const entry = pixelId && this._watched.get(pixelId);
-    return typeof entry === "object" ? entry.pixel : undefined;
+  getPixel(pixelId: number): Pixel | undefined {
+    const entry = this._watched.get(pixelId);
+    return typeof entry === "object" ? entry : undefined;
   }
 
   // Scans for new Pixels until stopScan() is called.
@@ -211,10 +201,9 @@ export class PixelsCentral {
       );
       // Ignore error if scanner has successfully stopped anyway
       if (this.scanStatus !== "stopped") {
-        this._emitEvent(
-          "scanError",
-          e instanceof Error ? e : new Error(String(e))
-        );
+        this._emitEvent("onScanError", {
+          error: e instanceof Error ? e : new Error(String(e)),
+        });
       }
     });
   }
@@ -258,9 +247,11 @@ export class PixelsCentral {
         `[PixelsCentral] Un-watching Pixel ${unsigned32ToHex(pixelId)}`
       );
       this._watched.delete(pixelId);
+      this._disposers.get(pixelId)?.();
+      this._disposers.delete(pixelId);
       if (typeof entry === "object") {
-        entry.unwatch();
-        this._emitEvent("pixelRemoved", { pixel: entry.pixel });
+        this._schedule(pixelId, { type: "disconnect" });
+        this._emitEvent("onPixelRemoved", { pixel: entry });
         this._emitEvent("pixels", this.pixels);
       }
     }
@@ -272,31 +263,35 @@ export class PixelsCentral {
     }
   }
 
+  getScheduler(pixelId: number): PixelScheduler {
+    const scheduler = this._allSchedulers.get(pixelId);
+    if (scheduler) {
+      return scheduler;
+    } else {
+      const newScheduler = new PixelScheduler();
+      this._allSchedulers.set(pixelId, newScheduler);
+      return newScheduler;
+    }
+  }
+
   async updatePixelAsync({
-    pixel,
+    pixelId,
     bootloaderPath,
     firmwarePath,
-  }: {
-    readonly pixel: Pixel;
-    readonly bootloaderPath?: string;
-    readonly firmwarePath: string;
-  }): Promise<void> {
+  }: Readonly<{
+    pixelId: number;
+    bootloaderPath?: string;
+    firmwarePath: string;
+  }>): Promise<void> {
     if (this._pixelInDFU) {
       throw new Error("DFU in progress");
     }
-    const updatePixelInDFU = (pixel?: Pixel) => {
-      if (this._pixelInDFU !== pixel) {
-        const entry =
-          this._pixelInDFU && this._watched.get(this._pixelInDFU.pixelId);
-        this._pixelInDFU = pixel;
-        if (typeof entry === "object") {
-          // Auto re-connect to die after DFU
-          entry.connect();
-        }
-        this._emitEvent("pixelInDFU", pixel);
-      }
-    };
-    updatePixelInDFU(pixel);
+    const pixel = this.getPixel(pixelId);
+    if (!pixel) {
+      throw new Error(`No Pixel with id ${unsigned32ToHex(pixelId)}`);
+    }
+    this._pixelInDFU = pixel;
+    this._emitEvent("pixelInDFU", this._pixelInDFU);
     try {
       let attemptsCount = 0;
       let wasUploading = false;
@@ -335,7 +330,15 @@ export class PixelsCentral {
         }
       }
     } finally {
-      updatePixelInDFU(undefined);
+      if (this._pixelInDFU) {
+        const pixel = this._pixelInDFU;
+        if (this._watched.get(pixel.pixelId) === pixel) {
+          // Connect to die after DFU
+          this._schedule(pixel.pixelId, { type: "connect" });
+        }
+        this._pixelInDFU = undefined;
+        this._emitEvent("pixelInDFU", pixel);
+      }
     }
   }
 
@@ -346,8 +349,8 @@ export class PixelsCentral {
     try {
       this._evEmitter.emit(name, ev);
     } catch (e) {
-      console.error(
-        `PixelCentral: Uncaught error in "${name}" event listener: ${e}`
+      logError(
+        `PixelsCentral: Uncaught error in "${name}" event listener: ${e}`
       );
     }
   }
@@ -382,10 +385,9 @@ export class PixelsCentral {
         if (stillHooked) {
           // We were still hooked, meaning no "stopped" event was received
           // and so no scan error was reported
-          this._emitEvent(
-            "scanError",
-            e instanceof Error ? e : new Error(String(e))
-          );
+          this._emitEvent("onScanError", {
+            error: e instanceof Error ? e : new Error(String(e)),
+          });
         }
       });
   }
@@ -407,14 +409,14 @@ export class PixelsCentral {
         if (stopReason && stopReason !== "success") {
           console.log(`[PixelsCentral] Scan stopped with reason ${stopReason}`);
           // Convert stop reason to error
-          this._emitEvent(
-            "scanError",
-            stopReason === "failedToStart"
-              ? new ScanStartFailed(Central.getBluetoothState())
-              : stopReason === "unauthorized"
-                ? new BluetoothNotAuthorizedError()
-                : new BluetoothUnavailableError(stopReason)
-          );
+          this._emitEvent("onScanError", {
+            error:
+              stopReason === "failedToStart"
+                ? new ScanStartFailed(Central.getBluetoothState())
+                : stopReason === "unauthorized"
+                  ? new BluetoothNotAuthorizedError()
+                  : new BluetoothUnavailableError(stopReason),
+          });
         }
       }
     };
@@ -493,7 +495,7 @@ export class PixelsCentral {
             if (!this._watched.has(notifier.pixelId)) {
               this._scannedPixels.push(notifier);
             } else if (this._connectFromScan.has(notifier.pixelId)) {
-              // Connect to our die if paired and in the filtered list
+              // Connect to our die if paired and in the watched list
               this._autoConnect(notifier.pixelId);
             }
           }
@@ -518,52 +520,46 @@ export class PixelsCentral {
     }
   }
 
-  private _autoConnect(pixelId: number): boolean {
+  private _autoConnect(pixelId: number): void {
     const pixel = getPixel(pixelId);
     if (pixel && this._watched.get(pixelId) === "watched") {
-      // Connection function that catches errors
-      const connect = () => {
-        if (pixel !== this._pixelInDFU && this._watched.has(pixelId)) {
-          pixelLog(pixel, "Connecting...");
-          pixel.connect().catch((e: Error) => {
-            pixelLog(pixel, `Connection error => ${e}`);
-          });
-        }
-      };
-
-      // Add event listeners
-      const onStatus = ({ status }: PixelOwnMutableProps) => {
-        if (status === "disconnected") {
-          // TODO Delay reconnecting because our previous call to connect() might still be cleaning up
-          setTimeout(connect, 2000);
-        }
-      };
-      pixel.addPropertyListener("status", onStatus);
-
-      // Callback to unsubscribe from all event listeners
-      const unwatch = () => {
-        pixel.removePropertyListener("status", onStatus);
-        // Catch errors on disconnect
-        pixel.disconnect().catch((e: Error) => {
-          pixelLog(pixel, `Disconnection error => ${e}`);
-        });
-      };
-
-      // Keep track of Pixels we're connecting to
-      this._watched.set(pixelId, {
-        pixel,
-        connect,
-        unwatch,
-      });
+      // Attach scheduler to Pixel
+      this.getScheduler(pixelId).attach(pixel);
+      this._watched.set(pixelId, pixel);
 
       // Notify we've got a new active Pixel
-      this._emitEvent("pixelFound", { pixel });
+      this._emitEvent("onPixelFound", { pixel });
       this._emitEvent("pixels", this.pixels);
+
+      // Connect only if not in DFU
+      const connect = () => {
+        if (pixel !== this._pixelInDFU && this._watched.has(pixelId)) {
+          this._schedule(pixelId, { type: "connect" });
+        }
+      };
+
+      // Reconnect automatically when disconnected
+      if (!this._disposers.has(pixelId)) {
+        const onStatus = () => {
+          pixel.status === "disconnected" && connect();
+        };
+        pixel.addPropertyListener("status", onStatus);
+        this._disposers.set(pixelId, () =>
+          pixel.removePropertyListener("status", onStatus)
+        );
+      } else {
+        logError(
+          `Disposer already exists for Pixel ${unsigned32ToHex(pixelId)}`
+        );
+      }
 
       // Connect to die
       connect();
     }
+  }
 
-    return this._watched.get(pixelId) !== "watched";
+  private _schedule(pixelId: number, operation: PixelOperationParams) {
+    const scheduler = this.getScheduler(pixelId);
+    scheduler.schedule(operation);
   }
 }

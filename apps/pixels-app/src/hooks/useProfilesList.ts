@@ -17,7 +17,7 @@ export function useProfilesList(): Readonly<Profiles.Profile>[] {
   const customProfiles = React.useMemo(
     () =>
       paired
-        .map((p) => p.profileUuid)
+        .map((p) => p.die.profileUuid)
         .concat(unpaired.map((p) => p.profileUuid)),
     [paired, unpaired]
   );

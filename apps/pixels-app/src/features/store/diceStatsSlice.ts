@@ -53,6 +53,7 @@ const DiceStatsSlice = createSlice({
       log("resetDiceStats");
       return diceStatsAdapter.getInitialState();
     },
+
     addDieRoll(
       state,
       action: PayloadAction<{
@@ -108,6 +109,7 @@ const DiceStatsSlice = createSlice({
       }
       return diceStatsAdapter.setOne(state, stats);
     },
+
     newDieSessionOnRoll(state, action: PayloadAction<{ pixelId: number }>) {
       log("newDieSessionOnRoll");
       const { pixelId } = action.payload;
@@ -116,6 +118,7 @@ const DiceStatsSlice = createSlice({
         stats.forceNewSession = true;
       }
     },
+
     removeDieSession(
       state,
       action: PayloadAction<{

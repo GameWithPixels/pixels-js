@@ -1,29 +1,20 @@
-import { Pixel, getPixel } from "@systemic-games/react-native-pixels-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
-import { usePixelsCentral } from "./usePixelsCentral";
+import { useWatchedPixels } from "./useWatchedPixels";
 
 import { PairedDie } from "~/app/PairedDie";
 
 export function useWatchedPixel(
-  pixelOrPixelId: Pick<PairedDie, "pixelId"> | number
+  pixelOrPixelId: Pick<PairedDie, "pixelId"> | number | undefined
 ): Pixel | undefined {
   const pixelId =
-    typeof pixelOrPixelId === "number"
+    !pixelOrPixelId || typeof pixelOrPixelId === "number"
       ? pixelOrPixelId
       : pixelOrPixelId.pixelId;
-  const [pixel, setPixel] = React.useState(getPixel(pixelId));
-  const central = usePixelsCentral();
-  React.useEffect(() => {
-    const findPixel = (pixels: Pixel[]) => {
-      setPixel(pixels.find((p) => p.pixelId === pixelId));
-    };
-    findPixel(central.pixels);
-    central.addEventListener("pixels", findPixel);
-    return () => {
-      central.removeEventListener("pixels", findPixel);
-    };
-  }, [pixelId, central]);
-
-  return pixel;
+  const pixels = useWatchedPixels();
+  return React.useMemo(
+    () => pixels.find((p) => p.pixelId === pixelId),
+    [pixelId, pixels]
+  );
 }

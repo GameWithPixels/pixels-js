@@ -1,6 +1,6 @@
 import React from "react";
 
-import { PixelsCentral } from "~/features/dice/PixelsCentral";
+import { PixelsCentral } from "~/features/dice";
 
 export const PixelsCentralContext = React.createContext<PixelsCentral>(
   new PixelsCentral()

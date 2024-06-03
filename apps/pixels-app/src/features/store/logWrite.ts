@@ -1,4 +1,4 @@
-import { getTimeStringMs } from "../utils";
+import { getTimeStringMs } from "~/features/utils";
 
 export function logWrite(msg: string): void {
   if (__DEV__) {

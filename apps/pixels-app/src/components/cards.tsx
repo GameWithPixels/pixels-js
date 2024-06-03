@@ -1,14 +1,11 @@
-import {
-  usePixelEvent,
-  usePixelProp,
-  usePixelStatus,
-} from "@systemic-games/pixels-react";
+import { usePixelEvent, usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
   PixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
+import { observer } from "mobx-react-lite";
 import React from "react";
-import { View } from "react-native";
+import { StyleProp, TextStyle, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Animated, {
   Easing,
@@ -18,8 +15,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { PixelDieRenderer } from "./DieRenderer";
 import { FirmwareUpdateBadge } from "./FirmwareUpdateBadge";
+import { PairedDieRenderer } from "./PairedDieRenderer";
 import { PixelBattery } from "./PixelBattery";
 import { PixelRollState } from "./PixelRollState";
 import { PixelRssi } from "./PixelRssi";
@@ -27,7 +24,7 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
 import { PairedDie } from "~/app/PairedDie";
 import { getPixelStatusLabel } from "~/features/profiles";
-import { useActiveProfile, useWatchedPixel } from "~/hooks";
+import { usePairedDieProfileUuid, useProfile, useWatchedPixel } from "~/hooks";
 
 function AnimatedNameWithRoll({
   pixel,
@@ -72,6 +69,17 @@ function AnimatedNameWithRoll({
   );
 }
 
+const DieProfileName = observer(function ProfileName({
+  pairedDie,
+  style,
+}: {
+  pairedDie: PairedDie;
+  style?: StyleProp<TextStyle>;
+}) {
+  const profile = useProfile(usePairedDieProfileUuid(pairedDie));
+  return <Text style={style}>{profile.name}</Text>;
+});
+
 function VCardLabel({
   pairedDie,
   pixel,
@@ -82,18 +90,17 @@ function VCardLabel({
   miniCards?: boolean;
 }) {
   const status = usePixelStatus(pixel);
-  const isReady = pixel && status === "ready";
-  const thePixelName = usePixelProp(pixel, "name");
-  const pixelName = thePixelName ?? pairedDie.name;
-  const activeProfile = useActiveProfile(pairedDie);
-
   return miniCards ? (
-    <AnimatedNameWithRoll pixel={pixel} status={status} pixelName={pixelName} />
+    <AnimatedNameWithRoll
+      pixel={pixel}
+      status={status}
+      pixelName={pairedDie.name}
+    />
   ) : (
     <>
-      <Text variant="titleMedium">{pixelName}</Text>
-      <Text>{activeProfile?.name ?? "No Profile!"}</Text>
-      {isReady ? (
+      <Text variant="titleMedium">{pairedDie.name}</Text>
+      <DieProfileName pairedDie={pairedDie} />
+      {pixel && status === "ready" ? (
         <PixelRollState pixel={pixel} />
       ) : (
         <Text>{getPixelStatusLabel(status)}</Text>
@@ -162,7 +169,7 @@ export function PixelVCard({
       )}
       <View style={{ width: dieRenderWidth, aspectRatio: 1 }}>
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
-        <PixelDieRenderer key={dieRenderWidth} pixel={pairedDie} />
+        <PairedDieRenderer key={dieRenderWidth} pairedDie={pairedDie} />
       </View>
       <VCardLabel pairedDie={pairedDie} pixel={pixel} miniCards={miniCards} />
       <FirmwareUpdateBadge
@@ -186,9 +193,6 @@ export function PixelHCard({
   const status = usePixelStatus(pixel);
   const isReady = pixel && status === "ready";
   const [rollEv] = usePixelEvent(pixel, "roll");
-  const thePixelName = usePixelProp(pixel, "name");
-  const pixelName = thePixelName ?? pairedDie.name;
-  const activeProfile = useActiveProfile(pairedDie);
   const dieRenderWidth = 70;
   return (
     <TouchableCard
@@ -201,7 +205,7 @@ export function PixelHCard({
     >
       <View style={{ width: 70, aspectRatio: 1, padding: 5 }}>
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
-        <PixelDieRenderer key={dieRenderWidth} pixel={pairedDie} />
+        <PairedDieRenderer key={dieRenderWidth} pairedDie={pairedDie} />
       </View>
       <View
         style={{
@@ -211,8 +215,8 @@ export function PixelHCard({
           justifyContent: "space-around",
         }}
       >
-        <Text variant="bodyLarge">{pixelName}</Text>
-        <Text>{activeProfile?.name ?? "No Profile!"}</Text>
+        <Text variant="bodyLarge">{pairedDie.name}</Text>
+        <DieProfileName pairedDie={pairedDie} />
         {isReady ? (
           <PixelRollState pixel={pixel} />
         ) : (

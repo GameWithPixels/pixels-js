@@ -12,8 +12,8 @@ import {
   useTheme,
 } from "react-native-paper";
 
+import { AnimationDieRenderer } from "~/components/AnimationDieRenderer";
 import { AppBackground } from "~/components/AppBackground";
-import { AnimationDieRenderer } from "~/components/DieRenderer";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import {

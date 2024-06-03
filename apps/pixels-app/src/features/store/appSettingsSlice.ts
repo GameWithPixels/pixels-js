@@ -49,42 +49,55 @@ const appSettingsSlice = createSlice({
     resetAppSettings() {
       return initialState;
     },
+
     setThemeMode(state, action: PayloadAction<ThemeMode>) {
       state.themeMode = action.payload;
     },
+
     setShowOnboarding(state, action: PayloadAction<boolean>) {
       state.showOnboarding = action.payload;
     },
+
     setShowNewPixelsAppBanner(state, action: PayloadAction<boolean>) {
       state.showNewPixelsAppBanner = action.payload;
     },
+
     setShowProfileHelp(state, action: PayloadAction<boolean>) {
       state.showProfileHelp = action.payload;
     },
+
     setShowRollsHelp(state, action: PayloadAction<boolean>) {
       state.showRollsHelp = action.payload;
     },
+
     setDiceGrouping(state, action: PayloadAction<DiceGrouping>) {
       state.diceGrouping = action.payload;
     },
+
     setDiceSortMode(state, action: PayloadAction<SortMode>) {
       state.diceSortMode = action.payload;
     },
+
     setProfilesGrouping(state, action: PayloadAction<ProfilesGrouping>) {
       state.profilesGrouping = action.payload;
     },
+
     setProfilesSortMode(state, action: PayloadAction<SortMode>) {
       state.profilesSortMode = action.payload;
     },
+
     setAnimationsGrouping(state, action: PayloadAction<AnimationsGrouping>) {
       state.animationsGrouping = action.payload;
     },
+
     setAnimationsSortMode(state, action: PayloadAction<SortMode>) {
       state.animationsSortMode = action.payload;
     },
+
     setUpdateBootloader(state, action: PayloadAction<boolean>) {
       state.updateBootloader = action.payload;
     },
+
     setDiceBrightnessFactor(state, action: PayloadAction<number>) {
       state.diceBrightnessFactor = action.payload;
     },

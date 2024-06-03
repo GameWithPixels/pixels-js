@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   PixelStatus,
   usePixelEvent,
+  usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -19,7 +20,7 @@ import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
-import { useWatchedPixel, usePixelDataTransfer } from "~/hooks";
+import { useWatchedPixel } from "~/hooks";
 
 function AnimatedConnectionIcon({
   size,
@@ -97,7 +98,8 @@ function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
   const pixel = useWatchedPixel(pairedDie);
   const [batteryEv] = usePixelEvent(pixel, "battery");
   const needCharging = (batteryEv?.level ?? 100) < 10;
-  const transferProgress = usePixelDataTransfer(pixel);
+  const transferProgress =
+    usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
   const transferring = transferProgress >= 0;
   const { colors } = useTheme();
   return (

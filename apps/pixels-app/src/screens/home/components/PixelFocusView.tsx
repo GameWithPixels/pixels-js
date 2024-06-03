@@ -22,21 +22,21 @@ import { PixelRollsCard } from "./PixelRollsCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
+import { useAppStore } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
-import { PixelDieRenderer } from "~/components/DieRenderer";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
+import { PairedDieRenderer } from "~/components/PairedDieRenderer";
 import { SlideInView } from "~/components/SlideInView";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard } from "~/components/profile";
-import { blinkDie, resetDieSettings, programProfile } from "~/features/dice";
-import { renameDie } from "~/features/dice/renameDie";
+import { updatePairedDieProfileInfoWithProfile } from "~/features/profiles";
 import {
-  useActiveProfile,
   useConfirmActionSheet,
   useHasFirmwareUpdate,
-  useWatchedPixel,
+  usePairedDieProfileUuid,
+  usePixelsCentral,
   useProfile,
+  useWatchedPixel,
 } from "~/hooks";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
@@ -79,31 +79,35 @@ export function PixelFocusViewHeader({
   onUnpair: () => void;
   onFirmwareUpdate: () => void;
 }) {
-  const appDispatch = useAppDispatch();
-  const store = useAppStore();
-
-  const profile = useProfile(pairedDie.profileUuid);
-
+  const central = usePixelsCentral();
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
-  const disabled = status !== "ready";
+  const ready = status === "ready";
   const hasFirmwareUpdate = useHasFirmwareUpdate(pairedDie.pixelId);
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
+
   const showConfirmReset = useConfirmActionSheet(
     "Reset Die Settings",
-    () => pixel && resetDieSettings(pixel, pairedDie.profileUuid, appDispatch)
+    () =>
+      ready &&
+      central
+        .getScheduler(pairedDie.pixelId)
+        .schedule({ type: "resetSettings" })
   );
   const showConfirmTurnOff = useConfirmActionSheet(
     "Turn Die Off",
-    () => {
-      pixel?.turnOff();
-    },
+    () =>
+      ready &&
+      central
+        .getScheduler(pairedDie.pixelId)
+        .schedule({ type: "disconnect", mode: "turnOff" }),
     {
       message:
         "Reminder: your die will stay off until placed back in its case with the lid closed. " +
         "Alternatively you can turn it back on by holding a magnet to its upper face.",
     }
   );
+
   const [renameVisible, setRenameVisible] = React.useState(false);
   const textInputRef = React.useRef<RNTextInput>(null);
   React.useEffect(() => {
@@ -112,17 +116,25 @@ export function PixelFocusViewHeader({
     }
   }, [renameVisible]);
   React.useEffect(() => {
-    if (disabled) {
+    if (!ready) {
       setRenameVisible(false);
     }
-  }, [disabled]);
+  }, [ready]);
+  const renameDie = React.useCallback(
+    (name: string) => {
+      if (pixel) {
+        const scheduler = central.getScheduler(pixel.pixelId);
+        // Update name
+        scheduler.schedule({ type: "rename", name });
+      }
+    },
+    [central, pixel]
+  );
 
   const { width: windowWidth } = useWindowDimensions();
   const { colors } = useTheme();
   const textColor =
-    actionsMenuVisible || disabled
-      ? colors.onSurfaceDisabled
-      : colors.onSurface;
+    actionsMenuVisible || !ready ? colors.onSurfaceDisabled : colors.onSurface;
   return (
     <View>
       {!renameVisible ? (
@@ -156,7 +168,7 @@ export function PixelFocusViewHeader({
           <DieMenu
             visible={actionsMenuVisible}
             anchor={{ x: (windowWidth - 230) / 2, y: 80 }}
-            disconnected={disabled}
+            disconnected={!ready}
             onDismiss={() => setActionsMenuVisible(false)}
             onUnpair={onUnpair}
             onUpdateFirmware={hasFirmwareUpdate ? onFirmwareUpdate : undefined}
@@ -176,7 +188,10 @@ export function PixelFocusViewHeader({
             pixel={pixel}
             onEndEditing={async (name) => {
               setRenameVisible(false);
-              renameDie(pixel, name, profile, store);
+              const newName = name.trim();
+              if (newName.length) {
+                renameDie(newName);
+              }
             }}
           />
         )
@@ -196,8 +211,8 @@ function RollingDie({
   const [rollEv] = usePixelEvent(pixel, "roll");
   const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
   return (
-    <PixelDieRenderer
-      pixel={pairedDie}
+    <PairedDieRenderer
+      pairedDie={pairedDie}
       speed={disabled ? 0 : rolling ? 10 : 1}
     />
   );
@@ -219,15 +234,13 @@ export function PixelFocusView({
   onEditProfile: () => void;
 } & Omit<ViewProps, "children">) {
   const store = useAppStore();
+  const central = usePixelsCentral();
 
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
 
-  const activeProfile = useActiveProfile(pairedDie);
-  const transferring = useAppSelector(
-    (state) => !!state.diceTransient.transfer
-  );
+  const profile = useProfile(usePairedDieProfileUuid(pairedDie));
   const [pickProfile, setPickProfile] = React.useState(false);
 
   const { colors } = useTheme();
@@ -242,7 +255,7 @@ export function PixelFocusView({
           alignSelf: "center",
         }}
         onPress={() => {
-          blinkDie(pixel);
+          central.getScheduler(pairedDie.pixelId).schedule({ type: "blink" });
           onPress?.();
         }}
       >
@@ -272,8 +285,7 @@ export function PixelFocusView({
       <Text variant="titleMedium">Active Profile</Text>
       <ProfileCard
         row
-        profile={activeProfile}
-        transferring={transferring}
+        profile={profile}
         // onPress={() => pixel && setPickProfile(true)}
       />
       <View style={{ flexDirection: "row", justifyContent: "center", gap: 40 }}>
@@ -312,23 +324,19 @@ export function PixelFocusView({
         </TouchableRipple>
       </View>
       {/* Pick Profile Bottom Sheet */}
-      {pixel && (
-        <PickProfileBottomSheet
-          pixel={pixel}
-          onSelectProfile={(profile) => {
-            if (!transferring) {
-              setPickProfile(false);
-              programProfile(pixel, profile, store);
-            } else {
-              console.log(
-                "Skip programming profile because one is already in progress"
-              );
-            }
-          }}
-          visible={pickProfile}
-          onDismiss={() => setPickProfile(false)}
-        />
-      )}
+      <PickProfileBottomSheet
+        pairedDie={pairedDie}
+        onSelectProfile={(profile) => {
+          setPickProfile(false);
+          updatePairedDieProfileInfoWithProfile(
+            pairedDie.pixelId,
+            profile,
+            store.getState().appSettings.diceBrightnessFactor
+          );
+        }}
+        visible={pickProfile}
+        onDismiss={() => setPickProfile(false)}
+      />
     </SlideInView>
   );
 }

@@ -1,22 +1,17 @@
-import { Pixel, Profiles } from "@systemic-games/react-native-pixels-connect";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ViewProps } from "react-native";
-import {
-  ActivityIndicator,
-  MD3Theme,
-  Text,
-  TextInput,
-  useTheme,
-} from "react-native-paper";
+import { MD3Theme, Text, TextInput, useTheme } from "react-native-paper";
 
 import { RuleCard } from "./RuleCard";
 import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
 
+import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { ProfileDieRenderer } from "~/components/DieRenderer";
 import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
+import { ProfileDieRenderer } from "~/components/ProfileDieRenderer";
 import { SlideInView } from "~/components/SlideInView";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
@@ -55,8 +50,8 @@ const EditProfileDescription = observer(function EditProfileDescription({
 
 function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
   const diceNames = useAppSelector((state) => state.pairedDice.paired)
-    .filter((d) => d.profileUuid === profileUuid)
-    .map((d) => d.name);
+    .filter((d) => d.profile.sourceUuid === profileUuid)
+    .map((d) => d.die.name);
   return (
     <Text>
       {diceNames.length
@@ -80,32 +75,6 @@ const BrightnessSlider = observer(function BrightnessSlider({
   );
 });
 
-function ProgramProfileButton({ onPress }: { onPress: () => void }) {
-  const profileUuid = useAppSelector(
-    (state) => state.diceTransient.transfer?.profileUuid
-  );
-  const { colors } = useTheme();
-  return (
-    <View>
-      <GradientButton
-        disabled={!!profileUuid}
-        sentry-label="activate-on-die"
-        onPress={onPress}
-      >
-        Activate On Die
-      </GradientButton>
-      {!!profileUuid && (
-        <ActivityIndicator
-          style={{ position: "absolute", alignSelf: "center", top: 5 }}
-        />
-      )}
-      <Text style={{ marginVertical: 5, color: colors.onSurfaceDisabled }}>
-        Activating this profile will also save your changes.
-      </Text>
-    </View>
-  );
-}
-
 export function EditProfile({
   profileUuid,
   unnamed,
@@ -117,7 +86,7 @@ export function EditProfile({
   profileUuid: string;
   unnamed?: boolean;
   onEditRule: EditRuleCallback;
-  onTransfer?: (pixel: Pixel) => void;
+  onTransfer?: (pairedDie: PairedDie) => void;
 } & ViewProps) {
   const appDispatch = useAppDispatch();
   const showHelp = useAppSelector((state) => state.appSettings.showProfileHelp);
@@ -152,7 +121,19 @@ export function EditProfile({
             >
               Preview
             </OutlineButton> */}
-            <ProgramProfileButton onPress={() => setPickDieVisible(true)} />
+            <View>
+              <GradientButton
+                sentry-label="activate-on-die"
+                onPress={() => setPickDieVisible(true)}
+              >
+                Activate On Die
+              </GradientButton>
+              <Text
+                style={{ marginVertical: 5, color: colors.onSurfaceDisabled }}
+              >
+                Activating this profile will also save your changes.
+              </Text>
+            </View>
           </View>
         )}
         <SlideInView
@@ -201,9 +182,9 @@ export function EditProfile({
       <PickDieBottomSheet
         dieTypes={getCompatibleDiceTypes(profile.dieType)}
         visible={pickDieVisible}
-        onDismiss={(pixel) => {
-          if (pixel) {
-            onTransfer?.(pixel);
+        onDismiss={(pairedDie) => {
+          if (pairedDie) {
+            onTransfer?.(pairedDie);
           }
           setPickDieVisible(false);
         }}

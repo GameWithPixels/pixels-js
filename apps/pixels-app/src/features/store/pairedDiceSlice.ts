@@ -7,7 +7,13 @@ import { PairedDie } from "~/app/PairedDie";
 import { logError } from "~/features/utils";
 
 export interface PairedDiceState {
-  paired: PairedDie[];
+  paired: {
+    die: PairedDie;
+    profile: {
+      hash: number; // Hash of the bound profile to be programmed
+      sourceUuid?: string; // Profile used as the source for the die's profile
+    };
+  }[];
   unpaired: PairedDie[];
 }
 
@@ -23,7 +29,9 @@ function log(
     | "resetPairedDice"
     | "resetPairedDice"
     | "updatePairedDieName"
-    | "updatePairedDieFirmwareTimestamp",
+    | "updatePairedDieFirmwareTimestamp"
+    | "updatePairedDieProfileHash"
+    | "updatePairedDieProfileInfo",
   payload?: any
 ) {
   logWrite(`${action}, payload: ${JSON.stringify(payload)}`);
@@ -34,23 +42,44 @@ const PairedDiceSlice = createSlice({
   name: "PairedDice",
   initialState,
   reducers: {
-    resetPairedDice(state) {
+    resetPairedDice() {
       log("resetPairedDice");
-      state.paired = [];
-      state.unpaired = [];
+      return initialState;
     },
 
-    addPairedDie(state, action: PayloadAction<PairedDie>) {
+    addPairedDie(state, action: PayloadAction<Omit<PairedDie, "profileHash">>) {
       const { payload } = action;
       log("addPairedDie", payload);
-      const withId = ({ pixelId }: PairedDie) => pixelId === payload.pixelId;
-      const index = state.paired.findIndex(withId);
+      const index = state.paired.findIndex(
+        ({ die: { pixelId } }) => pixelId === payload.pixelId
+      );
+      const pairedDie = {
+        systemId: payload.systemId,
+        pixelId: payload.pixelId,
+        name: payload.name,
+        ledCount: payload.ledCount,
+        colorway: payload.colorway,
+        dieType: payload.dieType,
+        firmwareTimestamp: payload.firmwareTimestamp,
+        profileUuid: payload.profileUuid,
+        profileHash: 0,
+        pendingProfileHash: 0,
+      };
+      const item = {
+        die: pairedDie,
+        profile: {
+          hash: 0,
+          sourceUuid: undefined,
+        },
+      };
       if (index >= 0) {
-        state.paired[index] = payload;
+        state.paired[index] = item;
       } else {
-        state.paired.push(payload);
+        state.paired.push(item);
       }
-      const unpairIndex = state.unpaired.findIndex(withId);
+      const unpairIndex = state.unpaired.findIndex(
+        ({ pixelId }) => pixelId === payload.pixelId
+      );
       if (unpairIndex >= 0) {
         state.unpaired.splice(unpairIndex, 1);
       }
@@ -60,10 +89,10 @@ const PairedDiceSlice = createSlice({
       const { payload } = action;
       log("removePairedDie", payload);
       const index = state.paired.findIndex(
-        ({ pixelId }) => pixelId === payload
+        ({ die: { pixelId } }) => pixelId === payload
       );
       if (index >= 0) {
-        const pairedDie = state.paired[index];
+        const { die } = state.paired[index];
         state.paired.splice(index, 1);
         const uIndex = state.unpaired.findIndex(
           ({ pixelId }) => pixelId === payload
@@ -74,9 +103,9 @@ const PairedDiceSlice = createSlice({
               payload
             )}`
           );
-          state.unpaired[uIndex] = pairedDie;
+          state.unpaired[uIndex] = die;
         } else {
-          state.unpaired.push(pairedDie);
+          state.unpaired.push(die);
         }
       }
     },
@@ -90,11 +119,11 @@ const PairedDiceSlice = createSlice({
     ) {
       const { payload } = action;
       log("updatePairedDieName", payload);
-      const pairedDie = state.paired.find(
-        ({ pixelId }) => pixelId === payload.pixelId
+      const item = state.paired.find(
+        ({ die: { pixelId } }) => pixelId === payload.pixelId
       );
-      if (pairedDie) {
-        pairedDie.name = payload.name;
+      if (item?.die) {
+        item.die.name = payload.name;
       }
     },
 
@@ -107,11 +136,52 @@ const PairedDiceSlice = createSlice({
     ) {
       const { payload } = action;
       log("updatePairedDieFirmwareTimestamp", payload);
-      const pairedDie = state.paired.find(
-        ({ pixelId }) => pixelId === payload.pixelId
+      const item = state.paired.find(
+        ({ die: { pixelId } }) => pixelId === payload.pixelId
       );
-      if (pairedDie && payload.timestamp > 0) {
-        pairedDie.firmwareTimestamp = payload.timestamp;
+      if (item && payload.timestamp > 0) {
+        item.die.firmwareTimestamp = payload.timestamp;
+      }
+    },
+
+    updatePairedDieProfileHash(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        hash: number;
+      }>
+    ) {
+      const { payload } = action;
+      log("updatePairedDieProfileHash", payload);
+      const item = state.paired.find(
+        ({ die: { pixelId } }) => pixelId === payload.pixelId
+      );
+      if (item) {
+        item.die.profileHash = payload.hash;
+      }
+    },
+
+    updatePairedDieProfileInfo(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        hash: number;
+        sourceProfileUuid?: string;
+      }>
+    ) {
+      const { payload } = action;
+      log("updatePairedDieProfileInfo", payload);
+      const item = state.paired.find(
+        ({ die: { pixelId } }) => pixelId === payload.pixelId
+      );
+      if (item) {
+        item.profile = {
+          hash: payload.hash,
+          sourceUuid:
+            payload.sourceProfileUuid === item.die.profileUuid
+              ? undefined
+              : payload.sourceProfileUuid,
+        };
       }
     },
   },
@@ -123,5 +193,7 @@ export const {
   resetPairedDice,
   updatePairedDieName,
   updatePairedDieFirmwareTimestamp,
+  updatePairedDieProfileHash,
+  updatePairedDieProfileInfo,
 } = PairedDiceSlice.actions;
 export default PairedDiceSlice.reducer;

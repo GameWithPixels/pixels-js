@@ -1,30 +1,51 @@
+import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   PixelMutableProps,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
+import { reaction } from "mobx";
 import React from "react";
+import { Alert } from "react-native";
 
-import { useAppDispatch, useAppSelector, useAppStore } from "./hooks";
-import { AppStore } from "./store";
+import { useAppSelector, useAppStore } from "./hooks";
+import { AppStore, pairedDiceSelectors } from "./store";
 
-import { PixelsCentral } from "~/features/dice/PixelsCentral";
 import {
+  PixelsCentral,
+  PixelsCentralEventMap,
+  PixelSchedulerEventMap,
+} from "~/features/dice";
+import {
+  createProfileDataSetWithOverrides,
   getWebRequestPayload,
   playActionMakeWebRequest,
   playActionSpeakText,
+  updatePairedDieProfileInfoWithProfile,
 } from "~/features/profiles";
 import { addDieRoll } from "~/features/store/diceStatsSlice";
 import {
   updatePairedDieFirmwareTimestamp,
   updatePairedDieName,
+  updatePairedDieProfileHash,
 } from "~/features/store/pairedDiceSlice";
 import { readProfile } from "~/features/store/profiles";
 import {
+  commitEditableProfile,
+  EditableProfileStore,
+  EditableProfileStoreGetterContext,
   PixelsCentralContext,
   useConnectToMissingPixels,
   usePixelsCentralOnReady,
 } from "~/hooks";
+
+function alertRenameFailed(error: Error) {
+  Alert.alert(
+    "Failed to Rename Die",
+    "An error occurred while renaming the die\n" + String(error),
+    [{ text: "OK", style: "default" }]
+  );
+}
 
 function remoteActionListener(
   pixel: Pixel,
@@ -32,15 +53,17 @@ function remoteActionListener(
   store: AppStore
 ): void {
   const state = store.getState();
-  const profileUuid = state.pairedDice.paired.find(
-    (d) => d.pixelId === pixel.pixelId
+  const profileUuid = pairedDiceSelectors.selectByPixelId(
+    state,
+    pixel.pixelId
   )?.profileUuid;
+  const log = (msg: string) => `[Pixel ${pixel.name}] ${msg}`;
   if (profileUuid) {
     const profile = readProfile(profileUuid, state.library);
     const action = profile.getRemoteAction(actionId);
     if (action) {
       console.log(
-        `Got remote action id=${actionId} of type ${action.type} for profile ${profile.name}`
+        log(`Got remote action of type ${action.type} with id ${actionId}`)
       );
       if (action instanceof Profiles.ActionMakeWebRequest) {
         playActionMakeWebRequest(
@@ -51,13 +74,17 @@ function remoteActionListener(
       } else if (action instanceof Profiles.ActionSpeakText) {
         playActionSpeakText(action);
       } else {
-        console.log(`Ignoring remote action of type "${action.type}`);
+        console.log(
+          log(`Nothing to do for remote action of type "${action.type}`)
+        );
       }
     } else {
-      console.warn(
-        `Remote action with id=${actionId} for profile ${profile.name} (${profileUuid}) not found`
-      );
+      console.warn(log(`No remote action found with id ${actionId}`));
     }
+  } else {
+    console.warn(
+      log(`Skipping remote action with (${profileUuid}) not found)`)
+    );
   }
 }
 
@@ -76,22 +103,29 @@ function ConnectToMissingPixels({ children }: React.PropsWithChildren) {
 }
 
 export function AppPixelsCentral({ children }: React.PropsWithChildren) {
-  const appDispatch = useAppDispatch();
-  const central = React.useMemo(() => new PixelsCentral(), []);
   const store = useAppStore();
+  const [central] = React.useState(() => new PixelsCentral());
 
   // Setup event handlers
   React.useEffect(() => {
     const disposers = new Map<number, () => void>();
 
     // Hook to Pixel events
-    const onPixelFound = ({ pixel }: { pixel: Pixel }) => {
+    const onPixelFound = ({
+      pixel: p,
+    }: PixelsCentralEventMap["onPixelFound"]) => {
+      const pixel = central.getPixel(p.pixelId);
+      assert(pixel, "Pixel not found");
+
       // Clean up previous event listeners
       disposers.get(pixel.pixelId)?.();
 
+      // Pixel scheduler
+      const scheduler = central.getScheduler(pixel.pixelId);
+
       // Die name
       const onRename = ({ name }: PixelMutableProps) =>
-        appDispatch(
+        store.dispatch(
           updatePairedDieName({
             pixelId: pixel.pixelId,
             name,
@@ -101,7 +135,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
       // Firmware date
       const onFwDate = ({ firmwareDate }: PixelMutableProps) =>
-        appDispatch(
+        store.dispatch(
           updatePairedDieFirmwareTimestamp({
             pixelId: pixel.pixelId,
             timestamp: firmwareDate.getTime(),
@@ -118,28 +152,36 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       };
       pixel.addPropertyListener("status", onStatus);
 
+      // Show errors to user
+      const onPixelOp = (ev: PixelSchedulerEventMap["onOperation"]) => {
+        if (ev.event.type === "failed") {
+          if (ev.operation.type === "rename") {
+            alertRenameFailed(ev.event.error);
+          }
+        }
+      };
+      scheduler.addEventListener("onOperation", onPixelOp);
+
       // Profile
-      const onProfileHash = ({ profileHash }: PixelMutableProps) => {
+      const onProfileHash = ({
+        name,
+        profileHash: hash,
+      }: PixelMutableProps) => {
         console.log(
-          `Got profile hash ${(profileHash >>> 0).toString(16)} for ${pixel.name}`
+          `[Pixel ${name}] Profile hash changed to ${unsigned32ToHex(hash)}`
         );
-        // const profile =
-        //   store
-        //     .getState()
-        //     .profilesLibrary.profiles.find((p) => p.hash === hash) ??
-        //   getDefaultProfile(pixel.dieType);
-        // appDispatch(
-        //   setPairedDieProfile({
-        //     pixelId: pixel.pixelId,
-        //     profileUuid: profile.uuid,
-        //   })
-        // );
+        store.dispatch(
+          updatePairedDieProfileHash({
+            pixelId: pixel.pixelId,
+            hash,
+          })
+        );
       };
       pixel.addPropertyListener("profileHash", onProfileHash);
 
       // Rolls
       const onRoll = (roll: number) =>
-        appDispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
+        store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
       pixel.addEventListener("roll", onRoll);
 
       // Remote action
@@ -154,32 +196,37 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         pixel.removePropertyListener("profileHash", onProfileHash);
         pixel.removeEventListener("roll", onRoll);
         pixel.removeEventListener("remoteAction", onRemoteAction);
+        scheduler.removeEventListener("onOperation", onPixelOp);
       });
     };
-    central.addEventListener("pixelFound", onPixelFound);
+    central.addEventListener("onPixelFound", onPixelFound);
 
     // Unhook from Pixel events
-    const onPixelRemoved = ({ pixel }: { pixel: Pixel }) => {
+    const onPixelRemoved = ({
+      pixel,
+    }: PixelsCentralEventMap["onPixelRemoved"]) => {
       disposers.get(pixel.pixelId)?.();
       disposers.delete(pixel.pixelId);
     };
-    central.addEventListener("pixelRemoved", onPixelRemoved);
+    central.addEventListener("onPixelRemoved", onPixelRemoved);
 
     return () => {
       for (const dispose of disposers.values()) {
         dispose();
       }
-      central.removeEventListener("pixelFound", onPixelFound);
-      central.removeEventListener("pixelRemoved", onPixelRemoved);
+      central.removeEventListener("onPixelFound", onPixelFound);
+      central.removeEventListener("onPixelRemoved", onPixelRemoved);
       central.stopScan();
       central.unwatchAll();
     };
-  }, [appDispatch, central, store]);
+  }, [central, store]);
 
   // Monitor paired dice
-  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
+  const pairedDiceInfo = useAppSelector((state) => state.pairedDice.paired);
   React.useEffect(() => {
-    const pixelIds = pairedDice.map((d) => d.pixelId);
+    console.log(">>>> MONITORING PAIRED DICE");
+    // Update watched pixels
+    const pixelIds = pairedDiceInfo.map((d) => d.die.pixelId);
     for (const id of central.watchedPixelsIds) {
       if (!pixelIds.includes(id)) {
         central.unwatch(id);
@@ -188,11 +235,91 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     for (const id of pixelIds) {
       central.watch(id);
     }
-  }, [pairedDice, central]);
+    // Update dice profile if needed
+    for (const dieInfo of pairedDiceInfo) {
+      console.log(
+        ">>>> PROFILE HASH on die = " +
+          unsigned32ToHex(dieInfo.die.profileHash) +
+          ", profile = " +
+          unsigned32ToHex(dieInfo.profile.hash)
+      );
+      if (
+        dieInfo.profile.hash &&
+        dieInfo.profile.hash !== dieInfo.die.profileHash
+      ) {
+        console.log(">>>> PROFILE HASH MISMATCH");
+        const scheduler = central.getScheduler(dieInfo.die.pixelId);
+        const dataSet = createProfileDataSetWithOverrides(
+          readProfile(dieInfo.die.profileUuid, store.getState().library),
+          store.getState().appSettings.diceBrightnessFactor
+        );
+        const hash = DataSet.computeHash(dataSet.toByteArray());
+        console.log(">>>> SCHEDULE PROFILE HASH  = " + unsigned32ToHex(hash));
+        scheduler.schedule({ type: "programProfile", dataSet });
+      }
+    }
+  }, [central, pairedDiceInfo, store]);
+
+  // Profiles edition
+  const [editableProfileStoresMap] = React.useState(
+    () => new Map<string, EditableProfileStore>()
+  );
+  const editableProfileStoreGetter = React.useMemo(
+    () => ({
+      getEditableProfileStore: (profileUuid: string) => {
+        const item = editableProfileStoresMap.get(profileUuid);
+        if (item) {
+          return item;
+        } else {
+          const profile = readProfile(profileUuid, store.getState().library);
+          const profileStore = new EditableProfileStore(profile);
+          editableProfileStoresMap.set(profileUuid, profileStore);
+          // Auto save dice profiles and update paired die profile hash
+          const disposer = reaction(
+            () => profileStore.version,
+            (version) => {
+              if (version > 0) {
+                // Find die using with this profile
+                const pairedDie = store
+                  .getState()
+                  .pairedDice.paired.find(
+                    (d) => d.die.profileUuid === profile.uuid
+                  )?.die;
+                if (pairedDie) {
+                  // Save profile
+                  commitEditableProfile(profile, store);
+                  // Update die profile hash
+                  store.dispatch(
+                    updatePairedDieProfileInfoWithProfile(
+                      pairedDie.pixelId,
+                      profile,
+                      store.getState().appSettings.diceBrightnessFactor
+                    )
+                  );
+                }
+              } else {
+                console.log(">>>> REMOVING EDITABLE PROFILE");
+                disposer();
+                editableProfileStoresMap.delete(profileUuid);
+              }
+            }
+          );
+          return profileStore;
+        }
+      },
+    }),
+    [editableProfileStoresMap, store]
+  );
 
   return (
     <PixelsCentralContext.Provider value={central}>
-      <ConnectToMissingPixels>{children}</ConnectToMissingPixels>
+      <ConnectToMissingPixels>
+        <EditableProfileStoreGetterContext.Provider
+          value={editableProfileStoreGetter}
+        >
+          {children}
+        </EditableProfileStoreGetterContext.Provider>
+      </ConnectToMissingPixels>
     </PixelsCentralContext.Provider>
   );
 }

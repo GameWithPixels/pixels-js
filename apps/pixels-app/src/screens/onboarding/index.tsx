@@ -60,8 +60,7 @@ import {
 } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
 import { DieWireframe } from "~/components/icons";
-import { pairDie } from "~/features/dice";
-import { getDieDfuAvailability } from "~/features/dice/getDieDfuAvailability";
+import { getDieDfuAvailability, pairDie } from "~/features/dice";
 import {
   getDieTypeAndColorwayLabel,
   getKeepAllDiceUpToDate,
@@ -786,7 +785,7 @@ function OnboardingPage({
   const storeDiceAndScrollTo = (page: number) => {
     // Add all paired dice to the store
     for (const p of central.pixels) {
-      pairDie(p, store);
+      pairDie(central.getPixel(p.pixelId)!, store);
     }
     // Don't show onboarding again
     appDispatch(setShowOnboarding(false));

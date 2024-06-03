@@ -33,18 +33,19 @@ export function readProfile(
   library: LibraryState,
   newInstance = false
 ): Profiles.Profile {
-  const existing = !newInstance && loadedProfiles.get(uuid);
-  const profile = existing ? existing : create(uuid, newInstance);
-  const profileData = library.profiles.entities[profile.uuid];
-  if (profileData) {
-    runInAction(() => updateProfile(profile, profileData, library));
-  } else {
-    // TODO throw error
+  const profileData = library.profiles.entities[uuid];
+  if (!profileData) {
     logError(
-      `Profile ${profile.uuid} not found in library [${JSON.stringify(
-        profile.uuid // Got some Sentry report about this being an object rather than a string
+      `Profile ${uuid} not found in library [${JSON.stringify(
+        uuid // Got some Sentry report about this being an object rather than a string
       )}]`
     );
+  }
+  //assert(profileData, `Profile ${uuid} not found in library`);
+  const existing = !newInstance && loadedProfiles.get(uuid);
+  const profile = existing ? existing : create(uuid, newInstance);
+  if (profileData) {
+    runInAction(() => updateProfile(profile, profileData, library));
   }
   return profile;
 }

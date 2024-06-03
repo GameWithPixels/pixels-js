@@ -6,7 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { useWindowDimensions, View, ViewProps } from "react-native";
-import { ActivityIndicator, Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import Animated, {
   FadeIn,
   SharedValue,
@@ -17,7 +17,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { ProfileDieRenderer } from "./DieRenderer";
+import { ProfileDieRenderer } from "./ProfileDieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
 import { Chip, GradientChip } from "./buttons";
@@ -69,8 +69,8 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
   iconColor: string;
 }) {
   const diceNames = useAppSelector((state) => state.pairedDice.paired)
-    .filter((d) => d.profileUuid === profile.uuid)
-    .map((d) => d.name);
+    .filter((d) => d.profile.sourceUuid === profile.uuid)
+    .map((d) => d.die.name);
   return (
     <View
       style={{
@@ -116,11 +116,9 @@ const ProfileLastModified = observer(function ProfileDiceNames({
 
 function ProfileActions({
   profile,
-  transferring,
   onAction,
 }: {
   profile: Readonly<Profiles.Profile>;
-  transferring?: boolean;
   onAction?: (
     action: "edit" | "activate",
     profile: Readonly<Profiles.Profile>
@@ -143,7 +141,6 @@ function ProfileActions({
             ? ({ size, color }) => <LinkIcon size={size} color={color} />
             : undefined
         }
-        disabled={transferring}
         sentry-label="activate-on-die"
         onPress={() => onAction?.("activate", profile)}
         style={{ flexGrow: 1, flex: 1 }}
@@ -205,7 +202,6 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
 
 export interface ProfileCardProps extends Omit<TouchableCardProps, "children"> {
   profile: Readonly<Profiles.Profile>;
-  transferring?: boolean;
   expanded?: SharedValue<boolean>;
   fadeInDuration?: number;
   fadeInDelay?: number;
@@ -221,7 +217,6 @@ export function ProfileCard({
   disabled,
   selected,
   expanded,
-  transferring,
   squaredTopBorder,
   squaredBottomBorder,
   noBorder,
@@ -234,9 +229,6 @@ export function ProfileCard({
   contentStyle,
   ...props
 }: ProfileCardProps) {
-  const transferredProfileUuid = useAppSelector(
-    (state) => state.diceTransient.transfer?.profileUuid
-  );
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dieViewCornersStyle = {
@@ -319,9 +311,6 @@ export function ProfileCard({
           >
             <ProfileDieRenderer profile={profile} pedestal />
           </View>
-          {(transferring ?? transferredProfileUuid === profile.uuid) && (
-            <ActivityIndicator size="large" style={{ position: "absolute" }} />
-          )}
         </Animated.View>
         <View
           style={{
@@ -372,11 +361,7 @@ export function ProfileCard({
                 profile={profile}
                 iconColor={colors.onSurface}
               />
-              <ProfileActions
-                profile={profile}
-                onAction={onAction}
-                transferring={!!transferredProfileUuid}
-              />
+              <ProfileActions profile={profile} onAction={onAction} />
             </View>
           </Animated.View>
           {row && expanded && (

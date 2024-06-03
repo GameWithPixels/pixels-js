@@ -4,7 +4,7 @@ import { DfuFilesInfo } from "./useDfuFiles";
 import { usePixelsCentral } from "./usePixelsCentral";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { getDieDfuAvailability } from "~/features/dice/getDieDfuAvailability";
+import { getDieDfuAvailability } from "~/features/dice";
 import { updatePairedDieFirmwareTimestamp } from "~/features/store/pairedDiceSlice";
 
 export function useUpdateDice(): (
@@ -38,7 +38,7 @@ export function useUpdateDice(): (
             ) === "outdated"
           ) {
             await central.updatePixelAsync({
-              pixel,
+              pixelId: pixel.pixelId,
               bootloaderPath: updateBootloader
                 ? filesInfo.bootloaderPath
                 : undefined,

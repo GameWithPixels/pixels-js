@@ -9,7 +9,6 @@ import { Platform } from "react-native";
 import { Divider, Menu, MenuProps, useTheme } from "react-native-paper";
 
 import CalibrateIcon from "#/icons/home/calibrate";
-import { useAppSelector } from "~/app/hooks";
 import { AppStyles } from "~/styles";
 
 export function DieMenu({
@@ -30,9 +29,6 @@ export function DieMenu({
   onReset?: () => void;
   onTurnOff?: () => void;
 } & Omit<MenuProps, "children" | "theme" | "containerStyle">) {
-  const transferring = useAppSelector(
-    (state) => !!state.diceTransient.transfer
-  );
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
   return (
@@ -69,7 +65,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Rename"
-            disabled={!!disconnected || transferring}
+            disabled={!!disconnected}
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
                 name="rename-box"

@@ -1,7 +1,8 @@
-import { createDataSetForProfile } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { View, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
+
+import { createProfileEditDataSetWithOverrides } from "~/features/profiles";
 
 export function ProfileUsage({
   profile,
@@ -10,7 +11,7 @@ export function ProfileUsage({
 }: {
   profile: Readonly<Profiles.Profile>;
 } & ViewProps) {
-  const editDataSet = createDataSetForProfile(profile);
+  const editDataSet = createProfileEditDataSetWithOverrides(profile);
   const dataSet = editDataSet.toDataSet();
   const patterns = new Set(
     editDataSet.patterns.concat(editDataSet.rgbPatterns)

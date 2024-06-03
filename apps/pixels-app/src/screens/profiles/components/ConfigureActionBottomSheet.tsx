@@ -27,7 +27,7 @@ import {
 } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { ActionPlayAnimDieRenderer } from "~/components/DieRenderer";
+import { ActionPlayAnimDieRenderer } from "~/components/ActionPlayAnimDieRenderer";
 import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
 import { KeyframeGradient } from "~/components/KeyframeGradient";

@@ -8,7 +8,10 @@ import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
 import { RollsHistoryScreen } from "./RollsHistoryScreen";
 
+import { PairedDie } from "~/app/PairedDie";
 import { NavigationRoot } from "~/components/NavigationRoot";
+import { PixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
+import { SelectedPairedDieContext } from "~/hooks";
 import {
   getStackNavigationOptions,
   HomeStackParamList,
@@ -17,40 +20,62 @@ import {
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
+function SelectedPairedDieProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [pairedDie, setPairedDie] = React.useState<PairedDie>();
+  return (
+    <SelectedPairedDieContext.Provider value={{ pairedDie, setPairedDie }}>
+      {children}
+    </SelectedPairedDieContext.Provider>
+  );
+}
+
 export function HomeStack({ route }: HomeStackProps) {
   return (
-    <NavigationRoot screenName={route.name}>
-      <Stack.Navigator screenOptions={getStackNavigationOptions()}>
-        <Stack.Screen name="diceList" component={DiceListScreen} />
-        <Stack.Screen
-          name="firmwareUpdate"
-          component={FirmwareUpdateScreen}
-          options={{
-            ...getStackNavigationOptions("bottom-sheet"),
-            gestureEnabled: false,
+    <SelectedPairedDieProvider>
+      <NavigationRoot screenName={route.name}>
+        <Stack.Navigator screenOptions={getStackNavigationOptions()}>
+          <Stack.Screen name="diceList" component={DiceListScreen} />
+          <Stack.Screen
+            name="firmwareUpdate"
+            component={FirmwareUpdateScreen}
+            options={{
+              ...getStackNavigationOptions("bottom-sheet"),
+              gestureEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="dieFocus"
+            component={DieFocusScreen}
+            options={getStackNavigationOptions("bottom-sheet")}
+          />
+          <Stack.Screen
+            name="dieDetails"
+            component={DieDetailsScreen}
+            options={getStackNavigationOptions("bottom-sheet")}
+          />
+          <Stack.Screen
+            name="rollsHistory"
+            component={RollsHistoryScreen}
+            options={getStackNavigationOptions("bottom-sheet")}
+          />
+          <Stack.Screen
+            name="editDieProfileStack"
+            component={EditDieProfileStack}
+            options={getStackNavigationOptions("bottom-sheet")}
+          />
+        </Stack.Navigator>
+        <PixelTransferProgressBar
+          style={{
+            width: "100%",
+            height: 5,
+            position: "absolute",
           }}
         />
-        <Stack.Screen
-          name="dieFocus"
-          component={DieFocusScreen}
-          options={getStackNavigationOptions("bottom-sheet")}
-        />
-        <Stack.Screen
-          name="dieDetails"
-          component={DieDetailsScreen}
-          options={getStackNavigationOptions("bottom-sheet")}
-        />
-        <Stack.Screen
-          name="rollsHistory"
-          component={RollsHistoryScreen}
-          options={getStackNavigationOptions("bottom-sheet")}
-        />
-        <Stack.Screen
-          name="editDieProfileStack"
-          component={EditDieProfileStack}
-          options={getStackNavigationOptions("bottom-sheet")}
-        />
-      </Stack.Navigator>
-    </NavigationRoot>
+      </NavigationRoot>
+    </SelectedPairedDieProvider>
   );
 }

@@ -17,6 +17,7 @@ import {
 import Toast from "react-native-root-toast";
 
 import { makeTransparent } from "./components/colors";
+import { logError } from "./features/utils";
 import { bottomSheetAnimationConfigFix } from "./fixes";
 import { RootScreenName } from "./navigation";
 
@@ -89,7 +90,7 @@ export function getRootScreenTheme(screenName: RootScreenName): MD3Theme {
     case "settings":
       return OrangeDarkTheme;
     default:
-      console.error("No theme for screen", screenName);
+      logError(`No theme for screen ${screenName}`);
       assertNever(screenName);
   }
 }

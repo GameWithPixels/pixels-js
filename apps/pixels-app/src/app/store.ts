@@ -20,10 +20,11 @@ import {
   REHYDRATE,
 } from "redux-persist";
 
+import { PairedDie } from "./PairedDie";
+
 import appSettingsReducer from "~/features/store/appSettingsSlice";
 import appTransientReducer from "~/features/store/appTransientSlice";
 import diceStatsReducer from "~/features/store/diceStatsSlice";
-import diceTransientReducer from "~/features/store/diceTransientSlice";
 import animationsCycleReducer from "~/features/store/library/animations/cycleSlice";
 import animationsFlashesReducer from "~/features/store/library/animations/flashesSlice";
 import animationsGradientPatternReducer from "~/features/store/library/animations/gradientPatternSlice";
@@ -195,7 +196,6 @@ const rootReducer = combineReducers({
     gradients: persist("library/gradients", gradientsReducer),
   }),
   // Transient data
-  diceTransient: diceTransientReducer,
   appTransient: appTransientReducer,
 });
 
@@ -227,18 +227,32 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 
 export type LibraryState = RootState["library"];
 
-export const profilesSelectors = profilesAdapter.getSelectors<RootState>(
-  (state) => state.library.profiles
+export const profilesSelectors = Object.freeze(
+  profilesAdapter.getSelectors<RootState>((state) => state.library.profiles)
 );
 
-// export const animationsSelectors = animationsAdapter.getSelectors<RootState>(
-//   (state) => state.library.animations
+// export const animationsSelectors = Object.freeze(
+//  animationsAdapter.getSelectors<RootState>((state) => state.library.animations)
 // );
 
-export const patternsSelectors = patternsAdapter.getSelectors<RootState>(
-  (state) => state.library.patterns
+export const patternsSelectors = Object.freeze(
+  patternsAdapter.getSelectors<RootState>((state) => state.library.patterns)
 );
 
-export const gradientsSelectors = gradientsAdapter.getSelectors<RootState>(
-  (state) => state.library.gradients
+export const gradientsSelectors = Object.freeze(
+  gradientsAdapter.getSelectors<RootState>((state) => state.library.gradients)
 );
+
+export const pairedDiceSelectors = {
+  selectByPixelId(state: RootState, pixelId: number): PairedDie | undefined {
+    return state.pairedDice.paired.find((p) => p.die.pixelId === pixelId)?.die;
+  },
+  selectByProfileUuid(
+    state: RootState,
+    profileUuid: string
+  ): PairedDie | undefined {
+    return state.pairedDice.paired.find(
+      (p) => p.die.profileUuid === profileUuid
+    )?.die;
+  },
+} as const;

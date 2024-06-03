@@ -14,7 +14,6 @@ import {
 } from "~/features/store/appSettingsSlice";
 import { resetAppTransientState } from "~/features/store/appTransientSlice";
 import { resetDiceStats } from "~/features/store/diceStatsSlice";
-import { resetDiceTransientState } from "~/features/store/diceTransientSlice";
 import { resetPairedDice } from "~/features/store/pairedDiceSlice";
 import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
 import { AppSettingsScreenProps, SettingsMenuScreenProps } from "~/navigation";
@@ -43,7 +42,6 @@ function AppSettingsPage({
     appDispatch(resetAppSettings());
     appDispatch(resetPairedDice());
     appDispatch(resetDiceStats());
-    appDispatch(resetDiceTransientState());
     appDispatch(resetAppTransientState());
     Library.dispatchReset(appDispatch);
     navigation.navigate("onboarding");

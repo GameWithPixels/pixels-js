@@ -15,7 +15,7 @@ export function applyProfileOverrides(
   for (const rule of modified.rules) {
     if (rule.condition instanceof Profiles.ConditionRolled) {
       rule.condition.faces = rule.condition.faces.map((f) =>
-        DiceUtils.mapFaceForAnimation(f, profile.dieType)
+        DiceUtils.mapFaceForAnimation(f, modified.dieType)
       );
     }
     for (const action of rule.actions) {

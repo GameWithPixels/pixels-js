@@ -10,9 +10,10 @@ import { addPairedDie } from "~/features/store/pairedDiceSlice";
 import { generateUuid } from "~/features/utils";
 
 export function pairDie(pixel: PixelInfo, store: AppStore): void {
+  const { pairedDice } = store.getState();
   let profileUuid =
-    store.getState().pairedDice.paired[pixel.pixelId]?.profileUuid ??
-    store.getState().pairedDice.unpaired[pixel.pixelId]?.profileUuid;
+    pairedDice.paired[pixel.pixelId]?.die.profileUuid ??
+    pairedDice.unpaired[pixel.pixelId]?.profileUuid;
   if (!profileUuid) {
     // Assuming default profile
     const profile = createLibraryProfile(
@@ -28,8 +29,9 @@ export function pairDie(pixel: PixelInfo, store: AppStore): void {
       systemId: pixel.systemId,
       pixelId: pixel.pixelId,
       name: pixel.name,
-      dieType: pixel.dieType,
+      ledCount: pixel.ledCount,
       colorway: pixel.colorway,
+      dieType: pixel.dieType,
       firmwareTimestamp: pixel.firmwareDate.getTime(),
       profileUuid,
     })

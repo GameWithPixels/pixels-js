@@ -18,8 +18,8 @@ import { Text } from "react-native-paper";
 import { UpdateArgs, UpdateCallback } from "./UpdateCallback";
 import { createDie3DAsync } from "./createDie3DAsync";
 import { addPedestal } from "./pedestal";
-import { logError } from "../utils";
 
+import { logError } from "~/features/utils";
 import Die3D from "~/pixels-three/Die3D";
 
 const animIndices: number[] = Array(AnimConstants.maxLEDsCount);

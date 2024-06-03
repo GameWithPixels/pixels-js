@@ -15,12 +15,13 @@ import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
-import { programProfile } from "~/features/dice";
+import { updatePairedDieProfileInfoWithProfile } from "~/features/profiles";
 import {
-  useCommitEditableProfile,
+  commitEditableProfile,
   useConfirmActionSheet,
   useEditableProfile,
   useEditProfilesList,
+  useIsEditableProfileModified,
 } from "~/hooks";
 import { EditProfileScreenProps } from "~/navigation";
 
@@ -53,17 +54,12 @@ const Header = observer(function Header({
     onDiscardChanges
   );
 
-  const initialLastModified = React.useMemo(
-    () => profile.lastModified,
-    [profile]
-  );
-  const isModified =
-    profile.lastModified.getTime() !== initialLastModified.getTime();
-  console.log("isModified " + isModified);
+  const isModified = useIsEditableProfileModified(profile.uuid);
   const activatedDiceCount = useAppSelector(
     (state) =>
-      state.pairedDice.paired.filter((d) => d.profileUuid === profile.uuid)
-        .length
+      state.pairedDice.paired.filter(
+        (d) => d.profile.sourceUuid === profile.uuid
+      ).length
   );
 
   return (
@@ -157,19 +153,15 @@ function EditProfilePage({
   navigation: EditProfileScreenProps["navigation"];
 }) {
   const store = useAppStore();
-
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();
-  const { commitProfile, discardProfile } = useCommitEditableProfile();
+
   const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
   const commitChanges = React.useCallback(() => {
-    commitProfile(profileUuid);
+    commitEditableProfile(profile, store);
     goBack();
-  }, [commitProfile, goBack, profileUuid]);
-  const discardChanges = React.useCallback(() => {
-    discardProfile(profileUuid);
-    goBack();
-  }, [discardProfile, goBack, profileUuid]);
+  }, [goBack, profile, store]);
+
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
       if (ruleIndex.conditionType === "rolled") {
@@ -193,7 +185,7 @@ function EditProfilePage({
         profile={profile}
         noDiscard={noDiscard}
         onCommitChanges={commitChanges}
-        onDiscardChanges={discardChanges}
+        onDiscardChanges={goBack}
         onAdvancedOptions={() =>
           navigation.navigate("editAdvancedSettings", { profileUuid })
         }
@@ -207,10 +199,13 @@ function EditProfilePage({
         <EditProfile
           profileUuid={profileUuid}
           onEditRule={editRule}
-          onTransfer={(pixel) => {
-            commitProfile(profileUuid);
-            programProfile(pixel, profile, store);
-          }}
+          onTransfer={(pairedDie) =>
+            updatePairedDieProfileInfoWithProfile(
+              pairedDie.pixelId,
+              profile,
+              store.getState().appSettings.diceBrightnessFactor
+            )
+          }
         />
       </GHScrollView>
     </View>

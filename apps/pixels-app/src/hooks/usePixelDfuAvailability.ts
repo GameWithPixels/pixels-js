@@ -2,10 +2,8 @@ import { useAppDfuFiles } from "./useDfuFiles";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
-import {
-  DfuAvailability,
-  getDieDfuAvailability,
-} from "~/features/dice/getDieDfuAvailability";
+import { pairedDiceSelectors } from "~/app/store";
+import { DfuAvailability, getDieDfuAvailability } from "~/features/dice";
 
 export function usePixelDfuAvailability(
   pairedDie: Pick<PairedDie, "pixelId"> | number
@@ -13,11 +11,9 @@ export function usePixelDfuAvailability(
   const { dfuFilesInfo } = useAppDfuFiles();
   const pixelId =
     typeof pairedDie === "number" ? pairedDie : pairedDie?.pixelId;
-  const pixelTimestamp = useAppSelector(
-    (state) =>
-      state.pairedDice.paired.find((d) => d.pixelId === pixelId)
-        ?.firmwareTimestamp
-  );
+  const pixelTimestamp = useAppSelector((state) =>
+    pairedDiceSelectors.selectByPixelId(state, pixelId)
+  )?.firmwareTimestamp;
   return pixelTimestamp !== undefined
     ? getDieDfuAvailability(pixelTimestamp, dfuFilesInfo?.timestamp)
     : "unknown";
@@ -34,9 +30,9 @@ export function useOutdatedPixelsCount(): number {
   return useAppSelector((state) =>
     state.pairedDice.paired
       .map(
-        (d) =>
+        (dieInfo) =>
           getDieDfuAvailability(
-            d.firmwareTimestamp,
+            dieInfo.die.firmwareTimestamp,
             dfuFilesInfo?.timestamp
           ) === "outdated"
       )

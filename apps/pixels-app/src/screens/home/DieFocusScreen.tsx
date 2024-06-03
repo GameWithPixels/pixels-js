@@ -1,6 +1,6 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import React, { useCallback } from "react";
+import React from "react";
 import { ScrollView, View } from "react-native";
 import { useTheme } from "react-native-paper";
 
@@ -10,13 +10,16 @@ import {
 } from "./components/PixelFocusView";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { PageHeader } from "~/components/PageHeader";
-import { blinkDie } from "~/features/dice";
 import { removePairedDie } from "~/features/store/pairedDiceSlice";
-import { useConnectToMissingPixels } from "~/hooks";
+import {
+  useConnectToMissingPixels,
+  usePixelsCentral,
+  useSetSelectedPairedDie,
+} from "~/hooks";
 import { DieFocusScreenProps } from "~/navigation";
 
 function useUnpairActionSheet(pairedDie?: PairedDie): () => void {
@@ -51,14 +54,15 @@ function DieFocusPage({
   pairedDie: PairedDie;
   navigation: DieFocusScreenProps["navigation"];
 }) {
+  const central = usePixelsCentral();
   const connectToMissingPixels = useConnectToMissingPixels();
   const showUnpairActionSheet = useUnpairActionSheet(pairedDie);
 
   useFocusEffect(
-    useCallback(() => {
-      blinkDie(pairedDie);
+    React.useCallback(() => {
+      central.getScheduler(pairedDie.pixelId).schedule({ type: "blink" });
       connectToMissingPixels(pairedDie.pixelId);
-    }, [pairedDie, connectToMissingPixels])
+    }, [central, pairedDie.pixelId, connectToMissingPixels])
   );
 
   return (
@@ -109,19 +113,14 @@ export function DieFocusScreen({
   },
   navigation,
 }: DieFocusScreenProps) {
-  const pairedDie = useAppSelector((state) =>
-    state.pairedDice.paired.find((p) => p.pixelId === pixelId)
-  );
-  React.useEffect(() => {
-    if (!pairedDie) {
-      navigation.goBack();
-    }
-  }, [navigation, pairedDie]);
+  const pairedDie = useSetSelectedPairedDie(pixelId);
+  if (!pairedDie) {
+    navigation.goBack();
+    return null;
+  }
   return (
     <AppBackground>
-      {pairedDie && (
-        <DieFocusPage pairedDie={pairedDie} navigation={navigation} />
-      )}
+      <DieFocusPage pairedDie={pairedDie} navigation={navigation} />
     </AppBackground>
   );
 }

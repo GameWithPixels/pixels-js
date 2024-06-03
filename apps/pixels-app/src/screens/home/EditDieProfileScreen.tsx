@@ -1,8 +1,4 @@
-import {
-  Pixel,
-  usePixelProp,
-} from "@systemic-games/react-native-pixels-connect";
-import React, { useEffect } from "react";
+import React from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text, useTheme } from "react-native-paper";
@@ -11,56 +7,22 @@ import { EditProfile } from "../profiles/components/EditProfile";
 import { ProfileMenu } from "../profiles/components/ProfileMenu";
 import { RuleIndex } from "../profiles/components/RuleCard";
 
-import { useAppSelector, useAppStore } from "~/app/hooks";
+import { PairedDie } from "~/app/PairedDie";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
-import { programProfile } from "~/features/dice";
-import {
-  useActiveProfile,
-  useCommitEditableProfile,
-  useEditableProfile,
-  useWatchedPixel,
-} from "~/hooks";
+import { usePairedDieProfileUuid, useSetSelectedPairedDie } from "~/hooks";
 import { EditDieProfileScreenProps } from "~/navigation";
 
-function AutoProgramProfile({
-  pixel,
-  profileUuid,
-}: {
-  pixel: Pixel;
-  profileUuid: string;
-}) {
-  const store = useAppStore();
-  const version = useAppSelector(
-    (state) => state.appTransient.editableProfile?.version ?? 0
-  );
-  const profile = useEditableProfile(profileUuid);
-  useEffect(() => {
-    if (version > 0) {
-      programProfile(pixel, profile, store);
-    }
-  }, [pixel, profile, store, version]);
-  return <></>;
-}
-
 function EditDieProfilePage({
-  pixel,
+  pairedDie,
   navigation,
 }: {
-  pixel: Pixel;
+  pairedDie: PairedDie;
   navigation: EditDieProfileScreenProps["navigation"];
 }) {
-  const pixelName = usePixelProp(pixel, "name");
-  const activeProfile = useActiveProfile(pixel);
-
-  // Discard changes when leaving the screen
-  // Note: all changes should have already been saved automatically
-  const { discardProfile } = useCommitEditableProfile();
-  useEffect(() => {
-    return () => discardProfile(activeProfile.uuid);
-  }, [activeProfile.uuid, discardProfile]);
+  const profileUuid = usePairedDieProfileUuid(pairedDie);
 
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
@@ -78,10 +40,8 @@ function EditDieProfilePage({
   const color = actionsMenuVisible
     ? colors.onSurfaceDisabled
     : colors.onSurface;
-  const profileUuid = activeProfile.uuid;
   return (
     <View style={{ height: "100%" }}>
-      <AutoProgramProfile pixel={pixel} profileUuid={profileUuid} />
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
         <Pressable
           sentry-label="actions-menu"
@@ -93,7 +53,7 @@ function EditDieProfilePage({
           onPress={() => setActionsMenuVisible(true)}
         >
           <Text variant="bodyLarge" style={{ paddingHorizontal: 5, color }}>
-            {`${pixelName}'s Profile`}
+            {`${pairedDie.name}'s Profile`}
           </Text>
           <ChevronDownIcon
             size={18}
@@ -128,10 +88,14 @@ export function EditDieProfileScreen({
   },
   navigation,
 }: EditDieProfileScreenProps) {
-  const pixel = useWatchedPixel(pixelId);
+  const pairedDie = useSetSelectedPairedDie(pixelId);
+  if (!pairedDie) {
+    navigation.goBack();
+    return null;
+  }
   return (
     <AppBackground>
-      {pixel && <EditDieProfilePage pixel={pixel} navigation={navigation} />}
+      <EditDieProfilePage pairedDie={pairedDie} navigation={navigation} />
     </AppBackground>
   );
 }

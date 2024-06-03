@@ -11,10 +11,6 @@ export interface AppTransientState {
     };
     error?: string;
   };
-  editableProfile?: {
-    profileUuid: string;
-    version: number;
-  };
 }
 
 const initialState: AppTransientState = { update: { gotResponse: false } };
@@ -39,6 +35,7 @@ const appUpdateSlice = createSlice({
       log("resetAppTransientState");
       return initialState;
     },
+
     setAppUpdateResponse(
       state,
       action: PayloadAction<
@@ -59,31 +56,9 @@ const appUpdateSlice = createSlice({
         update.manifest = undefined;
       }
     },
-    touchEditableProfile(
-      state,
-      action: PayloadAction<{ profileUuid: string }>
-    ) {
-      if (state.editableProfile?.profileUuid === action.payload.profileUuid) {
-        state.editableProfile.version++;
-      } else {
-        state.editableProfile = {
-          profileUuid: action.payload.profileUuid,
-          version: 0,
-        };
-      }
-      log("touchEditableProfile", state.editableProfile?.version);
-    },
-    clearEditableProfile(state) {
-      log("clearEditableProfile");
-      state.editableProfile = undefined;
-    },
   },
 });
 
-export const {
-  resetAppTransientState,
-  setAppUpdateResponse,
-  touchEditableProfile,
-  clearEditableProfile,
-} = appUpdateSlice.actions;
+export const { resetAppTransientState, setAppUpdateResponse } =
+  appUpdateSlice.actions;
 export default appUpdateSlice.reducer;

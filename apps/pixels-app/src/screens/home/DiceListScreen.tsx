@@ -176,7 +176,11 @@ function DiceListPage({
   navigation: DiceListScreenProps["navigation"];
 }) {
   const [showPairDice, setShowPairDice] = React.useState(false);
-  const pairedDice = useAppSelector((state) => state.pairedDice).paired;
+  const pairedDiceInfo = useAppSelector((state) => state.pairedDice.paired);
+  const pairedDice = React.useMemo(
+    () => pairedDiceInfo.map((d) => d.die),
+    [pairedDiceInfo]
+  );
 
   // Pairing
   const hasPairedDice = pairedDice.length > 0;

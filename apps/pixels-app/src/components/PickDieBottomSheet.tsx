@@ -1,6 +1,5 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import {
-  Pixel,
   PixelDieType,
   usePixelStatus,
   usePixelEvent,
@@ -34,7 +33,7 @@ function PairedDieCard({
   onSelect,
 }: {
   pairedDie: PairedDie;
-  onSelect?: (pixel: Pixel) => void;
+  onSelect?: () => void;
 }) {
   const central = usePixelsCentral();
   const pixel = useWatchedPixel(pairedDie);
@@ -53,7 +52,7 @@ function PairedDieCard({
       contentStyle={{ padding: 10 }}
       onPress={() => {
         if (pixel?.isReady) {
-          onSelect?.(pixel);
+          onSelect?.();
         } else {
           central.connectToMissingPixels(pairedDie.pixelId);
         }
@@ -84,7 +83,7 @@ export function PickDieBottomSheet({
 }: {
   dieTypes?: readonly PixelDieType[];
   visible: boolean;
-  onDismiss: (pixel?: Pixel) => void;
+  onDismiss: (pairedDie?: PairedDie) => void;
 }) {
   const { startScan, stopScan } = usePixelScanner();
 
@@ -100,14 +99,14 @@ export function PickDieBottomSheet({
     }
   }, [startScan, visible]);
 
-  const dismiss = (pixel?: Pixel) => {
+  const dismiss = (pairedDie?: PairedDie) => {
     stopScan();
-    onDismiss(pixel);
+    onDismiss(pairedDie);
   };
 
-  const pairedDice = useAppSelector((state) => state.pairedDice.paired).filter(
-    (d) => !dieTypes || dieTypes.includes(d.dieType)
-  );
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired)
+    .filter((d) => !dieTypes || dieTypes.includes(d.die.dieType))
+    .map((d) => d.die);
 
   const dieTypesStrSpace = !dieTypes?.length
     ? ""
@@ -149,7 +148,7 @@ export function PickDieBottomSheet({
                   <PairedDieCard
                     key={d.pixelId}
                     pairedDie={d}
-                    onSelect={dismiss}
+                    onSelect={() => dismiss(d)}
                   />
                 ))}
                 {pairedDice.length ? (

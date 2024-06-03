@@ -9,7 +9,7 @@ import { View, ViewProps } from "react-native";
 import { MD3Theme, Text, useTheme } from "react-native-paper";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import { AnimationDieRenderer } from "./DieRenderer";
+import { AnimationDieRenderer } from "./AnimationDieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
 import GradientIcon from "#/icons/animations/gradient";
