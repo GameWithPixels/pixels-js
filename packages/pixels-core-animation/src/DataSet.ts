@@ -78,8 +78,7 @@ export default class DataSet {
       align32bits(this._actions.length * 2) + // offsets are 16 bits
       byteSizeOf(this._actions) + // actions data
       byteSizeOf(this._rules) +
-      (this._profile ? byteSizeOf(this._profile) : 0) +
-      1 // brightness
+      (this._profile ? byteSizeOf(this._profile) : 0)
     );
   }
 

@@ -36,10 +36,12 @@ export type PixelScannerStatusEvent = Readonly<{
  * is the event name and the property type the event data type.
  */
 export interface PixelScannerEventMap {
-  isReady: boolean; // Property change event
-  status: ScanStatus; // Property change event
+  // Properties
+  isReady: boolean;
+  status: ScanStatus;
+  scannedPixels: ScannedPixel[];
+  // Events
   scanStatus: PixelScannerStatusEvent;
-  scannedPixels: ScannedPixel[]; // Property change event
   scanListOperations: Readonly<{ ops: PixelScannerListOperation[] }>;
 }
 
@@ -208,15 +210,15 @@ export class PixelScanner {
     type: T,
     listener: (ev: PixelScannerEventMap[T]) => void
   ): void {
+    this._evEmitter.removeListener(type, listener);
     if (
       type === "isReady" &&
       this._onBluetoothState &&
-      this._evEmitter.listenerCount(type) <= 1
+      this._evEmitter.listenerCount(type) <= 0
     ) {
       Central.removeEventListener("bluetoothState", this._onBluetoothState);
       this._onBluetoothState = undefined;
     }
-    this._evEmitter.removeListener(type, listener);
   }
 
   /**

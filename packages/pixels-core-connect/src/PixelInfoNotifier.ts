@@ -64,6 +64,11 @@ export abstract class PixelInfoNotifier<
   abstract get currentFace(): number; // Face value
   abstract get currentFaceIndex(): number;
 
+  constructor() {
+    // Increase the default limit of listeners to avoid warnings
+    this._infoEvEmitter.setMaxListeners(20);
+  }
+
   /**
    * Adds the given listener function for the specified property.
    * @param propertyName The name of the property.
