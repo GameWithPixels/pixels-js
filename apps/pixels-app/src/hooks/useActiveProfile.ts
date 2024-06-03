@@ -8,7 +8,7 @@ export function usePairedDieProfileUuid(
 ): string {
   const profileUuid = useAppSelector(
     (state) =>
-      state.pairedDice.paired.find((d) => d.die.pixelId === pairedDie.pixelId)
+      state.pairedDice.paired.find((i) => i.die.pixelId === pairedDie.pixelId)
         ?.die.profileUuid
   );
   assert(

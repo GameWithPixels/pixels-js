@@ -328,10 +328,13 @@ export function PixelFocusView({
         pairedDie={pairedDie}
         onSelectProfile={(profile) => {
           setPickProfile(false);
-          updatePairedDieProfileInfoWithProfile(
-            pairedDie.pixelId,
-            profile,
-            store.getState().appSettings.diceBrightnessFactor
+          store.dispatch(
+            updatePairedDieProfileInfoWithProfile(
+              pairedDie.pixelId,
+              profile,
+              store.getState().appSettings.diceBrightnessFactor,
+              !store.getState().library.profiles.ids.includes(profile.uuid)
+            )
           );
         }}
         visible={pickProfile}

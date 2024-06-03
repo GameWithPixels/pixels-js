@@ -245,14 +245,14 @@ export const gradientsSelectors = Object.freeze(
 
 export const pairedDiceSelectors = {
   selectByPixelId(state: RootState, pixelId: number): PairedDie | undefined {
-    return state.pairedDice.paired.find((p) => p.die.pixelId === pixelId)?.die;
+    return state.pairedDice.paired.find((i) => i.die.pixelId === pixelId)?.die;
   },
   selectByProfileUuid(
     state: RootState,
     profileUuid: string
   ): PairedDie | undefined {
     return state.pairedDice.paired.find(
-      (p) => p.die.profileUuid === profileUuid
+      (i) => i.die.profileUuid === profileUuid
     )?.die;
   },
 } as const;

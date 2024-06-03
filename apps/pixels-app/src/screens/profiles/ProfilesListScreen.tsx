@@ -259,10 +259,12 @@ function ProfilesListPage({
         visible={!!profileToActivate}
         onDismiss={(pairedDie) => {
           if (pairedDie && profileToActivate) {
-            updatePairedDieProfileInfoWithProfile(
-              pairedDie.pixelId,
-              profileToActivate,
-              store.getState().appSettings.diceBrightnessFactor
+            store.dispatch(
+              updatePairedDieProfileInfoWithProfile(
+                pairedDie.pixelId,
+                profileToActivate,
+                store.getState().appSettings.diceBrightnessFactor
+              )
             );
           }
           setProfileToActivate(undefined);

@@ -6,7 +6,7 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { PairedDie } from "~/app/PairedDie";
 import { ProfilePicker } from "~/components/ProfilePicker";
-import { useBottomSheetBackHandler, useIsTransferring } from "~/hooks";
+import { useBottomSheetBackHandler } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetProps } from "~/themes";
 
@@ -21,7 +21,6 @@ export function PickProfileBottomSheet({
   onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
   onDismiss: () => void;
 }) {
-  const transferring = useIsTransferring(pairedDie);
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
@@ -47,25 +46,16 @@ export function PickProfileBottomSheet({
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
             Select Profile for {pairedDie.name}
           </Text>
-          {transferring ? (
-            <Text
-              variant="bodyLarge"
-              style={{ alignSelf: "center", paddingVertical: 20 }}
-            >
-              A Profile activation is already in progress.
-            </Text>
-          ) : (
-            <ProfilePicker
-              dieType={pairedDie.dieType}
-              onSelectProfile={onSelectProfile}
-              style={{
-                flex: 1,
-                flexGrow: 1,
-                marginHorizontal: 10,
-                marginTop: 10,
-              }}
-            />
-          )}
+          <ProfilePicker
+            dieType={pairedDie.dieType}
+            onSelectProfile={onSelectProfile}
+            style={{
+              flex: 1,
+              flexGrow: 1,
+              marginHorizontal: 10,
+              marginTop: 10,
+            }}
+          />
           <IconButton
             icon="close"
             iconColor={colors.primary}

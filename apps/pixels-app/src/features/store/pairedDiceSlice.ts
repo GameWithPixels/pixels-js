@@ -51,7 +51,7 @@ const PairedDiceSlice = createSlice({
       const { payload } = action;
       log("addPairedDie", payload);
       const index = state.paired.findIndex(
-        ({ die: { pixelId } }) => pixelId === payload.pixelId
+        (i) => i.die.pixelId === payload.pixelId
       );
       const pairedDie = {
         systemId: payload.systemId,
@@ -88,9 +88,7 @@ const PairedDiceSlice = createSlice({
     removePairedDie(state, action: PayloadAction<number>) {
       const { payload } = action;
       log("removePairedDie", payload);
-      const index = state.paired.findIndex(
-        ({ die: { pixelId } }) => pixelId === payload
-      );
+      const index = state.paired.findIndex((i) => i.die.pixelId === payload);
       if (index >= 0) {
         const { die } = state.paired[index];
         state.paired.splice(index, 1);
@@ -119,9 +117,7 @@ const PairedDiceSlice = createSlice({
     ) {
       const { payload } = action;
       log("updatePairedDieName", payload);
-      const item = state.paired.find(
-        ({ die: { pixelId } }) => pixelId === payload.pixelId
-      );
+      const item = state.paired.find((i) => i.die.pixelId === payload.pixelId);
       if (item?.die) {
         item.die.name = payload.name;
       }
@@ -136,9 +132,7 @@ const PairedDiceSlice = createSlice({
     ) {
       const { payload } = action;
       log("updatePairedDieFirmwareTimestamp", payload);
-      const item = state.paired.find(
-        ({ die: { pixelId } }) => pixelId === payload.pixelId
-      );
+      const item = state.paired.find((i) => i.die.pixelId === payload.pixelId);
       if (item && payload.timestamp > 0) {
         item.die.firmwareTimestamp = payload.timestamp;
       }
@@ -153,9 +147,7 @@ const PairedDiceSlice = createSlice({
     ) {
       const { payload } = action;
       log("updatePairedDieProfileHash", payload);
-      const item = state.paired.find(
-        ({ die: { pixelId } }) => pixelId === payload.pixelId
-      );
+      const item = state.paired.find((i) => i.die.pixelId === payload.pixelId);
       if (item) {
         item.die.profileHash = payload.hash;
       }
@@ -166,22 +158,19 @@ const PairedDiceSlice = createSlice({
       action: PayloadAction<{
         pixelId: number;
         hash: number;
-        sourceProfileUuid?: string;
+        sourceProfileUuid?: string | false;
       }>
     ) {
       const { payload } = action;
       log("updatePairedDieProfileInfo", payload);
-      const item = state.paired.find(
-        ({ die: { pixelId } }) => pixelId === payload.pixelId
-      );
+      const item = state.paired.find((i) => i.die.pixelId === payload.pixelId);
       if (item) {
-        item.profile = {
-          hash: payload.hash,
-          sourceUuid:
-            payload.sourceProfileUuid === item.die.profileUuid
-              ? undefined
-              : payload.sourceProfileUuid,
-        };
+        item.profile.hash = payload.hash;
+        if (payload.sourceProfileUuid === false) {
+          item.profile.sourceUuid = undefined;
+        } else if (payload.sourceProfileUuid !== item.die.profileUuid) {
+          item.profile.sourceUuid = payload.sourceProfileUuid;
+        }
       }
     },
   },

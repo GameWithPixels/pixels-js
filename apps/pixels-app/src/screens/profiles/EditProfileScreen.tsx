@@ -200,10 +200,12 @@ function EditProfilePage({
           profileUuid={profileUuid}
           onEditRule={editRule}
           onTransfer={(pairedDie) =>
-            updatePairedDieProfileInfoWithProfile(
-              pairedDie.pixelId,
-              profile,
-              store.getState().appSettings.diceBrightnessFactor
+            store.dispatch(
+              updatePairedDieProfileInfoWithProfile(
+                pairedDie.pixelId,
+                profile,
+                store.getState().appSettings.diceBrightnessFactor
+              )
             )
           }
         />

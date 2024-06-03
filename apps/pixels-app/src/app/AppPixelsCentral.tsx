@@ -283,7 +283,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
                 const pairedDie = store
                   .getState()
                   .pairedDice.paired.find(
-                    (d) => d.die.profileUuid === profile.uuid
+                    (i) => i.die.profileUuid === profile.uuid
                   )?.die;
                 if (pairedDie) {
                   // Save profile
