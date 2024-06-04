@@ -3,7 +3,13 @@ import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ViewProps } from "react-native";
-import { MD3Theme, Text, TextInput, useTheme } from "react-native-paper";
+import {
+  MD3Theme,
+  Text,
+  TextInput,
+  TextProps,
+  useTheme,
+} from "react-native-paper";
 
 import { RuleCard } from "./RuleCard";
 import { EditRuleCallback, RulesSection, SectionTitle } from "./RulesSection";
@@ -23,7 +29,7 @@ import {
   getConditionTypeLabel,
 } from "~/features/profiles";
 import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
-import { useEditableProfile } from "~/hooks";
+import { useDiceNamesForProfile, useEditableProfile } from "~/hooks";
 
 const EditProfileDescription = observer(function EditProfileDescription({
   profile,
@@ -48,12 +54,13 @@ const EditProfileDescription = observer(function EditProfileDescription({
   );
 });
 
-function ProfileDiceNames({ profileUuid }: { profileUuid: string }) {
-  const diceNames = useAppSelector((state) => state.pairedDice.paired)
-    .filter((d) => d.profile.sourceUuid === profileUuid)
-    .map((d) => d.die.name);
+function ProfileDiceNames({
+  profileUuid,
+  ...props
+}: { profileUuid: string } & Omit<TextProps<string>, "children">) {
+  const diceNames = useDiceNamesForProfile(profileUuid);
   return (
-    <Text>
+    <Text {...props}>
       {diceNames.length
         ? `Currently applied to: ${diceNames.join(", ")}`
         : "Profile not in use."}
@@ -79,14 +86,14 @@ export function EditProfile({
   profileUuid,
   unnamed,
   onEditRule,
-  onTransfer,
+  onProgramDie,
   style,
   ...props
 }: {
   profileUuid: string;
   unnamed?: boolean;
   onEditRule: EditRuleCallback;
-  onTransfer?: (pairedDie: PairedDie) => void;
+  onProgramDie?: (pairedDie: PairedDie) => void;
 } & ViewProps) {
   const appDispatch = useAppDispatch();
   const showHelp = useAppSelector((state) => state.appSettings.showProfileHelp);
@@ -105,7 +112,7 @@ export function EditProfile({
         <View style={{ width: "70%", aspectRatio: 1.4, alignSelf: "center" }}>
           <ProfileDieRenderer profile={profile} pedestal />
         </View>
-        {onTransfer && (
+        {onProgramDie && (
           <View
             style={{
               flexDirection: "row",
@@ -174,9 +181,10 @@ export function EditProfile({
             flags={EditorAnimationFlags.helloGoodbye}
           />
           <SectionTitle>Profile Usage</SectionTitle>
-          <View style={{ paddingLeft: 10, paddingBottom: 10 }}>
-            <ProfileDiceNames profileUuid={profileUuid} />
-          </View>
+          <ProfileDiceNames
+            profileUuid={profileUuid}
+            style={{ paddingLeft: 10, paddingBottom: 10 }}
+          />
         </SlideInView>
       </SlideInView>
       <PickDieBottomSheet
@@ -184,7 +192,7 @@ export function EditProfile({
         visible={pickDieVisible}
         onDismiss={(pairedDie) => {
           if (pairedDie) {
-            onTransfer?.(pairedDie);
+            onProgramDie?.(pairedDie);
           }
           setPickDieVisible(false);
         }}

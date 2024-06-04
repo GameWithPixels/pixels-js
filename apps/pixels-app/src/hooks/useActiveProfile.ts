@@ -2,14 +2,14 @@ import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
+import { pairedDiceSelectors } from "~/app/store";
 
 export function usePairedDieProfileUuid(
   pairedDie: Pick<PairedDie, "pixelId" | "dieType">
 ): string {
   const profileUuid = useAppSelector(
     (state) =>
-      state.pairedDice.paired.find((i) => i.die.pixelId === pairedDie.pixelId)
-        ?.die.profileUuid
+      pairedDiceSelectors.selectByPixelId(state, pairedDie.pixelId)?.profileUuid
   );
   assert(
     profileUuid?.length,

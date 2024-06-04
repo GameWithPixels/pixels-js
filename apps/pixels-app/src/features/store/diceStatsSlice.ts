@@ -17,7 +17,7 @@ export interface DieSession {
 export type DieSessionsState = EntityState<DieSession>;
 
 export const sessionsAdapter = createEntityAdapter({
-  selectId: (dieSession: DieSession) => dieSession.index,
+  selectId: (dieSession: Readonly<DieSession>) => dieSession.index,
 });
 
 export interface DieStats {

@@ -6,6 +6,7 @@ import { makeAutoObservable, reaction, runInAction } from "mobx";
 import React from "react";
 
 import { AppStore } from "~/app/store";
+import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library } from "~/features/store";
 import { readProfile } from "~/features/store/profiles";
 
@@ -107,7 +108,16 @@ export function commitEditableProfile(
 ): void {
   // Store profile
   runInAction(() => (profile.lastModified = new Date()));
-  store.dispatch(Library.Profiles.update(Serializable.fromProfile(profile)));
-  // Update readonly profile
+  const sourceUuid =
+    store.getState().library.profiles.entities[profile.uuid]?.sourceUuid;
+  const profileData = Serializable.fromProfile(profile);
+  store.dispatch(
+    Library.Profiles.update({
+      ...profileData,
+      hash: computeProfileHashWithOverrides(profile),
+      sourceUuid,
+    })
+  );
+  // Update non editable instance of the profile
   readProfile(profile.uuid, store.getState().library);
 }

@@ -13,7 +13,7 @@ export type AnimationsState<T extends Serializable.AnimationData> =
   EntityState<T>;
 
 export const animationsAdapter = createEntityAdapter({
-  selectId: (anim: Serializable.AnimationData) => anim.uuid,
+  selectId: (anim: Readonly<Serializable.AnimationData>) => anim.uuid,
 });
 
 export function createSliceGenerator<T extends Serializable.AnimationData>(

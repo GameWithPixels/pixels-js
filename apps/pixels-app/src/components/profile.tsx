@@ -25,12 +25,12 @@ import { darken, getBorderColor } from "./colors";
 
 import EditIcon from "#/icons/profiles/edit";
 import LinkIcon from "#/icons/profiles/link";
-import { useAppSelector } from "~/app/hooks";
 import {
   groupAndSortProfiles,
   ProfilesGrouping,
   SortMode,
 } from "~/features/profiles";
+import { useDiceNamesForProfile } from "~/hooks";
 
 const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
   profile,
@@ -68,9 +68,7 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
   profile: Readonly<Profiles.Profile>;
   iconColor: string;
 }) {
-  const diceNames = useAppSelector((state) => state.pairedDice.paired)
-    .filter((d) => d.profile.sourceUuid === profile.uuid)
-    .map((d) => d.die.name);
+  const diceNames = useDiceNamesForProfile(profile.uuid);
   return (
     <View
       style={{

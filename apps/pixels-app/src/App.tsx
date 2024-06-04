@@ -36,6 +36,7 @@ import { useAppSelector } from "./app/hooks";
 import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
+import { UpdateProfileProvider } from "./components/UpdateProfileProvider";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -249,7 +250,9 @@ function App() {
                             <RootSiblingParent>
                               <ActionSheetProvider>
                                 <BottomSheetModalProvider>
-                                  <AppPage />
+                                  <UpdateProfileProvider>
+                                    <AppPage />
+                                  </UpdateProfileProvider>
                                 </BottomSheetModalProvider>
                               </ActionSheetProvider>
                             </RootSiblingParent>

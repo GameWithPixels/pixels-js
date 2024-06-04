@@ -3,6 +3,7 @@ import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
 import {
   Constants,
   Pixel,
+  Serializable,
   usePixelEvent,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -29,7 +30,9 @@ import { PairedDieRenderer } from "~/components/PairedDieRenderer";
 import { SlideInView } from "~/components/SlideInView";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard } from "~/components/profile";
-import { updatePairedDieProfileInfoWithProfile } from "~/features/profiles";
+import { computeProfileHashWithOverrides } from "~/features/profiles";
+import { Library } from "~/features/store";
+import { readProfile } from "~/features/store/profiles";
 import {
   useConfirmActionSheet,
   useHasFirmwareUpdate,
@@ -328,14 +331,23 @@ export function PixelFocusView({
         pairedDie={pairedDie}
         onSelectProfile={(profile) => {
           setPickProfile(false);
+          // Update die profile
+          const profileData = Serializable.fromProfile(profile);
+          const sourceUuid = store
+            .getState()
+            .library.profiles.ids.includes(profile.uuid)
+            ? profile.uuid
+            : undefined; // Source profile not in library (it's a template)
           store.dispatch(
-            updatePairedDieProfileInfoWithProfile(
-              pairedDie.pixelId,
-              profile,
-              store.getState().appSettings.diceBrightnessFactor,
-              !store.getState().library.profiles.ids.includes(profile.uuid)
-            )
+            Library.Profiles.update({
+              ...profileData,
+              uuid: pairedDie.profileUuid,
+              hash: computeProfileHashWithOverrides(profile),
+              sourceUuid,
+            })
           );
+          // Update profile instance
+          readProfile(pairedDie.profileUuid, store.getState().library);
         }}
         visible={pickProfile}
         onDismiss={() => setPickProfile(false)}

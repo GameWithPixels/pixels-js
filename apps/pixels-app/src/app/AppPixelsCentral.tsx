@@ -21,7 +21,6 @@ import {
   getWebRequestPayload,
   playActionMakeWebRequest,
   playActionSpeakText,
-  updatePairedDieProfileInfoWithProfile,
 } from "~/features/profiles";
 import { addDieRoll } from "~/features/store/diceStatsSlice";
 import {
@@ -222,11 +221,13 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   }, [central, store]);
 
   // Monitor paired dice
-  const pairedDiceInfo = useAppSelector((state) => state.pairedDice.paired);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
+  const profilesEntities = useAppSelector(
+    (state) => state.library.profiles.entities
+  );
   React.useEffect(() => {
-    console.log(">>>> MONITORING PAIRED DICE");
     // Update watched pixels
-    const pixelIds = pairedDiceInfo.map((d) => d.die.pixelId);
+    const pixelIds = pairedDice.map((d) => d.pixelId);
     for (const id of central.watchedPixelsIds) {
       if (!pixelIds.includes(id)) {
         central.unwatch(id);
@@ -236,29 +237,18 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       central.watch(id);
     }
     // Update dice profile if needed
-    for (const dieInfo of pairedDiceInfo) {
-      console.log(
-        ">>>> PROFILE HASH on die = " +
-          unsigned32ToHex(dieInfo.die.profileHash) +
-          ", profile = " +
-          unsigned32ToHex(dieInfo.profile.hash)
-      );
-      if (
-        dieInfo.profile.hash &&
-        dieInfo.profile.hash !== dieInfo.die.profileHash
-      ) {
-        console.log(">>>> PROFILE HASH MISMATCH");
-        const scheduler = central.getScheduler(dieInfo.die.pixelId);
+    for (const d of pairedDice) {
+      const profileHash = profilesEntities[d.profileUuid]?.hash;
+      if (profileHash && profileHash !== d.profileHash) {
+        const scheduler = central.getScheduler(d.pixelId);
         const dataSet = createProfileDataSetWithOverrides(
-          readProfile(dieInfo.die.profileUuid, store.getState().library),
+          readProfile(d.profileUuid, store.getState().library),
           store.getState().appSettings.diceBrightnessFactor
         );
-        const hash = DataSet.computeHash(dataSet.toByteArray());
-        console.log(">>>> SCHEDULE PROFILE HASH  = " + unsigned32ToHex(hash));
         scheduler.schedule({ type: "programProfile", dataSet });
       }
     }
-  }, [central, pairedDiceInfo, store]);
+  }, [central, pairedDice, profilesEntities, store]);
 
   // Profiles edition
   const [editableProfileStoresMap] = React.useState(
@@ -280,25 +270,15 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
             (version) => {
               if (version > 0) {
                 // Find die using with this profile
-                const pairedDie = store
-                  .getState()
-                  .pairedDice.paired.find(
-                    (i) => i.die.profileUuid === profile.uuid
-                  )?.die;
+                const pairedDie = pairedDiceSelectors.selectByProfileUuid(
+                  store.getState(),
+                  profile.uuid
+                );
                 if (pairedDie) {
-                  // Save profile
+                  // Save die profile
                   commitEditableProfile(profile, store);
-                  // Update die profile hash
-                  store.dispatch(
-                    updatePairedDieProfileInfoWithProfile(
-                      pairedDie.pixelId,
-                      profile,
-                      store.getState().appSettings.diceBrightnessFactor
-                    )
-                  );
                 }
               } else {
-                console.log(">>>> REMOVING EDITABLE PROFILE");
                 disposer();
                 editableProfileStoresMap.delete(profileUuid);
               }

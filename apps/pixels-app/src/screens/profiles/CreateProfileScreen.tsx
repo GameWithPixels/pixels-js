@@ -15,10 +15,10 @@ import { GradientChip } from "~/components/buttons";
 import { ProfilesGrid } from "~/components/profile";
 import {
   createProfileTemplates,
+  generateProfileUuid,
   getProfileDieTypeLabel,
   ProfileDieTypes,
 } from "~/features/profiles";
-import { generateUuid } from "~/features/utils";
 import {
   useBottomSheetPadding,
   useEditProfilesList,
@@ -63,6 +63,7 @@ function CreateProfilePage({
 }: {
   navigation: CreateProfileScreenProps["navigation"];
 }) {
+  const store = useAppStore();
   const allProfiles = useProfilesList();
   const { addProfile } = useEditProfilesList();
   const [dieType, setDieType] = React.useState<PixelDieType>("d20");
@@ -73,7 +74,6 @@ function CreateProfilePage({
   const [selectedProfile, setSelectedProfile] =
     React.useState<Readonly<Profiles.Profile>>();
 
-  const store = useAppStore();
   const templates = React.useMemo(
     () => createProfileTemplates(dieType, store.getState().library),
     [dieType, store]
@@ -89,7 +89,9 @@ function CreateProfilePage({
   const createProfile = () => {
     const profile = selectedProfile ?? profiles[0];
     if (profile) {
-      const newProfile = profile.duplicate(generateUuid());
+      const newProfile = profile.duplicate(
+        generateProfileUuid(store.getState().library)
+      );
       newProfile.name = profileName.trim();
       newProfile.description = `Based on ${profile.name}`;
       newProfile.dieType = dieType;

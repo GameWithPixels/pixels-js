@@ -14,20 +14,14 @@ export function useProfilesList(): Readonly<Profiles.Profile>[] {
   const library = useAppSelector((state) => state.library);
   const paired = useAppSelector((state) => state.pairedDice.paired);
   const unpaired = useAppSelector((state) => state.pairedDice.unpaired);
-  const customProfiles = React.useMemo(
-    () =>
-      paired
-        .map((p) => p.die.profileUuid)
-        .concat(unpaired.map((p) => p.profileUuid)),
-    [paired, unpaired]
-  );
-  return React.useMemo(
-    () =>
-      library.profiles.ids
-        .map((uuid) => readProfile(uuid as string, library))
-        .filter((p) => !customProfiles.includes(p.uuid)),
-    [customProfiles, library]
-  );
+  return React.useMemo(() => {
+    const customProfiles = paired
+      .map((d) => d.profileUuid)
+      .concat(unpaired.map((p) => p.profileUuid));
+    return library.profiles.ids
+      .map((uuid) => readProfile(uuid as string, library))
+      .filter((p) => !customProfiles.includes(p.uuid));
+  }, [library, paired, unpaired]);
 }
 
 export function useEditProfilesList(): {
@@ -35,12 +29,14 @@ export function useEditProfilesList(): {
   removeProfile: (profileUuid: string) => void;
 } {
   const appDispatch = useAppDispatch();
-  const add = (profile: Profiles.Profile) =>
-    appDispatch(Library.Profiles.add(Serializable.fromProfile(profile)));
-  const remove = (profileUuid: string) =>
-    appDispatch(Library.Profiles.remove(profileUuid));
-  return {
-    addProfile: add,
-    removeProfile: remove,
-  };
+  return React.useMemo(
+    () => ({
+      addProfile: (profile: Profiles.Profile) =>
+        // Note: no need to re-compute hash with overrides when adding a new profile
+        appDispatch(Library.Profiles.add(Serializable.fromProfile(profile))),
+      removeProfile: (profileUuid: string) =>
+        appDispatch(Library.Profiles.remove(profileUuid)),
+    }),
+    [appDispatch]
+  );
 }

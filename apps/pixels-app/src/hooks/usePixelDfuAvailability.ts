@@ -30,9 +30,9 @@ export function useOutdatedPixelsCount(): number {
   return useAppSelector((state) =>
     state.pairedDice.paired
       .map(
-        (dieInfo) =>
+        (d) =>
           getDieDfuAvailability(
-            dieInfo.die.firmwareTimestamp,
+            d.firmwareTimestamp,
             dfuFilesInfo?.timestamp
           ) === "outdated"
       )

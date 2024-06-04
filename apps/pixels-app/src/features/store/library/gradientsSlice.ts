@@ -12,7 +12,7 @@ import { logWrite } from "./logWrite";
 export type GradientsState = EntityState<Serializable.GradientData>;
 
 export const gradientsAdapter = createEntityAdapter({
-  selectId: (gradient: Serializable.GradientData) => gradient.uuid,
+  selectId: (gradient: Readonly<Serializable.GradientData>) => gradient.uuid,
 });
 
 const gradientsSlice = createSlice({

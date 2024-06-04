@@ -1,4 +1,3 @@
-import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { Alert, Pressable, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
@@ -10,13 +9,16 @@ import { RuleIndex } from "../profiles/components/RuleCard";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppStore } from "~/app/hooks";
+import { pairedDiceSelectors } from "~/app/store";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
-import { Library } from "~/features/store";
-import { readProfile } from "~/features/store/profiles";
-import { usePairedDieProfileUuid, useSetSelectedPairedDie } from "~/hooks";
+import {
+  usePairedDieProfileUuid,
+  useSetSelectedPairedDie,
+  useUpdateProfiles,
+} from "~/hooks";
 import { EditDieProfileScreenProps } from "~/navigation";
 
 function EditDieProfilePage({
@@ -94,53 +96,44 @@ export function EditDieProfileScreen({
 }: EditDieProfileScreenProps) {
   const store = useAppStore();
   const pairedDie = useSetSelectedPairedDie(pixelId);
+  const updateProfiles = useUpdateProfiles();
   React.useEffect(() => {
     if (pairedDie) {
+      // Ask user if they want to update the source profile
       return navigation.addListener("beforeRemove", (e) => {
-        const item = store
-          .getState()
-          .pairedDice.paired.find((i) => i.die.pixelId === pixelId);
-        const sourceUuid = item?.profile.sourceUuid;
-        if (sourceUuid) {
-          const name =
-            store.getState().library.profiles.entities[sourceUuid]?.name;
-          if (name) {
-            e.preventDefault();
-            Alert.alert(
-              `Copy changes to profile '${name}'?`,
-              "You have made changes to your die profile, do you want to update the original profile as well?",
-              [
-                {
-                  text: "Yes",
-                  style: "default",
-                  onPress: () => {
-                    store.dispatch(
-                      Library.Profiles.update({
-                        ...Serializable.fromProfile(
-                          readProfile(
-                            item.die.profileUuid,
-                            store.getState().library
-                          )
-                        ),
-                        uuid: sourceUuid,
-                      })
-                    );
-                    readProfile(sourceUuid, store.getState().library);
-                    navigation.dispatch(e.data.action);
-                  },
+        const die = pairedDiceSelectors.selectByPixelId(
+          store.getState(),
+          pixelId
+        );
+        const { profiles } = store.getState().library;
+        const sourceUuid =
+          die && profiles.entities[die.profileUuid]?.sourceUuid;
+        const profileData = sourceUuid && profiles.entities[die.profileUuid];
+        if (profileData) {
+          e.preventDefault();
+          Alert.alert(
+            "Copy changes to original profile?",
+            `You have made changes to this die profile, do you want to update '${profileData.name}' profile as well?`,
+            [
+              {
+                text: "Yes",
+                style: "default",
+                onPress: () => {
+                  updateProfiles(profileData, [sourceUuid]);
+                  navigation.dispatch(e.data.action);
                 },
-                {
-                  text: "No",
-                  style: "cancel",
-                  onPress: () => navigation.dispatch(e.data.action),
-                },
-              ]
-            );
-          }
+              },
+              {
+                text: "No",
+                style: "cancel",
+                onPress: () => navigation.dispatch(e.data.action),
+              },
+            ]
+          );
         }
       });
     }
-  }, [navigation, pairedDie, pixelId, store]);
+  }, [navigation, pairedDie, pixelId, store, updateProfiles]);
   if (!pairedDie) {
     navigation.goBack();
     return null;

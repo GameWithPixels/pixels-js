@@ -2,7 +2,13 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { Platform, Pressable, View, useWindowDimensions } from "react-native";
+import {
+  Alert,
+  Platform,
+  Pressable,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Button, Text, TextInput, useTheme } from "react-native-paper";
 
@@ -15,13 +21,15 @@ import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
-import { updatePairedDieProfileInfoWithProfile } from "~/features/profiles";
+import { Library } from "~/features/store";
+import { readProfile } from "~/features/store/profiles";
 import {
   commitEditableProfile,
   useConfirmActionSheet,
   useEditableProfile,
   useEditProfilesList,
   useIsEditableProfileModified,
+  useUpdateProfiles,
 } from "~/hooks";
 import { EditProfileScreenProps } from "~/navigation";
 
@@ -55,12 +63,15 @@ const Header = observer(function Header({
   );
 
   const isModified = useIsEditableProfileModified(profile.uuid);
-  const activatedDiceCount = useAppSelector(
-    (state) =>
-      state.pairedDice.paired.filter(
-        (d) => d.profile.sourceUuid === profile.uuid
-      ).length
-  );
+  const profiles = useAppSelector((state) => state.library.profiles);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
+  const activatedDiceCount = React.useMemo(() => {
+    const diceProfiles = profiles.ids.filter(
+      (uuid) => profiles.entities[uuid]?.sourceUuid === profile.uuid
+    );
+    return pairedDice.filter((d) => diceProfiles.includes(d.profileUuid))
+      .length;
+  }, [pairedDice, profile.uuid, profiles]);
 
   return (
     <PageHeader
@@ -199,15 +210,24 @@ function EditProfilePage({
         <EditProfile
           profileUuid={profileUuid}
           onEditRule={editRule}
-          onTransfer={(pairedDie) =>
-            store.dispatch(
-              updatePairedDieProfileInfoWithProfile(
-                pairedDie.pixelId,
-                profile,
-                store.getState().appSettings.diceBrightnessFactor
-              )
-            )
-          }
+          onProgramDie={(pairedDie) => {
+            // Save profile
+            commitEditableProfile(profile, store);
+            // Update die profile
+            const profileData =
+              store.getState().library.profiles.entities[profile.uuid];
+            if (profileData) {
+              store.dispatch(
+                Library.Profiles.update({
+                  ...profileData,
+                  uuid: pairedDie.profileUuid,
+                  sourceUuid: profile.uuid,
+                })
+              );
+              // Update profile instance
+              readProfile(pairedDie.profileUuid, store.getState().library);
+            }
+          }}
         />
       </GHScrollView>
     </View>
@@ -220,6 +240,49 @@ export function EditProfileScreen({
   },
   navigation,
 }: EditProfileScreenProps) {
+  const store = useAppStore();
+  const updateProfiles = useUpdateProfiles();
+  React.useEffect(() => {
+    // Ask user if they want to update the source profile
+    return navigation.addListener("beforeRemove", (e) => {
+      const { profiles } = store.getState().library;
+      const profileData = profiles.entities[profileUuid];
+      const dice = store
+        .getState()
+        .pairedDice.paired.filter(
+          (d) => profiles.entities[d.profileUuid]?.sourceUuid === profileUuid
+        );
+      if (profileData && dice.length) {
+        e.preventDefault();
+        const diceNames =
+          dice.length === 1
+            ? `die ${dice[0].name}`
+            : `dice ${dice.map((d) => d.name).join(", ")}`;
+        Alert.alert(
+          `Copy changes to ${dice.length === 1 ? "die" : "dice"}?`,
+          `You have made changes to this profile, do you want to update ${diceNames} as well?`,
+          [
+            {
+              text: "Yes",
+              style: "default",
+              onPress: () => {
+                updateProfiles(
+                  profileData,
+                  dice.map((d) => d.profileUuid)
+                );
+                navigation.dispatch(e.data.action);
+              },
+            },
+            {
+              text: "No",
+              style: "cancel",
+              onPress: () => navigation.dispatch(e.data.action),
+            },
+          ]
+        );
+      }
+    });
+  }, [navigation, profileUuid, store, updateProfiles]);
   return (
     <AppBackground>
       <EditProfilePage

@@ -104,9 +104,9 @@ export function PickDieBottomSheet({
     onDismiss(pairedDie);
   };
 
-  const pairedDice = useAppSelector((state) => state.pairedDice.paired)
-    .filter((d) => !dieTypes || dieTypes.includes(d.die.dieType))
-    .map((d) => d.die);
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired).filter(
+    (d) => !dieTypes || dieTypes.includes(d.dieType)
+  );
 
   const dieTypesStrSpace = !dieTypes?.length
     ? ""

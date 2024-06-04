@@ -77,11 +77,7 @@ function FirmwareUpdatePage({
 }: {
   navigation: FirmwareUpdateScreenProps["navigation"];
 }) {
-  const pairedDiceInfo = useAppSelector((state) => state.pairedDice.paired);
-  const pairedDice = React.useMemo(
-    () => pairedDiceInfo.map((e) => e.die),
-    [pairedDiceInfo]
-  );
+  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
   const updating = useIsAppUpdatingFirmware();
   const updateDice = useUpdateDice();
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();

@@ -11,6 +11,6 @@ export type PairedDie = Readonly<{
   colorway: PixelColorway;
   dieType: PixelDieType;
   firmwareTimestamp: number;
-  profileUuid: string;
-  profileHash: number;
+  profileHash: number; // Hash of the profile as reported by the die
+  profileUuid: string; // Profile used by the die
 }>;

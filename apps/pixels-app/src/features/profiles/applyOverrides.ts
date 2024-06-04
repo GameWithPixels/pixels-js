@@ -5,6 +5,7 @@ import {
 
 import { AnimationUtils } from "~/features/store/library/AnimationUtils";
 
+// Returns a new profile with overrides applied
 export function applyProfileOverrides(
   profile: Readonly<Profiles.Profile>
 ): Profiles.Profile {
@@ -27,6 +28,7 @@ export function applyProfileOverrides(
   return modified;
 }
 
+// Returns a new animation with overrides applied
 export function applyActionOverrides(
   action: Readonly<Profiles.ActionPlayAnimation>
 ): Profiles.Animation | undefined {

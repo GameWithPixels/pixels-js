@@ -12,7 +12,7 @@ import { logWrite } from "./logWrite";
 export type PatternsState = EntityState<Serializable.PatternData>;
 
 export const patternsAdapter = createEntityAdapter({
-  selectId: (pattern: Serializable.PatternData) => pattern.uuid,
+  selectId: (pattern: Readonly<Serializable.PatternData>) => pattern.uuid,
 });
 
 const patternsSlice = createSlice({

@@ -35,12 +35,13 @@ import {
   ProfilesGroupingList,
   SortMode,
   SortModeList,
-  updatePairedDieProfileInfoWithProfile,
 } from "~/features/profiles";
+import { Library } from "~/features/store";
 import {
   setProfilesGrouping,
   setProfilesSortMode,
 } from "~/features/store/appSettingsSlice";
+import { readProfile } from "~/features/store/profiles";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 import { ProfilesListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -259,13 +260,22 @@ function ProfilesListPage({
         visible={!!profileToActivate}
         onDismiss={(pairedDie) => {
           if (pairedDie && profileToActivate) {
-            store.dispatch(
-              updatePairedDieProfileInfoWithProfile(
-                pairedDie.pixelId,
-                profileToActivate,
-                store.getState().appSettings.diceBrightnessFactor
-              )
-            );
+            // Update die profile
+            const profileData =
+              store.getState().library.profiles.entities[
+                profileToActivate.uuid
+              ];
+            if (profileData) {
+              store.dispatch(
+                Library.Profiles.update({
+                  ...profileData,
+                  uuid: pairedDie.profileUuid,
+                  sourceUuid: profileToActivate.uuid,
+                })
+              );
+              // Update profile instance
+              readProfile(pairedDie.profileUuid, store.getState().library);
+            }
           }
           setProfileToActivate(undefined);
         }}
