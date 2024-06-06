@@ -5,7 +5,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { useWindowDimensions, View, ViewProps } from "react-native";
+import { View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Animated, {
   FadeIn,
@@ -20,11 +20,10 @@ import Animated, {
 import { ProfileDieRenderer } from "./ProfileDieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
-import { Chip, GradientChip } from "./buttons";
+import { GradientChip } from "./buttons";
 import { darken, getBorderColor } from "./colors";
 
 import EditIcon from "#/icons/profiles/edit";
-import LinkIcon from "#/icons/profiles/link";
 import {
   groupAndSortProfiles,
   ProfilesGrouping,
@@ -84,7 +83,7 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
         color={iconColor}
       />
       <Text>
-        {diceNames.length ? diceNames.join(", ") : "Not activated on any die"}
+        {diceNames.length ? diceNames.join(", ") : "Not copied on any die"}
       </Text>
     </View>
   );
@@ -118,11 +117,11 @@ function ProfileActions({
 }: {
   profile: Readonly<Profiles.Profile>;
   onAction?: (
-    action: "edit" | "activate",
+    action: "edit" | "program",
     profile: Readonly<Profiles.Profile>
   ) => void;
 }) {
-  const { width } = useWindowDimensions();
+  // const { width } = useWindowDimensions();
   return (
     <View
       style={{
@@ -133,26 +132,26 @@ function ProfileActions({
         gap: 5,
       }}
     >
-      <GradientChip
+      {/* <GradientChip
         icon={
           width > 350
             ? ({ size, color }) => <LinkIcon size={size} color={color} />
             : undefined
         }
-        sentry-label="activate-on-die"
-        onPress={() => onAction?.("activate", profile)}
+        sentry-label="copy-to-dice"
+        onPress={() => onAction?.("program", profile)}
         style={{ flexGrow: 1, flex: 1 }}
         contentStyle={{ paddingHorizontal: 2 }}
       >
-        Activate
-      </GradientChip>
-      <Chip
+        Copy to Dice
+      </GradientChip> */}
+      <GradientChip
         icon={({ size, color }) => <EditIcon size={size} color={color} />}
         onPress={() => onAction?.("edit", profile)}
-        style={{ flexGrow: 1, flex: 1, paddingHorizontal: 2 }}
+        style={{ flexGrow: 1, flex: 1 }}
       >
         Edit
-      </Chip>
+      </GradientChip>
     </View>
   );
 }
@@ -204,7 +203,7 @@ export interface ProfileCardProps extends Omit<TouchableCardProps, "children"> {
   fadeInDuration?: number;
   fadeInDelay?: number;
   onAction?: (
-    action: "edit" | "activate",
+    action: "edit" | "program",
     profile: Readonly<Profiles.Profile>
   ) => void;
 }
@@ -425,7 +424,7 @@ export interface ProfilesListProps extends ViewProps {
   groupBy?: ProfilesGrouping;
   sortMode?: SortMode;
   onSelectProfile?: (profile: Readonly<Profiles.Profile>) => void;
-  onActivateProfile?: (profile: Readonly<Profiles.Profile>) => void;
+  onProgramDice?: (profile: Readonly<Profiles.Profile>) => void;
 }
 
 export function ProfilesList({
@@ -435,7 +434,7 @@ export function ProfilesList({
   sortMode,
   expandableItems,
   onSelectProfile,
-  onActivateProfile,
+  onProgramDice,
   style,
   ...props
 }: { expandableItems?: boolean } & ProfilesListProps) {
@@ -454,11 +453,11 @@ export function ProfilesList({
       if (action === "edit") {
         expandedIndex.value = -1;
         onSelectProfile?.(profile);
-      } else if (action === "activate") {
-        onActivateProfile?.(profile);
+      } else if (action === "applyToDie") {
+        onProgramDice?.(profile);
       }
     },
-    [expandedIndex, onActivateProfile, onSelectProfile]
+    [expandedIndex, onProgramDice, onSelectProfile]
   );
 
   const profilesGroups = React.useMemo(

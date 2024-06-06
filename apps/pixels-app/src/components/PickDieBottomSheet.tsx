@@ -39,9 +39,6 @@ function PairedDieCard({
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const [rollEv] = usePixelEvent(pixel, "roll");
-  const disabled = status !== "ready";
-  const { colors } = useTheme();
-  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
   return (
     <TouchableCard
       row
@@ -51,14 +48,13 @@ function PairedDieCard({
       }
       contentStyle={{ padding: 10 }}
       onPress={() => {
-        if (pixel?.isReady) {
-          onSelect?.();
-        } else {
+        if (!pixel?.isReady) {
           central.connectToMissingPixels(pairedDie.pixelId);
         }
+        onSelect?.();
       }}
     >
-      <DieWireframe size={40} dieType={pairedDie.dieType} disabled={disabled} />
+      <DieWireframe size={40} dieType={pairedDie.dieType} />
       <View
         style={{
           flex: 1,
@@ -66,12 +62,10 @@ function PairedDieCard({
           marginHorizontal: 10, // Using padding on the contentStyle moves the views to the right on touch
         }}
       >
-        <Text variant="bodyLarge" style={{ color }}>
-          {pairedDie.name}
-        </Text>
-        {pixel && !disabled && <PixelRollState pixel={pixel} />}
+        <Text variant="bodyLarge">{pairedDie.name}</Text>
+        {pixel && status === "ready" && <PixelRollState pixel={pixel} />}
       </View>
-      <Text style={{ color }}>{getPixelStatusLabel(status)}</Text>
+      <Text>{getPixelStatusLabel(status)}</Text>
     </TouchableCard>
   );
 }

@@ -158,7 +158,7 @@ function ProfilesListPage({
   navigation: ProfilesListScreenProps["navigation"];
 }) {
   const store = useAppStore();
-  const profiles = useProfilesList();
+  const { library: profiles } = useProfilesList();
   const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
   const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
   const sortMode = useAppSelector(
@@ -172,11 +172,8 @@ function ProfilesListPage({
         profileUuid: profile.uuid,
       },
     });
-  const [profileToActivate, setProfileToActivate] =
+  const [profileToProgram, setProfileToProgram] =
     React.useState<Readonly<Profiles.Profile>>();
-  const activateProfile = (profile: Readonly<Profiles.Profile>) => {
-    setProfileToActivate(profile);
-  };
 
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);
@@ -230,14 +227,14 @@ function ProfilesListPage({
           <ProfilesGrid
             profiles={filteredProfiles}
             onSelectProfile={editProfile}
-            onActivateProfile={activateProfile}
+            onProgramDice={setProfileToProgram}
           />
         ) : (
           <ProfilesList
             profiles={filteredProfiles}
             expandableItems
             onSelectProfile={editProfile}
-            onActivateProfile={activateProfile}
+            onProgramDice={setProfileToProgram}
             groupBy={groupBy}
             sortMode={sortMode}
           />
@@ -253,31 +250,29 @@ function ProfilesListPage({
       />
       <PickDieBottomSheet
         dieTypes={
-          profileToActivate
-            ? getCompatibleDiceTypes(profileToActivate.dieType)
+          profileToProgram
+            ? getCompatibleDiceTypes(profileToProgram.dieType)
             : undefined
         }
-        visible={!!profileToActivate}
+        visible={!!profileToProgram}
         onDismiss={(pairedDie) => {
-          if (pairedDie && profileToActivate) {
+          if (pairedDie && profileToProgram) {
             // Update die profile
             const profileData =
-              store.getState().library.profiles.entities[
-                profileToActivate.uuid
-              ];
+              store.getState().library.profiles.entities[profileToProgram.uuid];
             if (profileData) {
               store.dispatch(
                 Library.Profiles.update({
                   ...profileData,
                   uuid: pairedDie.profileUuid,
-                  sourceUuid: profileToActivate.uuid,
+                  sourceUuid: profileToProgram.uuid,
                 })
               );
               // Update profile instance
               readProfile(pairedDie.profileUuid, store.getState().library);
             }
           }
-          setProfileToActivate(undefined);
+          setProfileToProgram(undefined);
         }}
       />
     </>

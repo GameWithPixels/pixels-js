@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
 import {
   Constants,
@@ -15,7 +14,7 @@ import {
   View,
   ViewProps,
 } from "react-native";
-import { Text, TextInput, TouchableRipple, useTheme } from "react-native-paper";
+import { Text, TextInput, useTheme } from "react-native-paper";
 
 import { DieMenu } from "./DieMenu";
 import { PickProfileBottomSheet } from "./PickProfileBottomSheet";
@@ -28,11 +27,12 @@ import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
 import { PairedDieRenderer } from "~/components/PairedDieRenderer";
 import { SlideInView } from "~/components/SlideInView";
+import { GradientButton } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard } from "~/components/profile";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library } from "~/features/store";
-import { readProfile } from "~/features/store/profiles";
+import { preSerializeProfile, readProfile } from "~/features/store/profiles";
 import {
   useConfirmActionSheet,
   useHasFirmwareUpdate,
@@ -286,58 +286,43 @@ export function PixelFocusView({
         />
       </View>
       <Text variant="titleMedium">Active Profile</Text>
-      <ProfileCard
-        row
-        profile={profile}
-        // onPress={() => pixel && setPickProfile(true)}
-      />
-      <View style={{ flexDirection: "row", justifyContent: "center", gap: 40 }}>
-        <TouchableRipple
-          style={{ alignItems: "center" }}
-          onPress={() => pixel && setPickProfile(true)}
+      <View>
+        <ProfileCard row profile={profile} onPress={onEditProfile} />
+        <Text
+          variant="labelSmall"
+          style={{
+            position: "absolute",
+            bottom: 2,
+            right: 10,
+            alignSelf: "flex-end",
+            color: colors.onSurfaceDisabled,
+          }}
         >
-          <View style={{ alignItems: "center" }}>
-            <MaterialCommunityIcons
-              name="swap-horizontal-circle-outline"
-              size={32}
-              color={colors.onPrimary}
-            />
-            <Text variant="bodyMedium">Replace</Text>
-          </View>
-        </TouchableRipple>
-        <TouchableRipple onPress={onEditProfile}>
-          <View style={{ alignItems: "center" }}>
-            <MaterialCommunityIcons
-              name="circle-edit-outline"
-              size={32}
-              color={colors.onPrimary}
-            />
-            <Text variant="bodyMedium">Customize</Text>
-          </View>
-        </TouchableRipple>
-        <TouchableRipple onPress={() => {}}>
-          <View style={{ alignItems: "center" }}>
-            <MaterialCommunityIcons
-              name="export-variant"
-              size={32}
-              color={colors.onPrimary}
-            />
-            <Text variant="bodyMedium">Export</Text>
-          </View>
-        </TouchableRipple>
+          Tap to customize
+        </Text>
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "center", gap: 40 }}>
+        <GradientButton
+          style={{ alignItems: "center" }}
+          onPress={() => setPickProfile(true)}
+        >
+          Pick Another Profile
+        </GradientButton>
       </View>
       {/* Pick Profile Bottom Sheet */}
       <PickProfileBottomSheet
         pairedDie={pairedDie}
         onSelectProfile={(profile) => {
           setPickProfile(false);
+          // Use profile with pre-serialized data so the hash is stable
+          profile = preSerializeProfile(profile, store.getState().library);
           // Update die profile
-          const profileData = Serializable.fromProfile(profile);
           const sourceUuid = store
             .getState()
             .library.profiles.ids.includes(profile.uuid)
             ? profile.uuid
             : undefined; // Source profile not in library (it's a template)
+          const profileData = Serializable.fromProfile(profile);
           store.dispatch(
             Library.Profiles.update({
               ...profileData,

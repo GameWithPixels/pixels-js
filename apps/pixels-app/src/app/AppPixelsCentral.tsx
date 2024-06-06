@@ -1,5 +1,7 @@
 import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
+  Color,
+  ColorUtils,
   Pixel,
   PixelMutableProps,
   Profiles,
@@ -14,6 +16,7 @@ import { AppStore, pairedDiceSelectors } from "./store";
 import {
   PixelsCentral,
   PixelsCentralEventMap,
+  PixelScheduler,
   PixelSchedulerEventMap,
 } from "~/features/dice";
 import {
@@ -147,6 +150,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         if (status === "ready") {
           onRename(pixel);
           onFwDate(pixel);
+          setCheckProfiles((prev) => 1 - prev);
         }
       };
       pixel.addPropertyListener("status", onStatus);
@@ -163,18 +167,35 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
       // Profile
       const onProfileHash = ({
+        pixelId,
         name,
         profileHash: hash,
       }: PixelMutableProps) => {
-        console.log(
-          `[Pixel ${name}] Profile hash changed to ${unsigned32ToHex(hash)}`
+        const pairedDie = pairedDiceSelectors.selectByPixelId(
+          store.getState(),
+          pixelId
         );
-        store.dispatch(
-          updatePairedDieProfileHash({
-            pixelId: pixel.pixelId,
-            hash,
-          })
-        );
+        if (pairedDie) {
+          // D20 default profile hashes
+          if (
+            [
+              0xf069141c, // Factory programmed
+              0x57477a0b, // Firmware default
+            ].includes(hash)
+          ) {
+            hash = 0x6ad53fac; // App D20 default profile
+          }
+          console.log(
+            `[Pixel ${name}] Got profile hash ${unsigned32ToHex(hash)} ` +
+              `(current = ${unsigned32ToHex(pairedDie.profileHash ?? 0)})`
+          );
+          store.dispatch(
+            updatePairedDieProfileHash({
+              pixelId: pixel.pixelId,
+              hash,
+            })
+          );
+        }
       };
       pixel.addPropertyListener("profileHash", onProfileHash);
 
@@ -221,13 +242,17 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   }, [central, store]);
 
   // Monitor paired dice
+  const [checkProfiles, setCheckProfiles] = React.useState(0);
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-  const profilesEntities = useAppSelector(
-    (state) => state.library.profiles.entities
+  const profiles = useAppSelector((state) => state.library.profiles);
+  const appBrightness = useAppSelector(
+    (state) => state.appSettings.diceBrightnessFactor
   );
   React.useEffect(() => {
+    // Paired dice may have changed since the last render
+    const newPairedDice = store.getState().pairedDice.paired;
     // Update watched pixels
-    const pixelIds = pairedDice.map((d) => d.pixelId);
+    const pixelIds = newPairedDice.map((d) => d.pixelId);
     for (const id of central.watchedPixelsIds) {
       if (!pixelIds.includes(id)) {
         central.unwatch(id);
@@ -236,19 +261,24 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     for (const id of pixelIds) {
       central.watch(id);
     }
-    // Update dice profile if needed
-    for (const d of pairedDice) {
-      const profileHash = profilesEntities[d.profileUuid]?.hash;
+    // Check if on dice profile matches the expected hash
+    for (const d of newPairedDice) {
+      // Check profile
+      const { profileUuid } = d;
+      const profileHash =
+        store.getState().library.profiles.entities[profileUuid]?.hash;
       if (profileHash && profileHash !== d.profileHash) {
-        const scheduler = central.getScheduler(d.pixelId);
         const dataSet = createProfileDataSetWithOverrides(
-          readProfile(d.profileUuid, store.getState().library),
+          readProfile(profileUuid, store.getState().library),
           store.getState().appSettings.diceBrightnessFactor
         );
-        scheduler.schedule({ type: "programProfile", dataSet });
+        central
+          .getScheduler(d.pixelId)
+          .schedule({ type: "programProfile", dataSet });
       }
     }
-  }, [central, pairedDice, profilesEntities, store]);
+    // Keep checkProfiles, pairedDice & profiles in dependencies!
+  }, [appBrightness, central, checkProfiles, store, pairedDice, profiles]);
 
   // Profiles edition
   const [editableProfileStoresMap] = React.useState(
@@ -290,6 +320,13 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     }),
     [editableProfileStoresMap, store]
   );
+
+  // Blink color
+  React.useEffect(() => {
+    PixelScheduler.blinkColor = new Color(
+      ColorUtils.multiply(Color.dimGreen, appBrightness)
+    );
+  }, [central, appBrightness]);
 
   return (
     <PixelsCentralContext.Provider value={central}>

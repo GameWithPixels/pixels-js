@@ -1,7 +1,15 @@
 import React from "react";
 import { Alert, Pressable, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { Text, useTheme } from "react-native-paper";
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  Portal,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 
 import { EditProfile } from "../profiles/components/EditProfile";
 import { ProfileMenu } from "../profiles/components/ProfileMenu";
@@ -14,6 +22,8 @@ import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
+import { generateProfileUuid } from "~/features/profiles";
+import { Library } from "~/features/store";
 import {
   usePairedDieProfileUuid,
   useSetSelectedPairedDie,
@@ -28,6 +38,7 @@ function EditDieProfilePage({
   pairedDie: PairedDie;
   navigation: EditDieProfileScreenProps["navigation"];
 }) {
+  const store = useAppStore();
   const profileUuid = usePairedDieProfileUuid(pairedDie);
 
   const editRule = React.useCallback(
@@ -40,7 +51,12 @@ function EditDieProfilePage({
     },
     [navigation]
   );
+
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
+  const [saveToLibraryVisible, setSaveToLibraryVisible] = React.useState(false);
+  const [markAsSource, setMarkAsSource] = React.useState(false);
+  const [name, setName] = React.useState("");
+
   const { width: windowWidth } = useWindowDimensions();
   const { colors } = useTheme();
   const color = actionsMenuVisible
@@ -71,6 +87,11 @@ function EditDieProfilePage({
             visible={actionsMenuVisible}
             anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
             onDismiss={() => setActionsMenuVisible(false)}
+            onSaveToLibrary={() => {
+              setName("");
+              setMarkAsSource(false);
+              setSaveToLibraryVisible(true);
+            }}
             onAdvancedOptions={() =>
               navigation.navigate("editAdvancedSettings", { profileUuid })
             }
@@ -84,6 +105,69 @@ function EditDieProfilePage({
       >
         <EditProfile profileUuid={profileUuid} unnamed onEditRule={editRule} />
       </GHScrollView>
+      <Portal>
+        <Dialog
+          visible={saveToLibraryVisible}
+          onDismiss={() => setSaveToLibraryVisible(false)}
+        >
+          <Dialog.Title>Save to Library</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              label="Profile Name"
+              value={name}
+              onChangeText={(text) => setName(text)}
+            />
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 10,
+              }}
+            >
+              <Checkbox
+                status={markAsSource ? "checked" : "unchecked"}
+                onPress={() => setMarkAsSource(!markAsSource)}
+              />
+              <Text>Make it the source profile for the die</Text>
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setSaveToLibraryVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              onPress={() => {
+                const profileData =
+                  store.getState().library.profiles.entities[profileUuid];
+                if (profileData) {
+                  // Save to library
+                  const uuid = generateProfileUuid(store.getState().library);
+                  store.dispatch(
+                    Library.Profiles.add({
+                      ...profileData,
+                      uuid,
+                      name,
+                      sourceUuid: undefined, // Make sure we don't reference another profile
+                    })
+                  );
+                  if (markAsSource) {
+                    // Update die profile to use the saved profile as its source
+                    store.dispatch(
+                      Library.Profiles.add({
+                        ...profileData,
+                        sourceUuid: uuid,
+                      })
+                    );
+                  }
+                }
+                setSaveToLibraryVisible(false);
+              }}
+            >
+              Ok
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
@@ -106,10 +190,10 @@ export function EditDieProfileScreen({
           pixelId
         );
         const { profiles } = store.getState().library;
-        const sourceUuid =
-          die && profiles.entities[die.profileUuid]?.sourceUuid;
-        const profileData = sourceUuid && profiles.entities[die.profileUuid];
-        if (profileData) {
+        const profileData = die && profiles.entities[die?.profileUuid];
+        const dstUuid = profileData?.sourceUuid;
+        const dstProfileData = dstUuid && profiles.entities[dstUuid];
+        if (die && dstProfileData && die.profileHash !== dstProfileData.hash) {
           e.preventDefault();
           Alert.alert(
             "Copy changes to original profile?",
@@ -119,7 +203,7 @@ export function EditDieProfileScreen({
                 text: "Yes",
                 style: "default",
                 onPress: () => {
-                  updateProfiles(profileData, [sourceUuid]);
+                  updateProfiles(profileData, [dstUuid]);
                   navigation.dispatch(e.data.action);
                 },
               },

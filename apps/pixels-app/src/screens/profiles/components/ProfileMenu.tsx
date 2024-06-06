@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Divider, Menu, MenuProps, Text, useTheme } from "react-native-paper";
+import { Divider, Menu, MenuProps } from "react-native-paper";
 
 import { AppStyles } from "~/styles";
 
@@ -7,18 +7,17 @@ export function ProfileMenu({
   onRename,
   onAdvancedOptions,
   onDelete,
-  activatedDiceCount,
+  onSaveToLibrary,
   ...props
 }: {
   onRename?: () => void;
   onAdvancedOptions: () => void;
   onDelete?: () => void;
-  activatedDiceCount?: number;
+  onSaveToLibrary?: () => void;
 } & Omit<MenuProps, "children" | "theme" | "contentStyle">) {
-  const { colors } = useTheme();
   return (
     <Menu contentStyle={{ width: 230 }} {...props}>
-      {onRename ? (
+      {onRename && (
         <Menu.Item
           title="Rename"
           trailingIcon={({ size, color }) => (
@@ -34,7 +33,8 @@ export function ProfileMenu({
             onRename();
           }}
         />
-      ) : (
+      )}
+      {onSaveToLibrary && (
         <Menu.Item
           title="Save To Library"
           trailingIcon={({ size, color }) => (
@@ -47,6 +47,7 @@ export function ProfileMenu({
           contentStyle={AppStyles.menuItemWithIcon}
           onPress={() => {
             props.onDismiss?.();
+            onSaveToLibrary();
           }}
         />
       )}
@@ -81,7 +82,6 @@ export function ProfileMenu({
         <>
           <Divider />
           <Menu.Item
-            disabled={!!activatedDiceCount}
             title="Delete"
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
@@ -96,17 +96,6 @@ export function ProfileMenu({
               onDelete?.();
             }}
           />
-          {!!activatedDiceCount && (
-            <Text
-              style={{
-                marginTop: -10,
-                marginHorizontal: 16,
-                color: colors.onSurfaceDisabled,
-              }}
-            >
-              Profile is activated
-            </Text>
-          )}
         </>
       )}
     </Menu>

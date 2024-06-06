@@ -1,4 +1,5 @@
 import {
+  assert,
   assertNever,
   combineFlags,
   keysToValues,
@@ -50,11 +51,26 @@ export function readProfile(
   return profile;
 }
 
+// Use this function to get the profile data as if it was serialized
+// (serialization can cause some numbers to slightly change due to precision loss)
+export function preSerializeProfile(
+  profile: Readonly<Profiles.Profile>,
+  library: LibraryState
+): Profiles.Profile {
+  const serialized = new Profiles.Profile({ uuid: profile.uuid });
+  updateProfile(serialized, Serializable.fromProfile(profile), library);
+  return serialized;
+}
+
 function updateProfile(
   profile: Profiles.Profile,
   profileData: Serializable.ProfileData,
   library: LibraryState
 ): void {
+  assert(
+    profile.uuid === profileData.uuid,
+    `Profile UUID mismatch, profile: ${profile.uuid}, data: ${profileData.uuid}`
+  );
   profile.name = profileData.name;
   profile.description = profileData.description;
   profile.dieType = profileData.dieType;

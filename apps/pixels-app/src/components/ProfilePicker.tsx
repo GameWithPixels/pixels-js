@@ -32,7 +32,7 @@ export function ProfilePicker({
   dieType: PixelDieType;
   onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
 } & ViewProps) {
-  const allProfiles = useProfilesList();
+  const { library: libraryProfiles, dice: diceProfiles } = useProfilesList();
 
   const [tab, setTab] = React.useState<(typeof tabsNames)[number]>(
     tabsNames[0]
@@ -48,10 +48,15 @@ export function ProfilePicker({
   );
   const profiles = React.useMemo(
     () =>
-      (tab === "Builtin" ? templates : tab === "Dice" ? [] : allProfiles)
+      (tab === "Builtin"
+        ? templates
+        : tab === "Dice"
+          ? diceProfiles
+          : libraryProfiles
+      )
         .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [allProfiles, dieType, tab, templates]
+    [diceProfiles, dieType, libraryProfiles, tab, templates]
   );
 
   const [filter, setFilter] = React.useState("");
@@ -80,9 +85,6 @@ export function ProfilePicker({
           headerHeight={searchbarHeight}
         />
       </View>
-      {/* <Text variant="titleMedium" style={{ marginTop: 10 }}>
-          Select a template or an existing Profile to activate on your die:
-        </Text> */}
       <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
       {filteredProfiles.length ? (
         <ProfilesList

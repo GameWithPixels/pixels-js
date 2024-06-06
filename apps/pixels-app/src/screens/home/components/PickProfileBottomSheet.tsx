@@ -44,7 +44,7 @@ export function PickProfileBottomSheet({
       <RootSiblingParent>
         <ThemeProvider theme={theme}>
           <Text variant="titleMedium" style={AppStyles.selfCentered}>
-            Select Profile for {pairedDie.name}
+            Select a Profile to copy to your die
           </Text>
           <ProfilePicker
             dieType={pairedDie.dieType}

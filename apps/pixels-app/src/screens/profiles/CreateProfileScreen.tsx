@@ -26,7 +26,7 @@ import {
 } from "~/hooks";
 import { CreateProfileScreenProps } from "~/navigation";
 
-const tabsNames = ["Builtin", "Custom"] as const;
+const tabsNames = ["Builtin", "Dice", "Library"] as const;
 
 function DieTypesSelector({
   selected,
@@ -64,8 +64,9 @@ function CreateProfilePage({
   navigation: CreateProfileScreenProps["navigation"];
 }) {
   const store = useAppStore();
-  const allProfiles = useProfilesList();
+  const { library: libraryProfiles, dice: diceProfiles } = useProfilesList();
   const { addProfile } = useEditProfilesList();
+
   const [dieType, setDieType] = React.useState<PixelDieType>("d20");
   const [profileName, setProfileName] = React.useState("");
   const [tab, setTab] = React.useState<(typeof tabsNames)[number]>(
@@ -80,10 +81,15 @@ function CreateProfilePage({
   );
   const profiles = React.useMemo(
     () =>
-      (tab === "Builtin" ? templates : allProfiles)
+      (tab === "Builtin"
+        ? templates
+        : tab === "Dice"
+          ? diceProfiles
+          : libraryProfiles
+      )
         .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [allProfiles, dieType, tab, templates]
+    [diceProfiles, dieType, libraryProfiles, tab, templates]
   );
 
   const createProfile = () => {

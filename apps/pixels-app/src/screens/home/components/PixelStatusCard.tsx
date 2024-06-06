@@ -106,7 +106,7 @@ function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
       <Text>
         {transferring
-          ? `Activating Profile: ${transferProgress}%`
+          ? `Programming Profile: ${transferProgress}%`
           : batteryEv?.isCharging
             ? "Charging..."
             : needCharging

@@ -16,7 +16,7 @@ import { EditProfile } from "./components/EditProfile";
 import { ProfileMenu } from "./components/ProfileMenu";
 import { RuleIndex } from "./components/RuleCard";
 
-import { useAppSelector, useAppStore } from "~/app/hooks";
+import { useAppStore } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
@@ -63,15 +63,6 @@ const Header = observer(function Header({
   );
 
   const isModified = useIsEditableProfileModified(profile.uuid);
-  const profiles = useAppSelector((state) => state.library.profiles);
-  const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-  const activatedDiceCount = React.useMemo(() => {
-    const diceProfiles = profiles.ids.filter(
-      (uuid) => profiles.entities[uuid]?.sourceUuid === profile.uuid
-    );
-    return pairedDice.filter((d) => diceProfiles.includes(d.profileUuid))
-      .length;
-  }, [pairedDice, profile.uuid, profiles]);
 
   return (
     <PageHeader
@@ -146,7 +137,6 @@ const Header = observer(function Header({
             }}
             onAdvancedOptions={onAdvancedOptions}
             onDelete={onDeleteProfile}
-            activatedDiceCount={activatedDiceCount}
           />
         </Pressable>
       )}
@@ -250,7 +240,9 @@ export function EditProfileScreen({
       const dice = store
         .getState()
         .pairedDice.paired.filter(
-          (d) => profiles.entities[d.profileUuid]?.sourceUuid === profileUuid
+          (d) =>
+            profiles.entities[d.profileUuid]?.sourceUuid === profileUuid &&
+            d.profileHash !== profileData?.hash
         );
       if (profileData && dice.length) {
         e.preventDefault();

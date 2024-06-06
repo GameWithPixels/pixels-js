@@ -102,6 +102,9 @@ export class PixelScheduler {
   } = {};
   private _triggerProcessPromise?: () => void;
 
+  // Static properties to configure operations
+  static blinkColor = Color.white;
+
   get currentOperation(): PixelOperationParams | undefined {
     return this._currentOperation;
   }
@@ -335,7 +338,11 @@ export class PixelScheduler {
         await pixel.rename(op.name);
         break;
       case "blink":
-        await pixel.blink(Color.dimGreen, { duration: 1000, count: 2 });
+        await pixel.blink(PixelScheduler.blinkColor, {
+          duration: 1000,
+          count: 2,
+          fade: 0.5,
+        });
         break;
       case "programProfile":
         if (__DEV__) {

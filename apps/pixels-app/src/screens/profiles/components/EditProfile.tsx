@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -60,11 +61,24 @@ function ProfileDiceNames({
 }: { profileUuid: string } & Omit<TextProps<string>, "children">) {
   const diceNames = useDiceNamesForProfile(profileUuid);
   return (
-    <Text {...props}>
-      {diceNames.length
-        ? `Currently applied to: ${diceNames.join(", ")}`
-        : "Profile not in use."}
-    </Text>
+    diceNames.length > 0 && (
+      <Text {...props}>Copied to {diceNames.join(", ")}</Text>
+    )
+  );
+}
+
+function SourceProfileName({
+  profileUuid,
+  ...props
+}: { profileUuid: string } & Omit<TextProps<string>, "children">) {
+  const sourceUuid = useAppSelector(
+    (state) => state.library.profiles.entities[profileUuid]
+  )?.sourceUuid;
+  const sourceProfileName = useAppSelector((state) =>
+    sourceUuid ? state.library.profiles.entities[sourceUuid] : undefined
+  )?.name;
+  return (
+    sourceProfileName && <Text {...props}>Copied from {sourceProfileName}</Text>
   );
 }
 
@@ -112,6 +126,16 @@ export function EditProfile({
         <View style={{ width: "70%", aspectRatio: 1.4, alignSelf: "center" }}>
           <ProfileDieRenderer profile={profile} pedestal />
         </View>
+        <ProfileDiceNames
+          profileUuid={profileUuid}
+          variant="bodyLarge"
+          style={{ alignSelf: "center", marginTop: 10 }}
+        />
+        <SourceProfileName
+          profileUuid={profileUuid}
+          variant="bodyLarge"
+          style={{ alignSelf: "center", marginTop: 10 }}
+        />
         {onProgramDie && (
           <View
             style={{
@@ -130,15 +154,22 @@ export function EditProfile({
             </OutlineButton> */}
             <View>
               <GradientButton
-                sentry-label="activate-on-die"
+                sentry-label="copy-to-dice"
+                icon={({ size, color }) => (
+                  <MaterialCommunityIcons
+                    name="send"
+                    size={size}
+                    color={color}
+                  />
+                )}
                 onPress={() => setPickDieVisible(true)}
               >
-                Activate On Die
+                Copy To Dice
               </GradientButton>
               <Text
                 style={{ marginVertical: 5, color: colors.onSurfaceDisabled }}
               >
-                Activating this profile will also save your changes.
+                Copying this profile to a die will also save your changes.
               </Text>
             </View>
           </View>
@@ -155,8 +186,8 @@ export function EditProfile({
             >
               A Profile is composed of rules that dictate what action to take on
               rolls and others dice events.{"\n\n"}
-              Tap on the Activate button above to apply a Profile to one of your
-              die.
+              Tap on the "Copy To Dice" button above to copy the Profile to one
+              or more of your dice.
             </Banner>
           )}
           <SectionTitle>Roll Rules</SectionTitle>
@@ -179,11 +210,6 @@ export function EditProfile({
             onEditRule={onEditRule}
             conditionType="helloGoodbye"
             flags={EditorAnimationFlags.helloGoodbye}
-          />
-          <SectionTitle>Profile Usage</SectionTitle>
-          <ProfileDiceNames
-            profileUuid={profileUuid}
-            style={{ paddingLeft: 10, paddingBottom: 10 }}
           />
         </SlideInView>
       </SlideInView>
