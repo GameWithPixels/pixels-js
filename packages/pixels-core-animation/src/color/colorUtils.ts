@@ -137,3 +137,11 @@ export function lerp(color1: IColor, color2: IColor, t: number): IColor {
     b: color1.b + (color2.b - color1.b) * t,
   };
 }
+
+export function multiply(color: IColor, value: number): IColor {
+  return {
+    r: color.r * value,
+    g: color.g * value,
+    b: color.b * value,
+  };
+}
