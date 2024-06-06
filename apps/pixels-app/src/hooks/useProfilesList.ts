@@ -5,6 +5,7 @@ import {
 import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library } from "~/features/store";
 import { readProfile } from "~/features/store/profiles";
 
@@ -33,7 +34,12 @@ export function useEditProfilesList(): {
     () => ({
       addProfile: (profile: Profiles.Profile) =>
         // Note: no need to re-compute hash with overrides when adding a new profile
-        appDispatch(Library.Profiles.add(Serializable.fromProfile(profile))),
+        appDispatch(
+          Library.Profiles.add({
+            ...Serializable.fromProfile(profile),
+            hash: computeProfileHashWithOverrides(profile),
+          })
+        ),
       removeProfile: (profileUuid: string) =>
         appDispatch(Library.Profiles.remove(profileUuid)),
     }),

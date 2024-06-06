@@ -1,20 +1,15 @@
 import {
   assert,
   assertNever,
-  bitsToFlags,
   getValueKeyName,
-  valuesToKeys,
 } from "@systemic-games/pixels-core-utils";
 import {
   AnimationCategoryValues,
   AnimationFlags,
-  BatteryStateFlagsValues,
   Color32Utils,
   ColorModeValues,
   ColorUtils,
-  ConnectionStateFlagsValues,
   AnimConstants,
-  HelloGoodbyeFlagsValues,
   Json,
   PixelDieTypeValues,
   Serializable,
@@ -218,162 +213,15 @@ function toAudioClips(audioClips?: Readonly<Json.AudioClip[]>): {
   };
 }
 
-function toCondition(
-  condition: Readonly<Json.Condition>,
-  inOutConditionSet: Serializable.ConditionSetData
-): Serializable.RuleData["condition"] {
-  function register<T extends keyof Serializable.ConditionSetData>(
-    type: T,
-    cond: NonNullable<Serializable.ConditionSetData[T]>[number]
-  ) {
-    const arr = inOutConditionSet[type] as (typeof cond)[];
-    arr.push(cond);
-    return {
-      type,
-      index: arr.length - 1,
-    };
-  }
-  const type = getValueKeyName(condition.type, Json.ConditionTypeValues);
-  if (!type) {
-    throw new Error(`Unsupported condition type: ${condition.type}`);
-  }
-  const data = condition.data;
-  switch (type) {
-    case "none":
-      throw new Error(`Invalid condition type: ${type}`);
-    case "helloGoodbye":
-      return register(type, {
-        flags: valuesToKeys(bitsToFlags(data?.flags), HelloGoodbyeFlagsValues),
-      });
-    case "handling":
-      return { type, index: -1 };
-    case "rolling":
-      return register(type, { recheckAfter: data?.recheckAfter ?? 0 });
-    case "faceCompare":
-      return register("rolled", {
-        faces: Serializable.fromFaceCompare(
-          data?.flags ?? 0,
-          (data?.faceIndex ?? 0) + 1
-        ),
-      });
-    case "crooked":
-      return { type, index: -1 };
-    case "connectionState":
-      return register("connection", {
-        flags: valuesToKeys(
-          bitsToFlags(data?.flags),
-          ConnectionStateFlagsValues
-        ),
-      });
-    case "batteryState":
-      return register("battery", {
-        flags: valuesToKeys(bitsToFlags(data?.flags), BatteryStateFlagsValues),
-        recheckAfter: data?.recheckAfter ?? 1,
-      });
-    case "idle":
-      return register(type, { period: data?.period ?? 10 });
-    default:
-      assertNever(type, `Unsupported condition type: ${type}`);
-  }
-}
-
-function toActions(
-  actions: Readonly<Json.Action[]>,
-  animationUuids: Readonly<string[]>,
-  audioClipsUuidsMap: Readonly<Map<number, string>>,
-  inOutActionSet: Serializable.ActionSetData
-): Serializable.RuleData["actions"][number][] {
-  function register<T extends keyof Serializable.ActionSetData>(
-    type: T,
-    act: NonNullable<Serializable.ActionSetData[T]>[number]
-  ) {
-    const arr = inOutActionSet[type] as (typeof act)[];
-    arr.push(act);
-    return {
-      type,
-      index: arr.length - 1,
-    };
-  }
-  const validActions = actions?.filter(
-    (act): act is Required<Json.Action> => !!act.type && !!act.data
-  );
-  return validActions?.map((action) => {
-    const type = getValueKeyName(action.type, Json.ActionTypeValues);
-    if (!type) {
-      throw new Error(`Unknown action type: ${action.type}`);
-    }
-    const data = action.data;
-    switch (type) {
-      case "none":
-        throw new Error(`Invalid action type: ${type}`);
-      case "playAnimation":
-        return register(type, {
-          animationUuid: animationUuids[data.animationIndex ?? -1],
-          face: (data.faceIndex ?? 0) + 1,
-          loopCount: data.loopCount ?? 1,
-          colors: [],
-        });
-      case "playAudioClip":
-        return register("playAudioClip", {
-          clipUuid: audioClipsUuidsMap.get(data.audioClipIndex ?? -1),
-        });
-      default:
-        assertNever(type, `Unsupported action type: ${type}`);
-    }
-  });
-}
-
-const defaultCreationTime = new Date(2024, 0, 1).getTime();
-
-function toProfile(
-  profile: Json.Profile,
-  animationUuids: Readonly<string[]>,
-  audioClipsUuidsMap: Readonly<Map<number, string>>
-): Serializable.ProfileData {
-  const conditions = Serializable.createConditionSetData();
-  const actions = Serializable.createActionSetData();
-  const filteredRules =
-    profile.rules?.filter(
-      (r): r is Required<Json.Rule> => !!r.condition && !!r.actions
-    ) ?? [];
-  return {
-    uuid: checkUuid(profile.uuid),
-    name: profile.name ?? "",
-    description: profile.description ?? "",
-    dieType: "d20",
-    colorway: "onyxBlack",
-    brightness: 1,
-    hash: 0,
-    creationDate: defaultCreationTime,
-    lastChanged: defaultCreationTime,
-    lastUsed: 0,
-    conditions,
-    actions,
-    rules: filteredRules.map((r) => ({
-      condition: toCondition(r.condition, conditions),
-      actions: toActions(
-        r.actions,
-        animationUuids,
-        audioClipsUuidsMap,
-        actions
-      ),
-    })),
-  };
-}
-
 export function jsonConvert(dataSet: Json.DataSet): LibraryData {
   const patterns = dataSet.patterns?.map(toPattern) ?? [];
-  const { animations, animationUuids, gradients } = toAnimationsAndGradients(
+  const { animations, gradients } = toAnimationsAndGradients(
     dataSet.animations,
     patterns
   );
-  const { audioClips, audioClipsUuidsMap } = toAudioClips(dataSet.audioClips);
-  const profiles =
-    dataSet.behaviors?.map((p) =>
-      toProfile(p, animationUuids, audioClipsUuidsMap)
-    ) ?? [];
+  const { audioClips } = toAudioClips(dataSet.audioClips);
   return {
-    profiles,
+    profiles: [],
     animations,
     patterns,
     gradients,

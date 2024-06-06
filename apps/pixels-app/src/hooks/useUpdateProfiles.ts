@@ -1,9 +1,10 @@
-import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
+
+import { AppProfileData } from "~/features/store/library/LibraryData";
 
 export const UpdateProfilesContext = React.createContext({
   updateProfiles: (
-    _profileData: Serializable.ProfileData,
+    _profileData: AppProfileData,
     _profilesUuids: string[]
   ) => {},
 });

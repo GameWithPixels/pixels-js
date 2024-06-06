@@ -1,8 +1,8 @@
-import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { useAppStore } from "~/app/hooks";
 import { Library } from "~/features/store";
+import { AppProfileData } from "~/features/store/library/LibraryData";
 import { readProfile } from "~/features/store/profiles";
 import { UpdateProfilesContext } from "~/hooks";
 
@@ -18,11 +18,11 @@ export function UpdateProfileProvider({
 }) {
   const store = useAppStore();
   const [data, setData] = React.useState({
-    profileData: undefined as Serializable.ProfileData | undefined,
+    profileData: undefined as AppProfileData | undefined,
     profilesUuids: [] as string[],
   });
   const updateProfiles = React.useCallback(
-    (profileData: Serializable.ProfileData, profilesUuid: string[]) =>
+    (profileData: AppProfileData, profilesUuid: string[]) =>
       setData({ profileData, profilesUuids: profilesUuid }),
     []
   );

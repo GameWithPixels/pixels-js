@@ -5,15 +5,14 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
-import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
-import { LibraryData } from "./LibraryData";
+import { LibraryData, AppProfileData } from "./LibraryData";
 import { logWrite } from "./logWrite";
 
-export type ProfilesState = EntityState<Serializable.ProfileData>;
+export type ProfilesState = EntityState<AppProfileData>;
 
 export const profilesAdapter = createEntityAdapter({
-  selectId: (profile: Readonly<Serializable.ProfileData>) => profile.uuid,
+  selectId: (profile: Readonly<AppProfileData>) => profile.uuid,
 });
 
 const profilesSlice = createSlice({
@@ -26,7 +25,7 @@ const profilesSlice = createSlice({
       return profilesAdapter.addMany(state, action.payload.profiles);
     },
 
-    add(state, action: PayloadAction<Serializable.ProfileData>) {
+    add(state, action: PayloadAction<AppProfileData>) {
       const profile = action.payload;
       assert(profile.uuid?.length, "Profile must have a uuid");
       profilesAdapter.addOne(state, profile);
@@ -38,7 +37,7 @@ const profilesSlice = createSlice({
       );
     },
 
-    update(state, action: PayloadAction<Serializable.ProfileData>) {
+    update(state, action: PayloadAction<AppProfileData>) {
       const profile = action.payload;
       assert(profile.uuid?.length, "Profile must have a uuid");
       profilesAdapter.setOne(state, profile);

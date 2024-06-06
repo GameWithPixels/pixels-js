@@ -4,7 +4,10 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
 
-import { generateProfileUuid } from "../profiles";
+import {
+  computeProfileHashWithOverrides,
+  generateProfileUuid,
+} from "../profiles";
 
 import { AppStore } from "~/app/store";
 import { Library } from "~/features/store";
@@ -22,8 +25,12 @@ export function pairDie(pixel: PixelInfo, store: AppStore): void {
       pixel.dieType,
       generateProfileUuid(store.getState().library)
     );
-    // Note: no need to re-compute hash with overrides for default profile
-    store.dispatch(Library.Profiles.add(Serializable.fromProfile(profile)));
+    store.dispatch(
+      Library.Profiles.add({
+        ...Serializable.fromProfile(profile),
+        hash: computeProfileHashWithOverrides(profile),
+      })
+    );
     profileUuid = profile.uuid;
   }
   store.dispatch(

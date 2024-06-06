@@ -14,7 +14,6 @@ export interface ProfileData extends UniqueNamedData {
   dieType: PixelDieType;
   colorway: PixelColorway;
   brightness: number;
-  hash: number;
   creationDate: number;
   lastChanged: number; // TODO Should be lastModified
   lastUsed: number;

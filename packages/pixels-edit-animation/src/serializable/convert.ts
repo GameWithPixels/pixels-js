@@ -4,7 +4,6 @@ import {
   Color,
   ColorUtils,
   ConnectionStateFlagsValues,
-  DataSet,
   FaceCompareFlagsValues,
   HelloGoodbyeFlagsValues,
   NoiseColorOverrideTypeValues,
@@ -41,7 +40,6 @@ import {
   createActionSetData,
   createConditionSetData,
 } from "./profile";
-import { createDataSetForProfile } from "../createDataSet";
 import {
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
@@ -544,9 +542,6 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
       }),
     };
   });
-  // Compute hash
-  const data = createDataSetForProfile(profile).toDataSet();
-  const hash = DataSet.computeHash(data.toByteArray());
   return {
     uuid: profile.uuid,
     name: profile.name,
@@ -554,7 +549,6 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     dieType: profile.dieType,
     colorway: profile.colorway,
     brightness: profile.brightness,
-    hash,
     creationDate: profile.creationDate.getTime(),
     lastChanged: profile.lastModified.getTime(),
     lastUsed: profile.lastUsed?.getTime() ?? 0,
