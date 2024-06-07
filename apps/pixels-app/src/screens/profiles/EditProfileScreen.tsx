@@ -21,8 +21,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
-import { Library } from "~/features/store";
-import { readProfile } from "~/features/store/profiles";
+import { Library, readProfile } from "~/features/store";
 import {
   commitEditableProfile,
   useConfirmActionSheet,

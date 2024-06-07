@@ -10,9 +10,7 @@ import {
 } from "../profiles";
 
 import { AppStore } from "~/app/store";
-import { Library } from "~/features/store";
-import { addPairedDie } from "~/features/store/pairedDiceSlice";
-import { preSerializeProfile } from "~/features/store/profiles";
+import { Library, addPairedDie, preSerializeProfile } from "~/features/store";
 
 export function pairDie(pixel: PixelInfo, store: AppStore): void {
   const { pairedDice } = store.getState();

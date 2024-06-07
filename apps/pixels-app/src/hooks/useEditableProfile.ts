@@ -7,8 +7,7 @@ import React from "react";
 
 import { AppStore } from "~/app/store";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
-import { Library } from "~/features/store";
-import { readProfile } from "~/features/store/profiles";
+import { Library, readProfile } from "~/features/store";
 
 export class EditableProfileStore {
   private _profile: Profiles.Profile;

@@ -29,7 +29,7 @@ import {
   getCompatibleDiceTypes,
   getConditionTypeLabel,
 } from "~/features/profiles";
-import { setShowProfileHelp } from "~/features/store/appSettingsSlice";
+import { setShowProfileHelp } from "~/features/store";
 import { useDiceNamesForProfile, useEditableProfile } from "~/hooks";
 
 const EditProfileDescription = observer(function EditProfileDescription({

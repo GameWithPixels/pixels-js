@@ -5,7 +5,7 @@ import { usePixelsCentral } from "./usePixelsCentral";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { getDieDfuAvailability } from "~/features/dice";
-import { updatePairedDieFirmwareTimestamp } from "~/features/store/pairedDiceSlice";
+import { updatePairedDieFirmwareTimestamp } from "~/features/store";
 
 export function useUpdateDice(): (
   pixelsIds: readonly number[],

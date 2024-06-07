@@ -10,7 +10,7 @@ import {
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { setUpdateBootloader } from "~/features/store/appSettingsSlice";
+import { setUpdateBootloader } from "~/features/store";
 import { useAppDfuFiles } from "~/hooks";
 import { FirmwareInfoScreenProps } from "~/navigation";
 

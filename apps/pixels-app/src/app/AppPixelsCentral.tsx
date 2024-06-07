@@ -25,13 +25,13 @@ import {
   playActionMakeWebRequest,
   playActionSpeakText,
 } from "~/features/profiles";
-import { addDieRoll } from "~/features/store/diceStatsSlice";
 import {
+  addDieRoll,
+  readProfile,
   updatePairedDieFirmwareTimestamp,
   updatePairedDieName,
   updatePairedDieProfileHash,
-} from "~/features/store/pairedDiceSlice";
-import { readProfile } from "~/features/store/profiles";
+} from "~/features/store";
 import {
   commitEditableProfile,
   EditableProfileStore,

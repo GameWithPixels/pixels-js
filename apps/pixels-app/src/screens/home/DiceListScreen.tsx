@@ -28,10 +28,7 @@ import {
   SortMode,
   SortModeList,
 } from "~/features/profiles";
-import {
-  setDiceGrouping,
-  setDiceSortMode,
-} from "~/features/store/appSettingsSlice";
+import { setDiceGrouping, setDiceSortMode } from "~/features/store";
 import { useConnectToMissingPixels } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";

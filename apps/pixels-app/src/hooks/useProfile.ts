@@ -1,7 +1,7 @@
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 import { useAppSelector } from "~/app/hooks";
-import { readProfile } from "~/features/store/profiles";
+import { readProfile } from "~/features/store";
 
 // Returns an observable profile from Redux store (except for factory profiles)
 export function useProfile(profileUuid: string): Readonly<Profiles.Profile> {

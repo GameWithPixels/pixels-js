@@ -14,7 +14,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { PageHeader } from "~/components/PageHeader";
-import { removePairedDie } from "~/features/store/pairedDiceSlice";
+import { removePairedDie } from "~/features/store";
 import {
   useConnectToMissingPixels,
   usePixelsCentral,

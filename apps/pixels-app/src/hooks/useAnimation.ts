@@ -2,7 +2,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { readAnimation } from "~/features/store/profiles";
+import { readAnimation } from "~/features/store";
 
 export function useAnimation(
   animationUuid: string

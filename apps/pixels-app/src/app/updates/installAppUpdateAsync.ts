@@ -2,7 +2,7 @@ import * as Updates from "expo-updates";
 import { Alert } from "react-native";
 
 import { AppDispatch } from "~/app/store";
-import { setAppUpdateResponse } from "~/features/store/appTransientSlice";
+import { setAppUpdateResponse } from "~/features/store";
 
 // Never throws
 export async function installAppUpdateAsync(

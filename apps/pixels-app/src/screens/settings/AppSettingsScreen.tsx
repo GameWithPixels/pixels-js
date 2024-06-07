@@ -7,14 +7,14 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { OutlineButton } from "~/components/buttons";
-import { Library } from "~/features/store";
 import {
+  Library,
   resetAppSettings,
+  resetAppTransientState,
+  resetDiceStats,
+  resetPairedDice,
   setDiceBrightnessFactor,
-} from "~/features/store/appSettingsSlice";
-import { resetAppTransientState } from "~/features/store/appTransientSlice";
-import { resetDiceStats } from "~/features/store/diceStatsSlice";
-import { resetPairedDice } from "~/features/store/pairedDiceSlice";
+} from "~/features/store";
 import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
 import { AppSettingsScreenProps, SettingsMenuScreenProps } from "~/navigation";
 

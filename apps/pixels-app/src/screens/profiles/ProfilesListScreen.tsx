@@ -36,12 +36,12 @@ import {
   SortMode,
   SortModeList,
 } from "~/features/profiles";
-import { Library } from "~/features/store";
 import {
+  Library,
+  readProfile,
   setProfilesGrouping,
   setProfilesSortMode,
-} from "~/features/store/appSettingsSlice";
-import { readProfile } from "~/features/store/profiles";
+} from "~/features/store";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 import { ProfilesListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";

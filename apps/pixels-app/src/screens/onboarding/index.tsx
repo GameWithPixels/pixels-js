@@ -67,7 +67,7 @@ import {
   getKeepDiceNearDevice,
   getPixelStatusLabel,
 } from "~/features/profiles";
-import { setShowOnboarding } from "~/features/store/appSettingsSlice";
+import { setShowOnboarding } from "~/features/store";
 import {
   useAppDfuFiles,
   useWatchedPixels,

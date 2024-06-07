@@ -6,8 +6,7 @@ import React from "react";
 
 import { useAppSelector, useAppStore } from "~/app/hooks";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
-import { Library } from "~/features/store";
-import { preSerializeProfile, readProfile } from "~/features/store/profiles";
+import { Library, preSerializeProfile, readProfile } from "~/features/store";
 
 // Returns a list of observable profiles from Redux store
 // Dice custom profiles are excluded

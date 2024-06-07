@@ -31,8 +31,7 @@ import { GradientButton } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard } from "~/components/profile";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
-import { Library } from "~/features/store";
-import { preSerializeProfile, readProfile } from "~/features/store/profiles";
+import { Library, preSerializeProfile, readProfile } from "~/features/store";
 import {
   useConfirmActionSheet,
   useHasFirmwareUpdate,

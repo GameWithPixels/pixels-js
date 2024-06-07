@@ -24,10 +24,7 @@ import {
   SortMode,
   SortModeList,
 } from "~/features/profiles";
-import {
-  setAnimationsGrouping,
-  setAnimationsSortMode,
-} from "~/features/store/appSettingsSlice";
+import { setAnimationsGrouping, setAnimationsSortMode } from "~/features/store";
 import { useAnimationsList } from "~/hooks";
 import { AnimationsListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";

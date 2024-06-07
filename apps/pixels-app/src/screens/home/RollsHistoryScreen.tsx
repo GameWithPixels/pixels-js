@@ -28,11 +28,11 @@ import {
   StatsViewModeButton,
 } from "~/components/buttons";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
-import { setShowRollsHelp } from "~/features/store/appSettingsSlice";
 import {
   newDieSessionOnRoll,
   removeDieSession,
-} from "~/features/store/diceStatsSlice";
+  setShowRollsHelp,
+} from "~/features/store";
 import {
   useConfirmActionSheet,
   useSetSelectedPairedDie,
