@@ -84,7 +84,10 @@ export function RssiIcon({
   return (
     <Icon
       size={size}
-      color={color ?? getIconColor(colors, disabled)}
+      color={
+        color ??
+        (!value || value < -70 ? "red" : getIconColor(colors, disabled))
+      }
       shadedColor={colors.onSurfaceDisabled}
     />
   );
@@ -108,7 +111,14 @@ export function BatteryIcon({
           : value < 95
             ? BatteryThreeQuartersIcon
             : BatteryFullIcon;
-  return <Icon size={size} color={color ?? getIconColor(colors, disabled)} />;
+  return (
+    <Icon
+      size={size}
+      color={
+        color ?? (!value || value < 20 ? "red" : getIconColor(colors, disabled))
+      }
+    />
+  );
 }
 
 export function DieWireframe({

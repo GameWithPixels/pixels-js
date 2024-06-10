@@ -1,6 +1,6 @@
 import {
-  Pixel,
-  usePixelProp,
+  PixelInfoNotifier,
+  usePixelInfoProp,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { BatteryIcon } from "./icons";
@@ -10,10 +10,12 @@ export function PixelBattery({
   size,
   disabled,
 }: {
-  pixel: Pixel;
+  pixel?: PixelInfoNotifier;
   size: number;
   disabled?: boolean;
 }) {
-  const level = usePixelProp(pixel, "batteryLevel");
-  return <BatteryIcon value={level} size={size} disabled={disabled} />;
+  const level = usePixelInfoProp(pixel, "batteryLevel");
+  return (
+    <BatteryIcon value={level} size={size} disabled={!pixel || disabled} />
+  );
 }

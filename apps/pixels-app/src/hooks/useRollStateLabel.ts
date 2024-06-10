@@ -11,6 +11,10 @@ export function useRollStateLabel(
   const face = usePixelInfoProp(pixel, "currentFace");
   const rollState = usePixelInfoProp(pixel, "rollState");
   return face !== undefined && rollState && rollState !== "unknown"
-    ? `${getRollStateLabel(rollState)} ${face}`
+    ? rollState === "onFace"
+      ? `Face ${face}`
+      : rollState === "rolling" || rollState === "handling"
+        ? "Rolling..."
+        : getRollStateLabel(rollState)
     : undefined;
 }

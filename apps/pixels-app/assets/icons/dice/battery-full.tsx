@@ -1,13 +1,23 @@
-import Svg, { SvgProps, Path, G } from "react-native-svg";
+import Svg, { SvgProps, Path, ClipPath, G } from "react-native-svg";
 const SvgComponent = ({
   size,
   ...props
-}: { size: number } & Omit<SvgProps, "width" | "height">) => (
-  <Svg width={(size / 30.42) * 34.51} height={size} {...props}>
-    <G transform={`scale(${size / 30.42})`}>
+}: { size: number; shadedColor?: string } & Omit<
+  SvgProps,
+  "width" | "height"
+>) => (
+  <Svg viewBox="0 0 135 75" width={size} height={(size * 75) / 135} {...props}>
+    <Path
+      d="M127.5 22.5c4.167 0 7.5 3.333 7.5 7.5v15c0 4.125-3.375 7.5-7.5 7.5V60c0 8.292-6.708 15-15 15H15C6.708 75 0 68.292 0 60V15C0 6.708 6.708 0 15 0h97.5c8.292 0 15 6.708 15 15v7.5Zm-11.083-8.371a2.762 2.762 0 0 0-2.761-2.761h-99.6a2.762 2.762 0 0 0-2.76 2.761v48.902a2.762 2.762 0 0 0 2.76 2.761h99.6a2.762 2.762 0 0 0 2.761-2.761V14.129Z"
+      fill={props.color ?? "#fff"}
+    />
+    <ClipPath id="a">
+      <Path d="M20.196 17.209h91.906v37.88H20.196z" />
+    </ClipPath>
+    <G clipPath="url(#a)">
       <Path
+        d="M105 22.5H22.5v30H105v-30Zm22.5 0V15c0-8.292-6.708-15-15-15H15C6.708 0 0 6.708 0 15v45c0 8.292 6.708 15 15 15h97.5c8.292 0 15-6.708 15-15v-7.5c4.125 0 7.5-3.375 7.5-7.5V30c0-4.167-3.333-7.5-7.5-7.5Zm-15 37.5H15V15h97.5v45Z"
         fill={props.color ?? "#fff"}
-        d="M26.26 11.61H6.46v7.2h19.8v-7.2Zm5.4 0v-1.8c0-1.99-1.61-3.6-3.6-3.6H4.66c-1.99 0-3.6 1.61-3.6 3.6v10.8c0 1.99 1.61 3.6 3.6 3.6h23.4c1.99 0 3.6-1.61 3.6-3.6v-1.8c.99 0 1.8-.81 1.8-1.8v-3.6c0-1-.8-1.8-1.8-1.8Zm-3.6 9H4.66V9.81h23.4v10.8Z"
       />
     </G>
   </Svg>

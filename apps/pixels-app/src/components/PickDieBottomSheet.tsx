@@ -1,22 +1,32 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { range } from "@systemic-games/pixels-core-utils";
+import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import {
   PixelDieType,
   usePixelStatus,
   usePixelEvent,
 } from "@systemic-games/react-native-pixels-connect";
+import Color from "color";
 import React from "react";
 import { View } from "react-native";
-import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import {
+  Text,
+  ThemeProvider,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { BluetoothStateWarning } from "./BluetoothWarning";
-import { PixelRollState } from "./PixelRollState";
-import { TouchableCard } from "./TouchableCard";
+import { PixelBattery } from "./PixelBattery";
+import { PixelRssi } from "./PixelRssi";
+import { useFlashAnimationStyle } from "./ViewFlashOnRoll";
 import { DieWireframe } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
-import { getDieTypeLabel, getPixelStatusLabel } from "~/features/profiles";
+import { getDieTypeLabel, getRollStateLabel } from "~/features/profiles";
 import { listToText } from "~/features/utils";
 import {
   useWatchedPixel,
@@ -33,40 +43,124 @@ function PairedDieCard({
   onSelect,
 }: {
   pairedDie: PairedDie;
-  onSelect?: () => void;
+  onSelect?: (pairedDie: PairedDie) => void;
 }) {
   const central = usePixelsCentral();
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const [rollEv] = usePixelEvent(pixel, "roll");
+  const face = rollEv?.face;
+  const rollState = rollEv?.state;
+  const rollLabel =
+    face !== undefined && rollState && rollState !== "unknown"
+      ? rollState === "onFace"
+        ? `Face ${face}`
+        : rollState === "rolling" || rollState === "handling"
+          ? "Rolling..."
+          : getRollStateLabel(rollState)
+      : undefined;
+  const animStyle = useFlashAnimationStyle(
+    rollState === "rolling" || rollState === "handling"
+  );
+
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
   return (
-    <TouchableCard
-      row
-      flash={
-        status === "ready" &&
-        (rollEv?.state === "rolling" || rollEv?.state === "handling")
-      }
-      contentStyle={{ padding: 10 }}
-      onPress={() => {
-        if (!pixel?.isReady) {
-          central.connectToMissingPixels(pairedDie.pixelId);
-        }
-        onSelect?.();
-      }}
+    <Animated.View
+      entering={FadeIn.duration(300)}
+      style={[
+        animStyle,
+        {
+          overflow: "hidden",
+          borderWidth: 1,
+          borderRadius,
+          borderColor: colors.onSurface,
+        },
+      ]}
     >
-      <DieWireframe size={40} dieType={pairedDie.dieType} />
-      <View
+      <TouchableRipple
+        borderless
+        onPress={() => {
+          if (!pixel?.isReady) {
+            central.connectToMissingPixels(pairedDie.pixelId);
+          }
+          onSelect?.(pairedDie);
+        }}
         style={{
-          flex: 1,
-          justifyContent: "space-between",
-          marginHorizontal: 10, // Using padding on the contentStyle moves the views to the right on touch
+          alignItems: "center",
+          paddingVertical: 12,
+          backgroundColor: Color(colors.secondary).darken(0.5).toString(),
         }}
       >
-        <Text variant="bodyLarge">{pairedDie.name}</Text>
-        {pixel && status === "ready" && <PixelRollState pixel={pixel} />}
-      </View>
-      <Text>{getPixelStatusLabel(status)}</Text>
-    </TouchableCard>
+        <>
+          <DieWireframe dieType={pairedDie.dieType} size={70} />
+          <Text
+            numberOfLines={1}
+            variant="bodyMedium"
+            style={{ marginTop: 6, fontFamily: "LTInternet-Bold" }}
+          >
+            {pairedDie.name}
+          </Text>
+          <Text numberOfLines={1}>
+            {pixel && status === "ready" && rollLabel ? rollLabel : ""}
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 15,
+              alignItems: "flex-end",
+              justifyContent: "flex-end",
+            }}
+          >
+            <PixelBattery pixel={pixel} size={24} />
+            <PixelRssi pixel={pixel} size={22} />
+          </View>
+        </>
+      </TouchableRipple>
+    </Animated.View>
+  );
+}
+
+function PairedDiceColumn({
+  pairedDice,
+  onSelect,
+}: {
+  pairedDice: readonly PairedDie[];
+  onSelect?: (pairedDie: PairedDie) => void;
+}) {
+  return (
+    <View style={{ flex: 1, gap: 15 }}>
+      {pairedDice.map((d) => (
+        <PairedDieCard key={d.pixelId} pairedDie={d} onSelect={onSelect} />
+      ))}
+    </View>
+  );
+}
+
+function SelectPairedDie({
+  pairedDice,
+  numColumns = 3,
+  onSelect,
+}: {
+  pairedDice: readonly PairedDie[];
+  numColumns?: number;
+  onSelect: (pairedDie: PairedDie) => void;
+}) {
+  return (
+    <BottomSheetScrollView
+      contentContainerStyle={{
+        flexDirection: "row",
+        gap: 15,
+      }}
+    >
+      {range(numColumns).map((col) => (
+        <PairedDiceColumn
+          key={col}
+          pairedDice={pairedDice.filter((_, i) => i % numColumns === col)}
+          onSelect={onSelect}
+        />
+      ))}
+    </BottomSheetScrollView>
   );
 }
 
@@ -128,42 +222,35 @@ export function PickDieBottomSheet({
               gap: 20,
             }}
           >
-            <Text variant="titleMedium" style={AppStyles.selfCentered}>
-              Select a{" "}
-              {dieTypes
-                ? listToText(dieTypes.map(getDieTypeLabel), "or")
-                : "Die"}
-            </Text>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text variant="titleMedium">
+                Select a{" "}
+                {dieTypes
+                  ? listToText(dieTypes.map(getDieTypeLabel), "or")
+                  : "Die"}
+              </Text>
+              {dieTypes && dieTypes.length > 0 && (
+                <Text style={AppStyles.selfCentered}>
+                  Only{" "}
+                  {dieTypes.length === 1
+                    ? getDieTypeLabel(dieTypes[0]) + "'s"
+                    : dieTypesStrSpace + "dice"}{" "}
+                  are shown
+                </Text>
+              )}
+            </View>
             <BluetoothStateWarning>
-              <BottomSheetScrollView
-                contentContainerStyle={{ paddingHorizontal: 10, gap: 10 }}
-              >
-                {pairedDice.map((d) => (
-                  <PairedDieCard
-                    key={d.pixelId}
-                    pairedDie={d}
-                    onSelect={() => dismiss(d)}
-                  />
-                ))}
-                {pairedDice.length ? (
-                  <Text
-                    style={{ marginTop: 10 }}
-                  >{`Only ${dieTypesStrSpace}dice are listed here.`}</Text>
-                ) : (
-                  <Text variant="bodyLarge">
-                    {`You don't have any paired ${dieTypesStrSpace}die.`}
-                  </Text>
-                )}
-              </BottomSheetScrollView>
+              {pairedDice.length ? (
+                <SelectPairedDie pairedDice={pairedDice} onSelect={dismiss} />
+              ) : (
+                <Text variant="bodyLarge">
+                  {`You don't have any paired ${dieTypesStrSpace}die.`}
+                </Text>
+              )}
             </BluetoothStateWarning>
           </View>
-          <IconButton
-            icon="close"
-            iconColor={colors.primary}
-            sentry-label="close-pick-die"
-            style={{ position: "absolute", right: 0, top: -15 }}
-            onPress={() => dismiss()}
-          />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

@@ -1,21 +1,32 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { ScannedPixelNotifier } from "@systemic-games/react-native-pixels-connect";
+import { range } from "@systemic-games/pixels-core-utils";
+import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
+import {
+  ScannedPixelNotifier,
+  usePixelInfoProp,
+} from "@systemic-games/react-native-pixels-connect";
+import Color from "color";
 import React from "react";
 import { View } from "react-native";
-import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
-import { FadeIn } from "react-native-reanimated";
+import {
+  Text,
+  ThemeProvider,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppStore } from "~/app/hooks";
 import { getNoAvailableDiceMessage } from "~/app/messages";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
-import { ScannedPixelsCount } from "~/components/ScannedPixelsCount";
-import { useFlashAnimationStyleOnRoll } from "~/components/ViewFlashOnRoll";
+import { PixelBattery } from "~/components/PixelBattery";
+import { PixelRssi } from "~/components/PixelRssi";
+import { useFlashAnimationStyle } from "~/components/ViewFlashOnRoll";
 import { AnimatedText } from "~/components/animated";
-import { AnimatedSelectionButton, GradientButton } from "~/components/buttons";
+import { GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { pairDie } from "~/features/dice";
-import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 import {
   usePixelScanner,
   useBottomSheetPadding,
@@ -26,16 +37,7 @@ import {
 import { AppStyles } from "~/styles";
 import { getBottomSheetProps } from "~/themes";
 
-function NoAvailableDice() {
-  return (
-    <AnimatedText entering={FadeIn.duration(300)} style={{ marginLeft: 10 }}>
-      {getNoAvailableDiceMessage()}
-      {"\n\n"}For help about turning on your dice go in the "More" tab.
-    </AnimatedText>
-  );
-}
-
-function ScannedPixelItem({
+function ScannedPixelCard({
   scannedPixel,
   selected,
   onToggleSelect,
@@ -44,44 +46,99 @@ function ScannedPixelItem({
   selected?: boolean;
   onToggleSelect?: () => void;
 }) {
-  const [name, setName] = React.useState(scannedPixel.name);
-  React.useEffect(() => {
-    const onName = () => setName(scannedPixel.name);
-    onName();
-    scannedPixel.addPropertyListener("name", onName);
-    return () => {
-      scannedPixel.removePropertyListener("name", onName);
-    };
-  }, [scannedPixel]);
+  const name = usePixelInfoProp(scannedPixel, "name");
   const rollLabel = useRollStateLabel(scannedPixel);
-  const animStyle = useFlashAnimationStyleOnRoll(scannedPixel);
+  const rollState = scannedPixel.rollState;
+  const animStyle = useFlashAnimationStyle(
+    rollState === "rolling" || rollState === "handling"
+  );
+
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
   return (
-    <AnimatedSelectionButton
-      icon={() => <DieWireframe dieType={scannedPixel.dieType} size={40} />}
-      selected={selected}
+    <Animated.View
       entering={FadeIn.duration(300)}
-      style={[animStyle, { marginVertical: 5 }]}
-      contentStyle={{ paddingVertical: 5 }}
-      onPress={onToggleSelect}
+      style={[
+        animStyle,
+        {
+          overflow: "hidden",
+          borderWidth: selected ? 3 : 1,
+          borderRadius,
+          borderColor: colors.onSurface,
+        },
+      ]}
     >
-      <View style={{ flex: 1, justifyContent: "space-around" }}>
-        <Text variant="bodyLarge">{name}</Text>
-        <Text>{getDieTypeAndColorwayLabel(scannedPixel)}</Text>
-        <Text>{rollLabel ?? ""}</Text>
-      </View>
-    </AnimatedSelectionButton>
+      <TouchableRipple
+        borderless
+        onPress={onToggleSelect}
+        style={{
+          alignItems: "center",
+          paddingVertical: selected ? 10 : 12,
+          backgroundColor: Color(colors.secondary)
+            .darken(selected ? 0.3 : 0.6)
+            .toString(),
+        }}
+      >
+        <>
+          <DieWireframe dieType={scannedPixel.dieType} size={70} />
+          <Text
+            numberOfLines={1}
+            variant="bodyMedium"
+            style={{ marginTop: 6, fontFamily: "LTInternet-Bold" }}
+          >
+            {name ?? ""}
+          </Text>
+          <Text numberOfLines={1}>{rollLabel ?? ""}</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 15,
+              alignItems: "flex-end",
+              justifyContent: "flex-end",
+            }}
+          >
+            <PixelBattery pixel={scannedPixel} size={24} />
+            <PixelRssi pixel={scannedPixel} size={24} />
+          </View>
+        </>
+      </TouchableRipple>
+    </Animated.View>
   );
 }
 
-function SelectPixels({
-  pixels,
+function ScannedPixelsColumn({
+  scannedPixels,
+  selection,
+  onToggleSelect,
+}: {
+  scannedPixels: readonly ScannedPixelNotifier[];
+  selection: readonly ScannedPixelNotifier[];
+  onToggleSelect: (scannedPixel: ScannedPixelNotifier) => void;
+}) {
+  return (
+    <View style={{ flex: 1, gap: 15 }}>
+      {scannedPixels.map((sp) => (
+        <ScannedPixelCard
+          key={sp.pixelId}
+          scannedPixel={sp}
+          selected={selection.includes(sp)}
+          onToggleSelect={() => onToggleSelect(sp)}
+        />
+      ))}
+    </View>
+  );
+}
+
+function SelectScannedPixels({
+  scannedPixels,
+  numColumns = 3,
   onPairDice,
 }: {
-  pixels: ScannedPixelNotifier[];
-  onPairDice: (pixels: ScannedPixelNotifier[]) => void;
+  scannedPixels: readonly ScannedPixelNotifier[];
+  numColumns?: number;
+  onPairDice: (scannedPixels: ScannedPixelNotifier[]) => void;
 }) {
-  const diceCount = pixels.length;
-  const noAvailableDie = diceCount === 0;
+  const noAvailableDie = scannedPixels.length === 0;
 
   const [showNoDie, setShowNoDie] = React.useState(false);
   React.useEffect(() => {
@@ -97,23 +154,38 @@ function SelectPixels({
 
   return (
     <>
-      <ScannedPixelsCount diceCount={diceCount} style={{ marginTop: 5 }} />
-      <BottomSheetScrollView>
-        {showNoDie && diceCount === 0 && <NoAvailableDice />}
-        {pixels.map((sp) => (
-          <ScannedPixelItem
-            key={sp.systemId + sp.pixelId}
-            scannedPixel={sp}
-            selected={selection.includes(sp)}
-            onToggleSelect={() =>
-              setSelection((selected) =>
-                selected.includes(sp)
-                  ? selected.filter((other) => other !== sp)
-                  : [...selected, sp]
-              )
-            }
-          />
-        ))}
+      <BottomSheetScrollView
+        contentContainerStyle={{
+          flexDirection: "row",
+          gap: 15,
+        }}
+      >
+        {showNoDie && !scannedPixels.length && (
+          <AnimatedText
+            entering={FadeIn.duration(300)}
+            style={{ marginLeft: 10 }}
+          >
+            {getNoAvailableDiceMessage()}
+            {"\n\n"}For help about turning on your dice go in the "More" tab.
+          </AnimatedText>
+        )}
+        {!!scannedPixels.length &&
+          range(numColumns).map((col) => (
+            <ScannedPixelsColumn
+              key={col}
+              scannedPixels={scannedPixels.filter(
+                (_, i) => i % numColumns === col
+              )}
+              selection={selection}
+              onToggleSelect={(sp) =>
+                setSelection((selected) =>
+                  selected.includes(sp)
+                    ? selected.filter((other) => other !== sp)
+                    : [...selected, sp]
+                )
+              }
+            />
+          ))}
       </BottomSheetScrollView>
       <GradientButton
         disabled={!selection.length}
@@ -136,7 +208,7 @@ export function PairDiceBottomSheet({
   onDismiss,
 }: {
   visible: boolean;
-  onDismiss?: (pixels?: ScannedPixelNotifier[]) => void;
+  onDismiss?: (scannedPixels?: ScannedPixelNotifier[]) => void;
 }) {
   const store = useAppStore();
   const { availablePixels, startScan, stopScan, scanError } = usePixelScanner();
@@ -155,20 +227,20 @@ export function PairDiceBottomSheet({
 
   // Stop scan on closing bottom sheet
   const dismiss = React.useCallback(
-    (pixels?: ScannedPixelNotifier[]) => {
+    (scannedPixels?: ScannedPixelNotifier[]) => {
       stopScan();
-      onDismiss?.(pixels);
+      onDismiss?.(scannedPixels);
     },
     [onDismiss, stopScan]
   );
 
   // Pair selected dice
   const pairDice = React.useCallback(
-    (pixels: ScannedPixelNotifier[]) => {
-      for (const pixel of pixels) {
+    (scannedPixels: ScannedPixelNotifier[]) => {
+      for (const pixel of scannedPixels) {
         pairDie(pixel, store);
       }
-      dismiss(pixels);
+      dismiss(scannedPixels);
     },
     [store, dismiss]
   );
@@ -205,9 +277,16 @@ export function PairDiceBottomSheet({
               gap: 10,
             }}
           >
-            <Text variant="titleMedium" style={AppStyles.selfCentered}>
-              Select Pixels Dice to Pair
-            </Text>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text variant="titleMedium">Select Pixels Dice to Pair</Text>
+              <Text style={AppStyles.selfCentered}>
+                {availablePixels.length <= 3
+                  ? ""
+                  : ` (${availablePixels.length} available)`}
+              </Text>
+            </View>
             {visible && (
               <BluetoothStateWarning>
                 {scanError ? (
@@ -216,21 +295,14 @@ export function PairDiceBottomSheet({
                     {scanError.message}.
                   </Text>
                 ) : (
-                  <SelectPixels
-                    pixels={availablePixels}
+                  <SelectScannedPixels
+                    scannedPixels={availablePixels}
                     onPairDice={pairDice}
                   />
                 )}
               </BluetoothStateWarning>
             )}
           </View>
-          <IconButton
-            icon="close"
-            iconColor={colors.primary}
-            sentry-label="close-pair-dice"
-            style={{ position: "absolute", right: 0, top: -15 }}
-            onPress={() => dismiss()}
-          />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>
