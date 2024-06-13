@@ -12,7 +12,7 @@ import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
-import { HeaderBar } from "~/components/HeaderBar";
+import { HeaderMenuButton } from "~/components/HeaderMenuButton";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
@@ -49,7 +49,7 @@ function PageHeader({
   const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
   return (
     <>
-      <HeaderBar
+      <HeaderMenuButton
         visible={visible}
         contentStyle={{ width: 220 }}
         onShowMenu={() => setVisible(true)}
@@ -110,7 +110,7 @@ function PageHeader({
           contentStyle={AppStyles.menuItemWithIcon}
           onPress={() => setDiscoMode((d) => !d)}
         /> */}
-      </HeaderBar>
+      </HeaderMenuButton>
       <SortBottomSheet
         groups={DiceGroupingList}
         groupBy={groupBy}

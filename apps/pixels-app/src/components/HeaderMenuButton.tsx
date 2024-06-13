@@ -5,7 +5,7 @@ import { Menu, MenuProps, Text, useTheme } from "react-native-paper";
 
 import { iOSBorderRadiusFix } from "~/fixes";
 
-export function HeaderBar({
+export function HeaderMenuButton({
   onShowMenu,
   onSelect,
   ...props

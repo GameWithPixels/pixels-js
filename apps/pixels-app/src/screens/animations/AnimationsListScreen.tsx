@@ -8,7 +8,7 @@ import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
-import { HeaderBar } from "~/components/HeaderBar";
+import { HeaderMenuButton } from "~/components/HeaderMenuButton";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
@@ -50,7 +50,7 @@ function PageHeader({
   const { colors } = useTheme();
   return (
     <>
-      <HeaderBar
+      <HeaderMenuButton
         visible={visible}
         contentStyle={{ width: 210 }}
         onShowMenu={() => setVisible(true)}
@@ -113,7 +113,7 @@ function PageHeader({
             setVisible(false);
           }}
         /> */}
-      </HeaderBar>
+      </HeaderMenuButton>
       <SortBottomSheet
         groups={AnimationsGroupingList}
         getGroupingLabel={getAnimationsGroupingLabel as (g: string) => string}

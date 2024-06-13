@@ -17,7 +17,7 @@ import {
   profileSearchbarMinHeight,
 } from "~/components/AnimatedProfileSearchbar";
 import { AppBackground } from "~/components/AppBackground";
-import { HeaderBar } from "~/components/HeaderBar";
+import { HeaderMenuButton } from "~/components/HeaderMenuButton";
 import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
 import {
   SortBottomSheet,
@@ -56,7 +56,7 @@ function PageHeader({
   onSelectViewMode: (viewMode: ProfilesViewMode) => void;
 }) {
   const appDispatch = useAppDispatch();
-  const [visible, setVisible] = React.useState(false);
+  const [menuVisible, setMenuVisible] = React.useState(false);
   const [sortVisible, setSortVisible] = React.useState(false);
   const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
   const sortMode = useAppSelector(
@@ -65,11 +65,11 @@ function PageHeader({
   const { colors } = useTheme();
   return (
     <>
-      <HeaderBar
-        visible={visible}
+      <HeaderMenuButton
+        visible={menuVisible}
         contentStyle={{ width: 190 }}
-        onShowMenu={() => setVisible(true)}
-        onDismiss={() => setVisible(false)}
+        onShowMenu={() => setMenuVisible(true)}
+        onDismiss={() => setMenuVisible(false)}
       >
         <Text variant="labelLarge" style={AppStyles.selfCentered}>
           View Modes
@@ -90,7 +90,7 @@ function PageHeader({
                 size={24}
                 icon={Icon}
                 onPress={() => {
-                  setVisible(false);
+                  setMenuVisible(false);
                   onSelectViewMode(vm);
                 }}
               />
@@ -109,7 +109,7 @@ function PageHeader({
           )}
           contentStyle={AppStyles.menuItemWithIcon}
           onPress={() => {
-            setVisible(false);
+            setMenuVisible(false);
             setSortVisible(true);
           }}
         />
@@ -128,7 +128,7 @@ function PageHeader({
             setVisible(false);
           }}
         /> */}
-      </HeaderBar>
+      </HeaderMenuButton>
       <SortBottomSheet
         groups={ProfilesGroupingList}
         groupBy={groupBy}
