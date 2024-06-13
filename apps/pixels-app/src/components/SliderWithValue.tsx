@@ -6,6 +6,8 @@ import {
   StyleSheet,
   TextInput as RNTextInput,
   View,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import {
   Button,
@@ -103,6 +105,7 @@ export interface SliderWithValueProps extends SliderProps {
   unit?: string;
   fractionDigits?: number;
   percentage?: boolean;
+  contentStyle?: StyleProp<ViewStyle>;
   onEndEditing?: (value: number) => void;
 }
 
@@ -111,6 +114,8 @@ export function SliderWithValue({
   fractionDigits: fDigits,
   percentage,
   onEndEditing,
+  style,
+  contentStyle,
   ...props
 }: SliderWithValueProps) {
   const min = props.minimumValue ?? (percentage ? 0 : undefined);
@@ -133,7 +138,9 @@ export function SliderWithValue({
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+    <View
+      style={[{ flexDirection: "row", alignItems: "center", gap: 10 }, style]}
+    >
       <View style={{ flexGrow: 1 }}>
         <SliderWrapper
           scaleIOS={1}
@@ -142,6 +149,7 @@ export function SliderWithValue({
           minimumTrackTintColor={colors.primary}
           maximumTrackTintColor={colors.onSurfaceDisabled}
           thumbTintColor={colors.onSurface}
+          style={contentStyle}
           {...props}
           onValueChange={(v) => {
             props.onValueChange?.(v);

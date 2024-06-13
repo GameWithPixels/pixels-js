@@ -12,6 +12,7 @@ export function CollapsableContainer({
   visible,
   collapsedMarginBottom,
   onLayout,
+  style,
   ...props
 }: {
   visible?: boolean;
@@ -45,7 +46,11 @@ export function CollapsableContainer({
   return (
     <LayoutAnimationConfig skipEntering>
       <Animated.View style={[collapsableStyle, { overflow: "hidden" }]}>
-        <View onLayout={onCustomLayout} {...props} />
+        <View
+          onLayout={onCustomLayout}
+          style={[{ position: "absolute" }, style]}
+          {...props}
+        />
       </Animated.View>
     </LayoutAnimationConfig>
   );
