@@ -73,7 +73,7 @@ export function HeaderMenuButton({
           }}
         />
       </Pressable>
-      <Menu anchor={{ x: width - 20, y: 80 }} {...props} />
+      <Menu anchor={{ x: width - 20, y: height + 10 }} {...props} />
     </View>
   );
 }

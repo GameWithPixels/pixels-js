@@ -8,6 +8,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import {
+  Platform,
   Pressable,
   TextInput as RNTextInput,
   useWindowDimensions,
@@ -169,7 +170,10 @@ export function PixelFocusViewHeader({
           />
           <DieMenu
             visible={actionsMenuVisible}
-            anchor={{ x: (windowWidth - 230) / 2, y: 80 }}
+            anchor={{
+              x: (windowWidth - 230) / 2,
+              y: Platform.OS === "ios" ? 40 : 50,
+            }}
             disconnected={!ready}
             onDismiss={() => setActionsMenuVisible(false)}
             onUnpair={onUnpair}
