@@ -91,7 +91,7 @@ function DieFocusPage({
             })
           }
           onShowRollsHistory={() =>
-            navigation.navigate("rollsHistory", {
+            navigation.navigate("dieRollsHistory", {
               pixelId: pairedDie.pixelId,
             })
           }

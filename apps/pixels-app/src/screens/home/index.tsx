@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 
 import { DiceListScreen } from "./DiceListScreen";
+import { DiceRollerScreen } from "./DiceRollerScreen";
 import { DieDetailsScreen } from "./DieDetailsScreen";
 import { DieFocusScreen } from "./DieFocusScreen";
 import { EditDieProfileStack } from "./EditDieProfileStack";
@@ -40,14 +41,6 @@ export function HomeStack({ route }: HomeStackProps) {
         <Stack.Navigator screenOptions={getStackNavigationOptions()}>
           <Stack.Screen name="diceList" component={DiceListScreen} />
           <Stack.Screen
-            name="firmwareUpdate"
-            component={FirmwareUpdateScreen}
-            options={{
-              ...getStackNavigationOptions("bottom-sheet"),
-              gestureEnabled: false,
-            }}
-          />
-          <Stack.Screen
             name="dieFocus"
             component={DieFocusScreen}
             options={getStackNavigationOptions("bottom-sheet")}
@@ -58,7 +51,7 @@ export function HomeStack({ route }: HomeStackProps) {
             options={getStackNavigationOptions("bottom-sheet")}
           />
           <Stack.Screen
-            name="rollsHistory"
+            name="dieRollsHistory"
             component={RollsHistoryScreen}
             options={getStackNavigationOptions("bottom-sheet")}
           />
@@ -66,6 +59,22 @@ export function HomeStack({ route }: HomeStackProps) {
             name="editDieProfileStack"
             component={EditDieProfileStack}
             options={getStackNavigationOptions("bottom-sheet")}
+          />
+          <Stack.Screen
+            name="firmwareUpdate"
+            component={FirmwareUpdateScreen}
+            options={{
+              ...getStackNavigationOptions("bottom-sheet"),
+              gestureEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="diceRoller"
+            component={DiceRollerScreen}
+            options={{
+              ...getStackNavigationOptions("bottom-sheet"),
+              gestureEnabled: false,
+            }}
           />
         </Stack.Navigator>
         <PixelTransferProgressBar

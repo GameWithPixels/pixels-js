@@ -17,7 +17,7 @@ import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
-import { AnimatedGradientButton } from "~/components/buttons";
+import { AnimatedGradientButton, OutlineButton } from "~/components/buttons";
 import { DiceGrid } from "~/components/dice";
 import {
   DiceGrouping,
@@ -206,13 +206,18 @@ function DiceListPage({
               onPairDice={() => setShowPairDice(true)}
             />
           ) : (
-            <DiceGrid
-              dice={pairedDice}
-              onSelectDie={(d) =>
-                navigation.navigate("dieFocus", { pixelId: d.pixelId })
-              }
-              onPressNewDie={() => setShowPairDice(true)}
-            />
+            <>
+              <OutlineButton onPress={() => navigation.navigate("diceRoller")}>
+                Dice Roller
+              </OutlineButton>
+              <DiceGrid
+                dice={pairedDice}
+                onSelectDie={(d) =>
+                  navigation.navigate("dieFocus", { pixelId: d.pixelId })
+                }
+                onPressNewDie={() => setShowPairDice(true)}
+              />
+            </>
           )}
         </ScrollView>
       </View>
