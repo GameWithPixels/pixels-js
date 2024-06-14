@@ -1477,7 +1477,7 @@ export const PrebuildAnimationsExt = {
         new AnimFlashes({
           ...PrebuildAnimations.whiteFlash,
           uuid: "aa25f26b-f9cd-4ee5-9072-f09da1032a10",
-          name: "Red Flash",
+          name: "Orange Flash",
           color: new Color(1, 0.6, 0),
         }),
         0
@@ -1486,7 +1486,7 @@ export const PrebuildAnimationsExt = {
         new AnimFlashes({
           ...PrebuildAnimations.alternatingWhite1_d20,
           uuid: "67953296-8061-46e9-9c49-96342bd7c295",
-          name: "Alternate Red 1",
+          name: "Alternate Orange Flash",
           color: new Color(1, 0.6, 0),
         }),
         0.15
@@ -1495,7 +1495,7 @@ export const PrebuildAnimationsExt = {
         new AnimFlashes({
           ...PrebuildAnimations.alternatingWhite2_d20,
           uuid: "0b887a00-2654-4f60-aa4a-673629e4b875",
-          name: "Alternate Red 2",
+          name: "Red Flash",
           color: new Color(1, 0, 0),
         }),
         0.15 +

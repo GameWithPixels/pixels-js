@@ -8,7 +8,7 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import { PrebuildAnimations, PrebuildAnimationsExt } from "./animations";
 import {
   addDefaultAdvancedRules,
-  addDefaultRollingRules,
+  DefaultRulesAnimations,
 } from "./defaultRules";
 import {
   EditActionPlayAnimation,
@@ -39,6 +39,19 @@ export const PrebuildProfilesNames = [
 ] as const;
 
 export type PrebuildProfileName = (typeof PrebuildProfilesNames)[number];
+
+export const DefaultProfileHashes = {
+  unknown: 0x7aea1cbb,
+  d4: 0x5eade414,
+  d6: 0x8c9c46a3,
+  d8: 0xca7bb5c3,
+  d10: 0x8d30a584,
+  d00: 0x52d22e3f,
+  d12: 0x58e03384,
+  d20: 0xc60d3c5b, // Factory: 0xf069141c
+  d6pipped: 0x309c10fc,
+  d6fudge: 0x8c9c46a3,
+} as const;
 
 export function createLibraryProfile(
   name: PrebuildProfileName,
@@ -73,10 +86,9 @@ export function createLibraryProfile(
 
   const pushRolledAnimNonTopFaceRule = function (
     anim: EditAnimation,
-    count: number = 1,
+    count = 1,
     duration?: number
   ) {
-    // All faces except top one get a waterfall colored based on the face
     profile.rules.push(
       new EditRule(
         new EditConditionRolled({
@@ -96,11 +108,7 @@ export function createLibraryProfile(
     );
   };
 
-  const pushRolledAnimTopFaceRule = function (
-    anim: EditAnimation,
-    count: number = 1
-  ) {
-    // All face except top one get a waterfall colored based on the face
+  const pushRolledAnimTopFaceRule = function (anim: EditAnimation, count = 1) {
     profile.rules.push(
       new EditRule(
         new EditConditionRolled({
@@ -119,8 +127,54 @@ export function createLibraryProfile(
     case "default":
       profile.name = "Default";
       profile.description = "The default profile for all dice.";
-      addDefaultRollingRules(profile, dieType);
+      // Rolling
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolling({ recheckAfter: 0.5 }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimations.coloredFlash, // Validation default: Rolling Anim
+            face: AnimConstants.currentFaceIndex,
+            loopCount: 1,
+          })
+        )
+      );
+      // OnFace
+      pushRolledAnimTopFaceRule(DefaultRulesAnimations.hello); // Validation default: Rainbow All Faces
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolled({
+            faces: mapFaces(
+              DiceUtils.getDieFaces(dieType).filter(
+                (face) =>
+                  face !== DiceUtils.getTopFace(dieType) &&
+                  face !== DiceUtils.getBottomFace(dieType)
+              )
+            ),
+          }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimations.waterfall,
+            face: AnimConstants.currentFaceIndex,
+          })
+        )
+      );
+      profile.rules.push(
+        new EditRule(
+          new EditConditionRolled({
+            faces: [mapFace(DiceUtils.getBottomFace(dieType))],
+          }),
+          new EditActionPlayAnimation({
+            animation: PrebuildAnimations.quickRed,
+            // Validation default: Long Red blink
+          })
+        )
+      );
       break;
+
+    // case "firmware":
+    //   profile.name = "Default";
+    //   profile.description = "The default profile for all dice.";
+    //   addDefaultRollingRules(profile, dieType);
+    //   break;
 
     case "empty":
       profile.name = "Empty";
