@@ -116,9 +116,6 @@ export class PixelScheduler {
   constructor() {
     const task = async () => {
       while (true) {
-        this._log(
-          `Processing loop pixel=${!!this._pixel} op=${!!this.hasPendingOperation}`
-        );
         if (!this._pixel || !this.hasPendingOperation) {
           // Wait for new operation
           if (this._triggerProcessPromise) {
@@ -133,7 +130,6 @@ export class PixelScheduler {
               resolve();
             };
           });
-          this._log("Done waiting");
         } else {
           // Process next operation
           const operation = this._getNextOperation();
@@ -345,14 +341,17 @@ export class PixelScheduler {
         });
         break;
       case "programProfile":
-        if (__DEV__) {
-          this._log(
-            `Programming profile with hash ${unsigned32ToHex(
-              DataSet.computeHash(op.dataSet.toByteArray())
-            )}`
-          );
+        {
+          const hash = DataSet.computeHash(op.dataSet.toByteArray());
+          if (hash !== pixel.profileHash) {
+            this._log(`Programming profile with hash ${unsigned32ToHex(hash)}`);
+            await pixel.transferDataSet(op.dataSet);
+          } else {
+            this._log(
+              `Dice already has profile with hash ${unsigned32ToHex(hash)}`
+            );
+          }
         }
-        await pixel.transferDataSet(op.dataSet);
         break;
       default:
         assertNever(type);

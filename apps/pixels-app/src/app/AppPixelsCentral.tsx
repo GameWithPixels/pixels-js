@@ -188,7 +188,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           }
           console.log(
             `[Pixel ${name}] Got profile hash ${unsigned32ToHex(hash)} ` +
-              `(current = ${unsigned32ToHex(pairedDie.profileHash ?? 0)})`
+              `(stored hash ${unsigned32ToHex(pairedDie.profileHash ?? 0)})`
           );
           store.dispatch(
             updatePairedDieProfileHash({
