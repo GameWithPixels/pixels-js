@@ -29,14 +29,14 @@ import { useAnimationsList } from "~/hooks";
 import { AnimationsListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
-type ProfilesViewMode = "list" | "grid";
+export type AnimationsViewMode = "list" | "grid";
 
 function PageHeader({
   viewMode,
   onSelectViewMode,
 }: {
-  viewMode: ProfilesViewMode;
-  onSelectViewMode: (viewMode: ProfilesViewMode) => void;
+  viewMode: AnimationsViewMode;
+  onSelectViewMode: (viewMode: AnimationsViewMode) => void;
 }) {
   const appDispatch = useAppDispatch();
   const [visible, setVisible] = React.useState(false);
@@ -66,7 +66,7 @@ function PageHeader({
             marginBottom: 5,
           }}
         >
-          {(["list", "grid"] as ProfilesViewMode[]).map((vm, i) => {
+          {(["list", "grid"] as AnimationsViewMode[]).map((vm, i) => {
             const Icon = i === 0 ? ListIcon : GridIcon;
             return (
               <IconButton
@@ -147,7 +147,7 @@ function AnimationsListPage({
     navigation.navigate("editAnimation", { animationUuid: animation.uuid });
   };
 
-  const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("grid");
+  const [viewMode, setViewMode] = React.useState<AnimationsViewMode>("grid");
 
   return (
     <>

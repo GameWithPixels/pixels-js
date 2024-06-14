@@ -41,12 +41,13 @@ import {
   readProfile,
   setProfilesGrouping,
   setProfilesSortMode,
+  setProfilesViewMode,
 } from "~/features/store";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 import { ProfilesListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
-type ProfilesViewMode = "list" | "grid";
+export type ProfilesViewMode = "list" | "grid";
 
 function PageHeader({
   viewMode,
@@ -82,7 +83,7 @@ function PageHeader({
           }}
         >
           {(["list", "grid"] as ProfilesViewMode[]).map((vm, i) => {
-            const Icon = i === 0 ? ListIcon : GridIcon;
+            const Icon = i ? GridIcon : ListIcon;
             return (
               <IconButton
                 key={vm}
@@ -159,11 +160,6 @@ function ProfilesListPage({
 }) {
   const store = useAppStore();
   const { library: profiles } = useProfilesList();
-  const [viewMode, setViewMode] = React.useState<ProfilesViewMode>("list");
-  const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
-  const sortMode = useAppSelector(
-    (state) => state.appSettings.profilesSortMode
-  );
 
   const editProfile = (profile: Readonly<Profiles.Profile>) =>
     navigation.navigate("editProfileStack", {
@@ -174,6 +170,12 @@ function ProfilesListPage({
     });
   const [profileToProgram, setProfileToProgram] =
     React.useState<Readonly<Profiles.Profile>>();
+
+  const viewMode = useAppSelector((state) => state.appSettings.profileViewMode);
+  const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
+  const sortMode = useAppSelector(
+    (state) => state.appSettings.profilesSortMode
+  );
 
   const aref = useAnimatedRef<Animated.ScrollView>();
   const scrollHandler = useScrollViewOffset(aref);
@@ -242,7 +244,7 @@ function ProfilesListPage({
       </GHScrollView>
       <PageHeader
         viewMode={viewMode}
-        onSelectViewMode={(vm) => setViewMode(vm)}
+        onSelectViewMode={(vm) => store.dispatch(setProfilesViewMode(vm))}
       />
       <FloatingAddButton
         sentry-label="add-profile"

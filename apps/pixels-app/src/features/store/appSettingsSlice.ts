@@ -6,6 +6,8 @@ import {
   ProfilesGrouping,
   SortMode,
 } from "~/features/profiles";
+import { DiceViewMode } from "~/screens/home/DiceListScreen";
+import { ProfilesViewMode } from "~/screens/profiles/ProfilesListScreen";
 
 export type ThemeMode = "system" | "dark" | "light";
 
@@ -15,8 +17,10 @@ export interface AppSettingsState {
   showNewPixelsAppBanner: boolean;
   showProfileHelp: boolean;
   showRollsHelp: boolean;
+  diceViewMode: DiceViewMode;
   diceGrouping: DiceGrouping;
   diceSortMode: SortMode;
+  profileViewMode: ProfilesViewMode;
   profilesGrouping: ProfilesGrouping;
   profilesSortMode: SortMode;
   animationsGrouping: AnimationsGrouping;
@@ -33,8 +37,10 @@ const initialState: AppSettingsState = {
   showNewPixelsAppBanner: true,
   showProfileHelp: true,
   showRollsHelp: true,
+  diceViewMode: "grid",
   diceGrouping: "dieType",
   diceSortMode: "alphabetical",
+  profileViewMode: "list",
   profilesGrouping: "dieType",
   profilesSortMode: "chronological-reverse",
   animationsGrouping: "type",
@@ -74,12 +80,20 @@ const appSettingsSlice = createSlice({
       state.showRollsHelp = action.payload;
     },
 
+    setDiceViewMode(state, action: PayloadAction<DiceViewMode>) {
+      state.diceViewMode = action.payload;
+    },
+
     setDiceGrouping(state, action: PayloadAction<DiceGrouping>) {
       state.diceGrouping = action.payload;
     },
 
     setDiceSortMode(state, action: PayloadAction<SortMode>) {
       state.diceSortMode = action.payload;
+    },
+
+    setProfilesViewMode(state, action: PayloadAction<ProfilesViewMode>) {
+      state.profileViewMode = action.payload;
     },
 
     setProfilesGrouping(state, action: PayloadAction<ProfilesGrouping>) {
@@ -123,8 +137,10 @@ export const {
   setShowNewPixelsAppBanner,
   setShowProfileHelp,
   setShowRollsHelp,
+  setDiceViewMode,
   setDiceGrouping,
   setDiceSortMode,
+  setProfilesViewMode,
   setProfilesGrouping,
   setProfilesSortMode,
   setAnimationsGrouping,

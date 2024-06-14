@@ -6,7 +6,6 @@ import { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
 
-import FocusIcon from "#/icons/home/focus";
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -18,7 +17,7 @@ import {
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { AnimatedGradientButton, OutlineButton } from "~/components/buttons";
-import { DiceGrid } from "~/components/dice";
+import { DiceGrid, DiceList } from "~/components/dice";
 import {
   DiceGrouping,
   DiceGroupingList,
@@ -28,12 +27,16 @@ import {
   SortMode,
   SortModeList,
 } from "~/features/profiles";
-import { setDiceGrouping, setDiceSortMode } from "~/features/store";
+import {
+  setDiceGrouping,
+  setDiceSortMode,
+  setDiceViewMode,
+} from "~/features/store";
 import { useConnectToMissingPixels } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
-type DiceViewMode = "focus" | "list" | "grid";
+export type DiceViewMode = "list" | "grid";
 
 function PageHeader({
   viewMode,
@@ -65,8 +68,8 @@ function PageHeader({
             marginBottom: 5,
           }}
         >
-          {(["focus", "list", "grid"] as DiceViewMode[]).map((vm, i) => {
-            const Icon = i === 0 ? FocusIcon : i === 1 ? ListIcon : GridIcon;
+          {(["list", "grid"] as DiceViewMode[]).map((vm, i) => {
+            const Icon = i ? GridIcon : ListIcon;
             return (
               <IconButton
                 key={vm}
@@ -172,6 +175,8 @@ function DiceListPage({
 }: {
   navigation: DiceListScreenProps["navigation"];
 }) {
+  const appDispatch = useAppDispatch();
+
   const [showPairDice, setShowPairDice] = React.useState(false);
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
 
@@ -188,6 +193,7 @@ function DiceListPage({
   // Scan for missing dice on showing page
   useFocusEffect(useConnectToMissingPixels());
 
+  const viewMode = useAppSelector((state) => state.appSettings.diceViewMode);
   return (
     <>
       <View style={{ height: "100%" }}>
@@ -210,16 +216,32 @@ function DiceListPage({
               <OutlineButton onPress={() => navigation.navigate("diceRoller")}>
                 Dice Roller
               </OutlineButton>
-              <DiceGrid
-                dice={pairedDice}
-                onSelectDie={(d) =>
-                  navigation.navigate("dieFocus", { pixelId: d.pixelId })
-                }
-                onPressNewDie={() => setShowPairDice(true)}
-              />
+              {viewMode === "grid" ? (
+                <DiceGrid
+                  dice={pairedDice}
+                  onSelectDie={(d) =>
+                    navigation.navigate("dieFocus", { pixelId: d.pixelId })
+                  }
+                  onPressNewDie={() => setShowPairDice(true)}
+                />
+              ) : (
+                <DiceList
+                  dice={pairedDice}
+                  onSelectDie={(d) =>
+                    navigation.navigate("dieFocus", { pixelId: d.pixelId })
+                  }
+                  onPressNewDie={() => setShowPairDice(true)}
+                />
+              )}
             </>
           )}
         </ScrollView>
+        <PageHeader
+          viewMode={viewMode}
+          onSelectViewMode={(vm) => {
+            appDispatch(setDiceViewMode(vm));
+          }}
+        />
       </View>
       <PairDiceBottomSheet
         visible={showPairDice}
