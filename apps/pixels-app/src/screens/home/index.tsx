@@ -57,7 +57,10 @@ export function HomeStack({ route }: HomeStackProps) {
           <Stack.Screen
             name="editDieProfileStack"
             component={EditDieProfileStack}
-            options={getStackNavigationOptions("bottom-sheet")}
+            options={{
+              ...getStackNavigationOptions("bottom-sheet"),
+              gestureEnabled: false, // TODO disable gestures because sliding down bottom sheet also slides down screen
+            }}
           />
           <Stack.Screen
             name="firmwareUpdate"

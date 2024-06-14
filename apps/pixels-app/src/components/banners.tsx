@@ -103,15 +103,13 @@ export function CreateProfileBanner({
   ViewProps) {
   return (
     <Banner
-      title="Create a Profile!"
+      title="This is your Library of Profiles"
       visible={visible}
       collapsedMarginBottom={collapsedMarginBottom}
       {...props}
     >
-      Try out the new profile templates 🎉
-      {"\n"}
-      {"\n"}
-      To get started tap on the (+) button at the bottom of the page.
+      To get started tap on the (+) button at the bottom of the page or save a
+      Profile of one of your dice.
     </Banner>
   );
 }

@@ -184,7 +184,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
               Constants.factoryProfileHashes["d20"], // Firmware default
             ].includes(hash)
           ) {
-            hash = 0x6ad53fac; // App D20 default profile
+            hash = 0xc60d3c5b; // App D20 default profile
           }
           console.log(
             `[Pixel ${name}] Got profile hash ${unsigned32ToHex(hash)} ` +
