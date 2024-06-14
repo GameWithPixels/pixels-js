@@ -1,3 +1,5 @@
+import { PixelDieType } from "@systemic-games/pixels-core-animation";
+
 /** Constants used across the pixels-core-connect package. */
 export const Constants = {
   /** The lowest Maximum Transmission Unit (MTU) value allowed by the BLE standard. */
@@ -29,4 +31,10 @@ export const Constants = {
 
   /** Minimum compatible version for the messages and related data structures. */
   compatApiVersion: 256,
+
+  /** Hash for firmware default profile. */
+  factoryProfileHashes: {
+    unknown: 0x57477a0b,
+    d20: 0x57477a0b,
+  } as { [key in PixelDieType]: number },
 } as const;

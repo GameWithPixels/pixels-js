@@ -2,6 +2,7 @@ import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Color,
   ColorUtils,
+  Constants,
   Pixel,
   PixelMutableProps,
   Profiles,
@@ -180,7 +181,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           if (
             [
               0xf069141c, // Factory programmed
-              0x57477a0b, // Firmware default
+              Constants.factoryProfileHashes["d20"], // Firmware default
             ].includes(hash)
           ) {
             hash = 0x6ad53fac; // App D20 default profile

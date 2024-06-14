@@ -498,8 +498,11 @@ export class Pixel
     };
     this.addMessageListener("rollState", rollStateListener);
 
-    // Reset name on "clear settings" and "program default" ack
+    // Reset profile hash & die name on "clear settings" and "program default" ack
     const resetListener = () => {
+      // Reset profile hash
+      this._updateHash(Constants.factoryProfileHashes[this.dieType] ?? 0);
+      // Reset name
       this._updateName("Pixel" + unsigned32ToHex(this._info.pixelId));
     };
     this.addMessageListener("clearSettingsAck", resetListener);
@@ -923,6 +926,9 @@ export class Pixel
       safeAssign(new SetName(), { name }),
       "setNameAck"
     );
+    // Reset profile hash
+    this._updateHash(Constants.factoryProfileHashes[this.dieType] ?? 0);
+    // And notify name was successfully updated
     this._updateName(name);
   }
 
