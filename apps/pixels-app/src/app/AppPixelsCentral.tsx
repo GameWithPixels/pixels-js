@@ -150,7 +150,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         if (status === "ready") {
           onRename(pixel);
           onFwDate(pixel);
-          setCheckProfiles((prev) => 1 - prev);
+          setCheckProfiles();
         }
       };
       pixel.addPropertyListener("status", onStatus);
@@ -242,7 +242,10 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   }, [central, store]);
 
   // Monitor paired dice
-  const [checkProfiles, setCheckProfiles] = React.useState(0);
+  const [checkProfiles, setCheckProfiles] = React.useReducer(
+    (x) => (x + 1) & 0xffff, // See useForceUpdate()
+    0
+  );
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
   const profiles = useAppSelector((state) => state.library.profiles);
   const appBrightness = useAppSelector(
