@@ -4,7 +4,10 @@ import {
   EventReceiver,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import {
+  DfuState,
+  DfuUpdateError,
+} from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   BluetoothNotAuthorizedError,
   BluetoothUnavailableError,
@@ -18,7 +21,6 @@ import {
   ScanStartFailed,
   ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
-import { Platform } from "expo-modules-core";
 
 import { PixelOperationParams, PixelScheduler } from "./PixelScheduler";
 
@@ -294,38 +296,31 @@ export class PixelsCentral {
     this._emitEvent("pixelInDFU", this._pixelInDFU);
     try {
       let attemptsCount = 0;
-      let wasUploading = false;
+      let uploadError = false;
       while (true) {
         try {
-          const recoverFromUploadError = wasUploading;
+          const recoverFromUploadError = uploadError;
           ++attemptsCount;
-          wasUploading = false;
+          uploadError = false;
           await updateFirmware({
             recoverFromUploadError,
             systemId: pixel.systemId,
             pixelId: pixel.pixelId,
             bootloaderPath,
             firmwarePath,
-            dfuStateCallback: (state) => {
-              if (state === "uploading") {
-                wasUploading = true;
-              } else if (state === "disconnecting") {
-                wasUploading = false;
-              }
-              this._emitEvent("pixelDfuState", { pixel, state });
-            },
+            dfuStateCallback: (state) =>
+              this._emitEvent("pixelDfuState", { pixel, state }),
             dfuProgressCallback: (progress) =>
               this._emitEvent("pixelDfuProgress", { pixel, progress }),
           });
           break;
         } catch (e) {
-          logError(`DFU error ${e}${wasUploading ? " (was uploading)" : ""}`);
-          if (!wasUploading || Platform.OS !== "android" || attemptsCount > 5) {
-            this._emitEvent("pixelDfuError", {
-              pixel,
-              error: e instanceof Error ? e : new Error(String(e)),
-            });
-            throw e;
+          uploadError = e instanceof DfuUpdateError;
+          logError(`DFU error ${e}${uploadError ? " (update error)" : ""}`);
+          if (attemptsCount >= 3) {
+            const error = e instanceof Error ? e : new Error(String(e));
+            this._emitEvent("pixelDfuError", { pixel, error });
+            throw error;
           }
         }
       }
