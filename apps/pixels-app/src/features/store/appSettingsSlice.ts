@@ -24,6 +24,7 @@ export interface AppSettingsState {
   updateBootloader: boolean;
   diceBrightnessFactor: number;
   rollerCardsSizeRatio: number;
+  disablePlayingAnimations: boolean;
 }
 
 const initialState: AppSettingsState = {
@@ -41,6 +42,7 @@ const initialState: AppSettingsState = {
   updateBootloader: false,
   diceBrightnessFactor: 1,
   rollerCardsSizeRatio: 0.5,
+  disablePlayingAnimations: false,
 };
 
 // Redux slice that stores app settings
@@ -107,6 +109,10 @@ const appSettingsSlice = createSlice({
     setRollerCardsSizeRatio(state, action: PayloadAction<number>) {
       state.rollerCardsSizeRatio = action.payload;
     },
+
+    setDisablePlayingAnimations(state, action: PayloadAction<boolean>) {
+      state.disablePlayingAnimations = action.payload;
+    },
   },
 });
 
@@ -126,5 +132,6 @@ export const {
   setUpdateBootloader,
   setDiceBrightnessFactor,
   setRollerCardsSizeRatio,
+  setDisablePlayingAnimations,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

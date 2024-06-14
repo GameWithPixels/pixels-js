@@ -4,11 +4,10 @@ import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 
+import { DieRendererWithFocus } from "./DieRendererWithFocus";
+
 import { createProfileDataSetWithOverrides } from "~/features/profiles";
-import {
-  DieRendererProps,
-  DieRendererWithFocus,
-} from "~/features/render3d/DieRenderer";
+import { DieRendererProps } from "~/features/render3d/DieRenderer";
 import { notEmpty } from "~/features/utils";
 
 export const ProfileDieRenderer = observer(function ProfileDieRenderer({

@@ -1,6 +1,12 @@
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Divider, Text as PaperText, TextProps } from "react-native-paper";
+import {
+  Divider,
+  Text as PaperText,
+  Switch,
+  TextProps,
+  useTheme,
+} from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
@@ -14,6 +20,7 @@ import {
   resetDiceStats,
   resetPairedDice,
   setDiceBrightnessFactor,
+  setDisablePlayingAnimations,
 } from "~/features/store";
 import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
 import { AppSettingsScreenProps, SettingsMenuScreenProps } from "~/navigation";
@@ -37,6 +44,9 @@ function AppSettingsPage({
   const brightness = useAppSelector(
     (state) => state.appSettings.diceBrightnessFactor
   );
+  const disablePlayingAnimations = useAppSelector(
+    (state) => state.appSettings.disablePlayingAnimations
+  );
   const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
     central.stopScan();
     appDispatch(resetAppSettings());
@@ -46,6 +56,8 @@ function AppSettingsPage({
     Library.dispatchReset(appDispatch);
     navigation.navigate("onboarding");
   });
+
+  const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>App Settings</PageHeader>
@@ -64,6 +76,20 @@ function AppSettingsPage({
             value={brightness}
             onEndEditing={(v) => appDispatch(setDiceBrightnessFactor(v))}
           />
+        </View>
+        <Divider style={{ marginVertical: 10 }} />
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Switch
+            value={disablePlayingAnimations}
+            onValueChange={(v) => {
+              appDispatch(setDisablePlayingAnimations(v));
+            }}
+            trackColor={{
+              false: colors.onSurfaceDisabled,
+              true: colors.primary,
+            }}
+          />
+          <Text>Disable Playing Animations In App</Text>
         </View>
         <Divider style={{ marginVertical: 10 }} />
         <OutlineButton onPress={() => showConfirmReset()}>

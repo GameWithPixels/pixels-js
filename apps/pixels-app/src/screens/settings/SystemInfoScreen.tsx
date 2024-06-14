@@ -36,7 +36,7 @@ function SystemInfoPage({
 }) {
   const locales = useLocales();
   const window = useWindowDimensions();
-  const reduceMotionEnabled = useReducedMotion();
+  const reducedMotion = useReducedMotion();
   const [voices, setVoices] = React.useState<Speech.Voice[]>();
   React.useEffect(() => {
     const getVoices = async () =>
@@ -76,7 +76,7 @@ function SystemInfoPage({
           </Text>
           <Text>Pixel Ratio: {PixelRatio.get()}</Text>
           <Text>Font Scale: {PixelRatio.getFontScale()}</Text>
-          <Text>Reduced Motion: {reduceMotionEnabled ? "yes" : "no"}</Text>
+          <Text>Reduced Motion: {reducedMotion ? "yes" : "no"}</Text>
           <Text>
             Locales:{" "}
             {

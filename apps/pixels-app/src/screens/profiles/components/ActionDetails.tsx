@@ -9,9 +9,9 @@ import React from "react";
 import { View, StyleSheet, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
+import { DieRendererWithFocus } from "~/components/DieRendererWithFocus";
 import { ActionTypeIcon } from "~/components/actions";
 import { applyActionOverrides, getFacesAsText } from "~/features/profiles";
-import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 import { listToText } from "~/features/utils";
 import { AppStyles } from "~/styles";
 

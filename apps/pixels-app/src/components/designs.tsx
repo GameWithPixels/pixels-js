@@ -8,9 +8,8 @@ import React from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 
+import { DieRendererWithFocus } from "./DieRendererWithFocus";
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
-
-import { DieRendererWithFocus } from "~/features/render3d/DieRenderer";
 
 export function ColorDesignCard({
   pattern,

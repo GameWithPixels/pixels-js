@@ -1,4 +1,3 @@
-import { useFocusEffect } from "@react-navigation/native";
 import {
   AnimationBits,
   AnimationInstance,
@@ -213,6 +212,7 @@ class SceneRenderer {
       };
     } else {
       this._animUpdate = undefined;
+      this._die3d.clearLEDs();
     }
   }
 
@@ -287,7 +287,7 @@ function setRendererProps(
   hasPedestal: boolean,
   animationInstances?: AnimationInstance[]
 ): void {
-  renderer.speed = (speed ?? 1) * (hasPedestal ? 0.5 : 1);
+  renderer.speed = speed ?? 1;
   renderer.rotateX = !hasPedestal;
   renderer.setAnimations(animationInstances);
 }
@@ -412,17 +412,4 @@ export function DieRenderer({
       )}
     </>
   );
-}
-
-export function DieRendererWithFocus({
-  ...props
-}: Omit<DieRendererProps, "paused">) {
-  const [paused, setPaused] = React.useState(false);
-  useFocusEffect(
-    React.useCallback(() => {
-      setPaused(false);
-      return () => setPaused(true);
-    }, [])
-  );
-  return <DieRenderer {...props} paused={paused} />;
 }

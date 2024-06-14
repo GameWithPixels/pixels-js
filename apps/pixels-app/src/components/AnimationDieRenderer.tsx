@@ -4,10 +4,9 @@ import { computed } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 
-import {
-  DieRendererProps,
-  DieRendererWithFocus,
-} from "~/features/render3d/DieRenderer";
+import { DieRendererWithFocus } from "./DieRendererWithFocus";
+
+import { DieRendererProps } from "~/features/render3d/DieRenderer";
 
 export const AnimationDieRenderer = observer(function AnimationDieRenderer({
   animation,
