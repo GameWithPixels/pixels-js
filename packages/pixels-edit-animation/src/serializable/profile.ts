@@ -16,7 +16,6 @@ export interface ProfileData extends UniqueNamedData {
   brightness: number;
   creationDate: number;
   lastChanged: number; // TODO Should be lastModified
-  lastUsed: number;
   conditions: {
     helloGoodbye: {
       flags: HelloGoodbyeFlags[];

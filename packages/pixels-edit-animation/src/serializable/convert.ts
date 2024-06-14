@@ -231,7 +231,6 @@ export function toProfile(
     rules,
     creationDate: new Date(data.creationDate),
     lastModified: new Date(data.lastChanged),
-    lastUsed: data.lastUsed ? new Date(data.lastUsed) : undefined,
   });
 }
 
@@ -551,7 +550,6 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     brightness: profile.brightness,
     creationDate: profile.creationDate.getTime(),
     lastChanged: profile.lastModified.getTime(),
-    lastUsed: profile.lastUsed?.getTime() ?? 0,
     conditions,
     actions,
     rules,

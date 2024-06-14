@@ -111,7 +111,6 @@ export const ProfilesGroupingList = [
   "dieType",
   "creationDate",
   "lastChanged", // TODO Should be lastModified
-  "lastUsed",
 ] as const;
 
 export type ProfilesGrouping = (typeof ProfilesGroupingList)[number];
@@ -126,8 +125,6 @@ export function getProfilesGroupingLabel(grouping: ProfilesGrouping): string {
       return "Creation Date";
     case "lastChanged":
       return "Last Modification Date";
-    case "lastUsed":
-      return "Last Activation Date";
     default:
       assertNever(grouping, `No label for grouping ${grouping}`);
   }
@@ -420,16 +417,6 @@ export function groupAndSortProfiles(
           groupByTime(
             profiles.map((p) => ({
               date: p.lastModified,
-              value: p,
-            }))
-          ),
-          sortMode
-        );
-      case "lastUsed":
-        return sortGroupedByTime(
-          groupByTime(
-            profiles.map((p) => ({
-              date: p.lastUsed ?? noDateObject,
               value: p,
             }))
           ),

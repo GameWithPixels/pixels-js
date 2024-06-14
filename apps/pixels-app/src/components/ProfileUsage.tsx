@@ -20,9 +20,6 @@ export function ProfileUsage({
     <View style={[{ gap: 5 }, style]} {...props}>
       <Text>Date created: {profile.creationDate.toLocaleString()}</Text>
       <Text>Last modified: {profile.lastModified.toLocaleString()}</Text>
-      {profile.lastUsed && (
-        <Text>Last used: {profile.lastUsed.toLocaleString()}</Text>
-      )}
       <Text>Memory footprint: {dataSet.computeDataSetByteSize()} bytes</Text>
       <Text>Number of unique Color Designs: {patterns.size}</Text>
       <Text>

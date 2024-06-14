@@ -82,11 +82,6 @@ function updateProfile(
   if (profile.lastModified.getTime() !== profileData.lastChanged) {
     profile.lastModified = new Date(profileData.lastChanged);
   }
-  if (profile.lastUsed?.getTime() !== profileData.lastUsed) {
-    profile.lastUsed = profileData.lastUsed
-      ? new Date(profileData.lastUsed)
-      : undefined;
-  }
   // Update rules
   const rulesCount = profileData.rules.length;
   profile.rules.length = rulesCount;

@@ -38,9 +38,6 @@ export default class EditProfile extends Editable {
   @observable
   lastModified: Date;
 
-  @observable
-  lastUsed?: Date;
-
   constructor(opt?: {
     uuid?: string;
     name?: string;
@@ -51,7 +48,6 @@ export default class EditProfile extends Editable {
     brightness?: number;
     creationDate?: Date;
     lastModified?: Date;
-    lastUsed?: Date;
   }) {
     super(opt);
     this.description = opt?.description ?? "";
@@ -61,7 +57,6 @@ export default class EditProfile extends Editable {
     this.brightness = opt?.brightness ?? 1;
     this.creationDate = opt?.creationDate ?? new Date();
     this.lastModified = opt?.lastModified ?? new Date();
-    this.lastUsed = opt?.lastUsed;
   }
 
   getRemoteAction(actionId: number): EditActionRunOnDevice | undefined {
@@ -92,7 +87,6 @@ export default class EditProfile extends Editable {
       rules: this.rules.map((r) => r.duplicate()),
       creationDate: now,
       lastModified: now,
-      lastUsed: undefined,
     });
   }
 
