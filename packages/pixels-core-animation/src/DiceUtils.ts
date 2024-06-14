@@ -52,9 +52,13 @@ export const DiceUtils = {
   },
 
   getTopFace(dieType: PixelDieType): number {
-    return dieType === "d00" || dieType === "d10"
+    return dieType === "d10" || dieType === "d00"
       ? 0
       : DiceUtils.getFaceCount(dieType);
+  },
+
+  getBottomFace(dieType: PixelDieType): number {
+    return dieType === "d10" ? 9 : dieType === "d00" ? 90 : 1;
   },
 
   // Try to derive the die type from number of LEDs
