@@ -25,13 +25,18 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
-import { HeaderMenuButton } from "~/components/HeaderMenuButton";
+import {
+  HeaderMenuButton,
+  HeaderMenuButtonProps,
+} from "~/components/HeaderMenuButton";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
 import { DieWireframe } from "~/components/icons";
+import { setRollerCardsSizeRatio } from "~/features/store";
 import { useWatchedPixels } from "~/hooks";
 import { DiceRollerScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -46,19 +51,40 @@ const diceTypes = [
   "d4",
 ] as PixelDieType[];
 
-function AnimatedRollCard({
-  faceValue,
-  dieType,
-  width,
-  position = "left",
-  onRemove,
-}: {
-  faceValue: number;
-  dieType: PixelDieType;
-  width: number;
-  position?: "left" | "right";
-  onRemove?: () => void;
-}) {
+interface AnimatedRollCardHandle {
+  overrideWidth: (w: number) => void;
+}
+
+const AnimatedRollCard = React.forwardRef(function AnimatedRollCard(
+  {
+    width: widthProp,
+    faceValue,
+    dieType,
+    position,
+    onRemove,
+  }: {
+    width: number;
+    faceValue: number;
+    dieType: PixelDieType;
+    position?: "left" | "right";
+    onRemove?: () => void;
+  },
+  ref: React.ForwardedRef<AnimatedRollCardHandle>
+) {
+  const [width, setWidth] = React.useState(widthProp);
+  React.useImperativeHandle(
+    ref,
+    () => {
+      return {
+        overrideWidth: (w: number) => {
+          setWidth(w);
+        },
+      };
+    },
+    []
+  );
+  React.useEffect(() => setWidth(widthProp), [widthProp]);
+
   const { width: screenWidth } = useWindowDimensions();
   const rightSide = position === "right";
   const startPosition =
@@ -122,19 +148,21 @@ function AnimatedRollCard({
     });
   React.useEffect(() => {
     return () => {
-      const startPositionLeft =
-        screenWidth / 2 - Math.min(screenWidth / 2, width * 0.9);
-      const startPositionRight =
-        screenWidth / 2 - Math.max(-screenWidth / 2 + width, width * 0.1);
-      if (position === "right") {
-        offset.value = startPositionRight - startPositionLeft;
-        offset.value = withTiming(0, { duration: 300 });
-      } else {
-        offset.value = startPositionLeft - startPositionRight;
-        offset.value = withTiming(0, { duration: 300 });
+      if (panActive.value) {
+        const startPositionLeft =
+          screenWidth / 2 - Math.min(screenWidth / 2, width * 0.9);
+        const startPositionRight =
+          screenWidth / 2 - Math.max(-screenWidth / 2 + width, width * 0.1);
+        if (position === "right") {
+          offset.value = startPositionRight - startPositionLeft;
+          offset.value = withTiming(0, { duration: 300 });
+        } else {
+          offset.value = startPositionLeft - startPositionRight;
+          offset.value = withTiming(0, { duration: 300 });
+        }
       }
     };
-  }, [offset, position, screenWidth, width]);
+  }, [offset, panActive, position, screenWidth, width]);
   const animatedStyles = useAnimatedStyle(() => ({
     transform: [{ translateX: offset.value }],
   }));
@@ -201,7 +229,7 @@ function AnimatedRollCard({
       </Animated.View>
     </GestureDetector>
   );
-}
+});
 
 function RollDiceLine({
   diceTypes,
@@ -227,19 +255,100 @@ function RollDiceLine({
   );
 }
 
+function OptionsMenu({
+  sizeRatio,
+  onChangeSizeRatio,
+  onCommitSizeRatio,
+  onAddRoll,
+  onClearRolls,
+  ...props
+}: {
+  sizeRatio: number;
+  onChangeSizeRatio: (ratio: number) => void;
+  onCommitSizeRatio: (ratio: number) => void;
+  onAddRoll: (dieType: PixelDieType, value: number) => void;
+  onClearRolls: () => void;
+} & Omit<HeaderMenuButtonProps, "children">) {
+  const { colors } = useTheme();
+  return (
+    <HeaderMenuButton {...props}>
+      <Text variant="bodyLarge" style={{ paddingHorizontal: 15 }}>
+        Display Size
+      </Text>
+      <SliderWithValue
+        percentage
+        value={sizeRatio}
+        onValueChange={onChangeSizeRatio}
+        onEndEditing={onCommitSizeRatio}
+        minimumValue={0.3}
+        maximumValue={1}
+        style={{ marginHorizontal: 10, marginBottom: 10 }}
+      />
+      <Divider />
+      <Menu.Item
+        title="Clear All"
+        trailingIcon={() => (
+          <MaterialCommunityIcons
+            name="trash-can-outline"
+            size={24}
+            color={colors.onSurface}
+          />
+        )}
+        contentStyle={AppStyles.menuItemWithIcon}
+        style={{ zIndex: 1 }}
+        onPress={() => {
+          onClearRolls();
+          props.onDismiss?.();
+        }}
+      />
+      <Divider />
+      <Text
+        variant="bodyLarge"
+        style={{ paddingHorizontal: 15, marginVertical: 10 }}
+      >
+        Virtual Roll
+      </Text>
+      {[0, 1].map((i) => (
+        <RollDiceLine
+          key={i}
+          diceTypes={diceTypes.slice(
+            Math.ceil((i * diceTypes.length) / 2),
+            Math.ceil(((i + 1) * diceTypes.length) / 2)
+          )}
+          addRoll={(d, v) => {
+            onAddRoll(d, v);
+            props.onDismiss?.();
+          }}
+        />
+      ))}
+    </HeaderMenuButton>
+  );
+}
+
 function RollerPage({
   navigation,
 }: {
   navigation: DiceRollerScreenProps["navigation"];
 }) {
-  const [sizeRatio, setSizeRatio] = React.useState(0.5);
+  const appDispatch = useAppDispatch();
+  const sizeRatio = useAppSelector(
+    (state) => state.appSettings.rollerCardsSizeRatio
+  );
   const [rolls, setRolls] = React.useState<
-    { key: number; dieType: PixelDieType; value: number }[]
+    {
+      key: number;
+      dieType: PixelDieType;
+      value: number;
+      ref: React.RefObject<AnimatedRollCardHandle>;
+    }[]
   >([]);
 
   const addRoll = React.useCallback((dieType: PixelDieType, value: number) => {
     const key = Date.now();
-    setRolls((rolls) => [...rolls, { key, dieType, value }]);
+    setRolls((rolls) => [
+      ...rolls,
+      { key, dieType, value, ref: { current: null } },
+    ]);
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, []);
 
@@ -265,68 +374,26 @@ function RollerPage({
 
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   const { width: screenWidth } = useWindowDimensions();
-  const cardWidth = screenWidth * sizeRatio;
-  const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
       <PageHeader
         onGoBack={() => navigation.goBack()}
         rightElement={() => (
-          <HeaderMenuButton
+          <OptionsMenu
             visible={menuVisible}
+            sizeRatio={sizeRatio}
+            onChangeSizeRatio={(r) => {
+              for (const roll of rolls) {
+                roll.ref.current?.overrideWidth(r * screenWidth);
+              }
+            }}
+            onCommitSizeRatio={(r) => appDispatch(setRollerCardsSizeRatio(r))}
+            onAddRoll={addRoll}
+            onClearRolls={() => setRolls([])}
             contentStyle={{ width: 220 }}
             onShowMenu={() => setMenuVisible(true)}
             onDismiss={() => setMenuVisible(false)}
-          >
-            <Text variant="bodyLarge" style={{ paddingHorizontal: 15 }}>
-              Display Size
-            </Text>
-            <SliderWithValue
-              percentage
-              value={sizeRatio}
-              onValueChange={setSizeRatio}
-              minimumValue={0.3}
-              maximumValue={1}
-              style={{ marginHorizontal: 10, marginBottom: 10 }}
-            />
-            <Divider />
-            <Menu.Item
-              title="Clear All"
-              trailingIcon={() => (
-                <MaterialCommunityIcons
-                  name="trash-can-outline"
-                  size={24}
-                  color={colors.onSurface}
-                />
-              )}
-              contentStyle={AppStyles.menuItemWithIcon}
-              style={{ zIndex: 1 }}
-              onPress={() => {
-                setRolls([]);
-                setMenuVisible(false);
-              }}
-            />
-            <Divider />
-            <Text
-              variant="bodyLarge"
-              style={{ paddingHorizontal: 15, marginVertical: 10 }}
-            >
-              Virtual Roll
-            </Text>
-            {[0, 1].map((i) => (
-              <RollDiceLine
-                key={i}
-                diceTypes={diceTypes.slice(
-                  (i * diceTypes.length) / 2,
-                  ((i + 1) * diceTypes.length) / 2
-                )}
-                addRoll={(d, v) => {
-                  addRoll(d, v);
-                  setMenuVisible(false);
-                }}
-              />
-            ))}
-          </HeaderMenuButton>
+          />
         )}
       >
         Roller
@@ -344,16 +411,17 @@ function RollerPage({
           {rolls.map((roll, i) => (
             <AnimatedRollCard
               key={roll.key}
+              ref={roll.ref}
+              width={sizeRatio * screenWidth}
               faceValue={roll.value}
               dieType={roll.dieType}
-              width={cardWidth}
               position={i % 2 ? "right" : "left"}
               onRemove={
                 menuVisible
                   ? undefined
                   : () => {
                       setRolls(rolls.filter((_, j) => j !== i));
-                      bottomPadding.value = cardWidth;
+                      bottomPadding.value = sizeRatio * screenWidth;
                       bottomPadding.value = withTiming(0, { duration: 300 });
                       Haptics.notificationAsync(
                         Haptics.NotificationFeedbackType.Success

@@ -5,14 +5,17 @@ import { Menu, MenuProps, Text, useTheme } from "react-native-paper";
 
 import { iOSBorderRadiusFix } from "~/fixes";
 
+export interface HeaderMenuButtonProps
+  extends Omit<MenuProps, "anchor" | "theme"> {
+  onShowMenu: () => void;
+  onSelect?: () => void;
+}
+
 export function HeaderMenuButton({
   onShowMenu,
   onSelect,
   ...props
-}: { onShowMenu: () => void; onSelect?: () => void } & Omit<
-  MenuProps,
-  "anchor" | "theme"
->) {
+}: HeaderMenuButtonProps) {
   const { width } = useWindowDimensions();
   const { colors } = useTheme();
   const height = 26;
