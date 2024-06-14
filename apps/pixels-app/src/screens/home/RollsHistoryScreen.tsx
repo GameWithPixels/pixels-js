@@ -20,6 +20,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { Banner } from "~/components/banners";
 import {
   FloatingAddButton,
@@ -285,6 +286,7 @@ export function RollsHistoryScreen({
   return (
     <AppBackground>
       <RollsHistoryPage pairedDie={pairedDie} navigation={navigation} />
+      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }

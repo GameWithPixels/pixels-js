@@ -33,6 +33,7 @@ import { FacesGrid } from "~/components/FacesGrid";
 import { KeyframeGradient } from "~/components/KeyframeGradient";
 import { PickAnimationBottomSheet } from "~/components/PickAnimationBottomSheet";
 import { PickColorBottomSheet } from "~/components/PickColorBottomSheet";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import {
   SliderWithValue,
   SliderWithValueProps,
@@ -838,6 +839,7 @@ export const ConfigureActionBottomSheet = observer(
               style={{ position: "absolute", right: 0, top: -15 }}
               onPress={onDismiss}
             />
+            <SelectedPixelTransferProgressBar style={{ top: 30 }} />
           </ThemeProvider>
         </RootSiblingParent>
       </BottomSheetModal>

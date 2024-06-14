@@ -7,6 +7,7 @@ import { EditRuleCallback, SectionTitle } from "./components/RulesSection";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { ProfileUsage as ProfileUsageStatic } from "~/components/ProfileUsage";
 import { useEditableProfile } from "~/hooks";
 import { EditAdvancedSettingsScreenProps } from "~/navigation";
@@ -60,6 +61,7 @@ export function EditAdvancedSettingsScreen({
         onEditRule={(ruleIndex) => navigation.navigate("editRule", ruleIndex)}
         onGoBack={() => navigation.goBack()}
       />
+      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }

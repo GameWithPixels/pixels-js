@@ -7,6 +7,7 @@ import { RuleIndex } from "./components/RuleCard";
 
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { EditorActionTypes, getConditionTypeLabel } from "~/features/profiles";
 import { EditRuleScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -69,6 +70,7 @@ export function EditRuleScreen({
         flagName={flagName}
         navigation={navigation}
       />
+      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }

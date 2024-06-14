@@ -14,6 +14,7 @@ import { Text } from "react-native-paper";
 import { PairedDie } from "~/app/PairedDie";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { ProfileUsage } from "~/components/ProfileUsage";
 import { Banner } from "~/components/banners";
 import {
@@ -212,6 +213,7 @@ export function DieDetailsScreen({
   return (
     <AppBackground>
       <DieDetailsPage pairedDie={pairedDie} navigation={navigation} />
+      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }

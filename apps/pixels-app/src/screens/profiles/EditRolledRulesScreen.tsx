@@ -47,6 +47,7 @@ import { ConfigureActionBottomSheet } from "./components/ConfigureActionBottomSh
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { getActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
@@ -518,6 +519,7 @@ export function EditRollRuleScreen({
         profileUuid={profileUuid}
         onGoBack={() => navigation.goBack()}
       />
+      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }

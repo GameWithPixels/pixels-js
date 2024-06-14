@@ -14,6 +14,7 @@ import { useAppDispatch } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { PageHeader } from "~/components/PageHeader";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { removePairedDie } from "~/features/store";
 import {
   useConnectToMissingPixels,
@@ -121,6 +122,7 @@ export function DieFocusScreen({
   return (
     <AppBackground>
       <DieFocusPage pairedDie={pairedDie} navigation={navigation} />
+      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }

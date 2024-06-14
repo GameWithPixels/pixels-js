@@ -20,6 +20,7 @@ import { PairedDieRenderer } from "./PairedDieRenderer";
 import { PixelBattery } from "./PixelBattery";
 import { PixelRollState } from "./PixelRollState";
 import { PixelRssi } from "./PixelRssi";
+import { PixelTransferProgressBar } from "./PixelTransferProgressBar";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
 import { PairedDie } from "~/app/PairedDie";
@@ -141,7 +142,6 @@ export function PixelVCard({
         {
           aspectRatio: 1,
           justifyContent: "space-around",
-          backgroundColor: "red",
         },
         contentStyle,
       ]}
@@ -171,7 +171,21 @@ export function PixelVCard({
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
         <PairedDieRenderer key={dieRenderWidth} pairedDie={pairedDie} />
       </View>
-      <VCardLabel pairedDie={pairedDie} pixel={pixel} miniCards={miniCards} />
+      <View style={{ width: "100%", alignItems: "center" }}>
+        <VCardLabel pairedDie={pairedDie} pixel={pixel} miniCards={miniCards} />
+        {pixel && (
+          <PixelTransferProgressBar
+            pixel={pixel}
+            style={{
+              position: "absolute",
+              width: "99%",
+              height: 3,
+              top: -10,
+              padding: 1,
+            }}
+          />
+        )}
+      </View>
       <FirmwareUpdateBadge
         pairedDie={pairedDie}
         style={[
@@ -240,6 +254,18 @@ export function PixelHCard({
         pairedDie={pairedDie}
         style={{ position: "absolute", right: 5, top: 5 }}
       />
+      {pixel && (
+        <PixelTransferProgressBar
+          pixel={pixel}
+          style={{
+            position: "absolute",
+            width: "99%",
+            height: 3,
+            top: 3,
+            padding: 1,
+          }}
+        />
+      )}
     </TouchableCard>
   );
 }

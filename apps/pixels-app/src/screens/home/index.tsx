@@ -11,7 +11,6 @@ import { RollsHistoryScreen } from "./RollsHistoryScreen";
 
 import { PairedDie } from "~/app/PairedDie";
 import { NavigationRoot } from "~/components/NavigationRoot";
-import { PixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { SelectedPairedDieContext } from "~/hooks";
 import {
   getStackNavigationOptions,
@@ -77,13 +76,6 @@ export function HomeStack({ route }: HomeStackProps) {
             }}
           />
         </Stack.Navigator>
-        <PixelTransferProgressBar
-          style={{
-            width: "100%",
-            height: 5,
-            position: "absolute",
-          }}
-        />
       </NavigationRoot>
     </SelectedPairedDieProvider>
   );

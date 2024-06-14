@@ -21,6 +21,7 @@ import { pairedDiceSelectors } from "~/app/store";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
+import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { makeTransparent } from "~/components/colors";
 import { generateProfileUuid } from "~/features/profiles";
 import { Library } from "~/features/store";
@@ -225,6 +226,7 @@ export function EditDieProfileScreen({
   return (
     <AppBackground>
       <EditDieProfilePage pairedDie={pairedDie} navigation={navigation} />
+      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }
