@@ -545,7 +545,7 @@ export function Chip({
       {...props}
     >
       <>
-        {children && (
+        {children !== undefined && children !== null && (
           <Text
             variant="labelLarge"
             numberOfLines={1}

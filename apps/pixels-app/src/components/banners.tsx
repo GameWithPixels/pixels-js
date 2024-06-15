@@ -34,7 +34,7 @@ export function Banner({
       <Card {...props}>
         <Card.Content style={{ gap: 10, paddingBottom: 15 }}>
           {title && <Text variant="titleLarge">{title}</Text>}
-          {children && (
+          {children !== undefined && children !== null && (
             <Text
               style={{ marginTop: !title && onDismiss ? 15 : 0 }}
               variant="bodyMedium"

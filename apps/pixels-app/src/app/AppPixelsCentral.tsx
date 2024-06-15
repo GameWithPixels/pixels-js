@@ -2,7 +2,6 @@ import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Color,
   ColorUtils,
-  Constants,
   Pixel,
   PixelMutableProps,
   Profiles,
@@ -41,14 +40,6 @@ import {
   useConnectToMissingPixels,
   usePixelsCentralOnReady,
 } from "~/hooks";
-
-function alertRenameFailed(error: Error) {
-  Alert.alert(
-    "Failed to Rename Die",
-    "An error occurred while renaming the die\n" + String(error),
-    [{ text: "OK", style: "default" }]
-  );
-}
 
 function remoteActionListener(
   pixel: Pixel,
@@ -156,11 +147,16 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       };
       pixel.addPropertyListener("status", onStatus);
 
-      // Show errors to user
+      // Show dialog on rename error
       const onPixelOp = (ev: PixelSchedulerEventMap["onOperation"]) => {
         if (ev.event.type === "failed") {
           if (ev.operation.type === "rename") {
-            alertRenameFailed(ev.event.error);
+            Alert.alert(
+              "Failed to Rename Die",
+              "An error occurred while renaming the die\n" +
+                String(ev.event.error),
+              [{ text: "OK", style: "default" }]
+            );
           }
         }
       };
@@ -177,15 +173,6 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           pixelId
         );
         if (pairedDie) {
-          // D20 default profile hashes
-          if (
-            [
-              0xf069141c, // Factory programmed
-              Constants.factoryProfileHashes["d20"], // Firmware default
-            ].includes(hash)
-          ) {
-            hash = 0xc60d3c5b; // App D20 default profile
-          }
           console.log(
             `[Pixel ${name}] Got profile hash ${unsigned32ToHex(hash)} ` +
               `(stored hash ${unsigned32ToHex(pairedDie.profileHash ?? 0)})`
