@@ -15,7 +15,7 @@ export function StatsBarGraph({
   const faces = Object.keys(rollStats).map(Number);
   const rolls = React.useMemo(() => Object.values(rollStats), [rollStats]);
   // Animation values
-  const max = React.useMemo(() => Math.max(...rolls), [rolls]);
+  const max = React.useMemo(() => Math.max(1, ...rolls), [rolls]);
   const [values, setValues] = React.useState([
     faces.map(() => 1),
     faces.map(() => 1),
@@ -141,7 +141,7 @@ export function StatsList({
             flexDirection: "row",
             alignItems: "center",
             paddingVertical: 5,
-            paddingHorizontal: 10,
+            paddingRight: 5,
             gap: 5,
             borderWidth: StyleSheet.hairlineWidth,
             borderColor: colors.outline,
@@ -169,48 +169,60 @@ export function StatsGrid({
   const chunkSize = 6;
   const chunks: number[][] = [];
   for (let i = 0; i < faces.length; i += chunkSize) {
-    chunks.push(faces.slice(i, i + chunkSize));
+    const chunkFaces = faces.slice(i, i + chunkSize);
+    while (chunkFaces.length < chunkSize) {
+      chunkFaces.push(-1);
+    }
+    chunks.push(chunkFaces);
   }
   const { colors } = useTheme();
   return (
     <View {...props}>
       {chunks.map((chunk, i) => (
-        <View key={i} style={{ flexDirection: "row", width: "100%" }}>
+        <View key={i} style={{ flexDirection: "row" }}>
           {chunk.map((f, j) => (
             <View
               key={j}
               style={{
-                width: "17%",
+                flex: 1,
                 borderWidth: StyleSheet.hairlineWidth,
                 borderColor: colors.outline,
               }}
             >
-              <LinearGradient
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                colors={[
-                  makeTransparent(colors.primary, 0.4),
-                  makeTransparent(colors.secondary, 0.4),
-                ]}
-                style={{
-                  flexDirection: "row",
-                  gap: 5,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <DieIcon dieType={dieType} size={16} color={colors.onSurface} />
-                <Text style={{ color: colors.onSurface }}>{f}</Text>
-              </LinearGradient>
-              <Text
-                style={{
-                  alignSelf: "center",
-                  margin: 4,
-                  backgroundColor: colors.surface,
-                }}
-              >
-                {rollStats[f]}
-              </Text>
+              {f >= 0 && (
+                <>
+                  <LinearGradient
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    colors={[
+                      makeTransparent(colors.primary, 0.4),
+                      makeTransparent(colors.secondary, 0.4),
+                    ]}
+                    style={{
+                      flexDirection: "row",
+                      gap: 5,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <DieIcon
+                      dieType={dieType}
+                      size={16}
+                      color={colors.onSurface}
+                    />
+                    <Text style={{ color: colors.onSurface }}>{f}</Text>
+                  </LinearGradient>
+                  <Text
+                    style={{
+                      alignSelf: "center",
+                      margin: 4,
+                      backgroundColor: colors.surface,
+                    }}
+                  >
+                    {rollStats[f]}
+                  </Text>
+                </>
+              )}
             </View>
           ))}
         </View>

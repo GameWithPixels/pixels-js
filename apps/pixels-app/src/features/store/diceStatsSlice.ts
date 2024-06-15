@@ -9,8 +9,8 @@ import { logWrite } from "./logWrite";
 
 export interface DieSession {
   index: number;
-  startTime: number; // Timestamp
-  endTime: number; // Timestamp
+  startTime: number; // Timestamp, 0 means not yet started
+  endTime: number; // Timestamp of last roll
   rolls: number[];
 }
 
@@ -22,10 +22,9 @@ export const sessionsAdapter = createEntityAdapter({
 
 export interface DieStats {
   pixelId: number;
-  lastRolls: number[];
+  lastRolls: number[]; // The last few rolls
   sessions: DieSessionsState;
-  lastUsedSessionIndex: number; // Session with this index might have been removed
-  forceNewSession: boolean;
+  paused: boolean;
 }
 
 export type DiceStatsState = EntityState<DieStats>;
@@ -33,6 +32,9 @@ export type DiceStatsState = EntityState<DieStats>;
 export const diceStatsAdapter = createEntityAdapter({
   selectId: (dieStats: DieStats) => dieStats.pixelId,
 });
+
+// 4 hours in milliseconds
+export const sessionMaxDuration = 4 * 60 * 60 * 1000;
 
 function log(
   action:
@@ -42,6 +44,18 @@ function log(
     | "newDieSessionOnRoll"
 ) {
   logWrite(action);
+}
+
+function addSession(stats: DieStats, startTime: number): DieSession {
+  const lastSession = stats.sessions.entities[stats.sessions.ids.at(-1) ?? 0];
+  const session = {
+    index: (lastSession?.index ?? 0) + 1,
+    startTime,
+    endTime: startTime,
+    rolls: [],
+  };
+  stats.sessions = sessionsAdapter.addOne(stats.sessions, session);
+  return session;
 }
 
 // Redux slice that stores paired dice statistics
@@ -67,8 +81,7 @@ const DiceStatsSlice = createSlice({
         pixelId,
         lastRolls: [],
         sessions: sessionsAdapter.getInitialState(),
-        lastUsedSessionIndex: 0,
-        forceNewSession: false,
+        paused: false,
       };
 
       // Store roll
@@ -77,46 +90,20 @@ const DiceStatsSlice = createSlice({
       }
       stats.lastRolls.push(roll);
 
-      // Continue last session if within 4 hours or if time is older than last session
-      const now = Date.now();
-      const lastSession =
-        stats.sessions.entities[
-          stats.sessions.ids[stats.sessions.ids.length - 1]
-        ];
-      const sessionMaxDuration = 4 * 60 * 60 * 1000;
-      const newSession =
-        stats.forceNewSession ||
-        !lastSession ||
-        now - lastSession.endTime > sessionMaxDuration;
-      if (newSession) {
-        stats.lastUsedSessionIndex++;
+      if (!stats.paused) {
+        const now = Date.now();
+        // Continue last session if within 4 hours or if time is older than last session
+        let lastSession =
+          stats.sessions.entities[stats.sessions.ids.at(-1) ?? 0];
+        if (!lastSession || now - lastSession.endTime > sessionMaxDuration) {
+          lastSession = addSession(stats, now);
+        }
+        // Add roll to session
+        lastSession.rolls.push(roll);
+        lastSession.endTime = now;
       }
-      const session = newSession
-        ? {
-            index: stats.lastUsedSessionIndex,
-            startTime: now,
-            endTime: now,
-            rolls: [],
-          }
-        : lastSession;
 
-      // Update session
-      session.rolls.push(roll);
-      session.endTime = now;
-      if (newSession) {
-        stats.sessions = sessionsAdapter.addOne(stats.sessions, session);
-        stats.forceNewSession = false;
-      }
       return diceStatsAdapter.setOne(state, stats);
-    },
-
-    newDieSessionOnRoll(state, action: PayloadAction<{ pixelId: number }>) {
-      log("newDieSessionOnRoll");
-      const { pixelId } = action.payload;
-      const stats = state.entities[pixelId];
-      if (stats) {
-        stats.forceNewSession = true;
-      }
     },
 
     removeDieSession(
@@ -130,10 +117,25 @@ const DiceStatsSlice = createSlice({
       const { pixelId, index } = action.payload;
       const stats = state.entities[pixelId];
       if (stats?.sessions.entities[index]) {
-        if (index === stats.sessions.ids[stats.sessions.ids.length - 1]) {
-          stats.forceNewSession = true;
-        }
         sessionsAdapter.removeOne(stats.sessions, index);
+        // Re-create an empty session if there are no sessions left
+        if (!stats.sessions.ids.length) {
+          addSession(stats, Date.now());
+        }
+      }
+    },
+
+    setDieSessionPaused(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        paused: boolean;
+      }>
+    ) {
+      const { pixelId, paused } = action.payload;
+      const stats = state.entities[pixelId];
+      if (stats) {
+        stats.paused = paused;
       }
     },
   },
@@ -142,7 +144,7 @@ const DiceStatsSlice = createSlice({
 export const {
   resetDiceStats,
   addDieRoll,
-  newDieSessionOnRoll,
   removeDieSession,
+  setDieSessionPaused,
 } = DiceStatsSlice.actions;
 export default DiceStatsSlice.reducer;
