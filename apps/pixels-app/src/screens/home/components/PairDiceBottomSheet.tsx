@@ -160,16 +160,7 @@ function SelectScannedPixels({
           gap: 15,
         }}
       >
-        {showNoDie && !scannedPixels.length && (
-          <AnimatedText
-            entering={FadeIn.duration(300)}
-            style={{ marginLeft: 10 }}
-          >
-            {getNoAvailableDiceMessage()}
-            {"\n\n"}For help about turning on your dice go in the "More" tab.
-          </AnimatedText>
-        )}
-        {!!scannedPixels.length &&
+        {scannedPixels.length ? (
           range(numColumns).map((col) => (
             <ScannedPixelsColumn
               key={col}
@@ -185,7 +176,20 @@ function SelectScannedPixels({
                 )
               }
             />
-          ))}
+          ))
+        ) : (
+          <AnimatedText
+            key={showNoDie ? "no-die" : "searching"}
+            entering={FadeIn.duration(300)}
+            style={{ marginLeft: 10 }}
+          >
+            {showNoDie
+              ? getNoAvailableDiceMessage() +
+                `\n\nFor help about turning on your dice go in the "More" tab`
+              : "Searching for dice..."}
+            .
+          </AnimatedText>
+        )}
       </BottomSheetScrollView>
       <GradientButton
         disabled={!selection.length}
@@ -195,9 +199,7 @@ function SelectScannedPixels({
       >
         {!selection.length
           ? "No Die Selected"
-          : selection.length === 1
-            ? "Pair 1 Pixels Die"
-            : `Pair ${selection.length} Pixels Dice`}
+          : `Pair ${selection.length} Pixels ${selection.length <= 1 ? "Die" : "Dice"}`}
       </GradientButton>
     </>
   );
@@ -277,18 +279,21 @@ export function PairDiceBottomSheet({
               gap: 10,
             }}
           >
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Text variant="titleMedium">Select Pixels Dice to Pair</Text>
-              <Text style={AppStyles.selfCentered}>
-                {availablePixels.length <= 3
-                  ? ""
-                  : ` (${availablePixels.length} available)`}
-              </Text>
-            </View>
             {visible && (
               <BluetoothStateWarning>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text variant="titleMedium">Select Pixels Dice to Pair</Text>
+                  <Text style={AppStyles.selfCentered}>
+                    {availablePixels.length <= 3
+                      ? ""
+                      : ` (${availablePixels.length} available)`}
+                  </Text>
+                </View>
                 {scanError ? (
                   <Text variant="bodyLarge" style={{ padding: 10 }}>
                     ❌ Error trying to scan for dice!{"\n"}

@@ -41,7 +41,8 @@ function log(
     | "resetDiceStats"
     | "addDieRoll"
     | "removeDieSession"
-    | "newDieSessionOnRoll"
+    | "removeDieSessionLastRoll"
+    | "setDieSessionPaused"
 ) {
   logWrite(action);
 }
@@ -125,6 +126,22 @@ const DiceStatsSlice = createSlice({
       }
     },
 
+    removeDieSessionLastRoll(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        index: number;
+      }>
+    ) {
+      log("removeDieSessionLastRoll");
+      const { pixelId, index } = action.payload;
+      const session = state.entities[pixelId]?.sessions.entities[index];
+      if (session?.rolls.length) {
+        // Remove last roll
+        session.rolls.pop();
+      }
+    },
+
     setDieSessionPaused(
       state,
       action: PayloadAction<{
@@ -132,6 +149,7 @@ const DiceStatsSlice = createSlice({
         paused: boolean;
       }>
     ) {
+      log("setDieSessionPaused");
       const { pixelId, paused } = action.payload;
       const stats = state.entities[pixelId];
       if (stats) {
@@ -145,6 +163,7 @@ export const {
   resetDiceStats,
   addDieRoll,
   removeDieSession,
+  removeDieSessionLastRoll,
   setDieSessionPaused,
 } = DiceStatsSlice.actions;
 export default DiceStatsSlice.reducer;

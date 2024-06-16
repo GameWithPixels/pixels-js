@@ -4,10 +4,18 @@ import {
   PixelDieType,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleProp, StyleSheet, View, ViewProps } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { CardProps, Text, TouchableRipple, useTheme } from "react-native-paper";
+import {
+  CardProps,
+  Text,
+  TouchableRipple,
+  TouchableRippleProps,
+  useTheme,
+} from "react-native-paper";
 import Animated, {
   CurvedTransition,
   Easing,
@@ -28,7 +36,9 @@ import {
 } from "~/components/buttons";
 import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
 import {
+  DieSession,
   removeDieSession,
+  removeDieSessionLastRoll,
   sessionMaxDuration,
   setDieSessionPaused,
   setShowRollsHelp,
@@ -39,6 +49,32 @@ import {
   useWatchedPixel,
 } from "~/hooks";
 import { RollsHistoryScreenProps } from "~/navigation";
+
+async function shareSession(session: DieSession): Promise<void> {
+  // const keys = Object.keys(data[0]);
+  // const header = keys.join(",");
+  // const lines = data.map((d) => keys.map((k) => d[k].toString()).join(","));
+  // const contents = header + "\n" + lines.join("\n");
+  // if (Platform.OS === "android") {
+  //   const uri = await requestUserFileAsync(filename);
+  //   console.log(`About to write ${contents.length} characters to ${filename}`);
+  //   await StorageAccessFramework.writeAsStringAsync(uri, contents);
+  // } else {
+  //   const uri = await Pathname.generateTempPathnameAsync(".csv");
+  if (FileSystem.cacheDirectory) {
+    const uri =
+      FileSystem.cacheDirectory + Math.round(1e9 * Math.random()) + ".csv";
+    try {
+      await FileSystem.writeAsStringAsync(
+        uri,
+        "session\n" + session.rolls.join("\n")
+      );
+      await Sharing.shareAsync(uri);
+    } finally {
+      await FileSystem.deleteAsync(uri, { idempotent: true });
+    }
+  }
+}
 
 function toHHMMSS(ms: number): string {
   const numSecs = Math.floor(ms / 1000);
@@ -58,32 +94,35 @@ function toHHMMSS(ms: number): string {
 
 function TransparentButton({
   children,
-  onPress,
-}: React.PropsWithChildren<{
-  onPress: () => void;
-}>) {
+  style,
+  ...props
+}: React.PropsWithChildren<
+  Omit<TouchableRippleProps, "children" | "style"> & {
+    style?: StyleProp<ViewProps>;
+  }
+>) {
   const borderRadius = 1000; // Big enough to be a circle
   const { colors } = useTheme();
   return (
     <TouchableRipple
       borderless
-      style={{ padding: 10, borderRadius }}
-      onPress={onPress}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 10,
-          paddingVertical: 5,
-          gap: 5,
+      style={[
+        {
           borderRadius,
           borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.onSurface,
-        }}
-      >
-        {children}
-      </View>
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 5,
+          paddingLeft: 10,
+          paddingRight: 15,
+          gap: 5,
+        },
+        style,
+      ]}
+      {...props}
+    >
+      <>{children}</>
     </TouchableRipple>
   );
 }
@@ -137,37 +176,42 @@ function CurrentSessionControls({
           endTime={startTime + sessionMaxDuration}
         />
       ) : (
-        <Text variant="bodyLarge" style={{ alignSelf: "center", marginTop: 5 }}>
+        <Text
+          variant="bodyLarge"
+          style={{ alignSelf: "center", marginVertical: 10 }}
+        >
           ⚠️ Connect your die to track rolls.
         </Text>
       )}
-      <View
-        style={{
-          flexDirection: "row",
-          marginHorizontal: -10,
-        }}
-      >
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <TransparentButton
           onPress={() =>
             appDispatch(setDieSessionPaused({ pixelId, paused: !paused }))
           }
         >
-          <MaterialIcons
-            name={paused ? "pause-circle-outline" : "play-circle-outline"}
-            size={28}
-            color={colors.onSurface}
-          />
-          <Text>{paused ? "Resume" : "Pause"} reading rolls</Text>
+          {paused ? (
+            <MaterialIcons name="pause" size={28} color={colors.onSurface} />
+          ) : (
+            <MaterialCommunityIcons
+              name="play-outline"
+              size={24}
+              color={colors.onSurface}
+            />
+          )}
+          <Text style={{ minWidth: 110 }}>
+            {paused ? "Resume" : "Pause"} reading rolls
+          </Text>
         </TransparentButton>
-        <View style={{ flexGrow: 1 }} />
-        <TransparentButton onPress={() => {}}>
-          <MaterialCommunityIcons
-            name="stop-circle-outline"
-            size={28}
-            color={colors.onSurface}
-          />
-          <Text>End Session</Text>
-        </TransparentButton>
+        {!isEmpty && (
+          <TransparentButton onPress={() => {}}>
+            <MaterialCommunityIcons
+              name="stop"
+              size={24}
+              color={colors.onSurface}
+            />
+            <Text>End Session</Text>
+          </TransparentButton>
+        )}
       </View>
     </>
   );
@@ -213,6 +257,16 @@ function DieStatsCard({
     }
   );
 
+  const confirmRemoveLast = useConfirmActionSheet(
+    `Remove Last Roll (${session?.rolls.at(-1) ?? 0})?`,
+    () => {
+      session &&
+        appDispatch(
+          removeDieSessionLastRoll({ pixelId, index: session.index })
+        );
+    }
+  );
+
   const [viewMode, setViewMode] = React.useState<StatsViewMode>("bars");
   const { colors } = useTheme();
   return session ? (
@@ -239,7 +293,7 @@ function DieStatsCard({
       >
         <MaterialCommunityIcons
           name="trash-can-outline"
-          size={20}
+          size={24}
           color={colors.onSurface}
         />
       </TouchableRipple>
@@ -255,6 +309,7 @@ function DieStatsCard({
           <View
             style={{
               flexDirection: "row",
+              marginLeft: 5,
               gap: 10,
             }}
           >
@@ -268,6 +323,7 @@ function DieStatsCard({
           <View
             style={{
               flexDirection: "row",
+              marginLeft: 5,
               gap: 10,
             }}
           >
@@ -283,6 +339,7 @@ function DieStatsCard({
           <View
             style={{
               flexDirection: "row",
+              marginLeft: 5,
               gap: 10,
             }}
           >
@@ -316,6 +373,33 @@ function DieStatsCard({
           ) : (
             <StatsGrid rollStats={rollStats} dieType={dieType} />
           )}
+          <Text style={{ margin: 5 }}>
+            Last Few Rolls: {session.rolls.slice(-10).join(", ")}{" "}
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              marginTop: 5,
+              justifyContent: "space-between",
+            }}
+          >
+            <TransparentButton onPress={() => shareSession(session)}>
+              <MaterialCommunityIcons
+                name="file-export-outline"
+                size={24}
+                color={colors.onSurface}
+              />
+              <Text>Export Session</Text>
+            </TransparentButton>
+            <TransparentButton onPress={confirmRemoveLast}>
+              <MaterialCommunityIcons
+                name="selection-ellipse-remove"
+                size={24}
+                color={colors.onSurface}
+              />
+              <Text>Remove Last Roll</Text>
+            </TransparentButton>
+          </View>
         </>
       )}
     </Card>
