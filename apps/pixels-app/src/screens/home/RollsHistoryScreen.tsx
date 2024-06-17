@@ -2,6 +2,7 @@ import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import {
   DiceUtils,
   PixelDieType,
+  useForceUpdate,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import * as FileSystem from "expo-file-system";
@@ -34,15 +35,23 @@ import {
   StatsViewMode,
   StatsViewModeButton,
 } from "~/components/buttons";
-import { StatsBarGraph, StatsGrid, StatsList } from "~/components/stats";
 import {
+  RollStats,
+  StatsBarGraph,
+  StatsGrid,
+  StatsList,
+} from "~/components/stats";
+import {
+  createDieSession,
   DieSession,
+  endDieLastSession,
   removeDieSession,
   removeDieSessionLastRoll,
-  sessionMaxDuration,
+  sessionMaxInactivityDuration,
   setDieSessionPaused,
   setShowRollsHelp,
 } from "~/features/store";
+import { generateUuid } from "~/features/utils";
 import {
   useConfirmActionSheet,
   useSetSelectedPairedDie,
@@ -50,25 +59,39 @@ import {
 } from "~/hooks";
 import { RollsHistoryScreenProps } from "~/navigation";
 
-async function shareSession(session: DieSession): Promise<void> {
-  // const keys = Object.keys(data[0]);
-  // const header = keys.join(",");
-  // const lines = data.map((d) => keys.map((k) => d[k].toString()).join(","));
-  // const contents = header + "\n" + lines.join("\n");
-  // if (Platform.OS === "android") {
-  //   const uri = await requestUserFileAsync(filename);
-  //   console.log(`About to write ${contents.length} characters to ${filename}`);
-  //   await StorageAccessFramework.writeAsStringAsync(uri, contents);
-  // } else {
-  //   const uri = await Pathname.generateTempPathnameAsync(".csv");
+function computeStats(dieType: PixelDieType, rolls: number[]): RollStats {
+  const stats: { [key: number]: number } = {};
+  for (const face of DiceUtils.getDieFaces(dieType)) {
+    stats[face] = 0;
+  }
+  for (const roll of rolls) {
+    if (stats[roll] !== undefined) {
+      stats[roll] = stats[roll] + 1;
+    }
+  }
+  return stats;
+}
+
+async function shareSession(
+  dieType: PixelDieType,
+  session: DieSession
+): Promise<void> {
   if (FileSystem.cacheDirectory) {
+    const rollStats = computeStats(dieType, session.rolls);
+    const faces = Object.keys(rollStats).map(Number);
+    const rolls = Object.values(rollStats);
+    const content = [
+      `Session Index,${session.index}`,
+      `Start Time,"${session.startTime ? new Date(session.startTime).toISOString() : "N/A"}"`,
+      `End Time,"${session.startTime ? new Date(session.endTime).toISOString() : "N/A"}"`,
+      `Rolls,${session.rolls.join(",")}`,
+    ]
+      .concat(faces.map((f, i) => `Face ${f},${rolls[i]}`))
+      .join("\n");
     const uri =
-      FileSystem.cacheDirectory + Math.round(1e9 * Math.random()) + ".csv";
+      FileSystem.cacheDirectory + "session-" + generateUuid() + ".csv";
     try {
-      await FileSystem.writeAsStringAsync(
-        uri,
-        "session\n" + session.rolls.join("\n")
-      );
+      await FileSystem.writeAsStringAsync(uri, content);
       await Sharing.shareAsync(uri);
     } finally {
       await FileSystem.deleteAsync(uri, { idempotent: true });
@@ -134,20 +157,19 @@ function CurrentSessionMessage({
   isEmpty?: boolean;
   endTime: number;
 }) {
-  const [timeLeft, setTimeLeft] = React.useState(endTime - Date.now());
+  const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     if (!isEmpty) {
-      const id = setInterval(() => {
-        setTimeLeft(endTime - Date.now());
-      }, 10000); // Refresh every 10s
+      // Refresh every 10s
+      const id = setInterval(() => forceUpdate, 10000);
       return () => clearInterval(id);
     }
-  }, [endTime, isEmpty]);
+  }, [forceUpdate, isEmpty]);
   return (
     <Text style={{ marginTop: 5 }}>
       {isEmpty
         ? "Roll your die to start this new session"
-        : `This session will automatically end in ${toHHMMSS(timeLeft)} unless a roll happens before then.`}
+        : `Automatically ends in ${toHHMMSS(endTime - Date.now())} unless a roll is received before then.`}
     </Text>
   );
 }
@@ -173,7 +195,7 @@ function CurrentSessionControls({
       {status === "ready" ? (
         <CurrentSessionMessage
           isEmpty={isEmpty}
-          endTime={startTime + sessionMaxDuration}
+          endTime={startTime + sessionMaxInactivityDuration}
         />
       ) : (
         <Text
@@ -183,14 +205,20 @@ function CurrentSessionControls({
           ⚠️ Connect your die to track rolls.
         </Text>
       )}
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          marginVertical: 10,
+          justifyContent: "space-between",
+        }}
+      >
         <TransparentButton
           onPress={() =>
             appDispatch(setDieSessionPaused({ pixelId, paused: !paused }))
           }
         >
           {paused ? (
-            <MaterialIcons name="pause" size={28} color={colors.onSurface} />
+            <MaterialIcons name="pause" size={24} color={colors.onSurface} />
           ) : (
             <MaterialCommunityIcons
               name="play-outline"
@@ -198,12 +226,14 @@ function CurrentSessionControls({
               color={colors.onSurface}
             />
           )}
-          <Text style={{ minWidth: 110 }}>
+          <Text style={{ minWidth: 120 }}>
             {paused ? "Resume" : "Pause"} reading rolls
           </Text>
         </TransparentButton>
         {!isEmpty && (
-          <TransparentButton onPress={() => {}}>
+          <TransparentButton
+            onPress={() => appDispatch(endDieLastSession({ pixelId }))}
+          >
             <MaterialCommunityIcons
               name="stop"
               size={24}
@@ -231,26 +261,16 @@ function DieStatsCard({
   isCurrentSession?: boolean;
 } & Omit<CardProps, "children">) {
   const appDispatch = useAppDispatch();
-  const session = useAppSelector(
-    (state) => state.diceStats.entities[pixelId]?.sessions.entities[sessionId]
+  const session =
+    useAppSelector(
+      (state) => state.diceStats.entities[pixelId]?.sessions.entities[sessionId]
+    ) ?? createDieSession();
+  const rollStats = React.useMemo(
+    () => computeStats(dieType, session.rolls),
+    [dieType, session.rolls]
   );
-  const isEmpty = !session?.rolls.length;
-  const rollStats = React.useMemo(() => {
-    const stats: { [key: number]: number } = {};
-    for (const face of DiceUtils.getDieFaces(dieType)) {
-      stats[face] = 0;
-    }
-    if (session?.rolls) {
-      for (const roll of session.rolls) {
-        if (stats[roll] !== undefined) {
-          stats[roll] = stats[roll] + 1;
-        }
-      }
-    }
-    return stats;
-  }, [dieType, session?.rolls]);
   const confirmDelete = useConfirmActionSheet(
-    `Delete Session ${session?.index}`,
+    `Delete Session ${session.index}`,
     () => {
       session &&
         appDispatch(removeDieSession({ pixelId, index: session.index }));
@@ -258,7 +278,7 @@ function DieStatsCard({
   );
 
   const confirmRemoveLast = useConfirmActionSheet(
-    `Remove Last Roll (${session?.rolls.at(-1) ?? 0})?`,
+    `Remove Last Roll (${session.rolls.at(-1) ?? 0})?`,
     () => {
       session &&
         appDispatch(
@@ -272,7 +292,7 @@ function DieStatsCard({
   return session ? (
     <Card
       contentStyle={[
-        { alignItems: "stretch", padding: 10, gap: 5 },
+        { alignItems: "stretch", padding: 10, gap: 10 },
         contentStyle,
       ]}
       {...props}
@@ -301,10 +321,10 @@ function DieStatsCard({
         <CurrentSessionControls
           pixelId={pixelId}
           startTime={session.startTime}
-          isEmpty={isEmpty}
+          isEmpty={!session.rolls.length}
         />
       )}
-      {!isEmpty && (
+      {session.rolls.length > 0 && (
         <>
           <View
             style={{
@@ -318,7 +338,7 @@ function DieStatsCard({
               size={15}
               color={colors.onSurface}
             />
-            <Text>Rolls: {session.rolls.length}</Text>
+            <Text>Number of Rolls: {session.rolls.length}</Text>
           </View>
           <View
             style={{
@@ -349,10 +369,20 @@ function DieStatsCard({
               color={colors.onSurface}
             />
             <Text>
-              Duration: {toHHMMSS(session.endTime - session.startTime)}
+              Duration:{" "}
+              {isCurrentSession
+                ? "on going"
+                : toHHMMSS(session.endTime - session.startTime)}
             </Text>
             <View style={{ flexGrow: 1 }} />
-            <View style={{ flexDirection: "row", marginTop: -10 }}>
+            <View
+              style={{
+                position: "absolute",
+                right: 0,
+                flexDirection: "row",
+                top: -10,
+              }}
+            >
               {["bars", "list", "grid"].map((vm) => (
                 <StatsViewModeButton
                   key={vm}
@@ -373,31 +403,30 @@ function DieStatsCard({
           ) : (
             <StatsGrid rollStats={rollStats} dieType={dieType} />
           )}
-          <Text style={{ margin: 5 }}>
-            Last Few Rolls: {session.rolls.slice(-10).join(", ")}{" "}
+          <Text style={{ marginLeft: 5 }}>
+            Last Few Rolls: {session.rolls.slice(-10).reverse().join(", ")}
           </Text>
           <View
             style={{
               flexDirection: "row",
-              marginTop: 5,
               justifyContent: "space-between",
             }}
           >
-            <TransparentButton onPress={() => shareSession(session)}>
-              <MaterialCommunityIcons
-                name="file-export-outline"
-                size={24}
-                color={colors.onSurface}
-              />
-              <Text>Export Session</Text>
-            </TransparentButton>
             <TransparentButton onPress={confirmRemoveLast}>
               <MaterialCommunityIcons
                 name="selection-ellipse-remove"
                 size={24}
                 color={colors.onSurface}
               />
-              <Text>Remove Last Roll</Text>
+              <Text>Remove Last Roll ({session.rolls.at(-1)})</Text>
+            </TransparentButton>
+            <TransparentButton onPress={() => shareSession(dieType, session)}>
+              <MaterialCommunityIcons
+                name="file-export-outline"
+                size={24}
+                color={colors.onSurface}
+              />
+              <Text>Export</Text>
             </TransparentButton>
           </View>
         </>
@@ -417,7 +446,7 @@ function RollsHistoryPage({
   const showHelp = useAppSelector((state) => state.appSettings.showRollsHelp);
 
   const sessionIds = useAppSelector(
-    (state) => state.diceStats.entities[pairedDie.pixelId]?.sessions?.ids
+    (state) => state.diceStats.entities[pairedDie.pixelId]?.sessions.ids
   );
   const [maxSessionsToShow, setMaxSessionsToShow] = React.useState(20);
 
@@ -441,34 +470,32 @@ function RollsHistoryPage({
           Here you will find all the rolls, grouped by session, that your dice
           made while connected to the app.
         </Banner>
-        {!!sessionIds?.length && (
-          <View style={{ gap: 20 }}>
-            {sessionIds
-              .slice(sessionIds.length - maxSessionsToShow)
-              .reverse()
-              .map((id, i) => (
-                <Animated.View
-                  key={id}
-                  entering={FadeIn.duration(300)}
-                  layout={CurvedTransition.easingY(Easing.linear).duration(300)}
-                >
-                  <DieStatsCard
-                    pixelId={pairedDie.pixelId}
-                    sessionId={id as number}
-                    dieType={pairedDie.dieType}
-                    isCurrentSession={i === 0}
-                  />
-                </Animated.View>
-              ))}
-            {sessionIds.length > maxSessionsToShow && (
-              <OutlineButton
-                onPress={() => setMaxSessionsToShow((i) => i + 20)}
+        {/* We should always have a session except on first render */}
+        <View style={{ gap: 20 }}>
+          {(sessionIds?.length
+            ? sessionIds.slice(sessionIds.length - maxSessionsToShow).reverse()
+            : [-1]
+          ) // -1 is a placeholder for empty session
+            .map((id, i) => (
+              <Animated.View
+                key={id}
+                entering={FadeIn.duration(300)}
+                layout={CurvedTransition.easingY(Easing.linear).duration(300)}
               >
-                Show More Sessions
-              </OutlineButton>
-            )}
-          </View>
-        )}
+                <DieStatsCard
+                  pixelId={pairedDie.pixelId}
+                  sessionId={id as number}
+                  dieType={pairedDie.dieType}
+                  isCurrentSession={i === 0}
+                />
+              </Animated.View>
+            ))}
+          {sessionIds && sessionIds.length > maxSessionsToShow && (
+            <OutlineButton onPress={() => setMaxSessionsToShow((i) => i + 20)}>
+              Show More Sessions
+            </OutlineButton>
+          )}
+        </View>
       </GHScrollView>
     </View>
   );

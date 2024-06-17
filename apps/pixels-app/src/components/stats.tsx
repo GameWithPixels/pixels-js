@@ -8,10 +8,12 @@ import { Text, useTheme } from "react-native-paper";
 import { makeTransparent } from "./colors";
 import { DieIcon } from "./icons";
 
+export type RollStats = Readonly<{ [key: number]: number }>;
+
 export function StatsBarGraph({
   rollStats,
   ...props
-}: { rollStats: Readonly<{ [key: number]: number }> } & ViewProps) {
+}: { rollStats: RollStats } & ViewProps) {
   const faces = Object.keys(rollStats).map(Number);
   const rolls = React.useMemo(() => Object.values(rollStats), [rollStats]);
   // Animation values
@@ -117,12 +119,12 @@ export function StatsBarGraph({
 }
 
 export function StatsList({
-  rollStats,
   dieType,
+  rollStats,
   ...props
 }: {
-  rollStats: Readonly<{ [key: number]: number }>;
   dieType: PixelDieType;
+  rollStats: RollStats;
 } & ViewProps) {
   const faces = Object.keys(rollStats).map(Number);
   const { colors } = useTheme();
@@ -158,12 +160,12 @@ export function StatsList({
 }
 
 export function StatsGrid({
-  rollStats,
   dieType,
+  rollStats,
   ...props
 }: {
-  rollStats: Readonly<{ [key: number]: number }>;
   dieType: PixelDieType;
+  rollStats: RollStats;
 } & ViewProps) {
   const faces = Object.keys(rollStats).map(Number);
   const chunkSize = 6;
