@@ -218,7 +218,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
       ) : selection ? (
         // Confirm selection
         <BaseVStack gap={10}>
-          <Text>{`Proceed with firmware update on ${selection.name}?`}</Text>
+          <Text>{`Proceed with updating firmware on ${selection.name}?`}</Text>
           <BaseHStack alignSelf="center" gap={10}>
             <Button
               mode="contained-tonal"

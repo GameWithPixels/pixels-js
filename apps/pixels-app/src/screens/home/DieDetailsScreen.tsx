@@ -20,6 +20,7 @@ import { Banner } from "~/components/banners";
 import {
   getColorwayLabel,
   getDieTypeLabel,
+  getFirmwareUpdateAvailable,
   getRollStateLabel,
 } from "~/features/profiles";
 import {
@@ -82,19 +83,17 @@ export function DieProfile({
   profile: Readonly<Profiles.Profile>;
 }) {
   return (
-    <>
-      <SectionTitle>Active Profile</SectionTitle>
-      <View style={styles.paragraph}>
-        {profile ? (
+    profile && (
+      <>
+        <SectionTitle>Profile</SectionTitle>
+        <View style={styles.paragraph}>
           <>
             <Text>Name: {profile.name}</Text>
             <ProfileUsage profile={profile} />
           </>
-        ) : (
-          <Text>No Profile!</Text>
-        )}
-      </View>
-    </>
+        </View>
+      </>
+    )
   );
 }
 
@@ -143,23 +142,20 @@ function DieAdvancedInfo({
 
 function FirmwareUpdateBanner({
   pixel,
-  onAction,
+  onUpdate,
 }: {
   pixel: Pixel;
-  onAction?: () => void;
+  onUpdate?: () => void;
 }) {
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
-  const [firmwareUpdateVisible, setFirmwareUpdateVisible] =
-    React.useState(true);
   return hasFirmwareUpdate ? (
     <Banner
-      visible={firmwareUpdateVisible}
-      title="Update Available!"
+      visible
+      title="Update Available"
       actionText="Update Now"
-      onAction={onAction}
-      onDismiss={() => setFirmwareUpdateVisible(false)}
+      onAction={onUpdate}
     >
-      A firmware update is available for your die.
+      {getFirmwareUpdateAvailable(1)}
     </Banner>
   ) : null;
 }
@@ -188,7 +184,7 @@ function DieDetailsPage({
         {pixel && (
           <FirmwareUpdateBanner
             pixel={pixel}
-            onAction={() => navigation.replace("firmwareUpdate")}
+            onUpdate={() => navigation.replace("firmwareUpdate")}
           />
         )}
         <DieStatus pixel={pixel} style={{ marginTop: 10 }} />

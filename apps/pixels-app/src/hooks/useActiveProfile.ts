@@ -13,8 +13,8 @@ export function usePairedDieProfileUuid(
   );
   assert(
     profileUuid?.length,
-    `No active profile found for pixel ${unsigned32ToHex(pairedDie.pixelId)}`
+    `No profile found for pixel ${unsigned32ToHex(pairedDie.pixelId)}`
   );
-  // logError(`No active profile found for pixel ${unsigned32ToHex(pixel.pixelId)}`);
+  // logError(`No profile found for pixel ${unsigned32ToHex(pixel.pixelId)}`);
   return profileUuid;
 }

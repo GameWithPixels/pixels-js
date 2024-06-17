@@ -271,6 +271,10 @@ export function getColorOverrideLabel(
   }
 }
 
+export function getFirmwareUpdateAvailable(diceCount?: number): string {
+  return `A firmware update is available for your ${diceCount === 1 ? "die" : "dice"}.`;
+}
+
 export function getKeepAllDiceUpToDate(): string {
   return (
     "We recommend to keep all dice up-to-date to ensure that " +

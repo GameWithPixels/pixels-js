@@ -46,7 +46,7 @@ function PixelRollState({
   const pixel = useWatchedPixel(pairedDie);
   const [rollEv] = usePixelEvent(pixel, "roll");
   const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
-  return <Text {...props}>{rolling ? "Die is rolling" : "Last rolls"}</Text>;
+  return <Text {...props}>{rolling ? "Rolling..." : "Last rolls"}</Text>;
 }
 
 function AnimatedDieIcon({

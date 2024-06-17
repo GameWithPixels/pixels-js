@@ -234,7 +234,6 @@ function ProfilesListPage({
         ) : (
           <ProfilesList
             profiles={filteredProfiles}
-            expandableItems
             onSelectProfile={editProfile}
             onProgramDice={setProfileToProgram}
             groupBy={groupBy}

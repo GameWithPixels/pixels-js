@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  PixelStatus,
   usePixelEvent,
   usePixelProp,
   usePixelStatus,
@@ -17,57 +16,11 @@ import Animated, {
 
 import { PairedDie } from "~/app/PairedDie";
 import { PixelBattery } from "~/components/PixelBattery";
+import { PixelConnectionStatus } from "~/components/PixelConnectionStatus";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
 import { useWatchedPixel } from "~/hooks";
-
-function AnimatedConnectionIcon({
-  size,
-  color,
-}: {
-  size: number;
-  color?: string;
-}) {
-  const progress = useSharedValue(0);
-  React.useEffect(() => {
-    progress.value = withRepeat(withTiming(360, { duration: 3000 }), -1);
-  }, [progress]);
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: progress.value + "deg" }],
-  }));
-  return (
-    <Animated.View style={animStyle}>
-      <MaterialCommunityIcons
-        name="bluetooth-connect"
-        size={size}
-        color={color}
-      />
-    </Animated.View>
-  );
-}
-
-function PixelConnectionStatus({
-  status,
-  size,
-  color,
-}: {
-  status?: PixelStatus;
-  size: number;
-  color?: string;
-}) {
-  if (status === "ready") {
-    return (
-      <MaterialCommunityIcons name="bluetooth" size={size} color={color} />
-    );
-  } else if (status === "connecting" || status === "identifying") {
-    return <AnimatedConnectionIcon size={size} color={color} />;
-  } else {
-    return (
-      <MaterialCommunityIcons name="bluetooth-off" size={size} color={color} />
-    );
-  }
-}
 
 function AnimatedChargingIcon({
   size,

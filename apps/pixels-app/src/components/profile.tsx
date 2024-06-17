@@ -1,4 +1,3 @@
-import { Fontisto, MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
@@ -7,23 +6,13 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import Animated, {
-  FadeIn,
-  SharedValue,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 import { ProfileDieRenderer } from "./ProfileDieRenderer";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
-import { GradientChip } from "./buttons";
 import { darken, getBorderColor } from "./colors";
 
-import EditIcon from "#/icons/profiles/edit";
 import {
   groupAndSortProfiles,
   ProfilesGrouping,
@@ -62,109 +51,27 @@ const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
 
 const ProfileDiceNames = observer(function ProfileDiceNames({
   profile,
-  iconColor,
 }: {
   profile: Readonly<Profiles.Profile>;
-  iconColor: string;
 }) {
   const diceNames = useDiceNamesForProfile(profile.uuid);
   return (
-    <View
-      style={{
-        alignSelf: "flex-start",
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-      }}
-    >
-      <MaterialCommunityIcons
-        name="dice-multiple-outline"
-        size={24}
-        color={iconColor}
-      />
-      <Text>
-        {diceNames.length ? diceNames.join(", ") : "Not copied on any die"}
-      </Text>
-    </View>
+    <Text>
+      {diceNames.length ? diceNames.join(", ") : "Not copied on any die"}
+    </Text>
   );
 });
-
-const ProfileLastModified = observer(function ProfileDiceNames({
-  profile,
-  iconColor,
-}: {
-  profile: Readonly<Profiles.Profile>;
-  iconColor: string;
-}) {
-  return (
-    <View
-      style={{
-        alignSelf: "flex-start",
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 15,
-      }}
-    >
-      <Fontisto name="date" size={16} color={iconColor} />
-      <Text>{profile.lastModified.toLocaleString()}</Text>
-    </View>
-  );
-});
-
-function ProfileActions({
-  profile,
-  onAction,
-}: {
-  profile: Readonly<Profiles.Profile>;
-  onAction?: (
-    action: "edit" | "program",
-    profile: Readonly<Profiles.Profile>
-  ) => void;
-}) {
-  // const { width } = useWindowDimensions();
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        marginRight: 20,
-        marginVertical: 5,
-        justifyContent: "space-around",
-        gap: 5,
-      }}
-    >
-      {/* <GradientChip
-        icon={
-          width > 350
-            ? ({ size, color }) => <LinkIcon size={size} color={color} />
-            : undefined
-        }
-        sentry-label="copy-to-dice"
-        onPress={() => onAction?.("program", profile)}
-        style={{ flexGrow: 1, flex: 1 }}
-        contentStyle={{ paddingHorizontal: 2 }}
-      >
-        Copy to Dice
-      </GradientChip> */}
-      <GradientChip
-        icon={({ size, color }) => <EditIcon size={size} color={color} />}
-        onPress={() => onAction?.("edit", profile)}
-        style={{ flexGrow: 1, flex: 1 }}
-      >
-        Edit
-      </GradientChip>
-    </View>
-  );
-}
 
 const ProfileActionsIcons = observer(function ProfileActionsIcons({
+  children,
   profile,
   gap,
   iconColor,
-}: {
+}: React.PropsWithChildren<{
   profile: Readonly<Profiles.Profile>;
   gap: number;
   iconColor: string;
-}) {
+}>) {
   const actions = profile.rules.flatMap((r) => r.actions);
   const hasAnim = actions.some((a) => a.type === "playAnimation");
   const hasSound = actions.some((a) => a.type === "playAudioClip");
@@ -193,19 +100,15 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
       {hasWeb && (
         <ActionTypeIcon type="makeWebRequest" size={16} color={iconColor} />
       )}
+      {children}
     </View>
   );
 });
 
 export interface ProfileCardProps extends Omit<TouchableCardProps, "children"> {
   profile: Readonly<Profiles.Profile>;
-  expanded?: SharedValue<boolean>;
   fadeInDuration?: number;
   fadeInDelay?: number;
-  onAction?: (
-    action: "edit" | "program",
-    profile: Readonly<Profiles.Profile>
-  ) => void;
 }
 
 export function ProfileCard({
@@ -213,7 +116,6 @@ export function ProfileCard({
   row,
   disabled,
   selected,
-  expanded,
   squaredTopBorder,
   squaredBottomBorder,
   noBorder,
@@ -221,7 +123,6 @@ export function ProfileCard({
   noBottomBorder,
   fadeInDuration,
   fadeInDelay,
-  onAction,
   style,
   contentStyle,
   ...props
@@ -234,34 +135,6 @@ export function ProfileCard({
     borderBottomLeftRadius: !row || squaredBottomBorder ? 0 : borderRadius,
   };
   const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
-
-  const animTopLeftStyle = useAnimatedStyle(
-    () => ({
-      height: expanded ? withTiming(expanded.value ? 200 : 100) : 100,
-    }),
-    [expanded]
-  );
-  const animBottomStyle = useAnimatedStyle(
-    () => ({
-      height: expanded ? withTiming(expanded.value ? 100 : 0) : 0,
-      width: "100%",
-      overflow: "hidden",
-      opacity: expanded?.value ? withDelay(100, withTiming(1)) : withTiming(0),
-    }),
-    [expanded]
-  );
-  const animChevronStyle = useAnimatedStyle(
-    () => ({
-      transform: [
-        {
-          rotate: expanded
-            ? withTiming(expanded.value ? "180deg" : "0deg")
-            : "0deg",
-        },
-      ],
-    }),
-    [expanded]
-  );
 
   const die3dWidth = row ? 120 : "100%";
   const height = 100;
@@ -279,24 +152,21 @@ export function ProfileCard({
         noBorder
         {...props}
       >
-        <Animated.View
-          style={[
-            {
-              alignItems: "center",
-              justifyContent: "center",
-              width: die3dWidth,
-              // Borders (having issues on iOS with those borders applied on the LinearGradient)
-              borderWidth: noBorder ? 0 : 1,
-              borderRightWidth: noBorder ?? row ? 0 : 1,
-              borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
-              borderBottomWidth:
-                noBorder ?? noBottomBorder ?? !row ? 0 : undefined,
-              borderColor: getBorderColor(colors, selected),
-              // Corners
-              ...dieViewCornersStyle,
-            },
-            row ? animTopLeftStyle : undefined,
-          ]}
+        <View
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            width: die3dWidth,
+            // Borders (having issues on iOS with those borders applied on the LinearGradient)
+            borderWidth: noBorder ? 0 : 1,
+            borderRightWidth: noBorder ?? row ? 0 : 1,
+            borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
+            borderBottomWidth:
+              noBorder ?? noBottomBorder ?? !row ? 0 : undefined,
+            borderColor: getBorderColor(colors, selected),
+            // Corners
+            ...dieViewCornersStyle,
+          }}
         >
           <View
             style={{
@@ -308,7 +178,7 @@ export function ProfileCard({
           >
             <ProfileDieRenderer profile={profile} pedestal />
           </View>
-        </Animated.View>
+        </View>
         <View
           style={{
             alignSelf: "stretch",
@@ -339,55 +209,19 @@ export function ProfileCard({
             profile={profile}
             gap={row ? 10 : 5}
             iconColor={colors.onSurface}
-          />
-          <Animated.View style={animBottomStyle}>
-            <View
-              style={{
-                position: "absolute",
-                width: "100%",
-                height,
-                paddingBottom: 5,
-                justifyContent: "space-between",
-              }}
-            >
-              <ProfileDiceNames
-                profile={profile}
-                iconColor={colors.onSurface}
-              />
-              <ProfileLastModified
-                profile={profile}
-                iconColor={colors.onSurface}
-              />
-              <ProfileActions profile={profile} onAction={onAction} />
-            </View>
-          </Animated.View>
-          {row && expanded && (
-            <Animated.View
-              style={[
-                { position: "absolute", bottom: 5, right: 5 },
-                animChevronStyle,
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="chevron-down"
-                size={24}
-                color={colors.onSurface}
-              />
-            </Animated.View>
-          )}
+          >
+            <ProfileDiceNames profile={profile} />
+          </ProfileActionsIcons>
         </View>
       </TouchableCard>
       {/* Render gradient outside of touchable so the ripple effects works */}
       <Animated.View
-        style={[
-          {
-            position: "absolute",
-            zIndex: -1,
-            width: die3dWidth,
-            ...dieViewCornersStyle,
-          },
-          row ? animTopLeftStyle : { height },
-        ]}
+        style={{
+          position: "absolute",
+          zIndex: -1,
+          width: die3dWidth,
+          ...dieViewCornersStyle,
+        }}
       >
         <LinearGradient
           start={{ x: 0, y: 0 }}
@@ -401,20 +235,6 @@ export function ProfileCard({
         />
       </Animated.View>
     </Animated.View>
-  );
-}
-
-export function ProfileCardItem({
-  itemIndex,
-  expandItemIndex,
-  ...props
-}: {
-  itemIndex: number;
-  expandItemIndex: SharedValue<number> | undefined;
-} & React.ComponentProps<typeof ProfileCard>) {
-  const expanded = useDerivedValue(() => itemIndex === expandItemIndex?.value);
-  return (
-    <ProfileCard expanded={expandItemIndex ? expanded : undefined} {...props} />
   );
 }
 
@@ -432,62 +252,29 @@ export function ProfilesList({
   selected,
   groupBy,
   sortMode,
-  expandableItems,
   onSelectProfile,
-  onProgramDice,
   style,
   ...props
-}: { expandableItems?: boolean } & ProfilesListProps) {
-  const expandedIndex = useSharedValue(-1);
-  // Reset selection when profiles list changes
-  React.useEffect(() => {
-    expandedIndex.value = -1;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profiles]);
-  const selectProfile = (i: number, p: Readonly<Profiles.Profile>) =>
-    expandableItems
-      ? (expandedIndex.value = expandedIndex.value === i ? -1 : i)
-      : onSelectProfile?.(p);
-  const onAction = React.useCallback(
-    (action: string, profile: Readonly<Profiles.Profile>) => {
-      if (action === "edit") {
-        expandedIndex.value = -1;
-        onSelectProfile?.(profile);
-      } else if (action === "applyToDie") {
-        onProgramDice?.(profile);
-      }
-    },
-    [expandedIndex, onProgramDice, onSelectProfile]
-  );
-
+}: ProfilesListProps) {
   const profilesGroups = React.useMemo(
     () => groupAndSortProfiles(profiles, groupBy, sortMode),
     [profiles, groupBy, sortMode]
   );
 
-  let index = 0;
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       {profilesGroups.map(({ title, values: profiles }, i) => (
         <View key={title + i} style={{ gap: 10 }}>
-          {/* <Text variant="headlineSmall">{title}</Text> */}
-          {profiles.map((p) => {
-            const i = index;
-            ++index;
-            return (
-              <ProfileCardItem
-                key={p.uuid}
-                row
-                profile={p}
-                selected={p === selected}
-                fadeInDelay={i * 50}
-                itemIndex={i}
-                expandItemIndex={expandableItems ? expandedIndex : undefined}
-                onPress={() => selectProfile(i, p)}
-                onAction={onAction}
-              />
-            );
-          })}
+          {profiles.map((p) => (
+            <ProfileCard
+              key={p.uuid}
+              row
+              profile={p}
+              selected={p === selected}
+              fadeInDelay={i * 50}
+              onPress={() => onSelectProfile?.(p)}
+            />
+          ))}
         </View>
       ))}
     </View>

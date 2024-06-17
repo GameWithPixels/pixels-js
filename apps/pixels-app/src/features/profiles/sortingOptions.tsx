@@ -81,12 +81,7 @@ export function getSortModeIcon(
   }
 }
 
-export const DiceGroupingList = [
-  "none",
-  "dieType",
-  "name",
-  "activeProfile",
-] as const;
+export const DiceGroupingList = ["none", "dieType", "name"] as const;
 
 export type DiceGrouping = (typeof DiceGroupingList)[number];
 
@@ -98,8 +93,6 @@ export function getDiceGroupingLabel(grouping: DiceGrouping): string {
       return "Die Type";
     case "name":
       return "Name";
-    case "activeProfile":
-      return "Active Profile Name";
     default:
       assertNever(grouping, `No label for grouping ${grouping}`);
   }

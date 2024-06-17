@@ -3,7 +3,6 @@ import {
   Constants,
   Pixel,
   Serializable,
-  usePixelEvent,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -26,7 +25,7 @@ import { PairedDie } from "~/app/PairedDie";
 import { useAppStore } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
-import { PairedDieRenderer } from "~/components/PairedDieRenderer";
+import { PairedDieRendererWithRoll } from "~/components/PairedDieRendererWithRoll";
 import { SlideInView } from "~/components/SlideInView";
 import { GradientButton } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
@@ -206,24 +205,6 @@ export function PixelFocusViewHeader({
   );
 }
 
-function RollingDie({
-  pairedDie,
-  disabled,
-}: {
-  pairedDie: PairedDie;
-  disabled: boolean;
-}) {
-  const pixel = useWatchedPixel(pairedDie);
-  const [rollEv] = usePixelEvent(pixel, "roll");
-  const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
-  return (
-    <PairedDieRenderer
-      pairedDie={pairedDie}
-      speed={disabled ? 0 : rolling ? 10 : 1}
-    />
-  );
-}
-
 export function PixelFocusView({
   pairedDie,
   onPress,
@@ -265,7 +246,7 @@ export function PixelFocusView({
           onPress?.();
         }}
       >
-        <RollingDie pairedDie={pairedDie} disabled={disabled} />
+        <PairedDieRendererWithRoll pairedDie={pairedDie} disabled={disabled} />
       </Pressable>
       <View
         style={{
@@ -288,7 +269,7 @@ export function PixelFocusView({
           style={{ flex: 1, flexGrow: 1 }}
         />
       </View>
-      <Text variant="titleMedium">Active Profile</Text>
+      <Text variant="titleMedium">Profile</Text>
       <View>
         <ProfileCard row profile={profile} onPress={onEditProfile} />
         <Text

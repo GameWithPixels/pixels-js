@@ -6,6 +6,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ViewProps } from "react-native/types";
+import { useTheme } from "react-native-paper";
 import Animated, {
   Easing,
   interpolateColor,
@@ -16,14 +17,20 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export function useFlashAnimationStyle(flash: boolean) {
+import { makeTransparent } from "./colors";
+
+export function useFlashAnimationStyle(flash: boolean, greyedOut = false) {
+  const { colors } = useTheme();
+  const colorRange = React.useMemo(
+    () => [
+      makeTransparent(colors.background, greyedOut ? 0.85 : 0),
+      makeTransparent(colors.background, 0.3),
+    ],
+    [colors, greyedOut]
+  );
   const animValue = useSharedValue(0);
   const animStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(
-      animValue.value,
-      [0, 1],
-      ["transparent", "dimgray"]
-    ),
+    backgroundColor: interpolateColor(animValue.value, [0, 1], colorRange),
   }));
   React.useEffect(() => {
     const pingPong = (x0: number, x1: number) =>

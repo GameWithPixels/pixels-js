@@ -10,8 +10,8 @@ export type CardProps = ViewProps & {
   disabled?: boolean;
   noBorder?: boolean;
   frameless?: boolean;
-  transparent?: boolean;
   vivid?: boolean;
+  transparent?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
 };
 
@@ -20,14 +20,14 @@ export function Card({
   disabled,
   noBorder,
   frameless,
-  transparent,
   vivid,
+  transparent,
   style,
   contentStyle,
   children,
   ...props
 }: CardProps) {
-  const gradientAlpha = transparent //
+  const gradientAlpha = transparent
     ? 0
     : !frameless
       ? 0.1
@@ -35,7 +35,7 @@ export function Card({
         ? 0.2
         : vivid
           ? 1
-          : 2;
+          : 2; // Just need to be higher than one
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (

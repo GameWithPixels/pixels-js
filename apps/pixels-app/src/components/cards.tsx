@@ -5,7 +5,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { StyleProp, TextStyle, View } from "react-native";
+import { View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Animated, {
   Easing,
@@ -14,37 +14,54 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
+import { ViewProps } from "react-native-svg/lib/typescript/fabric/utils";
 
 import { FirmwareUpdateBadge } from "./FirmwareUpdateBadge";
-import { PairedDieRenderer } from "./PairedDieRenderer";
+import { PairedDieRendererWithRoll } from "./PairedDieRendererWithRoll";
 import { PixelBattery } from "./PixelBattery";
-import { PixelRollState } from "./PixelRollState";
+import { PixelConnectionStatus } from "./PixelConnectionStatus";
 import { PixelRssi } from "./PixelRssi";
 import { PixelTransferProgressBar } from "./PixelTransferProgressBar";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
 import { PairedDie } from "~/app/PairedDie";
-import { getPixelStatusLabel } from "~/features/profiles";
 import { usePairedDieProfileUuid, useProfile, useWatchedPixel } from "~/hooks";
 
-function AnimatedNameWithRoll({
+const CardLabels = observer(function CardLabels({
+  pairedDie,
   pixel,
-  status,
-  pixelName,
+  compact,
+  ...props
 }: {
+  pairedDie: PairedDie;
   pixel?: Pixel;
-  status?: PixelStatus;
-  pixelName: string;
-}) {
+  compact?: boolean;
+} & ViewProps) {
+  const profile = useProfile(usePairedDieProfileUuid(pairedDie));
+  const status = usePixelStatus(pixel);
+  const isReady = pixel && status === "ready";
+  const [rollEv] = usePixelEvent(pixel, "roll");
+  const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
+  const onFace = rollEv?.state === "onFace";
+  const [showRoll, setShowRoll] = React.useState(isReady);
+
+  // Show rolling/rolled message for a few seconds
+  React.useEffect(() => {
+    if (isReady && rolling) {
+      setShowRoll(true);
+    } else if (!isReady || onFace) {
+      const id = setTimeout(() => setShowRoll(false), 3000);
+      return () => clearTimeout(id);
+    }
+  }, [isReady, onFace, rolling]);
+
+  // Animate roll results
   const animValue = useSharedValue(1);
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: animValue.value }],
   }));
-
-  const [rollText, setRollText] = React.useState<string>();
-  const [rollEv] = usePixelEvent(pixel, "roll");
   React.useEffect(() => {
-    if (rollEv) {
+    if (rollEv?.state === "onFace") {
       animValue.value = withSequence(
         withTiming(1.2, {
           duration: 400,
@@ -52,127 +69,106 @@ function AnimatedNameWithRoll({
         }),
         withTiming(1, { duration: 200, easing: Easing.in(Easing.ease) })
       );
-      setRollText("Rolled a " + rollEv.face);
-      const id = setTimeout(() => setRollText(undefined), 3000);
-      return () => clearTimeout(id);
     }
-  }, [animValue, rollEv]);
+  }, [animValue, rollEv?.state]);
 
-  const { colors } = useTheme();
-  const color =
-    status === "ready" ? colors.onSurface : colors.onSurfaceDisabled;
   return (
-    <Animated.View style={animStyle}>
-      <Text variant="labelSmall" style={{ color }}>
-        {status === "ready" && rollText ? rollText : pixelName}
+    <View {...props}>
+      <Text variant="titleSmall" style={{ fontFamily: "LTInternet-Bold" }}>
+        {pairedDie.name}
       </Text>
-    </Animated.View>
+      {!compact && <Text>{profile.name}</Text>}
+      <Animated.View style={animStyle}>
+        <Text variant="labelSmall">
+          {compact && !showRoll
+            ? profile.name
+            : rolling
+              ? "Rolling..."
+              : `On face ${rollEv?.face ?? pixel?.currentFace ?? ""}`}
+        </Text>
+      </Animated.View>
+    </View>
+  );
+});
+
+function PixelStatusIcons({
+  pixel,
+  status,
+  size,
+  ...props
+}: {
+  pixel?: Pixel;
+  status?: PixelStatus;
+  size: number;
+} & ViewProps) {
+  const { colors } = useTheme();
+  return (
+    <View {...props}>
+      {status === "ready" ? (
+        <>
+          <PixelRssi pixel={pixel} size={size} />
+          <PixelBattery pixel={pixel} size={size} />
+        </>
+      ) : (
+        <PixelConnectionStatus
+          status={status}
+          size={size}
+          color={colors.onSurface}
+        />
+      )}
+    </View>
   );
 }
 
-const DieProfileName = observer(function ProfileName({
-  pairedDie,
-  style,
-}: {
-  pairedDie: PairedDie;
-  style?: StyleProp<TextStyle>;
-}) {
-  const profile = useProfile(usePairedDieProfileUuid(pairedDie));
-  return <Text style={style}>{profile.name}</Text>;
-});
-
-function VCardLabel({
+function PixelVCardContent({
   pairedDie,
   pixel,
-  miniCards,
+  status,
+  contentStyle,
 }: {
   pairedDie: PairedDie;
   pixel?: Pixel;
-  miniCards?: boolean;
-}) {
-  const status = usePixelStatus(pixel);
-  return miniCards ? (
-    <AnimatedNameWithRoll
-      pixel={pixel}
-      status={status}
-      pixelName={pairedDie.name}
-    />
-  ) : (
-    <>
-      <Text variant="titleMedium">{pairedDie.name}</Text>
-      <DieProfileName pairedDie={pairedDie} />
-      {pixel && status === "ready" ? (
-        <PixelRollState pixel={pixel} />
-      ) : (
-        <Text>{getPixelStatusLabel(status)}</Text>
-      )}
-    </>
-  );
-}
-
-export function PixelVCard({
-  pairedDie,
-  dieIconRatio = 0.5,
-  infoIconsRatio = 0.1,
-  miniCards,
-  contentStyle,
-  onLayout,
-  ...props
-}: {
-  pairedDie: PairedDie;
-  selected?: boolean;
-  dieIconRatio?: number;
-  infoIconsRatio?: number;
-  miniCards?: boolean;
-} & Omit<TouchableCardProps, "children">) {
-  const pixel = useWatchedPixel(pairedDie);
-  const status = usePixelStatus(pixel);
+  status?: PixelStatus;
+  contentStyle?: ViewProps["style"];
+} & ViewProps) {
   const isReady = pixel && status === "ready";
-  const [rollEv] = usePixelEvent(pixel, "roll");
-  const [containerSize, setContainerSize] = React.useState(0);
-  const dieRenderWidth = containerSize * dieIconRatio;
-
   return (
-    <TouchableCard
-      flash={
-        status === "ready" &&
-        (rollEv?.state === "rolling" || rollEv?.state === "handling")
-      }
-      contentStyle={[
+    <View
+      style={[
         {
+          flex: 1,
           aspectRatio: 1,
           justifyContent: "space-around",
+          alignItems: "center",
+          margin: 10,
         },
         contentStyle,
       ]}
-      onLayout={(ev) => {
-        setContainerSize(ev.nativeEvent.layout.width);
-        onLayout?.(ev);
-      }}
-      {...props}
     >
-      {!miniCards && isReady && (
-        <View
-          style={{
-            position: "absolute",
-            top: 5,
-            right: 5,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            gap: 10,
-          }}
-        >
-          <PixelBattery pixel={pixel} size={infoIconsRatio * containerSize} />
-          <PixelRssi pixel={pixel} size={infoIconsRatio * containerSize} />
-        </View>
-      )}
-      <View style={{ width: dieRenderWidth, aspectRatio: 1 }}>
+      <View style={{ width: "60%", aspectRatio: 1 }}>
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
-        <PairedDieRenderer key={dieRenderWidth} pairedDie={pairedDie} />
+        <PairedDieRendererWithRoll pairedDie={pairedDie} disabled={!isReady} />
       </View>
-      <View style={{ width: "100%", alignItems: "center" }}>
-        <VCardLabel pairedDie={pairedDie} pixel={pixel} miniCards={miniCards} />
+      <View
+        style={{
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <CardLabels
+          compact
+          pairedDie={pairedDie}
+          pixel={pixel}
+          style={{ gap: 3 }}
+        />
+        <PixelStatusIcons
+          pixel={pixel}
+          status={status}
+          size={20}
+          style={{ gap: 5 }}
+        />
         {pixel && (
           <PixelTransferProgressBar
             pixel={pixel}
@@ -188,71 +184,87 @@ export function PixelVCard({
       </View>
       <FirmwareUpdateBadge
         pairedDie={pairedDie}
-        style={[
-          { position: "absolute", top: 5 },
-          miniCards ? { right: 5 } : { left: 5 },
-        ]}
+        style={[{ position: "absolute", left: -5, top: -5 }]}
+      />
+    </View>
+  );
+}
+
+export function PixelVCard({
+  pairedDie,
+  contentStyle,
+  ...props
+}: {
+  pairedDie: PairedDie;
+  selected?: boolean;
+} & Omit<TouchableCardProps, "children">) {
+  const pixel = useWatchedPixel(pairedDie);
+  const status = usePixelStatus(pixel);
+  const [rollEv] = usePixelEvent(pixel, "roll");
+  return (
+    <TouchableCard
+      row
+      gradientBorder
+      flash={
+        status === "ready" &&
+        (rollEv?.state === "rolling" || rollEv?.state === "handling")
+      }
+      // contentStyle={{ aspectRatio: 1 }} Creates problems with the layout
+      {...props}
+    >
+      <PixelVCardContent
+        pairedDie={pairedDie}
+        pixel={pixel}
+        status={status}
+        contentStyle={contentStyle}
       />
     </TouchableCard>
   );
 }
 
-export function PixelHCard({
+function PixelHCardContent({
   pairedDie,
-  ...props
+  pixel,
+  status,
 }: {
   pairedDie: PairedDie;
-} & Omit<TouchableCardProps, "children">) {
-  const pixel = useWatchedPixel(pairedDie);
-  const status = usePixelStatus(pixel);
+  pixel?: Pixel;
+  status?: PixelStatus;
+}) {
   const isReady = pixel && status === "ready";
-  const [rollEv] = usePixelEvent(pixel, "roll");
-  const dieRenderWidth = 70;
   return (
-    <TouchableCard
-      row
-      flash={
-        status === "ready" &&
-        (rollEv?.state === "rolling" || rollEv?.state === "handling")
-      }
-      {...props}
-    >
-      <View style={{ width: 70, aspectRatio: 1, padding: 5 }}>
+    <>
+      <View style={{ width: 80, aspectRatio: 1, marginLeft: 10, padding: 5 }}>
         {/* Assign a key based on size to prevent reusing the same view if size changes */}
-        <PairedDieRenderer key={dieRenderWidth} pairedDie={pairedDie} />
+        <PairedDieRendererWithRoll
+          key={70}
+          pairedDie={pairedDie}
+          disabled={!isReady}
+        />
       </View>
-      <View
+      <CardLabels
+        pairedDie={pairedDie}
+        pixel={pixel}
         style={{
           flexGrow: 1,
           alignSelf: "stretch",
-          marginHorizontal: 10,
+          margin: 10,
           justifyContent: "space-around",
         }}
-      >
-        <Text variant="bodyLarge">{pairedDie.name}</Text>
-        <DieProfileName pairedDie={pairedDie} />
-        {isReady ? (
-          <PixelRollState pixel={pixel} />
-        ) : (
-          <Text>{getPixelStatusLabel(status)}</Text>
-        )}
-      </View>
-      {isReady && (
-        <View
-          style={{
-            flexDirection: "row",
-            marginRight: 10,
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <PixelRssi pixel={pixel} size={22} />
-          <PixelBattery pixel={pixel} size={22} />
-        </View>
-      )}
+      />
+      <PixelStatusIcons
+        pixel={pixel}
+        status={status}
+        size={22}
+        style={{
+          marginRight: 10,
+          alignItems: "center",
+          gap: 15,
+        }}
+      />
       <FirmwareUpdateBadge
         pairedDie={pairedDie}
-        style={{ position: "absolute", right: 5, top: 5 }}
+        style={{ position: "absolute", left: 5, top: 5 }}
       />
       {pixel && (
         <PixelTransferProgressBar
@@ -266,6 +278,32 @@ export function PixelHCard({
           }}
         />
       )}
+    </>
+  );
+}
+
+export function PixelHCard({
+  pairedDie,
+  contentStyle,
+  ...props
+}: {
+  pairedDie: PairedDie;
+} & Omit<TouchableCardProps, "children">) {
+  const pixel = useWatchedPixel(pairedDie);
+  const status = usePixelStatus(pixel);
+  const [rollEv] = usePixelEvent(pixel, "roll");
+  return (
+    <TouchableCard
+      row
+      gradientBorder
+      flash={
+        status === "ready" &&
+        (rollEv?.state === "rolling" || rollEv?.state === "handling")
+      }
+      contentStyle={[{ padding: 5 }, contentStyle]}
+      {...props}
+    >
+      <PixelHCardContent pairedDie={pairedDie} pixel={pixel} status={status} />
     </TouchableCard>
   );
 }

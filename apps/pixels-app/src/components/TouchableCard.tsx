@@ -53,12 +53,18 @@ export function TouchableCard({
   ...props
 }: TouchableCardProps) {
   const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
+  const borderRadius = getBorderRadius(roundness, { tight: !gradientBorder });
   const cornersStyle = {
     borderTopLeftRadius: squaredTopBorder ? 0 : borderRadius,
     borderTopRightRadius: squaredTopBorder ? 0 : borderRadius,
     borderBottomLeftRadius: squaredBottomBorder ? 0 : borderRadius,
     borderBottomRightRadius: squaredBottomBorder ? 0 : borderRadius,
+  };
+  const innerCornersStyle = {
+    borderTopLeftRadius: squaredTopBorder ? 0 : borderRadius - 2,
+    borderTopRightRadius: squaredTopBorder ? 0 : borderRadius - 2,
+    borderBottomLeftRadius: squaredBottomBorder ? 0 : borderRadius - 2,
+    borderBottomRightRadius: squaredBottomBorder ? 0 : borderRadius - 2,
   };
   const gradientAlpha = gradientBorder
     ? 1
@@ -69,7 +75,7 @@ export function TouchableCard({
         : props.disabled
           ? 0.2
           : 1;
-  const animStyle = useFlashAnimationStyle(flash ?? false);
+  const animStyle = useFlashAnimationStyle(flash ?? false, gradientBorder);
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
@@ -85,9 +91,8 @@ export function TouchableCard({
           {
             flexDirection: row ? "row" : "column",
             alignItems: "center",
-            margin: gradientBorder ? 2 : 0,
+            margin: gradientBorder ? 3 : 0,
             padding: gradientBorder ? 3 : 5,
-            backgroundColor: gradientBorder ? colors.background : undefined,
             // Borders (having issues on iOS with those borders applied on the LinearGradient)
             borderWidth: noBorder ?? gradientBorder ? 0 : 1,
             borderTopWidth: noBorder ?? gradientBorder ?? noTopBorder ? 0 : 1,
@@ -95,7 +100,7 @@ export function TouchableCard({
               noBorder ?? gradientBorder ?? noBottomBorder ? 0 : 1,
             borderColor: getBorderColor(colors, selected),
             // Corners
-            ...cornersStyle,
+            ...innerCornersStyle,
           },
           contentStyle,
           animStyle,

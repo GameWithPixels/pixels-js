@@ -63,6 +63,7 @@ import { DieWireframe } from "~/components/icons";
 import { getDieDfuAvailability, pairDie } from "~/features/dice";
 import {
   getDieTypeAndColorwayLabel,
+  getFirmwareUpdateAvailable,
   getKeepAllDiceUpToDate,
   getKeepDiceNearDevice,
   getPixelStatusLabel,
@@ -670,7 +671,7 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
           exiting={FadeOut.duration(300)}
           style={{ flexGrow: 1, flexShrink: 1, alignItems: "center", gap: 40 }}
         >
-          <Text>We have a firmware update for your {diceStr}!</Text>
+          <Text>{getFirmwareUpdateAvailable(pixels.length)}</Text>
           <Text>{getKeepAllDiceUpToDate()}</Text>
           <Text>{getKeepDiceNearDevice(pixels.length)}</Text>
           <DfuFilesGate

@@ -1,27 +1,40 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
+import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Card, Divider, IconButton, Text } from "react-native-paper";
+import {
+  Card,
+  Icon,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
 
-import GridIcon from "#/icons/items-view/grid";
-import ListIcon from "#/icons/items-view/list";
+import PairIcon from "#/icons/dice/pair";
+import RollerIcon from "#/icons/dice/roller";
+import GridIcon from "#/icons/items-view/grid-gradient";
+import ListIcon from "#/icons/items-view/list-gradient";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
-import { HeaderMenuButton } from "~/components/HeaderMenuButton";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
-import { AnimatedGradientButton, OutlineButton } from "~/components/buttons";
+import { Banner } from "~/components/banners";
+import { AnimatedGradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
 import {
   DiceGrouping,
   DiceGroupingList,
   getDiceGroupingLabel,
+  getFirmwareUpdateAvailable,
+  getKeepAllDiceUpToDate,
   getSortModeIcon,
   getSortModeLabel,
   SortMode,
@@ -32,110 +45,10 @@ import {
   setDiceSortMode,
   setDiceViewMode,
 } from "~/features/store";
-import { useConnectToMissingPixels } from "~/hooks";
+import { useConnectToMissingPixels, useOutdatedPixelsCount } from "~/hooks";
 import { DiceListScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 export type DiceViewMode = "list" | "grid";
-
-function PageHeader({
-  viewMode,
-  onSelectViewMode,
-}: {
-  viewMode: DiceViewMode;
-  onSelectViewMode: (viewMode: DiceViewMode) => void;
-}) {
-  const appDispatch = useAppDispatch();
-  const [visible, setVisible] = React.useState(false);
-  const [sortVisible, setSortVisible] = React.useState(false);
-  const groupBy = useAppSelector((state) => state.appSettings.diceGrouping);
-  const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
-  return (
-    <>
-      <HeaderMenuButton
-        visible={visible}
-        contentStyle={{ width: 220 }}
-        onShowMenu={() => setVisible(true)}
-        onDismiss={() => setVisible(false)}
-      >
-        <Text variant="labelLarge" style={AppStyles.selfCentered}>
-          View Modes
-        </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            marginBottom: 5,
-          }}
-        >
-          {(["list", "grid"] as DiceViewMode[]).map((vm, i) => {
-            const Icon = i ? GridIcon : ListIcon;
-            return (
-              <IconButton
-                key={vm}
-                selected={viewMode === vm}
-                size={24}
-                icon={Icon}
-                onPress={() => {
-                  setVisible(false);
-                  onSelectViewMode(vm);
-                }}
-              />
-            );
-          })}
-        </View>
-        <Divider />
-        {/* <Menu.Item
-          title="Sort"
-          trailingIcon={() => (
-            <MaterialCommunityIcons
-              name="sort"
-              size={24}
-              color={colors.onSurface}
-            />
-          )}
-          contentStyle={AppStyles.menuItemWithIcon}
-          onPress={() => {
-            setVisible(false);
-            setSortVisible(true);
-          }}
-        />
-        <Divider />
-        <Menu.Item
-          title={`Auto Connect ${discoMode ? "Off" : "On"}`}
-          trailingIcon={() => (
-            <MaterialIcons
-              name={discoMode ? "bluetooth-disabled" : "bluetooth-connected"}
-              size={24}
-              color={colors.onSurface}
-            />
-          )}
-          contentStyle={AppStyles.menuItemWithIcon}
-          onPress={() => setDiscoMode((d) => !d)}
-        /> */}
-      </HeaderMenuButton>
-      <SortBottomSheet
-        groups={DiceGroupingList}
-        groupBy={groupBy}
-        getGroupingLabel={getDiceGroupingLabel as (g: string) => string}
-        onChangeGroupBy={(group) =>
-          appDispatch(setDiceGrouping(group as DiceGrouping))
-        }
-        sortModes={SortModeList}
-        getSortModeLabel={getSortModeLabel as (g: string) => string}
-        getSortModeIcon={
-          getSortModeIcon as (mode: string) => SortBottomSheetSortIcon
-        }
-        sortMode={sortMode}
-        onChangeSortMode={(mode) =>
-          appDispatch(setDiceSortMode(mode as SortMode))
-        }
-        visible={sortVisible}
-        onDismiss={() => setSortVisible(false)}
-      />
-    </>
-  );
-}
 
 function NoPairedDie({
   showPairDice,
@@ -170,17 +83,190 @@ function NoPairedDie({
   );
 }
 
+function LargeHeader({
+  onShowPairDice,
+  onShowDiceRoller,
+}: {
+  showPairDice?: boolean;
+  onShowPairDice: () => void;
+  onShowDiceRoller: () => void;
+}) {
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
+  return (
+    <View
+      style={{
+        width: "100%",
+        flexDirection: "row",
+        borderBottomLeftRadius: borderRadius,
+        borderBottomRightRadius: borderRadius,
+        padding: 15,
+        paddingVertical: 10,
+        justifyContent: "space-between",
+        backgroundColor: "#222222",
+      }}
+    >
+      <Icon source={require("#/images/icon.png")} size={60} />
+      <View
+        style={{
+          flexDirection: "row",
+          alignSelf: "flex-end",
+          alignItems: "flex-end",
+        }}
+      >
+        <TouchableRipple
+          style={{ alignItems: "center", gap: 5 }}
+          onPress={onShowPairDice}
+        >
+          <>
+            <PairIcon
+              size={26}
+              color={colors.onPrimary}
+              style={{ paddingHorizontal: 30 }}
+            />
+            <Text>Add Die</Text>
+          </>
+        </TouchableRipple>
+        <TouchableRipple
+          style={{ alignItems: "center", gap: 5 }}
+          onPress={onShowDiceRoller}
+        >
+          <>
+            <RollerIcon
+              size={26}
+              color={colors.onPrimary}
+              style={{ paddingHorizontal: 30 }}
+            />
+            <Text>Roller</Text>
+          </>
+        </TouchableRipple>
+      </View>
+    </View>
+  );
+}
+
+function GridListSelector({
+  viewMode,
+  onChangeViewMode,
+}: {
+  viewMode: DiceViewMode;
+  onChangeViewMode: (viewMode: DiceViewMode) => void;
+}) {
+  const appDispatch = useAppDispatch();
+  const [sortVisible, setSortVisible] = React.useState(false);
+  const groupBy = useAppSelector((state) => state.appSettings.diceGrouping);
+  const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
+  const { colors } = useTheme();
+  return (
+    <>
+      <View
+        style={{
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "center",
+          padding: 10,
+        }}
+      >
+        <LinearGradient
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          colors={[colors.primary, colors.secondary]}
+          style={{
+            flexGrow: 1,
+            height: 2,
+            borderRadius: 1,
+            backgroundColor: colors.secondary,
+          }}
+        />
+        <TouchableRipple
+          onPress={() => onChangeViewMode("grid")}
+          style={{ padding: 5 }}
+        >
+          <GridIcon
+            size={28}
+            startColor={viewMode === "grid" ? colors.primary : colors.onPrimary}
+            stopColor={
+              viewMode === "grid" ? colors.secondary : colors.onPrimary
+            }
+          />
+        </TouchableRipple>
+        <TouchableRipple
+          onPress={() => onChangeViewMode("list")}
+          style={{ padding: 5 }}
+        >
+          <ListIcon
+            size={28}
+            startColor={viewMode === "list" ? colors.primary : colors.onPrimary}
+            stopColor={
+              viewMode === "list" ? colors.secondary : colors.onPrimary
+            }
+          />
+        </TouchableRipple>
+        <TouchableRipple onPress={() => setSortVisible(true)}>
+          <MaterialCommunityIcons
+            name="dots-horizontal"
+            size={28}
+            color={colors.onPrimary}
+          />
+        </TouchableRipple>
+      </View>
+      <SortBottomSheet
+        groups={DiceGroupingList}
+        groupBy={groupBy}
+        getGroupingLabel={getDiceGroupingLabel as (g: string) => string}
+        onChangeGroupBy={(group) =>
+          appDispatch(setDiceGrouping(group as DiceGrouping))
+        }
+        sortModes={SortModeList}
+        getSortModeLabel={getSortModeLabel as (g: string) => string}
+        getSortModeIcon={
+          getSortModeIcon as (mode: string) => SortBottomSheetSortIcon
+        }
+        sortMode={sortMode}
+        onChangeSortMode={(mode) =>
+          appDispatch(setDiceSortMode(mode as SortMode))
+        }
+        visible={sortVisible}
+        onDismiss={() => setSortVisible(false)}
+      />
+    </>
+  );
+}
+
+function FirmwareUpdateBanner({
+  diceCount,
+  onUpdate,
+}: {
+  diceCount: number;
+  onUpdate?: () => void;
+}) {
+  return (
+    diceCount > 0 && (
+      <Banner
+        visible
+        title="Update Available"
+        actionText="Update Now"
+        style={{ margin: 10 }}
+        onAction={onUpdate}
+      >
+        {getFirmwareUpdateAvailable(diceCount)}
+        {"\n"}
+        {getKeepAllDiceUpToDate()}
+      </Banner>
+    )
+  );
+}
+
 function DiceListPage({
   navigation,
 }: {
   navigation: DiceListScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-
-  const [showPairDice, setShowPairDice] = React.useState(false);
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
 
   // Pairing
+  const [showPairDice, setShowPairDice] = React.useState(false);
   const hasPairedDice = pairedDice.length > 0;
   useFocusEffect(
     React.useCallback(() => {
@@ -193,18 +279,27 @@ function DiceListPage({
   // Scan for missing dice on showing page
   useFocusEffect(useConnectToMissingPixels());
 
+  // Firmware update
+  const outdatedCount = useOutdatedPixelsCount();
+
   const viewMode = useAppSelector((state) => state.appSettings.diceViewMode);
   return (
     <>
       <View style={{ height: "100%" }}>
+        <LargeHeader
+          onShowPairDice={() => setShowPairDice(true)}
+          onShowDiceRoller={() => navigation.navigate("diceRoller")}
+        />
+        <FirmwareUpdateBanner
+          diceCount={outdatedCount}
+          onUpdate={() => navigation.navigate("firmwareUpdate")}
+        />
         <ScrollView
           contentContainerStyle={{
-            padding: 10,
+            paddingHorizontal: 10,
             paddingBottom: 20,
-            gap: 10,
           }}
         >
-          <Text variant="headlineMedium">My Pixels Dice</Text>
           <BluetoothStateWarning />
           {!pairedDice.length ? (
             <NoPairedDie
@@ -213,16 +308,18 @@ function DiceListPage({
             />
           ) : (
             <>
-              <OutlineButton onPress={() => navigation.navigate("diceRoller")}>
-                Dice Roller
-              </OutlineButton>
+              {pairedDice.length > 0 && (
+                <GridListSelector
+                  viewMode={viewMode}
+                  onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
+                />
+              )}
               {viewMode === "grid" ? (
                 <DiceGrid
                   dice={pairedDice}
                   onSelectDie={(d) =>
                     navigation.navigate("dieFocus", { pixelId: d.pixelId })
                   }
-                  onPressNewDie={() => setShowPairDice(true)}
                 />
               ) : (
                 <DiceList
@@ -230,18 +327,11 @@ function DiceListPage({
                   onSelectDie={(d) =>
                     navigation.navigate("dieFocus", { pixelId: d.pixelId })
                   }
-                  onPressNewDie={() => setShowPairDice(true)}
                 />
               )}
             </>
           )}
         </ScrollView>
-        <PageHeader
-          viewMode={viewMode}
-          onSelectViewMode={(vm) => {
-            appDispatch(setDiceViewMode(vm));
-          }}
-        />
       </View>
       <PairDiceBottomSheet
         visible={showPairDice}
