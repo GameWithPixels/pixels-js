@@ -36,8 +36,12 @@ import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
 import { DieWireframe } from "~/components/icons";
-import { setRollerCardsSizeRatio } from "~/features/store";
-import { useWatchedPixels } from "~/hooks";
+import {
+  addRollerEntry,
+  hideAllRollerEntries,
+  hideRollerEntry,
+  setRollerCardsSizeRatio,
+} from "~/features/store";
 import { DiceRollerScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
 
@@ -334,37 +338,31 @@ function RollerPage({
   const sizeRatio = useAppSelector(
     (state) => state.appSettings.rollerCardsSizeRatio
   );
-  const [rolls, setRolls] = React.useState<
-    {
-      key: number;
-      dieType: PixelDieType;
-      value: number;
-      ref: React.RefObject<AnimatedRollCardHandle>;
-    }[]
-  >([]);
-
-  const addRoll = React.useCallback((dieType: PixelDieType, value: number) => {
-    const key = Date.now();
-    setRolls((rolls) => [
-      ...rolls,
-      { key, dieType, value, ref: { current: null } },
-    ]);
-    scrollViewRef.current?.scrollToEnd({ animated: true });
-  }, []);
-
-  const pixels = useWatchedPixels();
+  const allRolls = useAppSelector(
+    (state) => state.appTransient.roller.allRolls
+  );
+  const allVisibleRolls = useAppSelector(
+    (state) => state.appTransient.roller.visibleRolls
+  );
+  const rolls = React.useMemo(
+    () => allVisibleRolls.slice(-50),
+    [allVisibleRolls]
+  );
+  const refs = React.useRef<
+    Map<number, React.RefObject<AnimatedRollCardHandle>>
+  >(new Map());
   React.useEffect(() => {
-    const disposers: (() => void)[] = [];
-    for (const pixel of pixels) {
-      const dieType = pixel.dieType;
-      const onRoll = (roll: number) => addRoll(dieType, roll);
-      disposers.push(() => pixel.removeEventListener("roll", onRoll));
-      pixel.addEventListener("roll", onRoll);
+    // Clear old refs
+    for (const i of refs.current.keys()) {
+      if (!rolls.includes(i)) {
+        refs.current.delete(i);
+      }
     }
-    return () => {
-      for (const d of disposers) d();
-    };
-  }, [addRoll, pixels]);
+  }, [rolls]);
+
+  const scrollViewRef = React.useRef<Animated.ScrollView>(null);
+  // Scroll to bottom when a new item is added
+  React.useEffect(() => scrollViewRef.current?.scrollToEnd(), [allRolls]);
 
   const [menuVisible, setMenuVisible] = React.useState(false);
   const bottomPadding = useSharedValue(0);
@@ -372,7 +370,6 @@ function RollerPage({
     height: bottomPadding.value,
   }));
 
-  const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   const { width: screenWidth } = useWindowDimensions();
   return (
     <View style={{ height: "100%" }}>
@@ -383,13 +380,15 @@ function RollerPage({
             visible={menuVisible}
             sizeRatio={sizeRatio}
             onChangeSizeRatio={(r) => {
-              for (const roll of rolls) {
-                roll.ref.current?.overrideWidth(r * screenWidth);
+              for (const ref of refs.current.values()) {
+                ref.current?.overrideWidth(r * screenWidth);
               }
             }}
             onCommitSizeRatio={(r) => appDispatch(setRollerCardsSizeRatio(r))}
-            onAddRoll={addRoll}
-            onClearRolls={() => setRolls([])}
+            onAddRoll={(dieType, value) =>
+              appDispatch(addRollerEntry({ dieType, value }))
+            }
+            onClearRolls={() => appDispatch(hideAllRollerEntries())}
             contentStyle={{ width: 220 }}
             onShowMenu={() => setMenuVisible(true)}
             onDismiss={() => setMenuVisible(false)}
@@ -408,28 +407,40 @@ function RollerPage({
           Roll any connected die to get started!
         </Banner>
         <View style={{ overflow: "visible" }}>
-          {rolls.map((roll, i) => (
-            <AnimatedRollCard
-              key={roll.key}
-              ref={roll.ref}
-              width={sizeRatio * screenWidth}
-              faceValue={roll.value}
-              dieType={roll.dieType}
-              position={i % 2 ? "right" : "left"}
-              onRemove={
-                menuVisible
-                  ? undefined
-                  : () => {
-                      setRolls(rolls.filter((_, j) => j !== i));
-                      bottomPadding.value = sizeRatio * screenWidth;
-                      bottomPadding.value = withTiming(0, { duration: 300 });
-                      Haptics.notificationAsync(
-                        Haptics.NotificationFeedbackType.Success
-                      );
-                    }
-              }
-            />
-          ))}
+          {rolls.map((k, i) => {
+            const roll = allRolls.entities[k];
+            let ref = refs.current.get(k);
+            if (!ref) {
+              ref = React.createRef();
+              refs.current.set(k, ref);
+            }
+            return (
+              roll && (
+                <AnimatedRollCard
+                  key={roll.timestamp}
+                  ref={ref}
+                  width={sizeRatio * screenWidth}
+                  faceValue={roll.value}
+                  dieType={roll.dieType}
+                  position={i % 2 ? "right" : "left"}
+                  onRemove={
+                    menuVisible
+                      ? undefined
+                      : () => {
+                          appDispatch(hideRollerEntry(roll.timestamp));
+                          bottomPadding.value = sizeRatio * screenWidth;
+                          bottomPadding.value = withTiming(0, {
+                            duration: 300,
+                          });
+                          Haptics.notificationAsync(
+                            Haptics.NotificationFeedbackType.Success
+                          );
+                        }
+                  }
+                />
+              )
+            );
+          })}
         </View>
         {/* Padding to have a smooth scroll */}
         <Animated.View style={animatedPadding} />

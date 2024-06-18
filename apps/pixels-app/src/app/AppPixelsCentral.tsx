@@ -27,6 +27,7 @@ import {
 } from "~/features/profiles";
 import {
   addDieRoll,
+  addRollerEntry,
   readProfile,
   updatePairedDieFirmwareTimestamp,
   updatePairedDieName,
@@ -175,7 +176,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         if (pairedDie) {
           console.log(
             `[Pixel ${name}] Got profile hash ${unsigned32ToHex(hash)} ` +
-              `(stored hash ${unsigned32ToHex(pairedDie.profileHash ?? 0)})`
+              `(stored hash ${unsigned32ToHex(pairedDie.profileHash)})`
           );
           store.dispatch(
             updatePairedDieProfileHash({
@@ -188,8 +189,10 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       pixel.addPropertyListener("profileHash", onProfileHash);
 
       // Rolls
-      const onRoll = (roll: number) =>
+      const onRoll = (roll: number) => {
         store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
+        store.dispatch(addRollerEntry({ dieType: pixel.dieType, value: roll }));
+      };
       pixel.addEventListener("roll", onRoll);
 
       // Remote action
