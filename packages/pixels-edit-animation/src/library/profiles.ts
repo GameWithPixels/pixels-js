@@ -125,7 +125,7 @@ export function createLibraryProfile(
 
   switch (name) {
     case "default":
-      profile.name = "Default";
+      profile.name = "Default Profile";
       profile.description = "The default profile for all dice.";
       // Rolling
       profile.rules.push(
