@@ -147,11 +147,6 @@ export function usePixelEvent<T extends keyof UsePixelValueNamesMap>(
         }
 
         case "roll": {
-          // Set the state value with the current roll state
-          setValue({
-            face: pixel.currentFace,
-            state: pixel.rollState,
-          } as ValueType);
           // Create roll event listener
           const onRollState = (rollState: RollEvent) =>
             setValue((prevValue) => {
