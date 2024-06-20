@@ -3,7 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, StyleProp, View, ViewStyle } from "react-native";
 import {
   Card,
   Icon,
@@ -11,7 +11,6 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
-import { FadeIn, FadeOut } from "react-native-reanimated";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
 
@@ -27,7 +26,6 @@ import {
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { Banner } from "~/components/banners";
-import { AnimatedGradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
 import {
   DiceGrouping,
@@ -37,6 +35,7 @@ import {
   getKeepAllDiceUpToDate,
   getSortModeIcon,
   getSortModeLabel,
+  groupAndSortDice,
   SortMode,
   SortModeList,
 } from "~/features/profiles";
@@ -50,35 +49,22 @@ import { DiceListScreenProps } from "~/navigation";
 
 export type DiceViewMode = "list" | "grid";
 
-function NoPairedDie({
-  showPairDice,
-  onPairDice,
-}: {
-  showPairDice?: boolean;
-  onPairDice: () => void;
-}) {
+function NoPairedDie({ style }: { style?: StyleProp<ViewStyle> }) {
   return (
     // Set view height so Pair Die button is not clipped during exit animation
-    <View style={{ height: 400, alignItems: "center", gap: 20 }}>
+    <View style={[{ height: 400, alignItems: "center", gap: 20 }, style]}>
       <Card style={{ width: "100%" }}>
-        <Card.Title title="No dice is paired with the app" />
-        <Card.Content>
+        <Card.Title title="No die paired with the app" />
+        <Card.Content style={{ gap: 10 }}>
           <Text variant="bodyMedium">
             In order to customize your Pixels dice you need to pair them with
-            the app.{"\n"}
-            Tap on the button below to get started.
+            the app.
+          </Text>
+          <Text variant="bodyMedium">
+            Tap on the "Add Die" button above to get started.
           </Text>
         </Card.Content>
       </Card>
-      {!showPairDice && (
-        <AnimatedGradientButton
-          entering={FadeIn.duration(300)}
-          exiting={FadeOut.duration(300).delay(200)}
-          onPress={onPairDice}
-        >
-          Scan For Dice
-        </AnimatedGradientButton>
-      )}
     </View>
   );
 }
@@ -103,10 +89,10 @@ function LargeHeader({
         padding: 15,
         paddingVertical: 10,
         justifyContent: "space-between",
-        backgroundColor: "#222222",
+        backgroundColor: colors.background,
       }}
     >
-      <Icon source={require("#/images/icon.png")} size={60} />
+      <Icon source={require("#/images/systemic-icon.png")} size={60} />
       <View
         style={{
           flexDirection: "row",
@@ -265,16 +251,17 @@ function DiceListPage({
   const appDispatch = useAppDispatch();
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
 
+  // Sort options
+  const groupBy = useAppSelector((state) => state.appSettings.diceGrouping);
+  const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
+  const sortedDice = React.useMemo(
+    () =>
+      groupAndSortDice(pairedDice, groupBy, sortMode).flatMap((g) => g.values),
+    [pairedDice, groupBy, sortMode]
+  );
+
   // Pairing
   const [showPairDice, setShowPairDice] = React.useState(false);
-  const hasPairedDice = pairedDice.length > 0;
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!hasPairedDice) {
-        setShowPairDice(true);
-      }
-    }, [hasPairedDice])
-  );
 
   // Scan for missing dice on showing page
   useFocusEffect(useConnectToMissingPixels());
@@ -301,14 +288,11 @@ function DiceListPage({
           }}
         >
           <BluetoothStateWarning />
-          {!pairedDice.length ? (
-            <NoPairedDie
-              showPairDice={showPairDice}
-              onPairDice={() => setShowPairDice(true)}
-            />
+          {!sortedDice.length ? (
+            <NoPairedDie style={{ marginVertical: 10 }} />
           ) : (
             <>
-              {pairedDice.length > 0 && (
+              {sortedDice.length > 0 && (
                 <GridListSelector
                   viewMode={viewMode}
                   onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
@@ -316,14 +300,14 @@ function DiceListPage({
               )}
               {viewMode === "grid" ? (
                 <DiceGrid
-                  dice={pairedDice}
+                  dice={sortedDice}
                   onSelectDie={(d) =>
                     navigation.navigate("dieFocus", { pixelId: d.pixelId })
                   }
                 />
               ) : (
                 <DiceList
-                  dice={pairedDice}
+                  dice={sortedDice}
                   onSelectDie={(d) =>
                     navigation.navigate("dieFocus", { pixelId: d.pixelId })
                   }

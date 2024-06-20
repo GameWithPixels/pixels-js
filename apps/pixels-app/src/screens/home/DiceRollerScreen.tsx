@@ -36,6 +36,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
 import { DieWireframe } from "~/components/icons";
+import { AvailableDiceTypes } from "~/features/dice/AvailableDiceTypes";
 import {
   addRollerEntry,
   hideAllRollerEntries,
@@ -44,16 +45,6 @@ import {
 } from "~/features/store";
 import { DiceRollerScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
-
-const diceTypes = [
-  "d20",
-  "d12",
-  "d00",
-  "d10",
-  "d8",
-  "d6",
-  "d4",
-] as PixelDieType[];
 
 interface AnimatedRollCardHandle {
   overrideWidth: (w: number) => void;
@@ -315,9 +306,9 @@ function OptionsMenu({
       {[0, 1].map((i) => (
         <RollDiceLine
           key={i}
-          diceTypes={diceTypes.slice(
-            Math.ceil((i * diceTypes.length) / 2),
-            Math.ceil(((i + 1) * diceTypes.length) / 2)
+          diceTypes={AvailableDiceTypes.slice(
+            Math.ceil((i * AvailableDiceTypes.length) / 2),
+            Math.ceil(((i + 1) * AvailableDiceTypes.length) / 2)
           )}
           addRoll={(d, v) => {
             onAddRoll(d, v);

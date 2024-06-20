@@ -3,7 +3,7 @@ import React from "react";
 import { View, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
-import { SortButton, SortMode } from "./buttons";
+import { SortButton, AlphaSortMode } from "./buttons";
 import { ColorDesignGrid } from "./designs";
 
 import { usePatternsList } from "~/hooks";
@@ -17,7 +17,7 @@ export function ColorDesignPicker({
   onSelectPattern?: (pattern: Readonly<Profiles.Pattern>) => void;
 } & ViewProps) {
   const patterns = usePatternsList();
-  const [sortMode, setSortMode] = React.useState<SortMode>("a-z");
+  const [sortMode, setSortMode] = React.useState<AlphaSortMode>("a-z");
   return (
     <View {...props}>
       <View

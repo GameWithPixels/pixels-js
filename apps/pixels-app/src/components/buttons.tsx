@@ -183,15 +183,15 @@ export function StatsViewModeButton({
   );
 }
 
-export type SortMode = "a-z" | "z-a";
+export type AlphaSortMode = "a-z" | "z-a";
 
 export function SortButton({
   mode,
   onChange,
   ...props
 }: {
-  mode: SortMode;
-  onChange?: (mode: SortMode) => void;
+  mode: AlphaSortMode;
+  onChange?: (mode: AlphaSortMode) => void;
 } & Omit<TouchableRippleProps, "children" | "onPress">) {
   const Icon = mode === "a-z" ? SortAZIcon : SortZAIcon;
   return (

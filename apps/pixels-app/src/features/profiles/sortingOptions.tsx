@@ -1,12 +1,18 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelColorway,
+  PixelColorwayValues,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 
 import { ProfileDieTypes } from "./ProfileDieTypes";
-import { getProfileDieTypeLabel } from "./descriptions";
+import { getColorwayLabel, getProfileDieTypeLabel } from "./descriptions";
+import { AvailableDiceTypes } from "../dice/AvailableDiceTypes";
 
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
+import { PairedDie } from "~/app/PairedDie";
 
 function SortByDateDescendingIcon({
   size,
@@ -81,7 +87,7 @@ export function getSortModeIcon(
   }
 }
 
-export const DiceGroupingList = ["none", "dieType", "name"] as const;
+export const DiceGroupingList = ["none", "dieType", "colorway"] as const;
 
 export type DiceGrouping = (typeof DiceGroupingList)[number];
 
@@ -91,8 +97,8 @@ export function getDiceGroupingLabel(grouping: DiceGrouping): string {
       return "None";
     case "dieType":
       return "Die Type";
-    case "name":
-      return "Name";
+    case "colorway":
+      return "Colorway";
     default:
       assertNever(grouping, `No label for grouping ${grouping}`);
   }
@@ -144,23 +150,24 @@ export function getAnimationsGroupingLabel(
 }
 
 export function sortProfiles(
-  profiles: Readonly<Profiles.Profile>[],
+  profiles: readonly Readonly<Profiles.Profile>[],
   sortMode?: SortMode
 ): Readonly<Profiles.Profile>[] {
+  const sorted = [...profiles];
   if (!sortMode) {
-    return profiles;
+    return sorted;
   }
   switch (sortMode) {
     case "alphabetical":
-      return profiles.sort((a, b) => a.name.localeCompare(b.name));
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
     case "alphabetical-reverse":
-      return profiles.sort((a, b) => b.name.localeCompare(a.name));
+      return sorted.sort((a, b) => b.name.localeCompare(a.name));
     case "chronological":
-      return profiles.sort(
+      return sorted.sort(
         (a, b) => a.creationDate.getTime() - b.creationDate.getTime()
       );
     case "chronological-reverse":
-      return profiles.sort(
+      return sorted.sort(
         (a, b) => b.creationDate.getTime() - a.creationDate.getTime()
       );
     default:
@@ -337,10 +344,10 @@ export function groupByTime<T extends { name: string }>(
 }
 
 function sortGroupedByTime<T extends { name: string }>(
-  groups: {
+  groups: readonly Readonly<{
     title: string;
     values: Readonly<T>[];
-  }[],
+  }>[],
   sortMode?: SortMode
 ): {
   title: string;
@@ -359,20 +366,21 @@ function sortGroupedByTime<T extends { name: string }>(
       }));
     case undefined:
     case "chronological-reverse":
-      return groups;
-    case "chronological":
-      groups.reverse();
+      return [...groups];
+    case "chronological": {
+      const sorted = [...groups].reverse();
       for (const { values } of groups) {
         values.reverse();
       }
-      return groups;
+      return sorted;
+    }
     default:
       assertNever(sortMode, `No sorting for ${sortMode}`);
   }
 }
 
 export function groupAndSortProfiles(
-  profiles: Readonly<Profiles.Profile>[],
+  profiles: readonly Readonly<Profiles.Profile>[],
   groupBy?: ProfilesGrouping,
   sortMode?: SortMode
 ): {
@@ -381,9 +389,9 @@ export function groupAndSortProfiles(
 }[] {
   const defaultTitle = "Profiles";
   if (!groupBy && !sortMode) {
-    return [{ title: defaultTitle, values: profiles }];
+    return [{ title: defaultTitle, values: [...profiles] }];
   } else {
-    const sort = (profiles: Readonly<Profiles.Profile>[]) =>
+    const sort = (profiles: readonly Readonly<Profiles.Profile>[]) =>
       sortProfiles(profiles, sortMode);
     switch (groupBy) {
       case undefined:
@@ -415,6 +423,64 @@ export function groupAndSortProfiles(
           ),
           sortMode
         );
+      default:
+        assertNever(groupBy, `No grouping for ${groupBy}`);
+    }
+  }
+}
+
+export function sortDice(
+  dice: readonly PairedDie[],
+  sortMode?: SortMode
+): PairedDie[] {
+  const sorted = [...dice];
+  if (!sortMode) {
+    return sorted;
+  }
+  switch (sortMode) {
+    case "alphabetical":
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    case "alphabetical-reverse":
+      return sorted.sort((a, b) => b.name.localeCompare(a.name));
+    case "chronological":
+      return sorted;
+    case "chronological-reverse":
+      return sorted.reverse();
+    default:
+      assertNever(sortMode, `No sorting for ${sortMode}`);
+  }
+}
+
+export function groupAndSortDice(
+  dice: readonly PairedDie[],
+  groupBy?: DiceGrouping,
+  sortMode?: SortMode
+): {
+  title: string;
+  values: PairedDie[];
+}[] {
+  const defaultTitle = "Dice";
+  if (!groupBy && !sortMode) {
+    return [{ title: defaultTitle, values: [...dice] }];
+  } else {
+    const sort = (dice: readonly PairedDie[]) => sortDice(dice, sortMode);
+    switch (groupBy) {
+      case undefined:
+        return [{ title: defaultTitle, values: sort(dice) }];
+      case "none":
+        return [{ title: defaultTitle, values: sort(dice) }];
+      case "dieType":
+        return AvailableDiceTypes.map((dieType) => ({
+          title: getProfileDieTypeLabel(dieType),
+          values: sort(dice.filter((p) => p.dieType === dieType)),
+        })).filter((group) => group.values.length > 0);
+      case "colorway":
+        return (Object.keys(PixelColorwayValues) as PixelColorway[])
+          .map((colorway) => ({
+            title: getColorwayLabel(colorway),
+            values: sort(dice.filter((p) => p.colorway === colorway)),
+          }))
+          .filter((group) => group.values.length > 0);
       default:
         assertNever(groupBy, `No grouping for ${groupBy}`);
     }
