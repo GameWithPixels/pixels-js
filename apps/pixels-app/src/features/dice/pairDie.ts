@@ -2,7 +2,10 @@ import {
   createLibraryProfile,
   Serializable,
 } from "@systemic-games/pixels-edit-animation";
-import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelInfo,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 
 import {
   computeProfileHashWithOverrides,
@@ -12,29 +15,45 @@ import {
 import { AppStore } from "~/app/store";
 import { Library, addPairedDie, preSerializeProfile } from "~/features/store";
 
-export function pairDie(pixel: PixelInfo, store: AppStore): void {
+export function pairDie(
+  pixel: Pick<
+    PixelInfo,
+    | "systemId"
+    | "pixelId"
+    | "name"
+    | "ledCount"
+    | "colorway"
+    | "dieType"
+    | "firmwareDate"
+  >,
+  store: AppStore,
+  sourceProfile?: Readonly<Profiles.Profile>
+): void {
   const { pairedDice } = store.getState();
   let profileUuid =
     pairedDice.paired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid ??
     pairedDice.unpaired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid;
-  if (!profileUuid) {
+  // Create new profile if die profile not found or same as source profile
+  if (
+    !profileUuid ||
+    !store.getState().library.profiles.ids.includes(profileUuid) ||
+    profileUuid === sourceProfile?.uuid
+  ) {
     // Use profile with pre-serialized data so the hash is stable
-    const profile = preSerializeProfile(
-      // Assuming default profile
-      createLibraryProfile(
-        "default",
-        pixel.dieType,
-        generateProfileUuid(store.getState().library)
-      ),
+    const dieProfile = preSerializeProfile(
+      // Use default profile if none provided
+      sourceProfile ?? createLibraryProfile("default", pixel.dieType),
       store.getState().library
     );
+    profileUuid = generateProfileUuid(store.getState().library);
     store.dispatch(
       Library.Profiles.add({
-        ...Serializable.fromProfile(profile),
-        hash: computeProfileHashWithOverrides(profile),
+        ...Serializable.fromProfile(dieProfile),
+        uuid: profileUuid,
+        hash: computeProfileHashWithOverrides(dieProfile),
+        sourceUuid: sourceProfile?.uuid,
       })
     );
-    profileUuid = profile.uuid;
   }
   store.dispatch(
     addPairedDie({

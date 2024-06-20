@@ -2,9 +2,14 @@ import { createDefault } from "./createDefault";
 import * as Library from "./library";
 
 import { AppDispatch } from "~/app/store";
-export function dispatchReset(appDispatch: AppDispatch): void {
+export function dispatchReset(
+  appDispatch: AppDispatch,
+  opt?: { keepProfiles?: boolean }
+): void {
   const library = createDefault();
-  appDispatch(Library.Profiles.reset(library));
+  if (!opt?.keepProfiles) {
+    appDispatch(Library.Profiles.reset(library));
+  }
   appDispatch(Library.Animations.Cycle.reset(library));
   appDispatch(Library.Animations.Flashes.reset(library));
   appDispatch(Library.Animations.Rainbow.reset(library));

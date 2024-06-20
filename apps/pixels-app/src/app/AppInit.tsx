@@ -6,7 +6,8 @@ import { RootState } from "./store";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
 import { useAppSelector, useAppDispatch } from "~/app/hooks";
-import { Library } from "~/features/store";
+import { pairDie } from "~/features/dice";
+import { Library, readProfile } from "~/features/store";
 
 export function AppInit({ children }: React.PropsWithChildren) {
   const appDispatch = useAppDispatch();
@@ -19,8 +20,37 @@ export function AppInit({ children }: React.PropsWithChildren) {
       // Init library
       const hasStuff = store.getState().library.gradients.ids.length > 0;
       if (!hasStuff) {
-        console.warn("Resetting library");
-        Library.dispatchReset(appDispatch);
+        console.warn("Resetting library except profiles");
+        Library.dispatchReset(appDispatch, {
+          keepProfiles: true,
+        });
+      }
+      // Create dice profiles (needed when upgrading from v2.2)
+      const { paired, unpaired } = store.getState().pairedDice;
+      for (const d of paired.concat(unpaired)) {
+        // Create die profile by re-pairing die
+        if (!d.profileHash) {
+          console.warn(`Re-pairing die ${d.name} to generate profile & hash`);
+          // Profile won't be found if it's using the default profile
+          const hasProfile = store
+            .getState()
+            .library.profiles.ids.includes(d.profileUuid);
+          pairDie(
+            {
+              systemId: d.systemId,
+              pixelId: d.pixelId,
+              name: d.name,
+              ledCount: d.ledCount,
+              colorway: d.colorway,
+              dieType: d.dieType,
+              firmwareDate: new Date(d.firmwareTimestamp),
+            },
+            store,
+            hasProfile
+              ? readProfile(d.profileUuid, store.getState().library)
+              : undefined
+          );
+        }
       }
       // Set as initialized
       setInitialized(true);
