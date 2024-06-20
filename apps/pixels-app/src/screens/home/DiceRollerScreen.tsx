@@ -338,16 +338,8 @@ function RollerPage({
   const sizeRatio = useAppSelector(
     (state) => state.appSettings.rollerCardsSizeRatio
   );
-  const allRolls = useAppSelector(
-    (state) => state.appTransient.roller.allRolls
-  );
-  const allVisibleRolls = useAppSelector(
-    (state) => state.appTransient.roller.visibleRolls
-  );
-  const rolls = React.useMemo(
-    () => allVisibleRolls.slice(-50),
-    [allVisibleRolls]
-  );
+  const allRolls = useAppSelector((state) => state.diceRoller.allRolls);
+  const rolls = useAppSelector((state) => state.diceRoller.visibleRolls);
   const refs = React.useRef<
     Map<number, React.RefObject<AnimatedRollCardHandle>>
   >(new Map());
@@ -362,7 +354,11 @@ function RollerPage({
 
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   // Scroll to bottom when a new item is added
-  React.useEffect(() => scrollViewRef.current?.scrollToEnd(), [allRolls]);
+  React.useEffect(() => {
+    // Slightly delay the scroll to make sure the new item is rendered on iOS
+    const id = setTimeout(() => scrollViewRef.current?.scrollToEnd(), 0);
+    return () => clearTimeout(id);
+  }, [allRolls]);
 
   const [menuVisible, setMenuVisible] = React.useState(false);
   const bottomPadding = useSharedValue(0);

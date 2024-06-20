@@ -24,6 +24,7 @@ import { PairedDie } from "./PairedDie";
 
 import appSettingsReducer from "~/features/store/appSettingsSlice";
 import appTransientReducer from "~/features/store/appTransientSlice";
+import diceRollerReducer from "~/features/store/diceRollerSlice";
 import diceStatsReducer from "~/features/store/diceStatsSlice";
 import animationsCycleReducer from "~/features/store/library/animations/cycleSlice";
 import animationsFlashesReducer from "~/features/store/library/animations/flashesSlice";
@@ -195,6 +196,7 @@ const rootReducer = combineReducers({
     patterns: persist("library/patterns", patternsReducer),
     gradients: persist("library/gradients", gradientsReducer),
   }),
+  diceRoller: persist("diceRoller", diceRollerReducer),
   // Transient data
   appTransient: appTransientReducer,
 });

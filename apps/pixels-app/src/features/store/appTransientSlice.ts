@@ -1,24 +1,6 @@
-import {
-  createEntityAdapter,
-  createSlice,
-  EntityState,
-  PayloadAction,
-} from "@reduxjs/toolkit";
-import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { logWrite } from "./logWrite";
-
-export interface DatedRoll {
-  timestamp: number; // Unique identifier
-  dieType: PixelDieType;
-  value: number;
-}
-
-export type DatedRollsState = EntityState<DatedRoll>;
-
-export const datedRollsAdapter = createEntityAdapter({
-  selectId: (roll: Readonly<DatedRoll>) => roll.timestamp,
-});
 
 export interface AppTransientState {
   update: {
@@ -29,27 +11,14 @@ export interface AppTransientState {
     };
     error?: string;
   };
-  roller: {
-    allRolls: DatedRollsState;
-    visibleRolls: number[]; // Timestamps
-  };
 }
 
 const initialState: AppTransientState = {
   update: { gotResponse: false },
-  roller: {
-    allRolls: datedRollsAdapter.getInitialState(),
-    visibleRolls: [],
-  },
 };
 
 function log(
-  action:
-    | "resetAppTransientState"
-    | "setAppUpdateResponse"
-    | "addRollerEntry"
-    | "hideRollerEntry"
-    | "hideAllRollerEntries",
+  action: "resetAppTransientState" | "setAppUpdateResponse",
   value?: unknown
 ) {
   logWrite(action + (value !== undefined ? `: ${value}` : ""));
@@ -85,48 +54,9 @@ const appUpdateSlice = createSlice({
         update.manifest = undefined;
       }
     },
-
-    addRollerEntry(
-      state,
-      action: PayloadAction<Pick<DatedRoll, "dieType" | "value">>
-    ) {
-      log("addRollerEntry");
-      const { allRolls: allItems, visibleRolls: visibleItems } = state.roller;
-      const lastTimestamp =
-        allItems.entities[allItems.ids.at(-1) ?? 0]?.timestamp;
-      const timestamp = Math.max(
-        Date.now(),
-        lastTimestamp ? lastTimestamp + 1 : 0
-      );
-      datedRollsAdapter.addOne(allItems, {
-        timestamp,
-        dieType: action.payload.dieType,
-        value: action.payload.value,
-      });
-      visibleItems.push(timestamp);
-    },
-
-    hideRollerEntry(state, action: PayloadAction<number>) {
-      log("hideRollerEntry");
-      const { visibleRolls: visibleItems } = state.roller;
-      const i = visibleItems.indexOf(action.payload);
-      if (i >= 0) {
-        state.roller.visibleRolls.splice(i, 1);
-      }
-    },
-
-    hideAllRollerEntries(state) {
-      log("hideAllRollerEntries");
-      state.roller.visibleRolls.length = 0;
-    },
   },
 });
 
-export const {
-  resetAppTransientState,
-  setAppUpdateResponse,
-  addRollerEntry,
-  hideRollerEntry,
-  hideAllRollerEntries,
-} = appUpdateSlice.actions;
+export const { resetAppTransientState, setAppUpdateResponse } =
+  appUpdateSlice.actions;
 export default appUpdateSlice.reducer;

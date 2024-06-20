@@ -22,6 +22,7 @@ import {
   setDiceBrightnessFactor,
   setDisablePlayingAnimations,
 } from "~/features/store";
+import { resetDiceRoller } from "~/features/store/diceRollerSlice";
 import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
 import { AppSettingsScreenProps, SettingsMenuScreenProps } from "~/navigation";
 
@@ -52,6 +53,7 @@ function AppSettingsPage({
     appDispatch(resetAppSettings());
     appDispatch(resetPairedDice());
     appDispatch(resetDiceStats());
+    appDispatch(resetDiceRoller());
     appDispatch(resetAppTransientState());
     Library.dispatchReset(appDispatch);
     navigation.navigate("onboarding");
