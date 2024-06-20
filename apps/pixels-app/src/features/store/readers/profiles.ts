@@ -79,8 +79,8 @@ function updateProfile(
   if (profile.creationDate.getTime() !== profileData.creationDate) {
     profile.creationDate = new Date(profileData.creationDate);
   }
-  if (profile.lastModified.getTime() !== profileData.lastChanged) {
-    profile.lastModified = new Date(profileData.lastChanged);
+  if (profile.lastModified.getTime() !== profileData.lastModified) {
+    profile.lastModified = new Date(profileData.lastModified);
   }
   // Update rules
   const rulesCount = profileData.rules.length;

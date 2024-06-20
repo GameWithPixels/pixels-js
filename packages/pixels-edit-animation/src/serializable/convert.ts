@@ -230,7 +230,7 @@ export function toProfile(
     ...data,
     rules,
     creationDate: new Date(data.creationDate),
-    lastModified: new Date(data.lastChanged),
+    lastModified: new Date(data.lastModified),
   });
 }
 
@@ -549,7 +549,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     colorway: profile.colorway,
     brightness: profile.brightness,
     creationDate: profile.creationDate.getTime(),
-    lastChanged: profile.lastModified.getTime(),
+    lastModified: profile.lastModified.getTime(),
     conditions,
     actions,
     rules,

@@ -15,7 +15,7 @@ export interface ProfileData extends UniqueNamedData {
   colorway: PixelColorway;
   brightness: number;
   creationDate: number;
-  lastChanged: number; // TODO Should be lastModified
+  lastModified: number;
   conditions: {
     helloGoodbye: {
       flags: HelloGoodbyeFlags[];

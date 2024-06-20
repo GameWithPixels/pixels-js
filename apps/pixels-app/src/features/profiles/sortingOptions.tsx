@@ -109,7 +109,7 @@ export const ProfilesGroupingList = [
   "none",
   "dieType",
   "creationDate",
-  "lastChanged", // TODO Should be lastModified
+  "lastModified",
 ] as const;
 
 export type ProfilesGrouping = (typeof ProfilesGroupingList)[number];
@@ -122,7 +122,7 @@ export function getProfilesGroupingLabel(grouping: ProfilesGrouping): string {
       return "Die Type";
     case "creationDate":
       return "Creation Date";
-    case "lastChanged":
+    case "lastModified":
       return "Last Modification Date";
     default:
       assertNever(grouping, `No label for grouping ${grouping}`);
@@ -413,7 +413,7 @@ export function groupAndSortProfiles(
           ),
           sortMode
         );
-      case "lastChanged":
+      case "lastModified":
         return sortGroupedByTime(
           groupByTime(
             profiles.map((p) => ({
