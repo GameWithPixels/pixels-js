@@ -18,7 +18,6 @@ import {
 import Animated, { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { BluetoothStateWarning } from "./BluetoothWarning";
 import { PixelBattery } from "./PixelBattery";
 import { PixelRssi } from "./PixelRssi";
 import { useFlashAnimationStyle } from "./ViewFlashOnRoll";
@@ -241,15 +240,13 @@ export function PickDieBottomSheet({
                 </Text>
               )}
             </View>
-            <BluetoothStateWarning>
-              {pairedDice.length ? (
-                <SelectPairedDie pairedDice={pairedDice} onSelect={dismiss} />
-              ) : (
-                <Text variant="bodyLarge">
-                  {`You don't have any paired ${dieTypesStrSpace}die.`}
-                </Text>
-              )}
-            </BluetoothStateWarning>
+            {pairedDice.length ? (
+              <SelectPairedDie pairedDice={pairedDice} onSelect={dismiss} />
+            ) : (
+              <Text variant="bodyLarge">
+                {`You don't have any paired ${dieTypesStrSpace}die.`}
+              </Text>
+            )}
           </View>
         </ThemeProvider>
       </RootSiblingParent>

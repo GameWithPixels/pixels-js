@@ -143,7 +143,13 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         if (status === "ready") {
           onRename(pixel);
           onFwDate(pixel);
-          setCheckProfiles();
+          if (
+            store
+              .getState()
+              .pairedDice.paired.some((d) => d.pixelId === pixel.pixelId)
+          ) {
+            setCheckProfiles();
+          }
         }
       };
       pixel.addPropertyListener("status", onStatus);
@@ -255,6 +261,11 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     for (const id of pixelIds) {
       central.watch(id);
     }
+    // Keep pairedDice in dependencies!
+  }, [central, pairedDice, store]);
+  React.useEffect(() => {
+    // Paired dice may have changed since the last render
+    const newPairedDice = store.getState().pairedDice.paired;
     // Check if on dice profile matches the expected hash
     for (const d of newPairedDice) {
       // Check profile

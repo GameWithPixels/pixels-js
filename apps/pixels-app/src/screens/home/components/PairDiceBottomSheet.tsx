@@ -270,30 +270,30 @@ export function PairDiceBottomSheet({
     >
       <RootSiblingParent>
         <ThemeProvider theme={theme}>
-          <View
-            style={{
-              flex: 1,
-              flexGrow: 1,
-              paddingHorizontal: 10,
-              paddingBottom,
-              gap: 10,
-            }}
-          >
-            {visible && (
+          {visible && (
+            <View
+              style={{
+                flex: 1,
+                flexGrow: 1,
+                paddingHorizontal: 10,
+                paddingBottom,
+                gap: 10,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text variant="titleMedium">Select Pixels Dice to Pair</Text>
+                <Text style={AppStyles.selfCentered}>
+                  {availablePixels.length <= 3
+                    ? ""
+                    : ` (${availablePixels.length} available)`}
+                </Text>
+              </View>
               <BluetoothStateWarning>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Text variant="titleMedium">Select Pixels Dice to Pair</Text>
-                  <Text style={AppStyles.selfCentered}>
-                    {availablePixels.length <= 3
-                      ? ""
-                      : ` (${availablePixels.length} available)`}
-                  </Text>
-                </View>
                 {scanError ? (
                   <Text variant="bodyLarge" style={{ padding: 10 }}>
                     ❌ Error trying to scan for dice!{"\n"}
@@ -306,8 +306,8 @@ export function PairDiceBottomSheet({
                   />
                 )}
               </BluetoothStateWarning>
-            )}
-          </View>
+            </View>
+          )}
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

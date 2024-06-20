@@ -1,8 +1,14 @@
 import { useBluetoothState } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
+import { StyleProp, ViewStyle } from "react-native";
 import { Card, Text } from "react-native-paper";
 
-export function BluetoothStateWarning({ children }: React.PropsWithChildren) {
+export function BluetoothStateWarning({
+  children,
+  style,
+}: React.PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+}>) {
   const bluetoothState = useBluetoothState();
   // Render children if Bluetooth is ready or unknown. The later is reported
   // when the app hasn't yet initialized Central, so we don't want to allow
@@ -12,7 +18,7 @@ export function BluetoothStateWarning({ children }: React.PropsWithChildren) {
       <>{children}</>
     ) : null
   ) : (
-    <Card style={{ width: "100%" }}>
+    <Card style={[{ width: "100%" }, style]}>
       <Card.Title
         title={
           "❌ " +
