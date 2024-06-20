@@ -15,19 +15,18 @@ export function useProfilesList(): {
   dice: Readonly<Profiles.Profile>[];
 } {
   const library = useAppSelector((state) => state.library);
-  const paired = useAppSelector((state) => state.pairedDice.paired);
-  const unpaired = useAppSelector((state) => state.pairedDice.unpaired);
+  const dice = useAppSelector((state) => state.pairedDice);
   return React.useMemo(() => {
-    const diceProfiles = paired
+    const diceProfiles = dice.paired
       .map((d) => d.profileUuid)
-      .concat(unpaired.map((p) => p.profileUuid));
+      .concat(dice.unpaired.map((p) => p.profileUuid));
     return {
       library: library.profiles.ids
         .map((uuid) => readProfile(uuid as string, library))
         .filter((p) => !diceProfiles.includes(p.uuid)),
       dice: diceProfiles.map((uuid) => readProfile(uuid, library)),
     };
-  }, [library, paired, unpaired]);
+  }, [library, dice]);
 }
 
 export function useEditProfilesList(): {

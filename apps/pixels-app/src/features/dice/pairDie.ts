@@ -15,8 +15,8 @@ import { Library, addPairedDie, preSerializeProfile } from "~/features/store";
 export function pairDie(pixel: PixelInfo, store: AppStore): void {
   const { pairedDice } = store.getState();
   let profileUuid =
-    pairedDice.paired[pixel.pixelId]?.profileUuid ??
-    pairedDice.unpaired[pixel.pixelId]?.profileUuid;
+    pairedDice.paired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid ??
+    pairedDice.unpaired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid;
   if (!profileUuid) {
     // Use profile with pre-serialized data so the hash is stable
     const profile = preSerializeProfile(
