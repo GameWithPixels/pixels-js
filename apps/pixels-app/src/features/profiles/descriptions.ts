@@ -252,6 +252,19 @@ export function getRollStateLabel(state?: PixelRollState): string {
   }
 }
 
+export function getRollStateAndFaceLabel(
+  state?: PixelRollState,
+  face?: number
+): string | undefined {
+  return face !== undefined && state && state !== "unknown"
+    ? state === "onFace"
+      ? `On face ${face}`
+      : state === "rolling" || state === "handling"
+        ? "Rolling..."
+        : getRollStateLabel(state)
+    : undefined;
+}
+
 export function getColorOverrideLabel(
   colorOverrideType:
     | Profiles.NormalsColorOverrideType

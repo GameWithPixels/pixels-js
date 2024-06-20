@@ -25,7 +25,7 @@ import { DieWireframe } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
-import { getDieTypeLabel, getRollStateLabel } from "~/features/profiles";
+import { getDieTypeLabel, getRollStateAndFaceLabel } from "~/features/profiles";
 import { listToText } from "~/features/utils";
 import {
   useWatchedPixel,
@@ -48,18 +48,9 @@ function PairedDieCard({
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const [rollEv] = usePixelEvent(pixel, "roll");
-  const face = rollEv?.face;
-  const rollState = rollEv?.state;
-  const rollLabel =
-    face !== undefined && rollState && rollState !== "unknown"
-      ? rollState === "onFace"
-        ? `Face ${face}`
-        : rollState === "rolling" || rollState === "handling"
-          ? "Rolling..."
-          : getRollStateLabel(rollState)
-      : undefined;
+  const rollLabel = getRollStateAndFaceLabel(rollEv?.state, rollEv?.face);
   const animStyle = useFlashAnimationStyle(
-    rollState === "rolling" || rollState === "handling"
+    rollEv?.state === "rolling" || rollEv?.state === "handling"
   );
 
   const { colors, roundness } = useTheme();

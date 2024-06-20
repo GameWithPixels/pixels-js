@@ -56,14 +56,13 @@ const ProfileDiceNames = observer(function ProfileDiceNames({
 }) {
   const diceNames = useDiceNamesForProfile(profile.uuid);
   return (
-    <Text>
-      {diceNames.length ? diceNames.join(", ") : "Not copied on any die"}
+    <Text numberOfLines={1} style={{ flex: 1 }}>
+      {diceNames.length ? "Copied to " + diceNames.join(", ") : ""}
     </Text>
   );
 });
 
 const ProfileActionsIcons = observer(function ProfileActionsIcons({
-  children,
   profile,
   gap,
   iconColor,
@@ -83,7 +82,6 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
         alignSelf: "flex-start",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center",
         gap,
         height: 24,
       }}
@@ -100,7 +98,6 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
       {hasWeb && (
         <ActionTypeIcon type="makeWebRequest" size={16} color={iconColor} />
       )}
-      {children}
     </View>
   );
 });
@@ -205,13 +202,14 @@ export function ProfileCard({
             numberOfLines={2}
             textStyle={{ color }}
           />
-          <ProfileActionsIcons
-            profile={profile}
-            gap={row ? 10 : 5}
-            iconColor={colors.onSurface}
-          >
-            <ProfileDiceNames profile={profile} />
-          </ProfileActionsIcons>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <ProfileActionsIcons
+              profile={profile}
+              gap={row ? 10 : 5}
+              iconColor={colors.onSurface}
+            />
+            {row && <ProfileDiceNames profile={profile} />}
+          </View>
         </View>
       </TouchableCard>
       {/* Render gradient outside of touchable so the ripple effects works */}
@@ -265,6 +263,7 @@ export function ProfilesList({
     <View style={[{ gap: 10 }, style]} {...props}>
       {profilesGroups.map(({ title, values: profiles }, i) => (
         <View key={title + i} style={{ gap: 10 }}>
+          <Text variant="headlineSmall">{title}</Text>
           {profiles.map((p) => (
             <ProfileCard
               key={p.uuid}

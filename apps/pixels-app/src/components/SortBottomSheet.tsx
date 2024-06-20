@@ -73,7 +73,7 @@ export function SortBottomSheet({
                   selected={groupBy === g}
                   noTopBorder={i > 0}
                   squaredTopBorder={i > 0}
-                  squaredBottomBorder={i < 2}
+                  squaredBottomBorder={i < groups.length - 1}
                   onPress={() => onChangeGroupBy(g)}
                 >
                   {getGroupingLabel?.(g) ?? g}
@@ -88,7 +88,7 @@ export function SortBottomSheet({
                   selected={sortMode === s}
                   noTopBorder={i > 0}
                   squaredTopBorder={i > 0}
-                  squaredBottomBorder={i < 1}
+                  squaredBottomBorder={i < sortModes.length - 1}
                   icon={getSortModeIcon?.(s)}
                   onPress={() => onChangeSortMode(s)}
                 >

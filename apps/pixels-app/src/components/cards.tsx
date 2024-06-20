@@ -25,6 +25,7 @@ import { PixelTransferProgressBar } from "./PixelTransferProgressBar";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
 import { PairedDie } from "~/app/PairedDie";
+import { getRollStateAndFaceLabel } from "~/features/profiles";
 import { usePairedDieProfileUuid, useProfile, useWatchedPixel } from "~/hooks";
 
 const CardLabels = observer(function CardLabels({
@@ -43,7 +44,7 @@ const CardLabels = observer(function CardLabels({
   const [rollEv] = usePixelEvent(pixel, "roll");
   const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
   const onFace = rollEv?.state === "onFace";
-  const [showRoll, setShowRoll] = React.useState(isReady);
+  const [showRoll, setShowRoll] = React.useState(false);
 
   // Show rolling/rolled message for a few seconds
   React.useEffect(() => {
@@ -82,9 +83,7 @@ const CardLabels = observer(function CardLabels({
         <Text variant="labelSmall">
           {compact && !showRoll
             ? profile.name
-            : rolling
-              ? "Rolling..."
-              : `On face ${rollEv?.face ?? pixel?.currentFace ?? ""}`}
+            : getRollStateAndFaceLabel(rollEv?.state, rollEv?.face) ?? ""}
         </Text>
       </Animated.View>
     </View>

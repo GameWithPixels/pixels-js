@@ -704,7 +704,7 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
             {step === "update"
               ? `Updating your ${diceStr}...`
               : `Your ${
-                  pixels.length <= 1 ? "dice are" : "die is"
+                  pixels.length <= 1 ? "die is" : "dice are"
                 } up-to-date.`}
           </Text>
           <ScrollView contentContainerStyle={{ paddingVertical: 10, gap: 20 }}>
