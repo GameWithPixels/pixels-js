@@ -6,7 +6,10 @@ import {
 import { PersistedState } from "redux-persist";
 
 import { PairedDie } from "./PairedDie";
+import { AppStore } from "./store";
 
+import { pairDie } from "~/features/dice";
+import { readProfile } from "~/features/store";
 import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
 
 function updateFrom2To3(state: NonNullable<PersistedState>): void {
@@ -91,7 +94,7 @@ function updateFrom3to4(state: NonNullable<PersistedState>): void {
     for (const readonlyDie of state.paired) {
       const die = readonlyDie as Mutable<PairedDie>;
       die.ledCount = DiceUtils.getLEDCount(die.dieType);
-      die.profileHash = 0;
+      // Leave "profileHash" undefined, it will be re-paired in AppInit
     }
     if ("unpaired" in state && Array.isArray(state.unpaired)) {
       state.unpaired.length = 0;
@@ -123,6 +126,40 @@ function updateFrom3to4(state: NonNullable<PersistedState>): void {
         }
       }
     }
+  }
+}
+
+export function updatePairedDiceFrom3to4(store: AppStore): void {
+  const { paired, unpaired } = store.getState().pairedDice;
+  const diceToUpdate = paired.filter((d) => d.profileHash === undefined);
+  if (diceToUpdate.length && unpaired.length) {
+    // We should not have any unpaired dice when updating from 3 to 4
+    console.warn(
+      "Will be re-pairing some dice but there are unpaired dice too"
+    );
+  }
+  // Create die profile by re-pairing dice
+  for (const d of diceToUpdate) {
+    console.warn(`Re-pairing die ${d.name} to generate profile & hash`);
+    // Profile won't be found if it's using the default profile
+    const hasProfile = store
+      .getState()
+      .library.profiles.ids.includes(d.profileUuid);
+    pairDie(
+      {
+        systemId: d.systemId,
+        pixelId: d.pixelId,
+        name: d.name,
+        ledCount: d.ledCount,
+        colorway: d.colorway,
+        dieType: d.dieType,
+        firmwareDate: new Date(d.firmwareTimestamp),
+      },
+      store,
+      hasProfile
+        ? readProfile(d.profileUuid, store.getState().library)
+        : undefined
+    );
   }
 }
 

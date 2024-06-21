@@ -4,10 +4,7 @@ import {
   EventReceiver,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
-import {
-  DfuState,
-  DfuUpdateError,
-} from "@systemic-games/react-native-nordic-nrf5-dfu";
+import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   BluetoothNotAuthorizedError,
   BluetoothUnavailableError,
@@ -303,20 +300,25 @@ export class PixelsCentral {
           ++attemptsCount;
           uploadError = false;
           await updateFirmware({
-            recoverFromUploadError,
             systemId: pixel.systemId,
             pixelId: pixel.pixelId,
             bootloaderPath,
             firmwarePath,
-            dfuStateCallback: (state) =>
-              this._emitEvent("pixelDfuState", { pixel, state }),
+            recoverFromUploadError,
+            dfuStateCallback: (state) => {
+              if (state === "uploading") {
+                uploadError = true;
+              }
+              this._emitEvent("pixelDfuState", { pixel, state });
+            },
             dfuProgressCallback: (progress) =>
               this._emitEvent("pixelDfuProgress", { pixel, progress }),
           });
           break;
         } catch (e) {
-          uploadError = e instanceof DfuUpdateError;
-          logError(`DFU error ${e}${uploadError ? " (update error)" : ""}`);
+          logError(
+            `DFU${uploadError ? " update" : ""} error #${attemptsCount} ${e}`
+          );
           if (attemptsCount >= 3) {
             const error = e instanceof Error ? e : new Error(String(e));
             this._emitEvent("pixelDfuError", { pixel, error });

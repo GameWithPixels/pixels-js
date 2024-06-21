@@ -23,7 +23,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
 import { Library, readProfile } from "~/features/store";
 import {
-  commitEditableProfile,
+  useCommitEditableProfile,
   useConfirmActionSheet,
   useEditableProfile,
   useEditProfilesList,
@@ -155,12 +155,13 @@ function EditProfilePage({
   const store = useAppStore();
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();
+  const commitProfile = useCommitEditableProfile(profileUuid);
 
   const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
   const commitChanges = React.useCallback(() => {
-    commitEditableProfile(profile, store);
+    commitProfile();
     goBack();
-  }, [goBack, profile, store]);
+  }, [commitProfile, goBack]);
 
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
@@ -201,7 +202,8 @@ function EditProfilePage({
           onEditRule={editRule}
           onProgramDie={(pairedDie) => {
             // Save profile
-            commitEditableProfile(profile, store);
+            commitProfile();
+
             // Update die profile
             const profileData =
               store.getState().library.profiles.entities[profile.uuid];

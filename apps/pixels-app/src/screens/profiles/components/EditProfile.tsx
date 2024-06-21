@@ -143,13 +143,6 @@ export function EditProfile({
               marginVertical: 10,
             }}
           >
-            {/* <OutlineButton
-              sentry-label="preview-on-die"
-              style={{ width: "40%" }}
-              onPress={() => {}}
-            >
-              Preview
-            </OutlineButton> */}
             <View>
               <GradientButton
                 sentry-label="copy-to-dice"
@@ -199,8 +192,10 @@ export function EditProfile({
           ))}
           <SectionTitle>Brightness</SectionTitle>
           <BrightnessSlider profile={profile} />
-          <SectionTitle>Description</SectionTitle>
-          <EditProfileDescription profile={profile} colors={colors} />
+          {!unnamed && <SectionTitle>Description</SectionTitle>}
+          {!unnamed && (
+            <EditProfileDescription profile={profile} colors={colors} />
+          )}
           <RulesSection
             profileUuid={profileUuid}
             onEditRule={onEditRule}

@@ -5,6 +5,7 @@ import {
 import { makeAutoObservable, reaction, runInAction } from "mobx";
 import React from "react";
 
+import { useAppStore } from "~/app/hooks";
 import { AppStore } from "~/app/store";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library, readProfile } from "~/features/store";
@@ -62,6 +63,10 @@ export class EditableProfileStore {
       this._counter = 0;
     }
   }
+
+  resetVersion(): void {
+    this._version = 0;
+  }
 }
 
 export const EditableProfileStoreGetterContext = React.createContext({
@@ -101,6 +106,16 @@ export function useIsEditableProfileModified(profileUuid: string): boolean {
   return modified;
 }
 
+export function useCommitEditableProfile(profileUuid: string): () => void {
+  const store = useAppStore();
+  const profileStore = useEditableProfileStore(profileUuid);
+  return React.useCallback(() => {
+    commitEditableProfile(profileStore.profile, store);
+    profileStore.resetVersion();
+  }, [profileStore, store]);
+}
+
+// EditableProfileStore version is not reset! See useCommitEditableProfile().
 export function commitEditableProfile(
   profile: Profiles.Profile,
   store: AppStore

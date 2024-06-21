@@ -2,12 +2,12 @@ import React from "react";
 import { Alert, AppState } from "react-native";
 import { useStore } from "react-redux";
 
+import { updatePairedDiceFrom3to4 } from "./migrations";
 import { RootState } from "./store";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
 import { useAppSelector, useAppDispatch } from "~/app/hooks";
-import { pairDie } from "~/features/dice";
-import { Library, readProfile } from "~/features/store";
+import { Library } from "~/features/store";
 
 export function AppInit({ children }: React.PropsWithChildren) {
   const appDispatch = useAppDispatch();
@@ -25,33 +25,8 @@ export function AppInit({ children }: React.PropsWithChildren) {
           keepProfiles: true,
         });
       }
-      // Create dice profiles (needed when upgrading from v2.2)
-      const { paired, unpaired } = store.getState().pairedDice;
-      for (const d of paired.concat(unpaired)) {
-        // Create die profile by re-pairing die
-        if (!d.profileHash) {
-          console.warn(`Re-pairing die ${d.name} to generate profile & hash`);
-          // Profile won't be found if it's using the default profile
-          const hasProfile = store
-            .getState()
-            .library.profiles.ids.includes(d.profileUuid);
-          pairDie(
-            {
-              systemId: d.systemId,
-              pixelId: d.pixelId,
-              name: d.name,
-              ledCount: d.ledCount,
-              colorway: d.colorway,
-              dieType: d.dieType,
-              firmwareDate: new Date(d.firmwareTimestamp),
-            },
-            store,
-            hasProfile
-              ? readProfile(d.profileUuid, store.getState().library)
-              : undefined
-          );
-        }
-      }
+      // Upgrading from v2.2
+      updatePairedDiceFrom3to4(store);
       // Set as initialized
       setInitialized(true);
     }
