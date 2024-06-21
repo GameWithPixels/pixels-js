@@ -238,13 +238,14 @@ export function EditProfileScreen({
     return navigation.addListener("beforeRemove", (e) => {
       const { profiles } = store.getState().library;
       const profileData = profiles.entities[profileUuid];
-      const dice = store
-        .getState()
-        .pairedDice.paired.filter(
-          (d) =>
-            profiles.entities[d.profileUuid]?.sourceUuid === profileUuid &&
-            d.profileHash !== profileData?.hash
+      const dice = store.getState().pairedDice.paired.filter((d) => {
+        const dieProfileData = profiles.entities[d.profileUuid];
+        return (
+          dieProfileData?.sourceUuid === profileUuid &&
+          (d.profileHash !== profileData?.hash ||
+            dieProfileData.brightness !== profileData?.brightness)
         );
+      });
       if (profileData && dice.length) {
         e.preventDefault();
         const diceNames =

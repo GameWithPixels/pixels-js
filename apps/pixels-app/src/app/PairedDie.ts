@@ -13,4 +13,5 @@ export type PairedDie = Readonly<{
   firmwareTimestamp: number;
   profileHash: number; // Hash of the profile as reported by the die
   profileUuid: string; // Profile used by the die
+  brightness: number; // Last programmed brightness
 }>;

@@ -194,7 +194,12 @@ export function EditDieProfileScreen({
         const profileData = die && profiles.entities[die?.profileUuid];
         const dstUuid = profileData?.sourceUuid;
         const dstProfileData = dstUuid && profiles.entities[dstUuid];
-        if (die && dstProfileData && die.profileHash !== dstProfileData.hash) {
+        if (
+          die &&
+          dstProfileData &&
+          (profileData.hash !== dstProfileData.hash ||
+            profileData.brightness !== dstProfileData.brightness)
+        ) {
           e.preventDefault();
           Alert.alert(
             "Copy changes to original profile?",

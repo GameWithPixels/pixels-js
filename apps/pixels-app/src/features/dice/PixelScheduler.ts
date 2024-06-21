@@ -11,6 +11,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 import { logError } from "~/features/utils";
+import { hackGetDieBrightness } from "~/hackGetDieBrightness";
 
 export type PixelOperationParams = Readonly<
   | {
@@ -137,7 +138,7 @@ export class PixelScheduler {
             const pixel = this._pixel;
             const type = operation.type;
             // Emit processing event
-            this._log(`Processing operation '${type}'`);
+            this._log(`Processing operation ${type}`);
             this._currentOperation = operation;
             this._emitEvent("onOperation", {
               operation,
@@ -153,7 +154,7 @@ export class PixelScheduler {
             }
             // Emit result event
             this._log(
-              `Operation '${type}' ${error ? "failed" : "succeeded"}${error ? `: ${error}` : ""}`
+              `Operation ${type} ${error ? "failed" : "succeeded"}${error ? `: ${error}` : ""}`
             );
             this._emitEvent("onOperation", {
               operation,
@@ -212,14 +213,6 @@ export class PixelScheduler {
     }
   }
 
-  suspend(): void {
-    // TODO
-  }
-
-  updateFirmware(): void {
-    // TODO
-  }
-
   schedule(operation: PixelOperationParams): void {
     this._log(`Scheduling operation ${operation.type}`);
     const { type } = operation;
@@ -242,7 +235,9 @@ export class PixelScheduler {
         this._operations.blink = {};
         break;
       case "programProfile":
-        this._operations.profile = { dataSet: operation.dataSet };
+        this._operations.profile = {
+          dataSet: operation.dataSet,
+        };
         break;
       default:
         assertNever(type);
@@ -272,28 +267,28 @@ export class PixelScheduler {
   private _getNextOperation(): PixelOperationParams | undefined {
     // Operations sorted by priority
     if (this._operations.connect) {
-      const mode = this._operations.connect.mode;
+      const { mode } = this._operations.connect;
       this._operations.connect = undefined;
       return { type: "connect", mode };
     } else if (this._operations.reset) {
       this._operations.reset = undefined;
       return { type: "resetSettings" };
     } else if (this._operations.rename) {
-      const name = this._operations.rename.name;
+      const { name } = this._operations.rename;
       this._operations.rename = undefined;
       return { type: "rename", name };
     } else if (this._operations.blink) {
       this._operations.blink = undefined;
       return { type: "blink" };
     } else if (this._operations.profile) {
-      const dataSet = this._operations.profile.dataSet;
+      const { dataSet } = this._operations.profile;
       this._operations.profile = undefined;
       return {
         type: "programProfile",
         dataSet,
       };
     } else if (this._operations.disconnect) {
-      const mode = this._operations.disconnect.mode;
+      const { mode } = this._operations.disconnect;
       this._operations.disconnect = undefined;
       return { type: "disconnect", mode };
     } else {
@@ -343,12 +338,18 @@ export class PixelScheduler {
       case "programProfile":
         {
           const hash = DataSet.computeHash(op.dataSet.toByteArray());
-          if (hash !== pixel.profileHash) {
-            this._log(`Programming profile with hash ${unsigned32ToHex(hash)}`);
+          const { brightness } = op.dataSet;
+          if (
+            hash !== pixel.profileHash ||
+            brightness !== hackGetDieBrightness(pixel)
+          ) {
+            this._log(
+              `Programming profile with hash ${unsigned32ToHex(hash)} and brightness ${brightness}`
+            );
             await pixel.transferDataSet(op.dataSet);
           } else {
             this._log(
-              `Dice already has profile with hash ${unsigned32ToHex(hash)}`
+              `Dice already has profile with hash ${unsigned32ToHex(hash)} and brightness ${brightness}`
             );
           }
         }

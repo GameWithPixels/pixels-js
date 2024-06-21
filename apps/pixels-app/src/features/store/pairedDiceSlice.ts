@@ -24,7 +24,8 @@ function log(
     | "resetPairedDice"
     | "updatePairedDieName"
     | "updatePairedDieFirmwareTimestamp"
-    | "updatePairedDieProfileHash",
+    | "updatePairedDieProfileHash"
+    | "updatePairedDieBrightness",
   payload?: any
 ) {
   logWrite(`${action}, payload: ${JSON.stringify(payload)}`);
@@ -56,6 +57,7 @@ const PairedDiceSlice = createSlice({
         firmwareTimestamp: payload.firmwareTimestamp,
         profileHash: 0,
         profileUuid: payload.profileUuid,
+        brightness: payload.brightness,
       };
       if (index >= 0) {
         state.paired[index] = die;
@@ -137,6 +139,21 @@ const PairedDiceSlice = createSlice({
         die.profileHash = payload.hash;
       }
     },
+
+    updatePairedDieBrightness(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        brightness: number;
+      }>
+    ) {
+      const { payload } = action;
+      log("updatePairedDieBrightness", payload);
+      const die = state.paired.find((d) => d.pixelId === payload.pixelId);
+      if (die) {
+        die.brightness = payload.brightness;
+      }
+    },
   },
 });
 
@@ -147,5 +164,6 @@ export const {
   updatePairedDieName,
   updatePairedDieFirmwareTimestamp,
   updatePairedDieProfileHash,
+  updatePairedDieBrightness,
 } = PairedDiceSlice.actions;
 export default PairedDiceSlice.reducer;

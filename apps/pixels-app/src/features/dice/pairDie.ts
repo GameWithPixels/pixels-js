@@ -34,18 +34,20 @@ export function pairDie(
     pairedDice.paired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid ??
     pairedDice.unpaired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid;
   // Create new profile if die profile not found or same as source profile
+  const { library } = store.getState();
+  let brightness = library.profiles.entities[profileUuid ?? -1]?.brightness;
   if (
     !profileUuid ||
-    !store.getState().library.profiles.ids.includes(profileUuid) ||
+    brightness === undefined || // undefined if profile not found
     profileUuid === sourceProfile?.uuid
   ) {
     // Use profile with pre-serialized data so the hash is stable
     const dieProfile = preSerializeProfile(
       // Use default profile if none provided
       sourceProfile ?? createLibraryProfile("default", pixel.dieType),
-      store.getState().library
+      library
     );
-    profileUuid = generateProfileUuid(store.getState().library);
+    profileUuid = generateProfileUuid(library);
     store.dispatch(
       Library.Profiles.add({
         ...Serializable.fromProfile(dieProfile),
@@ -54,7 +56,9 @@ export function pairDie(
         sourceUuid: sourceProfile?.uuid,
       })
     );
+    brightness = dieProfile.brightness;
   }
+  brightness *= store.getState().appSettings.diceBrightnessFactor;
   store.dispatch(
     addPairedDie({
       systemId: pixel.systemId,
@@ -65,6 +69,7 @@ export function pairDie(
       dieType: pixel.dieType,
       firmwareTimestamp: pixel.firmwareDate.getTime(),
       profileUuid,
+      brightness,
     })
   );
 }

@@ -29,6 +29,7 @@ import {
   addDieRoll,
   addRollerEntry,
   readProfile,
+  updatePairedDieBrightness,
   updatePairedDieFirmwareTimestamp,
   updatePairedDieName,
   updatePairedDieProfileHash,
@@ -154,9 +155,20 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       };
       pixel.addPropertyListener("status", onStatus);
 
-      // Show dialog on rename error
       const onPixelOp = (ev: PixelSchedulerEventMap["onOperation"]) => {
-        if (ev.event.type === "failed") {
+        if (
+          ev.event.type === "succeeded" &&
+          ev.operation.type === "programProfile"
+        ) {
+          // Update paired die brightness
+          store.dispatch(
+            updatePairedDieBrightness({
+              pixelId: pixel.pixelId,
+              brightness: ev.operation.dataSet.brightness,
+            })
+          );
+        } else if (ev.event.type === "failed") {
+          // Show dialog on rename error
           if (ev.operation.type === "rename") {
             Alert.alert(
               "Failed to Rename Die",
@@ -270,19 +282,25 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     for (const d of newPairedDice) {
       // Check profile
       const { profileUuid } = d;
-      const profileHash =
-        store.getState().library.profiles.entities[profileUuid]?.hash;
-      if (profileHash && profileHash !== d.profileHash) {
+      const profileData =
+        store.getState().library.profiles.entities[profileUuid];
+      const profileHash = profileData?.hash;
+      const { diceBrightnessFactor } = store.getState().appSettings;
+      if (
+        profileHash &&
+        (profileHash !== d.profileHash ||
+          profileData.brightness * diceBrightnessFactor !== d.brightness)
+      ) {
         const dataSet = createProfileDataSetWithOverrides(
           readProfile(profileUuid, store.getState().library),
-          store.getState().appSettings.diceBrightnessFactor
+          diceBrightnessFactor
         );
         central
           .getScheduler(d.pixelId)
           .schedule({ type: "programProfile", dataSet });
       }
     }
-    // Keep checkProfiles, pairedDice & profiles in dependencies!
+    // Keep appBrightness, checkProfiles, pairedDice & profiles in dependencies!
   }, [appBrightness, central, checkProfiles, store, pairedDice, profiles]);
 
   // Profiles edition
