@@ -57,7 +57,7 @@ const Header = observer(function Header({
     : colors.onSurface;
 
   const showConfirmDiscard = useConfirmActionSheet(
-    "Discard changes",
+    "Discard Profile changes",
     onDiscardChanges
   );
 
@@ -253,8 +253,9 @@ export function EditProfileScreen({
             ? `die ${dice[0].name}`
             : `dice ${dice.map((d) => d.name).join(", ")}`;
         Alert.alert(
-          `Copy changes to ${dice.length === 1 ? "die" : "dice"}?`,
-          `You have made changes to this profile, do you want to update ${diceNames} as well?`,
+          `Profile Modified`,
+          `This library profile has been modified since it was copied to ${diceNames}.\n\n` +
+            `Do you want to the changes copy over to ${dice.length === 1 ? "this die" : "those dice"}?`,
           [
             {
               text: "Yes",

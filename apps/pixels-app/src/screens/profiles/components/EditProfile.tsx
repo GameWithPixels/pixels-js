@@ -71,14 +71,36 @@ function SourceProfileName({
   profileUuid,
   ...props
 }: { profileUuid: string } & Omit<TextProps<string>, "children">) {
-  const sourceUuid = useAppSelector(
+  const profileData = useAppSelector(
     (state) => state.library.profiles.entities[profileUuid]
-  )?.sourceUuid;
-  const sourceProfileName = useAppSelector((state) =>
-    sourceUuid ? state.library.profiles.entities[sourceUuid] : undefined
-  )?.name;
+  );
+  const sourceProfileData = useAppSelector((state) =>
+    profileData?.sourceUuid
+      ? state.library.profiles.entities[profileData.sourceUuid]
+      : undefined
+  );
+  const modified =
+    profileData &&
+    sourceProfileData &&
+    (profileData.hash !== sourceProfileData.hash ||
+      profileData.brightness !== sourceProfileData.brightness);
+  const { colors } = useTheme();
   return (
-    sourceProfileName && <Text {...props}>Copied from {sourceProfileName}</Text>
+    sourceProfileData && (
+      <>
+        <Text {...props}>
+          Copied from {sourceProfileData.name}
+          {modified ? " " : ""}
+          {modified && (
+            <MaterialCommunityIcons
+              name="circle-edit-outline"
+              size={20}
+              color={colors.onSurface}
+            />
+          )}
+        </Text>
+      </>
+    )
   );
 }
 

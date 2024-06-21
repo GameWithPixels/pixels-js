@@ -22,7 +22,7 @@ import { PixelRollsCard } from "./PixelRollsCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useAppStore } from "~/app/hooks";
+import { useAppSelector, useAppStore } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
 import { PairedDieRendererWithRoll } from "~/components/PairedDieRendererWithRoll";
@@ -205,6 +205,23 @@ export function PixelFocusViewHeader({
   );
 }
 
+function useIsModifiedProfile(profileUuid: string) {
+  const profileData = useAppSelector(
+    (state) => state.library.profiles.entities[profileUuid]
+  );
+  const sourceProfileData = useAppSelector((state) =>
+    profileData?.sourceUuid
+      ? state.library.profiles.entities[profileData.sourceUuid]
+      : undefined
+  );
+  return (
+    profileData &&
+    sourceProfileData &&
+    (profileData.hash !== sourceProfileData.hash ||
+      profileData.brightness !== sourceProfileData.brightness)
+  );
+}
+
 export function PixelFocusView({
   pairedDie,
   onPress,
@@ -229,6 +246,7 @@ export function PixelFocusView({
 
   const profile = useProfile(usePairedDieProfileUuid(pairedDie));
   const [pickProfile, setPickProfile] = React.useState(false);
+  const modifiedProfile = useIsModifiedProfile(profile.uuid);
 
   const { colors } = useTheme();
   return (
@@ -271,7 +289,12 @@ export function PixelFocusView({
       </View>
       <Text variant="titleMedium">Profile</Text>
       <View>
-        <ProfileCard row profile={profile} onPress={onEditProfile} />
+        <ProfileCard
+          row
+          profile={profile}
+          modified={modifiedProfile}
+          onPress={onEditProfile}
+        />
         <Text
           variant="labelSmall"
           style={{

@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
@@ -22,15 +23,18 @@ import { useDiceNamesForProfile } from "~/hooks";
 
 const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
   profile,
+  modified,
   row,
   numberOfLines,
   textStyle,
 }: {
   profile: Readonly<Profiles.Profile>;
+  modified?: boolean;
   row?: boolean;
   numberOfLines: number;
   textStyle: { color: string } | undefined;
 }) {
+  const { colors } = useTheme();
   return (
     <>
       <Text
@@ -40,6 +44,14 @@ const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
       >
         {profile.name}
       </Text>
+      {modified && (
+        <MaterialCommunityIcons
+          name="circle-edit-outline"
+          size={20}
+          color={colors.onSurface}
+          style={{ position: "absolute", right: 10, top: 10 }}
+        />
+      )}
       {!!profile.description.length && (
         <Text numberOfLines={numberOfLines} style={textStyle}>
           {profile.description}
@@ -104,6 +116,7 @@ const ProfileActionsIcons = observer(function ProfileActionsIcons({
 
 export interface ProfileCardProps extends Omit<TouchableCardProps, "children"> {
   profile: Readonly<Profiles.Profile>;
+  modified?: boolean;
   fadeInDuration?: number;
   fadeInDelay?: number;
 }
@@ -113,6 +126,7 @@ export function ProfileCard({
   row,
   disabled,
   selected,
+  modified,
   squaredTopBorder,
   squaredBottomBorder,
   noBorder,
@@ -198,6 +212,7 @@ export function ProfileCard({
         >
           <ProfileNameAndDescription
             profile={profile}
+            modified={modified}
             row={row}
             numberOfLines={2}
             textStyle={{ color }}

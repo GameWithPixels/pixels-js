@@ -202,8 +202,9 @@ export function EditDieProfileScreen({
         ) {
           e.preventDefault();
           Alert.alert(
-            "Copy changes to original profile?",
-            `You have made changes to this die profile, do you want to update '${profileData.name}' profile as well?`,
+            "Modified Profile",
+            `This die profile has been modified since it was copied from ${profileData.name}.\n\n` +
+              "Do you want to the changes copy over to the library profile?",
             [
               {
                 text: "Yes",
