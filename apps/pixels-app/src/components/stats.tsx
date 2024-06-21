@@ -17,7 +17,7 @@ export function StatsBarGraph({
   const faces = Object.keys(rollStats).map(Number);
   const rolls = React.useMemo(() => Object.values(rollStats), [rollStats]);
   // Animation values
-  const max = React.useMemo(() => Math.max(1, ...rolls), [rolls]);
+  const max = React.useMemo(() => Math.max(10, ...rolls), [rolls]);
   const [values, setValues] = React.useState([
     faces.map(() => 1),
     faces.map(() => 1),

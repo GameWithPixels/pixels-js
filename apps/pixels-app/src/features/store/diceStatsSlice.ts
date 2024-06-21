@@ -9,8 +9,8 @@ import { logWrite } from "./logWrite";
 
 export interface DieSession {
   index: number;
-  startTime: number; // Timestamp, 0 means not yet started
-  endTime: number; // Timestamp of last roll
+  startTime: number; // Timestamp of first roll, or if none, of session creation
+  endTime: number; // Timestamp of last roll, or if none, of session creation
   rolls: number[];
 }
 
@@ -34,23 +34,14 @@ export const diceStatsAdapter = createEntityAdapter({
 });
 
 // Sessions will stop after 4 hours of inactivity
-export const sessionMaxInactivityDuration = 4 * 60 * 60 * 1000; // In milliseconds
-
-// Creates a new session object (not stored in the state)
-export function createDieSession(index = 1, startTime = 0): DieSession {
-  return {
-    index,
-    startTime,
-    endTime: startTime,
-    rolls: [],
-  };
-}
+const sessionMaxInactivityDuration = 4 * 60 * 60 * 1000; // In milliseconds
 
 function log(
   action:
     | "resetDiceStats"
     | "addDieRoll"
-    | "endDieLastSession"
+    | "newDieSession"
+    | "mergeDieSessions"
     | "removeDieSession"
     | "removeDieSessionLastRoll"
     | "setDieSessionPaused"
@@ -73,9 +64,14 @@ function getOrCreateStats(state: DiceStatsState, pixelId: number) {
   return { state, stats };
 }
 
-function addSession(stats: DieStats, startTime = 0): DieSession {
-  const lastSession = stats.sessions.entities[stats.sessions.ids.at(-1) ?? 0];
-  const session = createDieSession((lastSession?.index ?? 0) + 1, startTime);
+function addSession(stats: DieStats, startTime: number): DieSession {
+  const lastSession = stats.sessions.entities[stats.sessions.ids.at(-1) ?? -1];
+  const session = {
+    index: (lastSession?.index ?? 0) + 1,
+    startTime,
+    endTime: startTime,
+    rolls: [],
+  };
   stats.sessions = sessionsAdapter.addOne(stats.sessions, session);
   return session;
 }
@@ -111,13 +107,17 @@ const DiceStatsSlice = createSlice({
       // Store roll in session if not paused
       if (!stats.paused) {
         const now = Date.now();
-        // Continue last session if not passed "max idle delay"
-        let session = stats.sessions.entities[stats.sessions.ids.at(-1) ?? 0];
-        if (!session || now - session.endTime > sessionMaxInactivityDuration) {
+        // Continue last session if empty or not passed the inactivity duration
+        let session = stats.sessions.entities[stats.sessions.ids.at(-1) ?? -1];
+        if (
+          !session ||
+          (session.rolls.length &&
+            now - session.endTime > sessionMaxInactivityDuration)
+        ) {
           session = addSession(stats, now);
         }
         // Update start and end time
-        if (!session.startTime || session.rolls.length === 0) {
+        if (!session.rolls.length) {
           session.startTime = now;
         }
         session.endTime = now;
@@ -128,19 +128,40 @@ const DiceStatsSlice = createSlice({
       return newState;
     },
 
-    endDieLastSession(
+    newDieSession(
       state,
       action: PayloadAction<{
         pixelId: number;
+        onlyIfNoSession?: boolean;
       }>
     ) {
-      log("endDieLastSession");
+      log("newDieSession");
       const { pixelId } = action.payload;
-      // Don't create stats if they do not exist
-      const stats = state.entities[pixelId];
-      const session = stats?.sessions.entities[stats.sessions.ids.at(-1) ?? 0];
-      if (session && session.startTime > 0) {
-        addSession(stats);
+      const { state: newState, stats } = getOrCreateStats(state, pixelId);
+      addSession(stats, Date.now());
+      return newState;
+    },
+
+    mergeDieSessions(
+      state,
+      action: PayloadAction<{
+        pixelId: number;
+        index1: number;
+        index2: number;
+      }>
+    ) {
+      log("mergeDieSessions");
+      const stats = state.entities[action.payload.pixelId];
+      // Make sure index1 < index2
+      const index1 = Math.min(action.payload.index1, action.payload.index2);
+      const index2 = Math.max(action.payload.index1, action.payload.index2);
+      const s1 = stats?.sessions.entities[index1];
+      const s2 = stats?.sessions.entities[index2];
+      if (s1 && s2 && s1 !== s2) {
+        // Merge sessions
+        s1.rolls.push(...s2.rolls);
+        s1.endTime = Math.max(s1.endTime, s2.endTime);
+        sessionsAdapter.removeOne(stats.sessions, index2);
       }
     },
 
@@ -174,11 +195,6 @@ const DiceStatsSlice = createSlice({
       if (session?.rolls.length) {
         // Remove last roll
         session.rolls.pop();
-        // Reset session if empty
-        if (session.rolls.length) {
-          session.startTime = 0;
-          session.endTime = 0;
-        }
       }
     },
 
@@ -203,7 +219,8 @@ const DiceStatsSlice = createSlice({
 export const {
   resetDiceStats,
   addDieRoll,
-  endDieLastSession,
+  newDieSession,
+  mergeDieSessions,
   removeDieSession,
   removeDieSessionLastRoll,
   setDieSessionPaused,

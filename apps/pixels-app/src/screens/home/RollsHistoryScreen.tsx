@@ -42,12 +42,11 @@ import {
   StatsList,
 } from "~/components/stats";
 import {
-  createDieSession,
   DieSession,
-  endDieLastSession,
+  mergeDieSessions,
+  newDieSession,
   removeDieSession,
   removeDieSessionLastRoll,
-  sessionMaxInactivityDuration,
   setDieSessionPaused,
   setShowRollsHelp,
 } from "~/features/store";
@@ -58,6 +57,7 @@ import {
   useWatchedPixel,
 } from "~/hooks";
 import { RollsHistoryScreenProps } from "~/navigation";
+import { AppStyles } from "~/styles";
 
 function computeStats(dieType: PixelDieType, rolls: number[]): RollStats {
   const stats: { [key: number]: number } = {};
@@ -100,16 +100,21 @@ async function shareSession(
 }
 
 function toHHMMSS(ms: number): string {
-  const numSecs = Math.floor(ms / 1000);
-  const hours = Math.floor(numSecs / 3600);
-  const minutes = Math.floor((numSecs - hours * 3600) / 60);
+  ms = Math.max(0, ms);
+  const seconds = Math.floor(ms / 1000);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds - hours * 3600) / 60);
   if (hours > 0) {
-    const m = minutes.toString().padStart(2, "0");
-    return `${hours} hours and ${m} minutes`;
+    if (minutes > 0) {
+      const m = minutes.toString().padStart(2, "0");
+      return `${hours} hours and ${m} minutes`;
+    } else {
+      return `${hours} hours`;
+    }
   } else if (minutes > 1) {
     return `${minutes} minutes`;
-  } else if (minutes > 1) {
-    return "1 minute";
+  } else if (minutes === 1) {
+    return "about 1 minute";
   } else {
     return "less than 1 minute";
   }
@@ -150,127 +155,42 @@ function TransparentButton({
   );
 }
 
-function CurrentSessionMessage({
-  isEmpty,
-  endTime,
-}: {
-  isEmpty?: boolean;
-  endTime: number;
-}) {
+function InactivityText({ endTime }: { endTime: number }) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
-    if (!isEmpty) {
-      // Refresh every 10s
-      const id = setInterval(() => forceUpdate, 10000);
-      return () => clearInterval(id);
-    }
-  }, [forceUpdate, isEmpty]);
-  return (
-    <Text style={{ marginTop: 5 }}>
-      {isEmpty
-        ? "Roll your die to start this new session"
-        : `Automatically ends in ${toHHMMSS(endTime - Date.now())} unless a roll is received before then.`}
-    </Text>
-  );
-}
-
-function CurrentSessionControls({
-  pixelId,
-  startTime,
-  isEmpty,
-}: {
-  pixelId: number;
-  startTime: number;
-  isEmpty?: boolean;
-}) {
-  const appDispatch = useAppDispatch();
-  const paused = useAppSelector(
-    (state) => state.diceStats.entities[pixelId]?.paused
-  );
-  const pixel = useWatchedPixel(pixelId);
-  const status = usePixelStatus(pixel);
-  const { colors } = useTheme();
-  return (
-    <>
-      {status === "ready" ? (
-        <CurrentSessionMessage
-          isEmpty={isEmpty}
-          endTime={startTime + sessionMaxInactivityDuration}
-        />
-      ) : (
-        <Text
-          variant="bodyLarge"
-          style={{ alignSelf: "center", marginVertical: 10 }}
-        >
-          ⚠️ Connect your die to track rolls.
-        </Text>
-      )}
-      <View
-        style={{
-          flexDirection: "row",
-          marginVertical: 10,
-          justifyContent: "space-between",
-        }}
-      >
-        <TransparentButton
-          onPress={() =>
-            appDispatch(setDieSessionPaused({ pixelId, paused: !paused }))
-          }
-        >
-          {paused ? (
-            <MaterialIcons name="pause" size={24} color={colors.onSurface} />
-          ) : (
-            <MaterialCommunityIcons
-              name="play-outline"
-              size={24}
-              color={colors.onSurface}
-            />
-          )}
-          <Text style={{ minWidth: 120 }}>
-            {paused ? "Resume" : "Pause"} reading rolls
-          </Text>
-        </TransparentButton>
-        {!isEmpty && (
-          <TransparentButton
-            onPress={() => appDispatch(endDieLastSession({ pixelId }))}
-          >
-            <MaterialCommunityIcons
-              name="stop"
-              size={24}
-              color={colors.onSurface}
-            />
-            <Text>End Session</Text>
-          </TransparentButton>
-        )}
-      </View>
-    </>
-  );
+    const id = setInterval(forceUpdate, 10000);
+    return () => clearInterval(id);
+  }, [forceUpdate]);
+  const t = Date.now() - endTime;
+  return t > 0 && <Text>Last roll received {toHHMMSS(t)} ago</Text>;
 }
 
 function DieStatsCard({
   pixelId,
   sessionId,
   dieType,
-  isCurrentSession,
+  isNewestSession,
+  isOldestSession,
   contentStyle,
   ...props
 }: {
   pixelId: number;
   sessionId: number;
   dieType: PixelDieType;
-  isCurrentSession?: boolean;
+  isNewestSession?: boolean;
+  isOldestSession?: boolean;
 } & Omit<CardProps, "children">) {
   const appDispatch = useAppDispatch();
-  const session =
-    useAppSelector(
-      (state) => state.diceStats.entities[pixelId]?.sessions.entities[sessionId]
-    ) ?? createDieSession();
-  const rollStats = React.useMemo(
-    () => computeStats(dieType, session.rolls),
-    [dieType, session.rolls]
+  const session = useAppSelector(
+    (state) => state.diceStats.entities[pixelId]?.sessions.entities[sessionId]
   );
+  const rollStats = React.useMemo(
+    () => !!session?.rolls.length && computeStats(dieType, session.rolls),
+    [dieType, session]
+  );
+
   const confirmDelete = useConfirmActionSheet(
-    `Delete Session ${session.index}`,
+    `Delete Session #${session?.index ?? 0}`,
     () => {
       session &&
         appDispatch(removeDieSession({ pixelId, index: session.index }));
@@ -278,7 +198,7 @@ function DieStatsCard({
   );
 
   const confirmRemoveLast = useConfirmActionSheet(
-    `Remove Last Roll (${session.rolls.at(-1) ?? 0})?`,
+    `Remove Last Roll (${session?.rolls.at(-1) ?? -1})`,
     () => {
       session &&
         appDispatch(
@@ -309,7 +229,11 @@ function DieStatsCard({
           padding: 10,
           borderRadius: 20,
         }}
-        onPress={() => confirmDelete()}
+        onPress={() =>
+          rollStats
+            ? confirmDelete()
+            : appDispatch(removeDieSession({ pixelId, index: session.index }))
+        }
       >
         <MaterialCommunityIcons
           name="trash-can-outline"
@@ -317,22 +241,9 @@ function DieStatsCard({
           color={colors.onSurface}
         />
       </TouchableRipple>
-      {isCurrentSession && (
-        <CurrentSessionControls
-          pixelId={pixelId}
-          startTime={session.startTime}
-          isEmpty={!session.rolls.length}
-        />
-      )}
-      {session.rolls.length > 0 && (
+      {rollStats ? (
         <>
-          <View
-            style={{
-              flexDirection: "row",
-              marginLeft: 5,
-              gap: 10,
-            }}
-          >
+          <View style={styles.cardIconText}>
             <MaterialCommunityIcons
               name="dice-multiple-outline"
               size={15}
@@ -340,13 +251,7 @@ function DieStatsCard({
             />
             <Text>Number of Rolls: {session.rolls.length}</Text>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              marginLeft: 5,
-              gap: 10,
-            }}
-          >
+          <View style={styles.cardIconText}>
             <MaterialCommunityIcons
               name="calendar-today"
               size={15}
@@ -356,23 +261,14 @@ function DieStatsCard({
               Started on: {new Date(session.startTime).toLocaleString()}
             </Text>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              marginLeft: 5,
-              gap: 10,
-            }}
-          >
+          <View style={styles.cardIconText}>
             <MaterialCommunityIcons
-              name="clock-time-four"
+              name="av-timer"
               size={15}
               color={colors.onSurface}
             />
             <Text>
-              Duration:{" "}
-              {isCurrentSession
-                ? "on going"
-                : toHHMMSS(session.endTime - session.startTime)}
+              Duration:{" " + toHHMMSS(session.endTime - session.startTime)}
             </Text>
             <View style={{ flexGrow: 1 }} />
             <View
@@ -403,13 +299,32 @@ function DieStatsCard({
           ) : (
             <StatsGrid rollStats={rollStats} dieType={dieType} />
           )}
-          <Text style={{ marginLeft: 5 }}>
-            Last Few Rolls: {session.rolls.slice(-10).reverse().join(", ")}
-          </Text>
+          <View style={styles.cardIconText}>
+            <MaterialCommunityIcons
+              name="lastpass"
+              size={15}
+              color={colors.onSurface}
+            />
+            <Text>
+              Last {session.rolls.length > 10 ? "10 " : ""}Rolls:{" "}
+              {session.rolls.slice(-10).reverse().join(", ")}
+            </Text>
+          </View>
+          {isNewestSession && (
+            <View style={styles.cardIconText}>
+              <MaterialIcons
+                name="more-time"
+                size={15}
+                color={colors.onSurface}
+              />
+              <InactivityText endTime={session.endTime} />
+            </View>
+          )}
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 10,
             }}
           >
             <TransparentButton onPress={confirmRemoveLast}>
@@ -428,10 +343,65 @@ function DieStatsCard({
               />
               <Text>Export</Text>
             </TransparentButton>
+            {!isOldestSession && (
+              <TransparentButton
+                onPress={() =>
+                  appDispatch(
+                    mergeDieSessions({
+                      pixelId,
+                      index1: session.index,
+                      index2: session.index - 1,
+                    })
+                  )
+                }
+              >
+                <MaterialCommunityIcons
+                  name="table-merge-cells"
+                  size={24}
+                  color={colors.onSurface}
+                />
+                <Text>Merge With Previous Session</Text>
+              </TransparentButton>
+            )}
+            {isNewestSession && (
+              <TransparentButton
+                onPress={() => appDispatch(newDieSession({ pixelId }))}
+              >
+                <MaterialCommunityIcons
+                  name="stop"
+                  size={24}
+                  color={colors.onSurface}
+                />
+                <Text>End Session</Text>
+              </TransparentButton>
+            )}
           </View>
         </>
+      ) : (
+        <Text style={AppStyles.selfCentered}>No rolls received yet</Text>
       )}
     </Card>
+  ) : null;
+}
+
+function PlopControls({
+  pixelId,
+  hasNoSession,
+}: {
+  pixelId: number;
+  hasNoSession: boolean;
+}) {
+  const pixel = useWatchedPixel(pixelId);
+  const status = usePixelStatus(pixel);
+  return status !== "ready" || hasNoSession ? (
+    <Text
+      variant="bodyLarge"
+      style={{ alignSelf: "center", marginVertical: 10 }}
+    >
+      {status !== "ready"
+        ? "Waiting for your die to connect..."
+        : "Roll your die to get started"}
+    </Text>
   ) : null;
 }
 
@@ -444,15 +414,58 @@ function RollsHistoryPage({
 }) {
   const appDispatch = useAppDispatch();
   const showHelp = useAppSelector((state) => state.appSettings.showRollsHelp);
-
+  const paused = useAppSelector(
+    (state) => state.diceStats.entities[pairedDie.pixelId]?.paused
+  );
   const sessionIds = useAppSelector(
     (state) => state.diceStats.entities[pairedDie.pixelId]?.sessions.ids
   );
   const [maxSessionsToShow, setMaxSessionsToShow] = React.useState(20);
 
+  const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
-      <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
+      <PageHeader
+        mode="chevron-down"
+        rightElement={() => (
+          <TouchableRipple
+            borderless
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: 5,
+              paddingHorizontal: 10,
+              gap: 5,
+            }}
+            onPress={() =>
+              appDispatch(
+                setDieSessionPaused({
+                  pixelId: pairedDie.pixelId,
+                  paused: !paused,
+                })
+              )
+            }
+          >
+            <>
+              {paused ? (
+                <MaterialCommunityIcons
+                  name="play-outline"
+                  size={24}
+                  color={colors.onSurface}
+                />
+              ) : (
+                <MaterialIcons
+                  name="pause"
+                  size={24}
+                  color={colors.onSurface}
+                />
+              )}
+              <Text>{paused ? "Paused" : "Running"}</Text>
+            </>
+          </TouchableRipple>
+        )}
+        onGoBack={() => navigation.goBack()}
+      >
         {pairedDie.name}
       </PageHeader>
       <GHScrollView
@@ -470,32 +483,40 @@ function RollsHistoryPage({
           Here you will find all the rolls, grouped by session, that your dice
           made while connected to the app.
         </Banner>
-        {/* We should always have a session except on first render */}
-        <View style={{ gap: 20 }}>
-          {(sessionIds?.length
-            ? sessionIds.slice(sessionIds.length - maxSessionsToShow).reverse()
-            : [-1]
-          ) // -1 is a placeholder for empty session
-            .map((id, i) => (
-              <Animated.View
-                key={id}
-                entering={FadeIn.duration(300)}
-                layout={CurvedTransition.easingY(Easing.linear).duration(300)}
+        <PlopControls
+          pixelId={pairedDie.pixelId}
+          hasNoSession={!sessionIds?.length}
+        />
+        {!!sessionIds?.length && (
+          <View style={{ gap: 20 }}>
+            {sessionIds
+              .slice(sessionIds.length - maxSessionsToShow)
+              .reverse()
+              .map((id) => (
+                <Animated.View
+                  key={id}
+                  entering={FadeIn.duration(300)}
+                  layout={CurvedTransition.easingY(Easing.linear).duration(300)}
+                >
+                  <DieStatsCard
+                    pixelId={pairedDie.pixelId}
+                    sessionId={id as number}
+                    dieType={pairedDie.dieType}
+                    isNewestSession={id === sessionIds.at(-1)}
+                    isOldestSession={id === sessionIds[0]}
+                  />
+                </Animated.View>
+              ))}
+            {sessionIds.length > maxSessionsToShow && (
+              <OutlineButton
+                style={{ marginTop: 20 }}
+                onPress={() => setMaxSessionsToShow((i) => i + 20)}
               >
-                <DieStatsCard
-                  pixelId={pairedDie.pixelId}
-                  sessionId={id as number}
-                  dieType={pairedDie.dieType}
-                  isCurrentSession={i === 0}
-                />
-              </Animated.View>
-            ))}
-          {sessionIds && sessionIds.length > maxSessionsToShow && (
-            <OutlineButton onPress={() => setMaxSessionsToShow((i) => i + 20)}>
-              Show More Sessions
-            </OutlineButton>
-          )}
-        </View>
+                Show More Sessions
+              </OutlineButton>
+            )}
+          </View>
+        )}
       </GHScrollView>
     </View>
   );
@@ -519,3 +540,11 @@ export function RollsHistoryScreen({
     </AppBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  cardIconText: {
+    flexDirection: "row",
+    marginLeft: 5,
+    gap: 10,
+  },
+});
