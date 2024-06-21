@@ -1,25 +1,35 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { useTheme } from "react-native-paper";
 
-export function useConfirmActionSheet(
+export function useConfirmActionSheet<T = undefined>(
   actionName: string,
-  onConfirm?: () => void,
+  onConfirm?: (data?: T) => void,
   opt?: {
     title?: string;
     message?: string;
     cancelActionName?: string;
     onCancel?: () => void;
   }
-): (overrides?: { actionName?: string; onConfirm?: () => void }) => void {
+): (opt?: {
+  // Overrides
+  actionName?: string;
+  onConfirm?: () => void;
+  // Data
+  data?: T;
+}) => void {
   const { showActionSheetWithOptions } = useActionSheet();
   const { colors } = useTheme();
-  return (overrides?: { actionName?: string; onConfirm?: () => void }) => {
+  return (myOpt?: {
+    actionName?: string;
+    onConfirm?: (data?: T) => void;
+    data?: T;
+  }) => {
     showActionSheetWithOptions(
       {
         title: opt?.title,
         message: opt?.message,
         options: [
-          overrides?.actionName ?? actionName,
+          myOpt?.actionName ?? actionName,
           opt?.cancelActionName ?? "Cancel",
         ],
         destructiveButtonIndex: 0,
@@ -33,7 +43,7 @@ export function useConfirmActionSheet(
       (selectedIndex?: number) => {
         switch (selectedIndex) {
           case 0:
-            (overrides?.onConfirm ?? onConfirm)?.();
+            (myOpt?.onConfirm ?? onConfirm)?.(myOpt?.data);
             break;
           case 1:
             opt?.onCancel?.();

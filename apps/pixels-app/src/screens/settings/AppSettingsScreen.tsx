@@ -48,16 +48,23 @@ function AppSettingsPage({
   const disablePlayingAnimations = useAppSelector(
     (state) => state.appSettings.disablePlayingAnimations
   );
-  const showConfirmReset = useConfirmActionSheet("Reset App Settings", () => {
-    central.stopScan();
-    appDispatch(resetAppSettings());
-    appDispatch(resetPairedDice());
-    appDispatch(resetDiceStats());
-    appDispatch(resetDiceRoller());
-    appDispatch(resetAppTransientState());
-    Library.dispatchReset(appDispatch);
-    navigation.navigate("onboarding");
-  });
+  const showConfirmReset = useConfirmActionSheet<"keepProfiles">(
+    "Reset App Settings",
+    (data) => {
+      const keepProfiles = data === "keepProfiles";
+      central.stopScan();
+      console.warn(
+        "Resetting app settings" + (keepProfiles ? " except profiles" : "")
+      );
+      appDispatch(resetAppSettings());
+      appDispatch(resetPairedDice());
+      appDispatch(resetDiceStats());
+      appDispatch(resetDiceRoller());
+      appDispatch(resetAppTransientState());
+      Library.dispatchReset(appDispatch, { keepProfiles });
+      navigation.navigate("onboarding");
+    }
+  );
 
   const { colors } = useTheme();
   return (
@@ -94,8 +101,16 @@ function AppSettingsPage({
           <Text>Disable Playing Animations In App</Text>
         </View>
         <Divider style={{ marginVertical: 10 }} />
-        <OutlineButton onPress={() => showConfirmReset()}>
-          Reset App Settings
+        <OutlineButton
+          onPress={() => showConfirmReset({ data: "keepProfiles" })}
+        >
+          Reset App Settings Except Profiles
+        </OutlineButton>
+        <OutlineButton
+          onPress={() => showConfirmReset()}
+          style={{ backgroundColor: colors.errorContainer }}
+        >
+          Reset All App Settings
         </OutlineButton>
       </ScrollView>
     </View>
