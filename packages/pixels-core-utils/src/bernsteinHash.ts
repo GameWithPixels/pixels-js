@@ -8,5 +8,5 @@ export function bernsteinHash(data: Uint8Array): number {
   for (let i = 0; i < data.length; ++i) {
     hash = (33 * hash) ^ data[i];
   }
-  return hash;
+  return hash >>> 0;
 }
