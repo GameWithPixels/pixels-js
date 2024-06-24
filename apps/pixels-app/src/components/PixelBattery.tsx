@@ -2,6 +2,8 @@ import {
   PixelInfoNotifier,
   usePixelInfoProp,
 } from "@systemic-games/react-native-pixels-connect";
+import { View } from "react-native";
+import { Text } from "react-native-paper";
 
 import { BatteryIcon } from "./icons";
 
@@ -15,7 +17,13 @@ export function PixelBattery({
   disabled?: boolean;
 }) {
   const level = usePixelInfoProp(pixel, "batteryLevel");
+  const charging = usePixelInfoProp(pixel, "isCharging");
   return (
-    <BatteryIcon value={level} size={size} disabled={!pixel || disabled} />
+    <View>
+      <BatteryIcon value={level} size={size} disabled={!pixel || disabled} />
+      {charging && (
+        <Text style={{ position: "absolute", left: -20, top: -2 }}>⚡</Text>
+      )}
+    </View>
   );
 }

@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  usePixelEvent,
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -49,8 +48,9 @@ function AnimatedChargingIcon({
 
 function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
   const pixel = useWatchedPixel(pairedDie);
-  const [batteryEv] = usePixelEvent(pixel, "battery");
-  const needCharging = (batteryEv?.level ?? 100) < 10;
+  const batteryLevel = usePixelProp(pixel, "batteryLevel");
+  const isCharging = usePixelProp(pixel, "isCharging");
+  const needCharging = (batteryLevel ?? 100) < 10;
   const transferProgress =
     usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
   const transferring = transferProgress >= 0;
@@ -60,13 +60,13 @@ function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
       <Text>
         {transferring
           ? `Programming Profile: ${transferProgress}%`
-          : batteryEv?.isCharging
+          : isCharging
             ? "Charging..."
             : needCharging
               ? "Need charging!"
               : getDieTypeAndColorwayLabel(pairedDie)}
       </Text>
-      {!transferring && batteryEv?.isCharging ? (
+      {!transferring && isCharging ? (
         <AnimatedChargingIcon size={16} color={colors.onSurface} />
       ) : (
         needCharging && (
@@ -112,8 +112,8 @@ export function PixelStatusCard({
         <View style={{ flexGrow: 1 }} />
         {pixel && status === "ready" && (
           <>
-            <PixelRssi pixel={pixel} size={16} />
-            <PixelBattery pixel={pixel} size={16} />
+            <PixelBattery pixel={pixel} size={18} />
+            <PixelRssi pixel={pixel} size={18} />
           </>
         )}
       </View>

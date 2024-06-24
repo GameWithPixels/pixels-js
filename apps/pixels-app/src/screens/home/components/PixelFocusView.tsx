@@ -1,4 +1,5 @@
 import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
+import { createLibraryProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Constants,
   Pixel,
@@ -22,7 +23,7 @@ import { PixelRollsCard } from "./PixelRollsCard";
 import { PixelStatusCard } from "./PixelStatusCard";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useAppSelector, useAppStore } from "~/app/hooks";
+import { useAppStore } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
 import { PairedDieRendererWithRoll } from "~/components/PairedDieRendererWithRoll";
@@ -82,6 +83,7 @@ export function PixelFocusViewHeader({
   onUnpair: () => void;
   onFirmwareUpdate: () => void;
 }) {
+  const store = useAppStore();
   const central = usePixelsCentral();
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
@@ -89,14 +91,29 @@ export function PixelFocusViewHeader({
   const hasFirmwareUpdate = useHasFirmwareUpdate(pairedDie.pixelId);
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
 
-  const showConfirmReset = useConfirmActionSheet(
-    "Reset Die Settings",
-    () =>
-      ready &&
+  const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
+    if (ready) {
+      // Schedule reset settings
       central
         .getScheduler(pairedDie.pixelId)
-        .schedule({ type: "resetSettings" })
-  );
+        .schedule({ type: "resetSettings" });
+      // Program default profile
+      const defaultProfile = preSerializeProfile(
+        createLibraryProfile("default", pairedDie.dieType),
+        store.getState().library
+      );
+      store.dispatch(
+        Library.Profiles.update(
+          // Use profile with pre-serialized data so the hash is stable
+          {
+            ...Serializable.fromProfile(defaultProfile),
+            uuid: pairedDie.profileUuid,
+            hash: computeProfileHashWithOverrides(defaultProfile),
+          }
+        )
+      );
+    }
+  });
   const showConfirmTurnOff = useConfirmActionSheet(
     "Turn Die Off",
     () =>
@@ -295,19 +312,17 @@ export function PixelFocusView({
           Tap to customize
         </Text>
       </View>
-      <View style={{ flexDirection: "row", justifyContent: "center", gap: 40 }}>
-        <GradientButton
-          style={{ alignItems: "center" }}
-          onPress={() => setPickProfile(true)}
-        >
-          Pick Another Profile
-        </GradientButton>
-      </View>
+      <GradientButton
+        style={{ alignSelf: "center", alignItems: "center", marginTop: 10 }}
+        onPress={() => setShowPickProfile(true)}
+      >
+        Copy Another Profile To Die
+      </GradientButton>
       {/* Pick Profile Bottom Sheet */}
       <PickProfileBottomSheet
         pairedDie={pairedDie}
         onSelectProfile={(profile) => {
-          setPickProfile(false);
+          setShowPickProfile(false);
           // Use profile with pre-serialized data so the hash is stable
           profile = preSerializeProfile(profile, store.getState().library);
           // Update die profile
@@ -328,8 +343,8 @@ export function PixelFocusView({
           // Update profile instance
           readProfile(pairedDie.profileUuid, store.getState().library);
         }}
-        visible={pickProfile}
-        onDismiss={() => setPickProfile(false)}
+        visible={showPickProfile}
+        onDismiss={() => setShowPickProfile(false)}
       />
     </SlideInView>
   );

@@ -22,7 +22,7 @@ import { useAppStore } from "~/app/hooks";
 import { createProfileTemplates, getDieTypeLabel } from "~/features/profiles";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 
-const tabsNames = ["Builtin", "Dice", "Library"] as const;
+const tabsNames = ["Builtin", /*"Dice",*/ "Library"] as const;
 
 export function ProfilePicker({
   dieType,
@@ -50,13 +50,13 @@ export function ProfilePicker({
     () =>
       (tab === "Builtin"
         ? templates
-        : tab === "Dice"
-          ? diceProfiles
-          : libraryProfiles
+        : // : tab === "Dice"
+          //   ? diceProfiles
+          libraryProfiles
       )
         .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [diceProfiles, dieType, libraryProfiles, tab, templates]
+    [dieType, libraryProfiles, tab, templates]
   );
 
   const [filter, setFilter] = React.useState("");
@@ -100,10 +100,10 @@ export function ProfilePicker({
             ? "You do not have any saved profile" +
               (dieType ? ` for ${getDieTypeLabel(dieType)}'s` : "") +
               " in your library.\n" +
-              "To create one, export your die's profile or go to the Profiles tab."
-            : tab === "Dice"
-              ? `No other ${getDieTypeLabel(dieType)} die.`
-              : ""}
+              "To create one, save your die's profile or go to the Profiles tab."
+            : // : tab === "Dice"
+              //   ? `No other ${getDieTypeLabel(dieType)} die.`
+              ""}
         </Text>
       )}
     </GHScrollView>

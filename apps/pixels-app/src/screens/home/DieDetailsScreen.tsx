@@ -21,6 +21,7 @@ import {
   getColorwayLabel,
   getDieTypeLabel,
   getFirmwareUpdateAvailable,
+  getPixelStatusLabel,
   getRollStateLabel,
 } from "~/features/profiles";
 import {
@@ -46,29 +47,34 @@ export function DieStatus({
   ...props
 }: { pixel?: Pixel } & ViewProps) {
   const status = usePixelStatus(pixel);
-  const [rssi] = usePixelEvent(pixel, "rssi") ?? 0;
-  const [batteryEv] = usePixelEvent(pixel, "battery") ?? 0;
-  const [rollEv] = usePixelEvent(pixel, "roll");
+  const [rssi] = usePixelEvent(pixel, "rssi");
+  const batteryLevel = usePixelProp(pixel, "batteryLevel");
+  const isCharging = usePixelProp(pixel, "isCharging");
+  const rollState = usePixelProp(pixel, "rollState");
+  const currentFace = usePixelProp(pixel, "currentFace");
   const transferProgress =
     usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>General</SectionTitle>
       <View style={styles.paragraph}>
-        <Text>Connection Status: {status}</Text>
-        {status === "ready" && (
+        <Text>
+          {status
+            ? `Connection Status: ${getPixelStatusLabel(status)}`
+            : "Die not found so far"}
+        </Text>
+        {pixel?.isReady && (
           <>
-            <Text>RSSI: {rssi ?? 0} dBm</Text>
-            <Text>Battery: {batteryEv?.level ?? 0}%</Text>
-            <Text>Charging: {batteryEv?.isCharging ? "yes" : "no"}</Text>
+            <Text>RSSI: {rssi ?? pixel.rssi} dBm</Text>
+            <Text>Battery: {batteryLevel}%</Text>
+            <Text>Charging: {isCharging ? "yes" : "no"}</Text>
             <Text>
-              Roll Status:{" "}
-              {getRollStateLabel(rollEv?.state).toLocaleLowerCase()}
+              Roll Status: {getRollStateLabel(rollState).toLocaleLowerCase()}
             </Text>
-            <Text>Face Up: {rollEv?.face ?? ""}</Text>
+            <Text>Face Up: {currentFace}</Text>
             <Text>
-              Activating Profile:{" "}
-              {transferProgress >= 0 ? `${transferProgress}%` : "done"}
+              Programming Profile:{" "}
+              {transferProgress >= 0 ? `${transferProgress}%` : "no"}
             </Text>
           </>
         )}

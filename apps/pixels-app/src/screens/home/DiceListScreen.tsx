@@ -287,7 +287,7 @@ function DiceListPage({
             paddingBottom: 20,
           }}
         >
-          <BluetoothStateWarning />
+          <BluetoothStateWarning style={{ marginVertical: 10 }} />
           {!sortedDice.length ? (
             <NoPairedDie style={{ marginVertical: 10 }} />
           ) : (

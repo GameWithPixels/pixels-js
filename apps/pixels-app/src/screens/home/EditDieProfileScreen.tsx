@@ -3,7 +3,6 @@ import { Alert, Pressable, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import {
   Button,
-  Checkbox,
   Dialog,
   Portal,
   Text,
@@ -56,7 +55,6 @@ function EditDieProfilePage({
 
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const [saveToLibraryVisible, setSaveToLibraryVisible] = React.useState(false);
-  const [markAsSource, setMarkAsSource] = React.useState(false);
   const [name, setName] = React.useState("");
 
   const { width: windowWidth } = useWindowDimensions();
@@ -91,7 +89,6 @@ function EditDieProfilePage({
             onDismiss={() => setActionsMenuVisible(false)}
             onSaveToLibrary={() => {
               setName("");
-              setMarkAsSource(false);
               setSaveToLibraryVisible(true);
             }}
             onAdvancedOptions={() =>
@@ -119,19 +116,6 @@ function EditDieProfilePage({
               value={name}
               onChangeText={(text) => setName(text)}
             />
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 10,
-              }}
-            >
-              <Checkbox
-                status={markAsSource ? "checked" : "unchecked"}
-                onPress={() => setMarkAsSource(!markAsSource)}
-              />
-              <Text>Make it the source profile for the die</Text>
-            </View>
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setSaveToLibraryVisible(false)}>
@@ -152,15 +136,14 @@ function EditDieProfilePage({
                       sourceUuid: undefined, // Make sure we don't reference another profile
                     })
                   );
-                  if (markAsSource) {
-                    // Update die profile to use the saved profile as its source
-                    store.dispatch(
-                      Library.Profiles.add({
-                        ...profileData,
-                        sourceUuid: uuid,
-                      })
-                    );
-                  }
+                  // Update die profile to use the saved profile as its source
+                  store.dispatch(
+                    Library.Profiles.add({
+                      ...profileData,
+                      name,
+                      sourceUuid: uuid,
+                    })
+                  );
                 }
                 setSaveToLibraryVisible(false);
               }}
