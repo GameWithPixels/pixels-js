@@ -13,6 +13,7 @@ import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library, readProfile } from "~/features/store";
 import { AppProfileData } from "~/features/store/library/LibraryData";
 import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
+import { logError } from "~/features/utils";
 
 function updateFrom2To3(state: NonNullable<PersistedState>): void {
   const animId = "8c677768-975f-4544-b3ce-a219f68b9a79"; // Rainbow Waterfall Overlap
@@ -149,21 +150,27 @@ const factoryProfilesUuids: string[] = [
 
 export function updatePairedDiceAndProfilesFrom3to4(store: AppStore): void {
   // Update profiles hash
-  for (const profileData of Object.values(
-    store.getState().library.profiles.entities
-  )) {
+  const { profiles } = store.getState().library;
+  for (const uuid of profiles.ids) {
+    const profileData = profiles.entities[uuid];
     if (profileData && profileData.hash === undefined) {
-      const profile = readProfile(profileData.uuid, store.getState().library);
-      const hash = computeProfileHashWithOverrides(profile);
-      console.warn(
-        `Updating hash for profile ${profile.name} (${profile.uuid})`
-      );
-      store.dispatch(
-        Library.Profiles.update({
-          ...profileData,
-          hash,
-        })
-      );
+      try {
+        const profile = readProfile(profileData.uuid, store.getState().library);
+        const hash = computeProfileHashWithOverrides(profile);
+        console.warn(
+          `Updating hash for profile ${profile.name} (${profile.uuid})`
+        );
+        store.dispatch(
+          Library.Profiles.update({
+            ...profileData,
+            hash,
+          })
+        );
+      } catch (e) {
+        logError(
+          `Error updating hash for profile ${profileData.name} (${profileData.uuid}): ${e}`
+        );
+      }
     }
   }
   // Update paired dice
@@ -177,27 +184,33 @@ export function updatePairedDiceAndProfilesFrom3to4(store: AppStore): void {
   }
   // Create die profile by re-pairing dice
   for (const d of diceToUpdate) {
-    console.warn(
-      `Re-pairing die ${d.name} to generate profile (${d.profileUuid}) & hash`
-    );
-    // Profile won't be found if it's using the default profile
-    const { library } = store.getState();
-    const hasProfile = library.profiles.ids.includes(d.profileUuid);
-    pairDie(
-      {
-        systemId: d.systemId,
-        pixelId: d.pixelId,
-        name: d.name,
-        ledCount: d.ledCount,
-        colorway: d.colorway,
-        dieType: d.dieType,
-        firmwareDate: new Date(d.firmwareTimestamp),
-      },
-      store,
-      hasProfile && !factoryProfilesUuids.includes(d.profileUuid)
-        ? readProfile(d.profileUuid, library)
-        : undefined
-    );
+    try {
+      console.warn(
+        `Re-pairing die ${d.name} to generate profile (${d.profileUuid}) & hash`
+      );
+      // Profile won't be found if it's using the default profile
+      const { library } = store.getState();
+      const hasProfile = library.profiles.ids.includes(d.profileUuid);
+      pairDie(
+        {
+          systemId: d.systemId,
+          pixelId: d.pixelId,
+          name: d.name,
+          ledCount: d.ledCount,
+          colorway: d.colorway,
+          dieType: d.dieType,
+          firmwareDate: new Date(d.firmwareTimestamp),
+        },
+        store,
+        hasProfile && !factoryProfilesUuids.includes(d.profileUuid)
+          ? readProfile(d.profileUuid, library)
+          : undefined
+      );
+    } catch (e) {
+      logError(
+        `Error updating pairedDie with profile ${d.profileUuid} (${d.profileHash}): ${e}`
+      );
+    }
   }
 }
 
