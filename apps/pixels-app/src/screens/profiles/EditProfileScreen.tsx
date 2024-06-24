@@ -204,7 +204,6 @@ function EditProfilePage({
           onProgramDie={(pairedDie) => {
             // Save profile
             commitProfile();
-
             // Update die profile
             const profileData =
               store.getState().library.profiles.entities[profile.uuid];

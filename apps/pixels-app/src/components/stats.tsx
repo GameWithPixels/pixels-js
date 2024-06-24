@@ -212,15 +212,9 @@ export function StatsGrid({
                       size={16}
                       color={colors.onSurface}
                     />
-                    <Text style={{ color: colors.onSurface }}>{f}</Text>
+                    <Text style={{ marginVertical: 4 }}>{f}</Text>
                   </LinearGradient>
-                  <Text
-                    style={{
-                      alignSelf: "center",
-                      margin: 4,
-                      backgroundColor: colors.surface,
-                    }}
-                  >
+                  <Text style={{ alignSelf: "center", marginVertical: 4 }}>
                     {rollStats[f]}
                   </Text>
                 </>

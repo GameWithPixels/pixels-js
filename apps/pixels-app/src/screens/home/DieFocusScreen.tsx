@@ -23,7 +23,10 @@ import {
 } from "~/hooks";
 import { DieFocusScreenProps } from "~/navigation";
 
-function useUnpairActionSheet(pairedDie?: PairedDie): () => void {
+function useUnpairActionSheet(
+  pairedDie: PairedDie | undefined,
+  navigation: DieFocusScreenProps["navigation"]
+): () => void {
   const appDispatch = useAppDispatch();
   const { showActionSheetWithOptions } = useActionSheet();
 
@@ -40,14 +43,25 @@ function useUnpairActionSheet(pairedDie?: PairedDie): () => void {
       },
       (selectedIndex?: number) => {
         if (pairedDie && selectedIndex === 0) {
+          // Leave screen first so that the die is not removed while the screen is still visible
+          navigation.goBack();
           appDispatch(removePairedDie(pairedDie.pixelId));
         }
       }
     );
-  }, [appDispatch, colors, pairedDie, showActionSheetWithOptions]);
+  }, [
+    appDispatch,
+    colors.background,
+    colors.error,
+    colors.onBackground,
+    navigation,
+    pairedDie,
+    showActionSheetWithOptions,
+  ]);
 
   return unpairDieWithConfirmation;
 }
+
 function DieFocusPage({
   pairedDie,
   navigation,
@@ -57,7 +71,7 @@ function DieFocusPage({
 }) {
   const central = usePixelsCentral();
   const connectToMissingPixels = useConnectToMissingPixels();
-  const showUnpairActionSheet = useUnpairActionSheet(pairedDie);
+  const showUnpairActionSheet = useUnpairActionSheet(pairedDie, navigation);
 
   useFocusEffect(
     React.useCallback(() => {
