@@ -4,19 +4,8 @@ const SvgComponent = ({
   ...props
 }: { size: number } & Omit<SvgProps, "width" | "height">) => (
   <Svg
-    // style={{
-    //     fillRule: "evenodd",
-    //     clipRule: "evenodd",
-    //     strokeLinecap: "round",
-    //     strokeLinejoin: "round",
-    //     strokeMiterlimit: 1.5,
-    // }}
     viewBox="0 0 104 97"
-    fillRule="evenodd"
-    clipRule="evenodd"
     strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeMiterlimit={1.5}
     width={size}
     height={size}
     {...props}

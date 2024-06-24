@@ -12,11 +12,17 @@ import BarsLowIcon from "#/icons/dice/bars-low";
 import BarsMidIcon from "#/icons/dice/bars-mid";
 import BarsWeakIcon from "#/icons/dice/bars-weak";
 import BatteryEmptyIcon from "#/icons/dice/battery-empty";
+import BatteryEmptyChargingIcon from "#/icons/dice/battery-empty-charging";
 import BatteryFullIcon from "#/icons/dice/battery-full";
+import BatteryFullChargingIcon from "#/icons/dice/battery-full-charging";
 import BatteryHalfIcon from "#/icons/dice/battery-half";
+import BatteryHalfChargingIcon from "#/icons/dice/battery-half-charging";
 import BatteryLowIcon from "#/icons/dice/battery-low";
+import BatteryLowChargingIcon from "#/icons/dice/battery-low-charging";
 import BatteryQuarterIcon from "#/icons/dice/battery-quarter";
+import BatteryQuarterChargingIcon from "#/icons/dice/battery-quarter-charging";
 import BatteryThreeQuartersIcon from "#/icons/dice/battery-three-quarters";
+import BatteryThreeQuartersChargingIcon from "#/icons/dice/battery-three-quarters-charging";
 
 export interface IconProps {
   size: number;
@@ -93,14 +99,8 @@ export function RssiIcon({
   );
 }
 
-export function BatteryIcon({
-  value,
-  size,
-  disabled,
-  color,
-}: IconProps & { value?: number }) {
-  const { colors } = useTheme();
-  const Icon = !value
+function getBatteryIcon(value?: number) {
+  return !value
     ? BatteryEmptyIcon
     : value < 20
       ? BatteryLowIcon
@@ -111,12 +111,43 @@ export function BatteryIcon({
           : value < 95
             ? BatteryThreeQuartersIcon
             : BatteryFullIcon;
+}
+
+function getChargingBatteryIcon(value?: number) {
+  return !value
+    ? BatteryEmptyChargingIcon
+    : value < 20
+      ? BatteryLowChargingIcon
+      : value < 40
+        ? BatteryQuarterChargingIcon
+        : value < 70
+          ? BatteryHalfChargingIcon
+          : value < 95
+            ? BatteryThreeQuartersChargingIcon
+            : BatteryFullChargingIcon;
+}
+
+export function BatteryIcon({
+  value,
+  charging,
+  size,
+  disabled,
+  color,
+}: IconProps & { value?: number; charging?: boolean }) {
+  const { colors } = useTheme();
+  const Icon = charging ? getChargingBatteryIcon(value) : getBatteryIcon(value);
   return (
     <Icon
       size={size}
       color={
-        color ?? (!value || value < 20 ? "red" : getIconColor(colors, disabled))
+        color ??
+        (disabled
+          ? getIconColor(colors, true)
+          : !value || value < 20
+            ? "red"
+            : getIconColor(colors))
       }
+      lightningColor="gold"
     />
   );
 }

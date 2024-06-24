@@ -5,11 +5,7 @@ const SvgComponent = ({
 }: { size: number } & Omit<SvgProps, "width" | "height">) => (
   <Svg
     viewBox="0 0 1000 1000"
-    fillRule="evenodd"
-    clipRule="evenodd"
     strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeMiterlimit={1.5}
     width={size}
     height={size}
     {...props}
