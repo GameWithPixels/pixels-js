@@ -1,9 +1,9 @@
-import { usePixelEvent } from "@systemic-games/react-native-pixels-connect";
+import { usePixelStatus } from "@systemic-games/react-native-pixels-connect";
 
 import { PairedDieRenderer } from "./PairedDieRenderer";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useWatchedPixel } from "~/hooks";
+import { useIsPixelRolling, useWatchedPixel } from "~/hooks";
 
 export function PairedDieRendererWithRoll({
   pairedDie,
@@ -13,8 +13,8 @@ export function PairedDieRendererWithRoll({
   disabled: boolean;
 }) {
   const pixel = useWatchedPixel(pairedDie);
-  const [rollEv] = usePixelEvent(pixel, "roll");
-  const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
+  const status = usePixelStatus(pixel);
+  const rolling = useIsPixelRolling(pixel, status);
   return (
     <PairedDieRenderer
       pairedDie={pairedDie}

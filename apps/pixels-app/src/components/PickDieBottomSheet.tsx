@@ -4,7 +4,6 @@ import { getBorderRadius } from "@systemic-games/react-native-pixels-components"
 import {
   PixelDieType,
   usePixelStatus,
-  usePixelEvent,
 } from "@systemic-games/react-native-pixels-connect";
 import Color from "color";
 import React from "react";
@@ -28,11 +27,12 @@ import { useAppSelector } from "~/app/hooks";
 import { getDieTypeLabel, getRollStateAndFaceLabel } from "~/features/profiles";
 import { listToText } from "~/features/utils";
 import {
-  useWatchedPixel,
-  useBottomSheetPadding,
-  usePixelScanner,
   useBottomSheetBackHandler,
+  useBottomSheetPadding,
+  useIsPixelRolling,
+  usePixelScanner,
   usePixelsCentral,
+  useWatchedPixel,
 } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetProps } from "~/themes";
@@ -47,10 +47,13 @@ function PairedDieCard({
   const central = usePixelsCentral();
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
-  const [rollEv] = usePixelEvent(pixel, "roll");
-  const rollLabel = getRollStateAndFaceLabel(rollEv?.state, rollEv?.face);
-  const animStyle = useFlashAnimationStyle(
-    rollEv?.state === "rolling" || rollEv?.state === "handling"
+  // This hooks triggers a re-render on each roll event
+  const rolling = useIsPixelRolling(pixel, status);
+  const animStyle = useFlashAnimationStyle(rolling);
+  // So we can use the rollState without needing another hook
+  const rollLabel = getRollStateAndFaceLabel(
+    pixel?.rollState,
+    pixel?.currentFace
   );
 
   const { colors, roundness } = useTheme();

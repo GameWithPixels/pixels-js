@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { usePixelEvent, usePixelStatus } from "@systemic-games/pixels-react";
+import { usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
   PixelStatus,
@@ -29,6 +29,7 @@ import { PairedDie } from "~/app/PairedDie";
 import { getRollStateAndFaceLabel } from "~/features/profiles";
 import {
   useIsModifiedDieProfile,
+  useIsPixelRolling,
   usePairedDieProfileUuid,
   useProfile,
   useWatchedPixel,
@@ -47,9 +48,10 @@ const CardLabels = observer(function CardLabels({
   const profile = useProfile(usePairedDieProfileUuid(pairedDie));
   const status = usePixelStatus(pixel);
   const isReady = pixel && status === "ready";
-  const [rollEv] = usePixelEvent(pixel, "roll");
-  const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
-  const onFace = rollEv?.state === "onFace";
+  // This hooks triggers a re-render on each roll event
+  const rolling = useIsPixelRolling(pixel, status);
+  // So we can use the rollState without needing another hook
+  const onFace = isReady && pixel.rollState === "onFace";
   const [showRoll, setShowRoll] = React.useState(false);
   const modifiedProfile = useIsModifiedDieProfile(
     pairedDie.profileUuid,
@@ -58,12 +60,15 @@ const CardLabels = observer(function CardLabels({
 
   // Show rolling/rolled message for a few seconds
   React.useEffect(() => {
-    if (isReady && rolling) {
+    let id: ReturnType<typeof setTimeout>;
+    if (!isReady) {
+      setShowRoll(false);
+    } else if (rolling) {
       setShowRoll(true);
-    } else if (!isReady || onFace) {
-      const id = setTimeout(() => setShowRoll(false), 3000);
-      return () => clearTimeout(id);
+    } else if (onFace) {
+      id = setTimeout(() => setShowRoll(false), 3000);
     }
+    return () => id && clearTimeout(id);
   }, [isReady, onFace, rolling]);
 
   // Animate roll results
@@ -72,7 +77,7 @@ const CardLabels = observer(function CardLabels({
     transform: [{ scale: animValue.value }],
   }));
   React.useEffect(() => {
-    if (rollEv?.state === "onFace") {
+    if (onFace) {
       animValue.value = withSequence(
         withTiming(1.2, {
           duration: 400,
@@ -81,7 +86,7 @@ const CardLabels = observer(function CardLabels({
         withTiming(1, { duration: 200, easing: Easing.in(Easing.ease) })
       );
     }
-  }, [animValue, rollEv?.state]);
+  }, [animValue, onFace]);
 
   const { colors } = useTheme();
   return (
@@ -117,7 +122,10 @@ const CardLabels = observer(function CardLabels({
           >
             {compact && !showRoll
               ? profile.name
-              : getRollStateAndFaceLabel(rollEv?.state, rollEv?.face) ?? ""}
+              : getRollStateAndFaceLabel(
+                  pixel?.rollState,
+                  pixel?.currentFace
+                ) ?? ""}
           </Text>
           {compact && modifiedProfile && (
             <View>
@@ -244,15 +252,12 @@ export function PixelVCard({
 } & Omit<TouchableCardProps, "children">) {
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
-  const [rollEv] = usePixelEvent(pixel, "roll");
+  const flash = useIsPixelRolling(pixel, status);
   return (
     <TouchableCard
       row
       gradientBorder
-      flash={
-        status === "ready" &&
-        (rollEv?.state === "rolling" || rollEv?.state === "handling")
-      }
+      flash={flash}
       // contentStyle={{ aspectRatio: 1 }} Creates problems with the layout
       {...props}
     >
@@ -335,15 +340,12 @@ export function PixelHCard({
 } & Omit<TouchableCardProps, "children">) {
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
-  const [rollEv] = usePixelEvent(pixel, "roll");
+  const flash = useIsPixelRolling(pixel, status);
   return (
     <TouchableCard
       row
       gradientBorder
-      flash={
-        status === "ready" &&
-        (rollEv?.state === "rolling" || rollEv?.state === "handling")
-      }
+      flash={flash}
       contentStyle={[{ padding: 5 }, contentStyle]}
       {...props}
     >

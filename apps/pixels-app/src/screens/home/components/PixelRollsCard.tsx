@@ -1,4 +1,4 @@
-import { usePixelEvent } from "@systemic-games/react-native-pixels-connect";
+import { usePixelStatus } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
 import { Text, TextProps, useTheme } from "react-native-paper";
@@ -17,7 +17,7 @@ import { useAppSelector } from "~/app/hooks";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
 import { makeTransparent } from "~/components/colors";
-import { useWatchedPixel } from "~/hooks";
+import { useIsPixelRolling, useWatchedPixel } from "~/hooks";
 
 function useLastRolls({
   pixelId,
@@ -44,8 +44,8 @@ function PixelRollState({
   pairedDie: PairedDie;
 } & Omit<TextProps<string>, "children">) {
   const pixel = useWatchedPixel(pairedDie);
-  const [rollEv] = usePixelEvent(pixel, "roll");
-  const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
+  const status = usePixelStatus(pixel);
+  const rolling = useIsPixelRolling(pixel, status);
   return <Text {...props}>{rolling ? "Rolling..." : "Last rolls"}</Text>;
 }
 

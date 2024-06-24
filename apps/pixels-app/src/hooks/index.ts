@@ -12,6 +12,7 @@ export * from "./useEditableProfile";
 export * from "./useFilteredProfiles";
 export * from "./useIsDieUpdating";
 export * from "./useIsModifiedDieProfile";
+export * from "./useIsPixelRolling";
 export * from "./useIsTransferring";
 export * from "./usePatternsList";
 export * from "./usePixelDfuAvailability";
