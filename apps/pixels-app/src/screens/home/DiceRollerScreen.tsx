@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import {
   DiceUtils,
   PixelDieType,
@@ -42,6 +42,7 @@ import {
   hideAllRollerEntries,
   hideRollerEntry,
   setRollerCardsSizeRatio,
+  setRollerPaused,
 } from "~/features/store";
 import { DiceRollerScreenProps } from "~/navigation";
 import { AppStyles } from "~/styles";
@@ -254,16 +255,14 @@ function OptionsMenu({
   sizeRatio,
   onChangeSizeRatio,
   onCommitSizeRatio,
-  onAddRoll,
-  onClearRolls,
   ...props
 }: {
   sizeRatio: number;
   onChangeSizeRatio: (ratio: number) => void;
   onCommitSizeRatio: (ratio: number) => void;
-  onAddRoll: (dieType: PixelDieType, value: number) => void;
-  onClearRolls: () => void;
 } & Omit<HeaderMenuButtonProps, "children">) {
+  const paused = useAppSelector((state) => state.diceRoller.paused);
+  const appDispatch = useAppDispatch();
   const { colors } = useTheme();
   return (
     <HeaderMenuButton {...props}>
@@ -281,6 +280,27 @@ function OptionsMenu({
       />
       <Divider />
       <Menu.Item
+        title={paused ? "Paused" : "Running"}
+        trailingIcon={() =>
+          paused ? (
+            <MaterialCommunityIcons
+              name="play-outline"
+              size={24}
+              color={colors.onSurface}
+            />
+          ) : (
+            <MaterialIcons name="pause" size={24} color={colors.onSurface} />
+          )
+        }
+        contentStyle={AppStyles.menuItemWithIcon}
+        style={{ zIndex: 1 }}
+        onPress={() => {
+          appDispatch(setRollerPaused(!paused));
+          props.onDismiss?.();
+        }}
+      />
+      <Divider />
+      <Menu.Item
         title="Clear All"
         trailingIcon={() => (
           <MaterialCommunityIcons
@@ -292,7 +312,7 @@ function OptionsMenu({
         contentStyle={AppStyles.menuItemWithIcon}
         style={{ zIndex: 1 }}
         onPress={() => {
-          onClearRolls();
+          appDispatch(hideAllRollerEntries());
           props.onDismiss?.();
         }}
       />
@@ -310,8 +330,8 @@ function OptionsMenu({
             Math.ceil((i * AvailableDiceTypes.length) / 2),
             Math.ceil(((i + 1) * AvailableDiceTypes.length) / 2)
           )}
-          addRoll={(d, v) => {
-            onAddRoll(d, v);
+          addRoll={(dieType, value) => {
+            appDispatch(addRollerEntry({ pixelId: 0, dieType, value }));
             props.onDismiss?.();
           }}
         />
@@ -372,10 +392,6 @@ function RollerPage({
               }
             }}
             onCommitSizeRatio={(r) => appDispatch(setRollerCardsSizeRatio(r))}
-            onAddRoll={(dieType, value) =>
-              appDispatch(addRollerEntry({ dieType, value }))
-            }
-            onClearRolls={() => appDispatch(hideAllRollerEntries())}
             contentStyle={{ width: 220 }}
             onShowMenu={() => setMenuVisible(true)}
             onDismiss={() => setMenuVisible(false)}

@@ -210,7 +210,13 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       // Rolls
       const onRoll = (roll: number) => {
         store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
-        store.dispatch(addRollerEntry({ dieType: pixel.dieType, value: roll }));
+        store.dispatch(
+          addRollerEntry({
+            pixelId: pixel.pixelId,
+            dieType: pixel.dieType,
+            value: roll,
+          })
+        );
       };
       pixel.addEventListener("roll", onRoll);
 
