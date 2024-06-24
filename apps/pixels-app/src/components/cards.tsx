@@ -24,6 +24,7 @@ import { PixelConnectionStatus } from "./PixelConnectionStatus";
 import { PixelRssi } from "./PixelRssi";
 import { PixelTransferProgressBar } from "./PixelTransferProgressBar";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
+import { DieWireframe } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
 import { getRollStateAndFaceLabel } from "~/features/profiles";
@@ -91,7 +92,11 @@ const CardLabels = observer(function CardLabels({
   const { colors } = useTheme();
   return (
     <View {...props}>
-      <Text variant="titleSmall" style={{ fontFamily: "LTInternet-Bold" }}>
+      <Text
+        numberOfLines={1}
+        variant="titleSmall"
+        style={{ fontFamily: "LTInternet-Bold" }}
+      >
         {pairedDie.name}
       </Text>
       {!compact && (
@@ -116,8 +121,8 @@ const CardLabels = observer(function CardLabels({
           }}
         >
           <Text
-            variant="labelSmall"
             numberOfLines={1}
+            variant="labelSmall"
             style={modifiedProfile ? { paddingRight: 18 } : undefined}
           >
             {compact && !showRoll
@@ -176,11 +181,13 @@ function PixelVCardContent({
   pairedDie,
   pixel,
   status,
+  selectable,
   contentStyle,
 }: {
   pairedDie: PairedDie;
   pixel?: Pixel;
   status?: PixelStatus;
+  selectable?: boolean;
   contentStyle?: ViewProps["style"];
 } & ViewProps) {
   const isReady = pixel && status === "ready";
@@ -189,18 +196,26 @@ function PixelVCardContent({
       style={[
         {
           flex: 1,
-          aspectRatio: 1,
+          aspectRatio: selectable ? undefined : 1,
           justifyContent: "space-around",
           alignItems: "center",
-          margin: 10,
+          marginVertical: 10,
+          marginHorizontal: selectable ? 0 : 10,
         },
         contentStyle,
       ]}
     >
-      <View style={{ width: "60%", aspectRatio: 1 }}>
-        {/* Assign a key based on size to prevent reusing the same view if size changes */}
-        <PairedDieRendererWithRoll pairedDie={pairedDie} disabled={!isReady} />
-      </View>
+      {selectable ? (
+        <DieWireframe dieType={pairedDie.dieType} size={70} />
+      ) : (
+        <View style={{ width: "60%", aspectRatio: 1 }}>
+          {/* Assign a key based on size to prevent reusing the same view if size changes */}
+          <PairedDieRendererWithRoll
+            pairedDie={pairedDie}
+            disabled={!isReady}
+          />
+        </View>
+      )}
       <View
         style={{
           width: "100%",
@@ -213,14 +228,20 @@ function PixelVCardContent({
           compact
           pairedDie={pairedDie}
           pixel={pixel}
-          style={{ flexGrow: 1, gap: 3 }}
+          style={{
+            flexGrow: 1,
+            gap: 3,
+            alignItems: selectable ? "center" : "flex-start",
+          }}
         />
-        <PixelStatusIcons
-          pixel={pixel}
-          status={status}
-          size={20}
-          style={{ gap: 5 }}
-        />
+        {!selectable && (
+          <PixelStatusIcons
+            pixel={pixel}
+            status={status}
+            size={20}
+            style={{ gap: 5 }}
+          />
+        )}
         {pixel && (
           <PixelTransferProgressBar
             pixel={pixel}
@@ -234,6 +255,14 @@ function PixelVCardContent({
           />
         )}
       </View>
+      {selectable && (
+        <PixelStatusIcons
+          pixel={pixel}
+          status={status}
+          size={20}
+          style={{ flexDirection: "row", gap: 5 }}
+        />
+      )}
       <FirmwareUpdateBadge
         pairedDie={pairedDie}
         style={[{ position: "absolute", left: -5, top: -5 }]}
@@ -305,12 +334,15 @@ function PixelHCardContent({
 export function PixelCard({
   pairedDie,
   row,
+  selected,
+  selectable,
   contentStyle,
   ...props
 }: {
   pairedDie: PairedDie;
   row?: boolean;
   selected?: boolean;
+  selectable?: boolean;
 } & Omit<TouchableCardProps, "children">) {
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
@@ -320,6 +352,8 @@ export function PixelCard({
       row
       gradientBorder={status === "ready" ? "bright" : "dark"}
       flash={flash}
+      selected={selected}
+      selectable={selectable}
       // contentStyle={{ aspectRatio: 1 }} Creates problems with the layout for vertical cards
       contentStyle={row ? undefined : [{ padding: 5 }, contentStyle]}
       {...props}
@@ -329,6 +363,7 @@ export function PixelCard({
           pairedDie={pairedDie}
           pixel={pixel}
           status={status}
+          selectable={selectable}
           contentStyle={contentStyle}
         />
       ) : (

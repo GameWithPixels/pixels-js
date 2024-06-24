@@ -1,20 +1,13 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { range } from "@systemic-games/pixels-core-utils";
-import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import {
   ScannedPixelNotifier,
   usePixelInfoProp,
 } from "@systemic-games/react-native-pixels-connect";
-import Color from "color";
 import React from "react";
 import { View } from "react-native";
-import {
-  Text,
-  ThemeProvider,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
-import Animated, { FadeIn } from "react-native-reanimated";
+import { Text, ThemeProvider, useTheme } from "react-native-paper";
+import { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppStore } from "~/app/hooks";
@@ -22,7 +15,7 @@ import { getNoAvailableDiceMessage } from "~/app/messages";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
-import { useFlashAnimationStyle } from "~/components/ViewFlashOnRoll";
+import { TouchableCard } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
@@ -49,60 +42,35 @@ function ScannedPixelCard({
   const name = usePixelInfoProp(scannedPixel, "name");
   const rollLabel = useRollStateLabel(scannedPixel);
   const rollState = scannedPixel.rollState;
-  const animStyle = useFlashAnimationStyle(
-    rollState === "rolling" || rollState === "handling"
-  );
-
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness);
   return (
-    <Animated.View
-      entering={FadeIn.duration(300)}
-      style={[
-        animStyle,
-        {
-          overflow: "hidden",
-          borderWidth: selected ? 3 : 1,
-          borderRadius,
-          borderColor: colors.onSurface,
-        },
-      ]}
+    <TouchableCard
+      selected={selected}
+      selectable
+      gradientBorder="bright"
+      flash={rollState === "rolling" || rollState === "handling"}
+      onPress={onToggleSelect}
     >
-      <TouchableRipple
-        borderless
-        onPress={onToggleSelect}
+      <DieWireframe dieType={scannedPixel.dieType} size={70} />
+      <Text
+        numberOfLines={1}
+        variant="bodyMedium"
+        style={{ marginTop: 6, fontFamily: "LTInternet-Bold" }}
+      >
+        {name ?? ""}
+      </Text>
+      <Text numberOfLines={1}>{rollLabel ?? ""}</Text>
+      <View
         style={{
-          alignItems: "center",
-          paddingVertical: selected ? 10 : 12,
-          backgroundColor: Color(colors.secondary)
-            .darken(selected ? 0.3 : 0.6)
-            .toString(),
+          flexDirection: "row",
+          gap: 15,
+          alignItems: "flex-end",
+          justifyContent: "flex-end",
         }}
       >
-        <>
-          <DieWireframe dieType={scannedPixel.dieType} size={70} />
-          <Text
-            numberOfLines={1}
-            variant="bodyMedium"
-            style={{ marginTop: 6, fontFamily: "LTInternet-Bold" }}
-          >
-            {name ?? ""}
-          </Text>
-          <Text numberOfLines={1}>{rollLabel ?? ""}</Text>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 15,
-              alignItems: "flex-end",
-              justifyContent: "flex-end",
-            }}
-          >
-            <PixelBattery pixel={scannedPixel} size={24} />
-            <PixelRssi pixel={scannedPixel} size={24} />
-          </View>
-        </>
-      </TouchableRipple>
-    </Animated.View>
+        <PixelBattery pixel={scannedPixel} size={24} />
+        <PixelRssi pixel={scannedPixel} size={24} />
+      </View>
+    </TouchableCard>
   );
 }
 
@@ -157,7 +125,7 @@ function SelectScannedPixels({
       <BottomSheetScrollView
         contentContainerStyle={{
           flexDirection: "row",
-          gap: 15,
+          gap: 10,
         }}
       >
         {scannedPixels.length ? (

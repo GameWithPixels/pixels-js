@@ -62,7 +62,7 @@ export function DiceColumn({
   onSelectDie,
 }: DiceListProps) {
   return (
-    <View style={{ flex: 1, gap: 30 }}>
+    <View style={{ flex: 1, gap: 20 }}>
       {pairedDice.map((d) => (
         <PixelCard
           key={d.systemId}
@@ -100,7 +100,7 @@ export function DiceGrid({
       style={[
         {
           flexDirection: "row",
-          gap: 30,
+          gap: 20,
         },
         style,
       ]}

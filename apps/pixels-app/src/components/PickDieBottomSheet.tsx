@@ -1,118 +1,25 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { range } from "@systemic-games/pixels-core-utils";
-import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
-import {
-  PixelDieType,
-  usePixelStatus,
-} from "@systemic-games/react-native-pixels-connect";
-import Color from "color";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import {
-  Text,
-  ThemeProvider,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
-import Animated, { FadeIn } from "react-native-reanimated";
+import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { PixelBattery } from "./PixelBattery";
-import { PixelRssi } from "./PixelRssi";
-import { useFlashAnimationStyle } from "./ViewFlashOnRoll";
-import { DieWireframe } from "./icons";
+import { PixelCard } from "./cards";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
-import { getDieTypeLabel, getRollStateAndFaceLabel } from "~/features/profiles";
+import { getDieTypeLabel } from "~/features/profiles";
 import { listToText } from "~/features/utils";
 import {
   useBottomSheetBackHandler,
   useBottomSheetPadding,
-  useIsPixelRolling,
   usePixelScanner,
   usePixelsCentral,
-  useWatchedPixel,
 } from "~/hooks";
 import { AppStyles } from "~/styles";
 import { getBottomSheetProps } from "~/themes";
-
-function PairedDieCard({
-  pairedDie,
-  onSelect,
-}: {
-  pairedDie: PairedDie;
-  onSelect?: (pairedDie: PairedDie) => void;
-}) {
-  const central = usePixelsCentral();
-  const pixel = useWatchedPixel(pairedDie);
-  const status = usePixelStatus(pixel);
-  // This hooks triggers a re-render on each roll event
-  const rolling = useIsPixelRolling(pixel, status);
-  const animStyle = useFlashAnimationStyle(rolling);
-  // So we can use the rollState without needing another hook
-  const rollLabel = getRollStateAndFaceLabel(
-    pixel?.rollState,
-    pixel?.currentFace
-  );
-
-  const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness);
-  return (
-    <Animated.View
-      entering={FadeIn.duration(300)}
-      style={[
-        animStyle,
-        {
-          overflow: "hidden",
-          borderWidth: 1,
-          borderRadius,
-          borderColor: colors.onSurface,
-        },
-      ]}
-    >
-      <TouchableRipple
-        borderless
-        onPress={() => {
-          if (!pixel?.isReady) {
-            central.connectToMissingPixels(pairedDie.pixelId);
-          }
-          onSelect?.(pairedDie);
-        }}
-        style={{
-          alignItems: "center",
-          paddingVertical: 12,
-          backgroundColor: Color(colors.secondary).darken(0.5).toString(),
-        }}
-      >
-        <>
-          <DieWireframe dieType={pairedDie.dieType} size={70} />
-          <Text
-            numberOfLines={1}
-            variant="bodyMedium"
-            style={{ marginTop: 6, fontFamily: "LTInternet-Bold" }}
-          >
-            {pairedDie.name}
-          </Text>
-          <Text numberOfLines={1}>
-            {pixel && status === "ready" && rollLabel ? rollLabel : ""}
-          </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 15,
-              alignItems: "flex-end",
-              justifyContent: "flex-end",
-            }}
-          >
-            <PixelBattery pixel={pixel} size={24} />
-            <PixelRssi pixel={pixel} size={22} />
-          </View>
-        </>
-      </TouchableRipple>
-    </Animated.View>
-  );
-}
 
 function PairedDiceColumn({
   pairedDice,
@@ -124,7 +31,13 @@ function PairedDiceColumn({
   return (
     <View style={{ flex: 1, gap: 15 }}>
       {pairedDice.map((d) => (
-        <PairedDieCard key={d.pixelId} pairedDie={d} onSelect={onSelect} />
+        <PixelCard
+          key={d.pixelId}
+          row
+          selectable
+          pairedDie={d}
+          onPress={() => onSelect?.(d)}
+        />
       ))}
     </View>
   );
@@ -143,7 +56,7 @@ function SelectPairedDie({
     <BottomSheetScrollView
       contentContainerStyle={{
         flexDirection: "row",
-        gap: 15,
+        gap: 10,
       }}
     >
       {range(numColumns).map((col) => (
@@ -166,6 +79,7 @@ export function PickDieBottomSheet({
   visible: boolean;
   onDismiss: (pairedDie?: PairedDie) => void;
 }) {
+  const central = usePixelsCentral();
   const { startScan, stopScan } = usePixelScanner();
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
@@ -181,6 +95,7 @@ export function PickDieBottomSheet({
   }, [startScan, visible]);
 
   const dismiss = (pairedDie?: PairedDie) => {
+    pairedDie && central.connectToMissingPixels(pairedDie.pixelId);
     stopScan();
     onDismiss(pairedDie);
   };

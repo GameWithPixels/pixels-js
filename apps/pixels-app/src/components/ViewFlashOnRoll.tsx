@@ -19,14 +19,20 @@ import Animated, {
 
 import { makeTransparent } from "./colors";
 
-export function useFlashAnimationStyle(flash: boolean, greyedOut = false) {
+export function useFlashAnimationStyle(
+  flash: boolean,
+  mode: "greyedOut" | "mid-tone" | "transparent" = "transparent"
+) {
   const { colors } = useTheme();
   const colorRange = React.useMemo(
     () => [
-      makeTransparent(colors.background, greyedOut ? 0.85 : 0),
+      makeTransparent(
+        colors.background,
+        mode === "greyedOut" ? 0.85 : mode === "mid-tone" ? 0.6 : 0
+      ),
       makeTransparent(colors.background, 0.3),
     ],
-    [colors, greyedOut]
+    [colors, mode]
   );
   const animValue = useSharedValue(0);
   const animStyle = useAnimatedStyle(() => ({
