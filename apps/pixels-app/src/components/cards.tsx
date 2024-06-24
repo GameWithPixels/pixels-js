@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { usePixelEvent, usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
@@ -26,7 +27,12 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 
 import { PairedDie } from "~/app/PairedDie";
 import { getRollStateAndFaceLabel } from "~/features/profiles";
-import { usePairedDieProfileUuid, useProfile, useWatchedPixel } from "~/hooks";
+import {
+  useIsModifiedDieProfile,
+  usePairedDieProfileUuid,
+  useProfile,
+  useWatchedPixel,
+} from "~/hooks";
 
 const CardLabels = observer(function CardLabels({
   pairedDie,
@@ -45,6 +51,10 @@ const CardLabels = observer(function CardLabels({
   const rolling = rollEv?.state === "rolling" || rollEv?.state === "handling";
   const onFace = rollEv?.state === "onFace";
   const [showRoll, setShowRoll] = React.useState(false);
+  const modifiedProfile = useIsModifiedDieProfile(
+    pairedDie.profileUuid,
+    pairedDie.dieType
+  );
 
   // Show rolling/rolled message for a few seconds
   React.useEffect(() => {
@@ -73,18 +83,53 @@ const CardLabels = observer(function CardLabels({
     }
   }, [animValue, rollEv?.state]);
 
+  const { colors } = useTheme();
   return (
     <View {...props}>
       <Text variant="titleSmall" style={{ fontFamily: "LTInternet-Bold" }}>
         {pairedDie.name}
       </Text>
-      {!compact && <Text>{profile.name}</Text>}
-      <Animated.View style={animStyle}>
-        <Text variant="labelSmall">
-          {compact && !showRoll
-            ? profile.name
-            : getRollStateAndFaceLabel(rollEv?.state, rollEv?.face) ?? ""}
+      {!compact && (
+        <Text>
+          {profile.name}
+          {modifiedProfile ? " " : ""}
+          {modifiedProfile && (
+            <MaterialCommunityIcons
+              name="circle-edit-outline"
+              size={14}
+              color={colors.onSurface}
+            />
+          )}
         </Text>
+      )}
+      <Animated.View style={[{ flexDirection: "row" }, animStyle]}>
+        <View
+          style={{
+            flex: 1,
+            flexShrink: 1,
+            flexDirection: "row",
+          }}
+        >
+          <Text
+            variant="labelSmall"
+            numberOfLines={1}
+            style={modifiedProfile ? { paddingRight: 18 } : undefined}
+          >
+            {compact && !showRoll
+              ? profile.name
+              : getRollStateAndFaceLabel(rollEv?.state, rollEv?.face) ?? ""}
+          </Text>
+          {compact && modifiedProfile && (
+            <View>
+              <MaterialCommunityIcons
+                name="circle-edit-outline"
+                size={14}
+                color={colors.onSurface}
+                style={{ position: "absolute", left: -14 }}
+              />
+            </View>
+          )}
+        </View>
       </Animated.View>
     </View>
   );
@@ -160,7 +205,7 @@ function PixelVCardContent({
           compact
           pairedDie={pairedDie}
           pixel={pixel}
-          style={{ gap: 3 }}
+          style={{ flexGrow: 1, gap: 3 }}
         />
         <PixelStatusIcons
           pixel={pixel}
