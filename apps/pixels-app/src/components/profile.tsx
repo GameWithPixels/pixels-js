@@ -273,7 +273,6 @@ export function ProfilesList({
     () => groupAndSortProfiles(profiles, groupBy, sortMode),
     [profiles, groupBy, sortMode]
   );
-
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       {profilesGroups.map(({ title, values: profiles }, i) => (
@@ -322,6 +321,8 @@ function ProfilesColumn({
 export function ProfilesGrid({
   profiles,
   selected,
+  groupBy,
+  sortMode,
   numColumns = 3,
   onSelectProfile,
   style,
@@ -329,12 +330,19 @@ export function ProfilesGrid({
 }: {
   numColumns?: number;
 } & ProfilesListProps) {
+  const sortedProfiles = React.useMemo(
+    () =>
+      groupAndSortProfiles(profiles, groupBy, sortMode).flatMap(
+        (g) => g.values
+      ),
+    [profiles, groupBy, sortMode]
+  );
   return (
     <View style={[{ flexDirection: "row", gap: 10 }, style]} {...props}>
       {range(numColumns).map((col) => (
         <ProfilesColumn
           key={col}
-          profiles={profiles.filter((_, i) => i % numColumns === col)}
+          profiles={sortedProfiles.filter((_, i) => i % numColumns === col)}
           selected={selected}
           onSelectProfile={onSelectProfile}
         />

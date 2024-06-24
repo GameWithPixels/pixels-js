@@ -1,9 +1,12 @@
 import { range } from "@systemic-games/pixels-core-utils";
+import React from "react";
 import { View, ViewProps } from "react-native";
+import { Text } from "react-native-paper";
 
-import { PixelHCard, PixelVCard } from "./cards";
+import { PixelCard } from "./cards";
 
 import { PairedDie } from "~/app/PairedDie";
+import { DiceGrouping, groupAndSortDice, SortMode } from "~/features/profiles";
 
 function isSelected(
   die: PairedDie,
@@ -13,41 +16,60 @@ function isSelected(
 }
 
 export interface DiceListProps {
-  dice: readonly PairedDie[];
+  pairedDice: readonly PairedDie[];
   selection?: PairedDie | readonly PairedDie[];
+  groupBy?: DiceGrouping;
+  sortMode?: SortMode;
   onSelectDie?: (pairedDie: PairedDie) => void;
 }
 
 export function DiceList({
-  dice,
+  pairedDice,
   selection,
+  groupBy,
+  sortMode,
   onSelectDie,
   style,
   ...props
 }: DiceListProps & ViewProps) {
+  const diceGroups = React.useMemo(
+    () => groupAndSortDice(pairedDice, groupBy, sortMode),
+    [pairedDice, groupBy, sortMode]
+  );
   return (
-    <View style={[{ gap: 20 }, style]} {...props}>
-      {dice.map((p) => (
-        <PixelHCard
-          key={p.systemId}
-          pairedDie={p}
-          selected={isSelected(p, selection)}
-          onPress={() => onSelectDie?.(p)}
-        />
+    <View style={[{ gap: 10 }, style]} {...props}>
+      {diceGroups.map(({ title, values: dice }, i) => (
+        <View key={title + i} style={{ gap: 10 }}>
+          <Text variant="headlineSmall">{title}</Text>
+          {dice.map((d) => (
+            // <View style={[{ gap: 20 }, style]} {...props}>
+            <PixelCard
+              key={d.systemId}
+              pairedDie={d}
+              selected={isSelected(d, selection)}
+              onPress={() => onSelectDie?.(d)}
+            />
+          ))}
+        </View>
       ))}
     </View>
   );
 }
 
-export function DiceColumn({ dice, selection, onSelectDie }: DiceListProps) {
+export function DiceColumn({
+  pairedDice,
+  selection,
+  onSelectDie,
+}: DiceListProps) {
   return (
     <View style={{ flex: 1, gap: 30 }}>
-      {dice.map((p) => (
-        <PixelVCard
-          key={p.systemId}
-          pairedDie={p}
-          selected={isSelected(p, selection)}
-          onPress={() => onSelectDie?.(p)}
+      {pairedDice.map((d) => (
+        <PixelCard
+          key={d.systemId}
+          row
+          pairedDie={d}
+          selected={isSelected(d, selection)}
+          onPress={() => onSelectDie?.(d)}
         />
       ))}
     </View>
@@ -55,9 +77,11 @@ export function DiceColumn({ dice, selection, onSelectDie }: DiceListProps) {
 }
 
 export function DiceGrid({
-  dice,
-  numColumns = 2,
+  pairedDice,
   selection,
+  groupBy,
+  sortMode,
+  numColumns = 2,
   onSelectDie,
   style,
   ...props
@@ -66,6 +90,11 @@ export function DiceGrid({
   selected?: PairedDie;
 } & DiceListProps &
   ViewProps) {
+  const sortedDice = React.useMemo(
+    () =>
+      groupAndSortDice(pairedDice, groupBy, sortMode).flatMap((g) => g.values),
+    [pairedDice, groupBy, sortMode]
+  );
   return (
     <View
       style={[
@@ -80,7 +109,7 @@ export function DiceGrid({
       {range(numColumns).map((col) => (
         <DiceColumn
           key={col}
-          dice={dice.filter((_, i) => i % numColumns === col)}
+          pairedDice={sortedDice.filter((_, i) => i % numColumns === col)}
           selection={selection}
           onSelectDie={onSelectDie}
         />

@@ -242,35 +242,6 @@ function PixelVCardContent({
   );
 }
 
-export function PixelVCard({
-  pairedDie,
-  contentStyle,
-  ...props
-}: {
-  pairedDie: PairedDie;
-  selected?: boolean;
-} & Omit<TouchableCardProps, "children">) {
-  const pixel = useWatchedPixel(pairedDie);
-  const status = usePixelStatus(pixel);
-  const flash = useIsPixelRolling(pixel, status);
-  return (
-    <TouchableCard
-      row
-      gradientBorder={status === "ready" ? "bright" : "dark"}
-      flash={flash}
-      // contentStyle={{ aspectRatio: 1 }} Creates problems with the layout
-      {...props}
-    >
-      <PixelVCardContent
-        pairedDie={pairedDie}
-        pixel={pixel}
-        status={status}
-        contentStyle={contentStyle}
-      />
-    </TouchableCard>
-  );
-}
-
 function PixelHCardContent({
   pairedDie,
   pixel,
@@ -331,12 +302,15 @@ function PixelHCardContent({
   );
 }
 
-export function PixelHCard({
+export function PixelCard({
   pairedDie,
+  row,
   contentStyle,
   ...props
 }: {
   pairedDie: PairedDie;
+  row?: boolean;
+  selected?: boolean;
 } & Omit<TouchableCardProps, "children">) {
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
@@ -346,10 +320,24 @@ export function PixelHCard({
       row
       gradientBorder={status === "ready" ? "bright" : "dark"}
       flash={flash}
-      contentStyle={[{ padding: 5 }, contentStyle]}
+      // contentStyle={{ aspectRatio: 1 }} Creates problems with the layout for vertical cards
+      contentStyle={row ? undefined : [{ padding: 5 }, contentStyle]}
       {...props}
     >
-      <PixelHCardContent pairedDie={pairedDie} pixel={pixel} status={status} />
+      {row ? (
+        <PixelVCardContent
+          pairedDie={pairedDie}
+          pixel={pixel}
+          status={status}
+          contentStyle={contentStyle}
+        />
+      ) : (
+        <PixelHCardContent
+          pairedDie={pairedDie}
+          pixel={pixel}
+          status={status}
+        />
+      )}
     </TouchableCard>
   );
 }

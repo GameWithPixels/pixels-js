@@ -35,7 +35,6 @@ import {
   getKeepAllDiceUpToDate,
   getSortModeIcon,
   getSortModeLabel,
-  groupAndSortDice,
   SortMode,
   SortModeList,
 } from "~/features/profiles";
@@ -251,15 +250,6 @@ function DiceListPage({
   const appDispatch = useAppDispatch();
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
 
-  // Sort options
-  const groupBy = useAppSelector((state) => state.appSettings.diceGrouping);
-  const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
-  const sortedDice = React.useMemo(
-    () =>
-      groupAndSortDice(pairedDice, groupBy, sortMode).flatMap((g) => g.values),
-    [pairedDice, groupBy, sortMode]
-  );
-
   // Pairing
   const [showPairDice, setShowPairDice] = React.useState(false);
 
@@ -269,7 +259,11 @@ function DiceListPage({
   // Firmware update
   const outdatedCount = useOutdatedPixelsCount();
 
+  // Sort options & view mode
+  const groupBy = useAppSelector((state) => state.appSettings.diceGrouping);
+  const sortMode = useAppSelector((state) => state.appSettings.diceSortMode);
   const viewMode = useAppSelector((state) => state.appSettings.diceViewMode);
+
   return (
     <>
       <View style={{ height: "100%" }}>
@@ -288,11 +282,11 @@ function DiceListPage({
           }}
         >
           <BluetoothStateWarning style={{ marginVertical: 10 }} />
-          {!sortedDice.length ? (
+          {!pairedDice.length ? (
             <NoPairedDie style={{ marginVertical: 10 }} />
           ) : (
             <>
-              {sortedDice.length > 0 && (
+              {pairedDice.length > 0 && (
                 <GridListSelector
                   viewMode={viewMode}
                   onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
@@ -300,14 +294,16 @@ function DiceListPage({
               )}
               {viewMode === "grid" ? (
                 <DiceGrid
-                  dice={sortedDice}
+                  pairedDice={pairedDice}
                   onSelectDie={(d) =>
                     navigation.navigate("dieFocus", { pixelId: d.pixelId })
                   }
                 />
               ) : (
                 <DiceList
-                  dice={sortedDice}
+                  pairedDice={pairedDice}
+                  groupBy={groupBy}
+                  sortMode={sortMode}
                   onSelectDie={(d) =>
                     navigation.navigate("dieFocus", { pixelId: d.pixelId })
                   }
