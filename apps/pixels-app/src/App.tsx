@@ -133,7 +133,7 @@ function AppPage() {
           name="profiles"
           component={ProfilesStack}
           options={({ route }) => ({
-            title: "Profiles",
+            title: "Library",
             tabBarIcon: ProfilesIcon,
             tabBarStyle: getTabBarStyle<ProfilesStackParamList>(
               route,

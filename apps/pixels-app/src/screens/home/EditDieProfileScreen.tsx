@@ -110,7 +110,10 @@ function EditDieProfilePage({
           onDismiss={() => setSaveToLibraryVisible(false)}
         >
           <Dialog.Title>Save to Library</Dialog.Title>
-          <Dialog.Content>
+          <Dialog.Content style={{ gap: 10 }}>
+            <Text variant="bodyMedium">
+              Enter the name of the profile to create in the library:
+            </Text>
             <TextInput
               label="Profile Name"
               value={name}
