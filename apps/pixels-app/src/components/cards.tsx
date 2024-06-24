@@ -256,7 +256,7 @@ export function PixelVCard({
   return (
     <TouchableCard
       row
-      gradientBorder
+      gradientBorder={status === "ready" ? "bright" : "dark"}
       flash={flash}
       // contentStyle={{ aspectRatio: 1 }} Creates problems with the layout
       {...props}
@@ -344,7 +344,7 @@ export function PixelHCard({
   return (
     <TouchableCard
       row
-      gradientBorder
+      gradientBorder={status === "ready" ? "bright" : "dark"}
       flash={flash}
       contentStyle={[{ padding: 5 }, contentStyle]}
       {...props}

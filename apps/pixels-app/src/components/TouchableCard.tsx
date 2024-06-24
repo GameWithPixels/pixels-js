@@ -26,7 +26,7 @@ export type TouchableCardProps = Omit<
     noTopBorder?: boolean;
     noBottomBorder?: boolean;
     frameless?: boolean;
-    gradientBorder?: boolean;
+    gradientBorder?: "bright" | "dark";
     transparent?: boolean;
     flash?: boolean;
     style?: StyleProp<ViewStyle>;
@@ -67,7 +67,9 @@ export function TouchableCard({
     borderBottomRightRadius: squaredBottomBorder ? 0 : borderRadius - 2,
   };
   const gradientAlpha = gradientBorder
-    ? 1
+    ? gradientBorder === "bright"
+      ? 1
+      : 0.5
     : transparent
       ? 0
       : !frameless
@@ -75,7 +77,7 @@ export function TouchableCard({
         : props.disabled
           ? 0.2
           : 1;
-  const animStyle = useFlashAnimationStyle(flash ?? false, gradientBorder);
+  const animStyle = useFlashAnimationStyle(flash ?? false, !!gradientBorder);
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
