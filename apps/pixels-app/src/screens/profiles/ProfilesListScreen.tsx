@@ -282,7 +282,7 @@ function ProfilesListPage({
 
 export function ProfilesListScreen({ navigation }: ProfilesListScreenProps) {
   return (
-    <AppBackground>
+    <AppBackground topLevel>
       <ProfilesListPage navigation={navigation} />
     </AppBackground>
   );

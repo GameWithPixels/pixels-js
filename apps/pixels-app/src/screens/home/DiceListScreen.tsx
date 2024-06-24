@@ -323,7 +323,7 @@ function DiceListPage({
 
 export function DiceListScreen({ navigation }: DiceListScreenProps) {
   return (
-    <AppBackground>
+    <AppBackground topLevel>
       <DiceListPage navigation={navigation} />
     </AppBackground>
   );

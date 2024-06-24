@@ -189,7 +189,7 @@ export function AnimationsListScreen({
   navigation,
 }: AnimationsListScreenProps) {
   return (
-    <AppBackground>
+    <AppBackground topLevel>
       <AnimationsListPage navigation={navigation} />
     </AppBackground>
   );

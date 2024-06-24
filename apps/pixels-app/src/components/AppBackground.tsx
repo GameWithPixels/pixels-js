@@ -7,25 +7,40 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { backgroundImageFromColor } from "~/themes";
 
-export function AppBackground({ children }: React.PropsWithChildren) {
+function ImgBackground({ children }: { children: React.ReactNode }) {
   const { colors } = useTheme();
+  return (
+    <ImageBackground
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
+      resizeMode="cover"
+      source={backgroundImageFromColor(colors.primary)}
+    >
+      {children}
+    </ImageBackground>
+  );
+}
+
+export function AppBackground({
+  children,
+  topLevel,
+}: React.PropsWithChildren<{
+  topLevel?: boolean;
+}>) {
   return (
     <RootSiblingParent>
       <Portal.Host>
-        <ActionSheetProvider>
-          <BottomSheetModalProvider>
-            <ImageBackground
-              style={{
-                flex: 1,
-                backgroundColor: colors.background,
-              }}
-              resizeMode="cover"
-              source={backgroundImageFromColor(colors.primary)}
-            >
-              {children}
-            </ImageBackground>
-          </BottomSheetModalProvider>
-        </ActionSheetProvider>
+        {topLevel ? (
+          <ImgBackground>{children}</ImgBackground>
+        ) : (
+          <ActionSheetProvider>
+            <BottomSheetModalProvider>
+              <ImgBackground>{children}</ImgBackground>
+            </BottomSheetModalProvider>
+          </ActionSheetProvider>
+        )}
       </Portal.Host>
     </RootSiblingParent>
   );

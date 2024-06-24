@@ -23,7 +23,6 @@ import {
 import {
   Button,
   ButtonProps,
-  IconButton,
   Switch,
   SwitchProps,
   Text as PaperText,
@@ -370,13 +369,6 @@ function HelpTurnOnDiceModal({
           <TurnOnDiceHelp />
           <LightUpYourGameImage />
         </BottomSheetScrollView>
-        <IconButton
-          icon="close"
-          iconColor={colors.primary}
-          sentry-label="close-turn-on-dice-help"
-          style={{ position: "absolute", right: 0, top: -15 }}
-          onPress={onDismiss}
-        />
       </ThemeProvider>
     </BottomSheetModal>
   );
@@ -849,7 +841,7 @@ function OnboardingPage({
 export function OnboardingScreen({ route, navigation }: OnboardingScreenProps) {
   return (
     <NavigationRoot screenName={route.name}>
-      <AppBackground>
+      <AppBackground topLevel>
         <OnboardingPage navigation={navigation} />
       </AppBackground>
     </NavigationRoot>
