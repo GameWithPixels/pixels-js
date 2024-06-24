@@ -34,6 +34,7 @@ import {
   updatePairedDieName,
   updatePairedDieProfileHash,
 } from "~/features/store";
+import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
   commitEditableProfile,
   EditableProfileStore,
@@ -164,7 +165,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           store.dispatch(
             updatePairedDieBrightness({
               pixelId: pixel.pixelId,
-              brightness: ev.operation.dataSet.brightness,
+              brightness: ev.operation.dataSet.brightness / 255,
             })
           );
         } else if (ev.event.type === "failed") {
@@ -289,7 +290,10 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       if (
         profileHash &&
         (profileHash !== d.profileHash ||
-          profileData.brightness * diceBrightnessFactor !== d.brightness)
+          !isSameBrightness(
+            profileData.brightness * diceBrightnessFactor,
+            d.brightness
+          ))
       ) {
         const dataSet = createProfileDataSetWithOverrides(
           readProfile(profileUuid, store.getState().library),

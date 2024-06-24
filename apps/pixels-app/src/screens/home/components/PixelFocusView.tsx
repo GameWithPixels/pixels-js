@@ -35,6 +35,7 @@ import { Library, preSerializeProfile, readProfile } from "~/features/store";
 import {
   useConfirmActionSheet,
   useHasFirmwareUpdate,
+  useIsModifiedDieProfile,
   usePairedDieProfileUuid,
   usePixelsCentral,
   useProfile,
@@ -205,23 +206,6 @@ export function PixelFocusViewHeader({
   );
 }
 
-function useIsModifiedProfile(profileUuid: string) {
-  const profileData = useAppSelector(
-    (state) => state.library.profiles.entities[profileUuid]
-  );
-  const sourceProfileData = useAppSelector((state) =>
-    profileData?.sourceUuid
-      ? state.library.profiles.entities[profileData.sourceUuid]
-      : undefined
-  );
-  return (
-    profileData &&
-    sourceProfileData &&
-    (profileData.hash !== sourceProfileData.hash ||
-      profileData.brightness !== sourceProfileData.brightness)
-  );
-}
-
 export function PixelFocusView({
   pairedDie,
   onPress,
@@ -245,8 +229,11 @@ export function PixelFocusView({
   const disabled = status !== "ready";
 
   const profile = useProfile(usePairedDieProfileUuid(pairedDie));
-  const [pickProfile, setPickProfile] = React.useState(false);
-  const modifiedProfile = useIsModifiedProfile(profile.uuid);
+  const [showPickProfile, setShowPickProfile] = React.useState(false);
+  const modifiedProfile = useIsModifiedDieProfile(
+    profile.uuid,
+    pairedDie.dieType
+  );
 
   const { colors } = useTheme();
   return (

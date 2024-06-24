@@ -28,8 +28,8 @@ import {
   usePixelDfuState,
   useRollStateLabel,
   useBatteryStateLabel,
+  useIsDieUpdatingFirmware,
 } from "~/hooks";
-import { useIsDieUpdatingFirmware } from "~/hooks/useIsDieUpdating";
 
 function getDfuStatusText(
   availability: DfuAvailability,

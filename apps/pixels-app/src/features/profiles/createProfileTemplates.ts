@@ -13,10 +13,14 @@ import { LibraryState } from "~/app/store";
 
 export function createProfileTemplates(
   dieType: PixelDieType,
-  library: LibraryState
+  library?: LibraryState
 ): Profiles.Profile[] {
   // TODO use library to get animations, patterns and gradients
   return PrebuildProfilesNames.map((name) => {
-    return createLibraryProfile(name, dieType, generateProfileUuid(library));
+    return createLibraryProfile(
+      name,
+      dieType,
+      library && generateProfileUuid(library)
+    );
   });
 }

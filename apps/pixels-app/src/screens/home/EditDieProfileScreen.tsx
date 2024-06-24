@@ -25,6 +25,7 @@ import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProg
 import { makeTransparent } from "~/components/colors";
 import { generateProfileUuid } from "~/features/profiles";
 import { Library } from "~/features/store";
+import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
   usePairedDieProfileUuid,
   useSetSelectedPairedDie,
@@ -198,13 +199,16 @@ export function EditDieProfileScreen({
           die &&
           dstProfileData &&
           (profileData.hash !== dstProfileData.hash ||
-            profileData.brightness !== dstProfileData.brightness)
+            !isSameBrightness(
+              profileData.brightness,
+              dstProfileData.brightness
+            ))
         ) {
           e.preventDefault();
           Alert.alert(
             "Modified Profile",
             `This die profile has been modified since it was copied from ${profileData.name}.\n\n` +
-              "Do you want to the changes copy over to the library profile?",
+              "Do you want to copy the changes back to the library profile?",
             [
               {
                 text: "Yes",

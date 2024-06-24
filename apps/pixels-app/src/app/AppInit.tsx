@@ -2,7 +2,7 @@ import React from "react";
 import { Alert, AppState } from "react-native";
 import { useStore } from "react-redux";
 
-import { updatePairedDiceFrom3to4 } from "./migrations";
+import { updatePairedDiceAndProfilesFrom3to4 } from "./migrations";
 import { RootState } from "./store";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
@@ -26,7 +26,7 @@ export function AppInit({ children }: React.PropsWithChildren) {
         });
       }
       // Upgrading from v2.2
-      updatePairedDiceFrom3to4(store);
+      updatePairedDiceAndProfilesFrom3to4(store);
       // Set as initialized
       setInitialized(true);
     }

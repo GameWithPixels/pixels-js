@@ -38,8 +38,8 @@ export function pairDie(
   let brightness = library.profiles.entities[profileUuid ?? -1]?.brightness;
   if (
     !profileUuid ||
-    brightness === undefined || // undefined if profile not found
-    profileUuid === sourceProfile?.uuid
+    !!sourceProfile ||
+    brightness === undefined // undefined if die profile not found
   ) {
     // Use profile with pre-serialized data so the hash is stable
     const dieProfile = preSerializeProfile(

@@ -40,19 +40,6 @@ export const PrebuildProfilesNames = [
 
 export type PrebuildProfileName = (typeof PrebuildProfilesNames)[number];
 
-export const DefaultProfileHashes = {
-  unknown: 0x7aea1cbb,
-  d4: 0x5eade414,
-  d6: 0x8c9c46a3,
-  d8: 0xca7bb5c3,
-  d10: 0x8d30a584,
-  d00: 0x52d22e3f,
-  d12: 0x58e03384,
-  d20: 0xc60d3c5b, // Factory: 0xf069141c
-  d6pipped: 0x309c10fc,
-  d6fudge: 0x8c9c46a3,
-} as const;
-
 export function createLibraryProfile(
   name: PrebuildProfileName,
   dieType: PixelDieType,

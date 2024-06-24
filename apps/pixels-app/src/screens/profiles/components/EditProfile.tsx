@@ -30,7 +30,11 @@ import {
   getConditionTypeLabel,
 } from "~/features/profiles";
 import { setShowProfileHelp } from "~/features/store";
-import { useDiceNamesForProfile, useEditableProfile } from "~/hooks";
+import {
+  useDiceNamesForProfile,
+  useEditableProfile,
+  useIsModifiedDieProfile,
+} from "~/hooks";
 
 const EditProfileDescription = observer(function EditProfileDescription({
   profile,
@@ -68,28 +72,19 @@ function ProfileDiceNames({
 }
 
 function SourceProfileName({
-  profileUuid,
+  profile,
   ...props
-}: { profileUuid: string } & Omit<TextProps<string>, "children">) {
-  const profileData = useAppSelector(
-    (state) => state.library.profiles.entities[profileUuid]
-  );
-  const sourceProfileData = useAppSelector((state) =>
-    profileData?.sourceUuid
-      ? state.library.profiles.entities[profileData.sourceUuid]
-      : undefined
-  );
-  const modified =
-    profileData &&
-    sourceProfileData &&
-    (profileData.hash !== sourceProfileData.hash ||
-      profileData.brightness !== sourceProfileData.brightness);
+}: { profile: Readonly<Profiles.Profile> } & Omit<
+  TextProps<string>,
+  "children"
+>) {
+  const modified = useIsModifiedDieProfile(profile.uuid, profile.dieType);
   const { colors } = useTheme();
   return (
-    sourceProfileData && (
+    modified !== undefined && (
       <>
         <Text {...props}>
-          Copied from {sourceProfileData.name}
+          Copied from {profile.name}
           {modified ? " " : ""}
           {modified && (
             <MaterialCommunityIcons
@@ -152,7 +147,7 @@ export function EditProfile({
           style={{ alignSelf: "center", marginTop: 10 }}
         />
         <SourceProfileName
-          profileUuid={profileUuid}
+          profile={profile}
           variant="bodyLarge"
           style={{ alignSelf: "center", marginTop: 10 }}
         />

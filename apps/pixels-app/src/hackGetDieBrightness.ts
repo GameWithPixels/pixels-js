@@ -7,3 +7,10 @@ export function hackGetDieBrightness(pixel: { pixelId: number }): number {
       ?.brightness ?? 1
   );
 }
+
+export function isSameBrightness(
+  brightness1: number,
+  brightness2: number
+): boolean {
+  return (brightness1 * 255) >>> 0 === (brightness2 * 255) >>> 0;
+}

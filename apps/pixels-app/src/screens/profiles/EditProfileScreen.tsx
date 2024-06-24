@@ -22,6 +22,7 @@ import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { makeTransparent } from "~/components/colors";
 import { Library, readProfile } from "~/features/store";
+import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
   useCommitEditableProfile,
   useConfirmActionSheet,
@@ -242,8 +243,11 @@ export function EditProfileScreen({
         const dieProfileData = profiles.entities[d.profileUuid];
         return (
           dieProfileData?.sourceUuid === profileUuid &&
-          (d.profileHash !== profileData?.hash ||
-            dieProfileData.brightness !== profileData?.brightness)
+          (dieProfileData.hash !== profileData?.hash ||
+            !isSameBrightness(
+              dieProfileData.brightness,
+              profileData.brightness
+            ))
         );
       });
       if (profileData && dice.length) {
@@ -255,7 +259,7 @@ export function EditProfileScreen({
         Alert.alert(
           `Profile Modified`,
           `This library profile has been modified since it was copied to ${diceNames}.\n\n` +
-            `Do you want to the changes copy over to ${dice.length === 1 ? "this die" : "those dice"}?`,
+            `Do you want to copy the changes to ${dice.length === 1 ? "this die" : "those dice"}?`,
           [
             {
               text: "Yes",

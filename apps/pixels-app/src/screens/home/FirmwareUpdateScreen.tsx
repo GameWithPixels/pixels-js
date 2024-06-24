@@ -19,8 +19,8 @@ import {
   useAppDfuFiles,
   useOutdatedPixelsCount,
   useUpdateDice,
+  useIsAppUpdatingFirmware,
 } from "~/hooks";
-import { useIsAppUpdatingFirmware } from "~/hooks/useIsDieUpdating";
 import { FirmwareUpdateScreenProps } from "~/navigation";
 
 export function useConfirmStopUpdatingActionSheet(

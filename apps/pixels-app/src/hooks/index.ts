@@ -10,6 +10,8 @@ export * from "./useDfuFiles";
 export * from "./useDiceNamesForProfile";
 export * from "./useEditableProfile";
 export * from "./useFilteredProfiles";
+export * from "./useIsDieUpdating";
+export * from "./useIsModifiedDieProfile";
 export * from "./useIsTransferring";
 export * from "./usePatternsList";
 export * from "./usePixelDfuAvailability";

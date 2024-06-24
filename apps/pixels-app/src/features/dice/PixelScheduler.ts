@@ -11,7 +11,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 import { logError } from "~/features/utils";
-import { hackGetDieBrightness } from "~/hackGetDieBrightness";
+import { hackGetDieBrightness, isSameBrightness } from "~/hackGetDieBrightness";
 
 export type PixelOperationParams = Readonly<
   | {
@@ -338,10 +338,10 @@ export class PixelScheduler {
       case "programProfile":
         {
           const hash = DataSet.computeHash(op.dataSet.toByteArray());
-          const { brightness } = op.dataSet;
+          const brightness = op.dataSet.brightness / 255;
           if (
             hash !== pixel.profileHash ||
-            brightness !== hackGetDieBrightness(pixel)
+            !isSameBrightness(brightness, hackGetDieBrightness(pixel))
           ) {
             this._log(
               `Programming profile with hash ${unsigned32ToHex(hash)} and brightness ${brightness}`
