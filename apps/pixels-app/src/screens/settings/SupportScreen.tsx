@@ -20,12 +20,13 @@ type OpenURLButtonProps = Required<React.PropsWithChildren> & {
 
 function URLButton({ url, ...props }: OpenURLButtonProps) {
   const handlePress = React.useCallback(async () => {
+    const encoded = encodeURI(url);
     // Checking if the link is supported for links with custom URL scheme.
-    const supported = await Linking.canOpenURL(url);
+    const supported = await Linking.canOpenURL(encoded);
     if (supported) {
       // Opening the link with some app, if the URL scheme is "http" the web link should be opened
       // by some browser in the mobile
-      await Linking.openURL(url);
+      await Linking.openURL(encoded);
     }
   }, [url]);
   return <OutlineButton onPress={handlePress} {...props} />;
@@ -54,20 +55,20 @@ function SupportPage({
           {"Contact Us" + TrailingSpaceFix}
         </URLButton> */}
         <URLButton
-          url={encodeURI(
+          url={
             `mailto:${supportEmail}?` +
-              "subject=Pixels App Suggestion&body=Please describe your suggestion here."
-          )}
+            "subject=Pixels App Suggestion&body=Please describe your suggestion here."
+          }
           sentry-label="send-email"
         >
           Email Us at {supportEmail}
         </URLButton>
         <Text>To report issues:</Text>
         <URLButton
-          url={encodeURI(
+          url={
             `mailto:${supportEmail}?` +
-              "subject=Pixels App Issue&body=Please describe your issue here."
-          )}
+            "subject=Pixels App Issue&body=Please describe your issue here."
+          }
           sentry-label="send-email"
         >
           Email Us at {supportEmail}
