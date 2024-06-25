@@ -36,11 +36,7 @@ export function readProfile(
 ): Profiles.Profile {
   const profileData = library.profiles.entities[uuid];
   if (!profileData) {
-    logError(
-      `Profile ${uuid} not found in library [${JSON.stringify(
-        uuid // Got some Sentry report about this being an object rather than a string
-      )}]`
-    );
+    logError(`Profile ${uuid} not found in library`);
   }
   //assert(profileData, `Profile ${uuid} not found in library`);
   const existing = !newInstance && loadedProfiles.get(uuid);
@@ -69,7 +65,7 @@ function updateProfile(
 ): void {
   assert(
     profile.uuid === profileData.uuid,
-    `Profile UUID mismatch, profile: ${profile.uuid}, data: ${profileData.uuid}`
+    `Profile UUID mismatch on updating profile data, expected value is ${profile.uuid} but got ${profileData.uuid}`
   );
   profile.name = profileData.name;
   profile.description = profileData.description;

@@ -27,33 +27,46 @@ export function pairDie(
     | "firmwareDate"
   >,
   store: AppStore,
-  sourceProfile?: Readonly<Profiles.Profile>
+  opt?: {
+    sourceProfile?: Readonly<Profiles.Profile>;
+    forceNewProfile?: boolean;
+  }
 ): void {
-  const { pairedDice } = store.getState();
-  let profileUuid =
-    pairedDice.paired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid ??
-    pairedDice.unpaired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid;
+  const { pairedDice, library } = store.getState();
+  let profileUuid = opt?.forceNewProfile
+    ? undefined
+    : pairedDice.paired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid ??
+      pairedDice.unpaired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid;
   // Create new profile if die profile not found or same as source profile
-  const { library } = store.getState();
   let brightness = library.profiles.entities[profileUuid ?? -1]?.brightness;
   if (
     !profileUuid ||
-    !!sourceProfile ||
+    !library.profiles.ids.includes(profileUuid) ||
+    !!opt?.sourceProfile ||
     brightness === undefined // undefined if die profile not found
   ) {
     // Use profile with pre-serialized data so the hash is stable
     const dieProfile = preSerializeProfile(
       // Use default profile if none provided
-      sourceProfile ?? createLibraryProfile("default", pixel.dieType),
+      opt?.sourceProfile ?? createLibraryProfile("default", pixel.dieType),
       library
     );
-    profileUuid = generateProfileUuid(library);
+    // Assign an id if none (or if invalid because of bug with generateUuid())
+    const givenUuid = profileUuid;
+    if (typeof profileUuid !== "string") {
+      profileUuid = generateProfileUuid(library);
+    }
+    console.log(
+      (givenUuid !== profileUuid ? "Creating new" : "Updating") +
+        ` profile (${profileUuid}) on pairing die ${pixel.name}`
+    );
+    // Add or update profile
     store.dispatch(
-      Library.Profiles.add({
+      Library.Profiles.update({
         ...Serializable.fromProfile(dieProfile),
         uuid: profileUuid,
         hash: computeProfileHashWithOverrides(dieProfile),
-        sourceUuid: sourceProfile?.uuid,
+        sourceUuid: opt?.sourceProfile?.uuid,
       })
     );
     brightness = dieProfile.brightness;

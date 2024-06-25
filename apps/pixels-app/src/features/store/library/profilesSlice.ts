@@ -25,6 +25,7 @@ const profilesSlice = createSlice({
       return profilesAdapter.addMany(state, action.payload.profiles);
     },
 
+    // Add only if new profile
     add(state, action: PayloadAction<AppProfileData>) {
       const profile = action.payload;
       assert(profile.uuid?.length, "Profile must have a uuid");
@@ -37,6 +38,7 @@ const profilesSlice = createSlice({
       );
     },
 
+    // Add or update profile
     update(state, action: PayloadAction<AppProfileData>) {
       const profile = action.payload;
       assert(profile.uuid?.length, "Profile must have a uuid");
@@ -49,6 +51,7 @@ const profilesSlice = createSlice({
       );
     },
 
+    // Remove existing profile
     remove(state, action: PayloadAction<string>) {
       const uuid = action.payload;
       profilesAdapter.removeOne(state, uuid);

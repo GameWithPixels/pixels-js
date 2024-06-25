@@ -13,7 +13,7 @@ import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library, readProfile } from "~/features/store";
 import { AppProfileData } from "~/features/store/library/LibraryData";
 import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
-import { logError } from "~/features/utils";
+import { generateUuid, logError } from "~/features/utils";
 
 function updateFrom2To3(state: NonNullable<PersistedState>): void {
   const animId = "8c677768-975f-4544-b3ce-a219f68b9a79"; // Rainbow Waterfall Overlap
@@ -41,14 +41,14 @@ function updateFrom2To3(state: NonNullable<PersistedState>): void {
           for (const playAnim of profile.actions.playAnimation) {
             if (playAnim.animationUuid === animId) {
               console.warn(
-                `Migrating from version 2 to 3: Removing Rainbow Waterfall Overlap from profile ${profile.name} (${profile.uuid})`
+                `Migrating from version 2 to 3: Removing Rainbow Waterfall Overlap from profile '${profile.name}' (${profile.uuid})`
               );
               playAnim.animationUuid = undefined;
             }
           }
           if (profile.brightness === undefined) {
             console.warn(
-              `Migrating from version 2 to 3: Adding profile ${profile.name} brightness and colorway`
+              `Migrating from version 2 to 3: Adding profile '${profile.name}' brightness and colorway`
             );
             profile.brightness = 1;
             profile.colorway = "onyxBlack";
@@ -112,6 +112,7 @@ function updateFrom3to4(state: NonNullable<PersistedState>): void {
       );
       state.ids.length = 0;
     } else if (
+      "ids" in state &&
       "entities" in state &&
       state.entities &&
       typeof state.entities === "object"
@@ -123,13 +124,29 @@ function updateFrom3to4(state: NonNullable<PersistedState>): void {
           const profile = v as AppProfileData;
           if ("lastChanged" in profile) {
             console.warn(
-              `Migrating from version 3 to 4: Resetting hash and renaming lastChanged to lastModified for profile ${profile.name} (${profile.uuid})`
+              `Migrating from version 3 to 4: Resetting hash and renaming lastChanged to lastModified for profile '${profile.name}' (${profile.uuid})`
             );
             profile.lastModified = profile.lastChanged as number;
             // @ts-ignore
             profile.hash = undefined;
           }
+          if (typeof profile.uuid !== "string") {
+            profile.uuid = generateUuid();
+            console.warn(
+              `Migrating from version 3 to 4: Replacing invalid UUID for profile '${profile.name}' (${profile.uuid})`
+            );
+            state.ids.push(profile.uuid);
+          }
         }
+      }
+      // Cleanup ids
+      const cleanIds = state.ids.filter((id) => typeof id === "string");
+      const diff = state.ids.length - cleanIds.length;
+      if (diff) {
+        console.warn(
+          `Migrating from version 3 to 4: Removing ${diff} invalid UUID(s) from ids`
+        );
+        state.ids = cleanIds;
       }
     }
   }
@@ -190,7 +207,9 @@ export function updatePairedDiceAndProfilesFrom3to4(store: AppStore): void {
       );
       // Profile won't be found if it's using the default profile
       const { library } = store.getState();
-      const hasProfile = library.profiles.ids.includes(d.profileUuid);
+      const hasProfile =
+        library.profiles.ids.includes(d.profileUuid) &&
+        !factoryProfilesUuids.includes(d.profileUuid);
       pairDie(
         {
           systemId: d.systemId,
@@ -202,8 +221,11 @@ export function updatePairedDiceAndProfilesFrom3to4(store: AppStore): void {
           firmwareDate: new Date(d.firmwareTimestamp),
         },
         store,
-        hasProfile && !factoryProfilesUuids.includes(d.profileUuid)
-          ? readProfile(d.profileUuid, library)
+        hasProfile
+          ? {
+              sourceProfile: readProfile(d.profileUuid, library),
+              forceNewProfile: true,
+            }
           : undefined
       );
     } catch (e) {

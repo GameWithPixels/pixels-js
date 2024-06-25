@@ -41,6 +41,7 @@ import {
   StatsGrid,
   StatsList,
 } from "~/components/stats";
+import Pathname from "~/features/files/Pathname";
 import {
   DieSession,
   mergeDieSessions,
@@ -50,7 +51,6 @@ import {
   setDieSessionPaused,
   setShowRollsHelp,
 } from "~/features/store";
-import { generateUuid } from "~/features/utils";
 import {
   useConfirmActionSheet,
   useSetSelectedPairedDie,
@@ -88,8 +88,10 @@ async function shareSession(
     ]
       .concat(faces.map((f, i) => `Face ${f},${rolls[i]}`))
       .join("\n");
-    const uri =
-      FileSystem.cacheDirectory + "session-" + generateUuid() + ".csv";
+    const uri = await Pathname.generateTempPathnameAsync(
+      `pixels-session#${session.index}-`,
+      ".csv"
+    );
     try {
       await FileSystem.writeAsStringAsync(uri, content);
       await Sharing.shareAsync(uri);
