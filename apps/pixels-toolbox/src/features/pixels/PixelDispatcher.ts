@@ -51,13 +51,13 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "./extensions";
-import { getDefaultName } from "./getDefaultName";
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
+import { getPixelValidationName } from "~/features/validation";
 
 /**
  * Action map for {@link PixelDispatcher} class.
@@ -493,7 +493,7 @@ class PixelDispatcher
           this._pixel.rename(
             typeof params === "string" && params.length
               ? params
-              : getDefaultName(this._pixel)
+              : getPixelValidationName(this._pixel)
           ),
           action
         );

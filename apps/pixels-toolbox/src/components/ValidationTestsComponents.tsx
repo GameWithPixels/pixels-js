@@ -54,7 +54,6 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
-import { getDefaultName } from "~/features/pixels/getDefaultName";
 import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
 import {
   selectCustomFirmwareAndProfile,
@@ -74,6 +73,7 @@ import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
   AbortControllerWithReason,
   getBoardOrDie,
+  getPixelValidationName,
   getSequenceIndex,
   getSignalReason,
   isBoard,
@@ -1153,7 +1153,8 @@ export function PrepareDie({
     .withTask(
       React.useCallback(
         // Note: renaming die also reset profile to default
-        async () => ValidationTests.renameDie(pixel, getDefaultName(pixel)),
+        async () =>
+          ValidationTests.renameDie(pixel, getPixelValidationName(pixel)),
         [pixel]
       ),
       createTaskStatusContainer(t("setDieName"))

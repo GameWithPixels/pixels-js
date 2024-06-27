@@ -8,6 +8,7 @@ import {
   getDfuTargetId,
   startDfu,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import { getBootloaderAdvertisedName } from "@systemic-games/react-native-pixels-connect";
 
 function idToString(targetId: DfuTargetId): string {
   return typeof targetId === "number"
@@ -73,7 +74,7 @@ export async function updateFirmware({
     },
     alternativeAdvertisingName:
       // Name advertised by Bootloader
-      pixelId !== undefined ? "PXL" + unsigned32ToHex(pixelId) : undefined,
+      pixelId !== undefined ? getBootloaderAdvertisedName(pixelId) : undefined,
   };
 
   const pixelIdStr =

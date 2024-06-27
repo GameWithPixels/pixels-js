@@ -1,4 +1,7 @@
-import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
+import {
+  getBootloaderAdvertisedName,
+  PixelInfo,
+} from "@systemic-games/react-native-pixels-connect";
 import { printHtmlToZpl } from "@systemic-games/react-native-zpl-print";
 
 import { getProductName } from "./getProductName";
@@ -8,8 +11,6 @@ import {
   prepareCartonLabelHtmlAsync,
 } from "./prepareHtmlAsync";
 import { PrintError, PrintStatus, UnknownProductPrintError } from "./types";
-
-import { getDeviceId } from "~/features/pixels/getDeviceId";
 
 export async function printLabelAsync(
   pixelInfo: Pick<PixelInfo, "colorway" | "dieType">,
@@ -66,7 +67,7 @@ export async function printDieBoxLabelAsync(
     (product) =>
       prepareDieLabelHtmlAsync({
         ...product,
-        deviceId: getDeviceId(pixelInfo.pixelId),
+        deviceId: getBootloaderAdvertisedName(pixelInfo.pixelId),
         deviceName: pixelInfo.name,
         dieTypeImageFilename: "label-icon-" + pixelInfo.dieType + ".png",
       }),

@@ -31,7 +31,7 @@ function dieTypeStr(dieType: PixelDieType): string {
   }
 }
 
-export function getDefaultName({
+export function getPixelValidationName({
   dieType,
 }: Pick<PixelInfo, "dieType">): string {
   return `Pixels ${dieTypeStr(dieType)}`;

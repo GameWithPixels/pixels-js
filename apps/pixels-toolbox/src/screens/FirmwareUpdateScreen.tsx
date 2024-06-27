@@ -7,6 +7,7 @@ import {
 } from "@systemic-games/react-native-base-components";
 import {
   BleScanner,
+  isBootloaderName,
   ScannedPeripheral,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -79,7 +80,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         dfuTarget,
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
-        dfuTarget.name.startsWith("PXL") || dfuTarget.name.startsWith("Dfu")
+        isBootloaderName(dfuTarget.name)
       );
     }
   }, [bundle, dfuTarget, updateFirmware]);
