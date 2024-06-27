@@ -1,3 +1,4 @@
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import {
@@ -5,6 +6,7 @@ import {
   Text as PaperText,
   Switch,
   TextProps,
+  ThemeProvider,
   useTheme,
 } from "react-native-paper";
 
@@ -12,7 +14,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
-import { OutlineButton } from "~/components/buttons";
+import { GradientButton, OutlineButton } from "~/components/buttons";
 import {
   Library,
   resetAppSettings,
@@ -23,8 +25,19 @@ import {
   setDisablePlayingAnimations,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
-import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
-import { AppSettingsScreenProps, SettingsMenuScreenProps } from "~/navigation";
+import {
+  useAppTheme,
+  useBottomSheetBackHandler,
+  useConfirmActionSheet,
+  usePixelsCentral,
+  useSetAppTheme,
+} from "~/hooks";
+import {
+  AppSettingsScreenProps,
+  RootScreenName,
+  SettingsMenuScreenProps,
+} from "~/navigation";
+import { getBottomSheetProps, PixelThemes } from "~/themes";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
@@ -32,6 +45,66 @@ function Text(props: Omit<TextProps<never>, "variant">) {
 
 function TextSmall(props: Omit<TextProps<never>, "variant">) {
   return <PaperText {...props} />;
+}
+
+function ThemePicker({ screen }: { screen: RootScreenName }) {
+  const theme = useAppTheme(screen);
+  const themesKeys = Object.keys(PixelThemes) as (keyof typeof PixelThemes)[];
+  const selectedThemeName =
+    themesKeys[Object.values(PixelThemes).indexOf(theme)];
+  const setTheme = useSetAppTheme();
+
+  const [visible, setVisible] = React.useState(false);
+  const sheetRef = React.useRef<BottomSheetModal>(null);
+  const onChange = useBottomSheetBackHandler(sheetRef);
+  React.useEffect(() => {
+    if (visible) {
+      sheetRef.current?.present();
+    } else {
+      sheetRef.current?.dismiss();
+    }
+  }, [visible]);
+
+  const { colors } = theme;
+  return (
+    <>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <Text>{screen} screen:</Text>
+        <OutlineButton onPress={() => setVisible(true)}>
+          {selectedThemeName}
+        </OutlineButton>
+      </View>
+      <BottomSheetModal
+        ref={sheetRef}
+        enableDynamicSizing
+        onDismiss={() => setVisible(false)}
+        onChange={onChange}
+        {...getBottomSheetProps(colors)}
+      >
+        <ThemeProvider theme={theme}>
+          <BottomSheetScrollView
+            contentContainerStyle={{ padding: 20, gap: 10 }}
+          >
+            <Text>Theme</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+              {themesKeys.map((themeName) =>
+                themeName === selectedThemeName ? (
+                  <GradientButton key={themeName}>{themeName}</GradientButton>
+                ) : (
+                  <OutlineButton
+                    key={themeName}
+                    onPress={() => setTheme(screen, PixelThemes[themeName])}
+                  >
+                    {themeName}
+                  </OutlineButton>
+                )
+              )}
+            </View>
+          </BottomSheetScrollView>
+        </ThemeProvider>
+      </BottomSheetModal>
+    </>
+  );
 }
 
 function AppSettingsPage({
@@ -100,6 +173,11 @@ function AppSettingsPage({
           />
           <Text>Disable Playing Animations In App</Text>
         </View>
+        <Divider style={{ marginVertical: 10 }} />
+        <Text>Themes</Text>
+        <ThemePicker screen="home" />
+        <ThemePicker screen="profiles" />
+        <ThemePicker screen="settings" />
         <Divider style={{ marginVertical: 10 }} />
         <OutlineButton
           onPress={() => showConfirmReset({ data: "keepProfiles" })}

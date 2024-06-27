@@ -37,6 +37,7 @@ import { persistor, store } from "./app/store";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
 import { UpdateProfileProvider } from "./components/UpdateProfileProvider";
+import { AppThemesContext } from "./hooks";
 import {
   BottomTabParamList,
   HomeStackParamList,
@@ -46,7 +47,14 @@ import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
-import { AppDarkTheme, PixelThemes } from "./themes";
+import {
+  AppDarkTheme,
+  BlueDarkTheme,
+  GreenDarkTheme,
+  OrangeDarkTheme,
+  PixelThemes,
+  PurpleDarkTheme,
+} from "./themes";
 
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
@@ -222,6 +230,14 @@ function App() {
     "LTInternet-Bold": require("#/fonts/LTInternet-Bold.ttf"),
   });
 
+  const [themes, setThemes] = React.useState({
+    onboarding: BlueDarkTheme,
+    home: BlueDarkTheme,
+    profiles: PurpleDarkTheme,
+    animations: GreenDarkTheme,
+    settings: OrangeDarkTheme,
+  });
+
   if (!fontsLoaded && !fontError) {
     return null;
   }
@@ -235,34 +251,36 @@ function App() {
         <SafeAreaProvider>
           <GestureHandlerRootView style={StyleSheet.absoluteFill}>
             <PaperProvider theme={AppDarkTheme}>
-              <ErrorBoundary FallbackComponent={ErrorFallback}>
-                <NavigationContainer
-                  ref={navigation}
-                  theme={AppDarkTheme}
-                  onReady={onReady}
-                >
-                  <StatusBar style="light" />
-                  <PersistGate persistor={persistor}>
-                    <AppInit>
-                      <AppPixelsCentral>
-                        <AppDfuFiles>
-                          <AnimatedSplashScreen>
-                            <RootSiblingParent>
-                              <ActionSheetProvider>
-                                <BottomSheetModalProvider>
-                                  <UpdateProfileProvider>
-                                    <AppPage />
-                                  </UpdateProfileProvider>
-                                </BottomSheetModalProvider>
-                              </ActionSheetProvider>
-                            </RootSiblingParent>
-                          </AnimatedSplashScreen>
-                        </AppDfuFiles>
-                      </AppPixelsCentral>
-                    </AppInit>
-                  </PersistGate>
-                </NavigationContainer>
-              </ErrorBoundary>
+              <AppThemesContext.Provider value={{ themes, setThemes }}>
+                <ErrorBoundary FallbackComponent={ErrorFallback}>
+                  <NavigationContainer
+                    ref={navigation}
+                    theme={AppDarkTheme}
+                    onReady={onReady}
+                  >
+                    <StatusBar style="light" />
+                    <PersistGate persistor={persistor}>
+                      <AppInit>
+                        <AppPixelsCentral>
+                          <AppDfuFiles>
+                            <AnimatedSplashScreen>
+                              <RootSiblingParent>
+                                <ActionSheetProvider>
+                                  <BottomSheetModalProvider>
+                                    <UpdateProfileProvider>
+                                      <AppPage />
+                                    </UpdateProfileProvider>
+                                  </BottomSheetModalProvider>
+                                </ActionSheetProvider>
+                              </RootSiblingParent>
+                            </AnimatedSplashScreen>
+                          </AppDfuFiles>
+                        </AppPixelsCentral>
+                      </AppInit>
+                    </PersistGate>
+                  </NavigationContainer>
+                </ErrorBoundary>
+              </AppThemesContext.Provider>
             </PaperProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>

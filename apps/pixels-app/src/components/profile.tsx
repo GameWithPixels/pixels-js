@@ -239,7 +239,7 @@ export function ProfileCard({
         <LinearGradient
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          colors={[darken(colors.primary, 0.4), darken(colors.secondary, 0.4)]}
+          colors={[darken(colors.primary, 0.4), darken(colors.tertiary, 0.4)]}
           style={{
             width: "100%",
             height: "100%",

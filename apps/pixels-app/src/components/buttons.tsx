@@ -88,7 +88,7 @@ import { withAnimated } from "~/withAnimated";
 //       colors={
 //         disabled
 //           ? [colors.surfaceDisabled, colors.surfaceDisabled]
-//           : [colors.primary, colors.secondary]
+//           : [colors.primary, colors.tertiary]
 //       }
 //       style={{ borderRadius, overflow: "hidden" }}
 //     >
@@ -305,7 +305,7 @@ export function DieFaceButton({
       end={{ x: 1, y: 0 }}
       colors={
         selected
-          ? [colors.primary, colors.secondary]
+          ? [colors.primary, colors.tertiary]
           : props.disabled
             ? [colors.surfaceDisabled, colors.surfaceDisabled]
             : [colors.surface, colors.surface]
@@ -384,7 +384,7 @@ export function GradientButton({
           ? [colors.surfaceDisabled, colors.surfaceDisabled]
           : outline
             ? [colors.surface, colors.surface]
-            : [colors.primary, colors.secondary]
+            : [colors.primary, colors.tertiary]
       }
       style={[
         {
@@ -461,7 +461,7 @@ export function GradientIconButton({
           ? [colors.surfaceDisabled, colors.surfaceDisabled]
           : outline
             ? [colors.surface, colors.surface]
-            : [colors.primary, colors.secondary]
+            : [colors.primary, colors.tertiary]
       }
       style={[
         {
@@ -597,7 +597,7 @@ export function GradientChip({
           ? [colors.surfaceDisabled, colors.surfaceDisabled]
           : outline
             ? [colors.surface, colors.surface]
-            : [colors.primary, colors.secondary]
+            : [colors.primary, colors.tertiary]
       }
       style={[{ borderRadius, overflow: "hidden" }, style]}
     >
@@ -657,7 +657,7 @@ export function FloatingAddButton({
       <AddNewIcon
         disabled={disabled}
         color1={colors.primary}
-        color2={colors.secondary}
+        color2={colors.tertiary}
         size={60}
         {...props}
       />

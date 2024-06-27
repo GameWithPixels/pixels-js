@@ -2,7 +2,6 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
 import { Animated, StyleProp, View, ViewStyle } from "react-native";
 import {
-  MD3Theme,
   Text,
   TouchableRippleProps,
   TouchableRipple,
@@ -10,13 +9,13 @@ import {
 
 import { makeTransparent } from "./colors";
 
+import { useAppTheme } from "~/hooks";
 import { RootScreenName } from "~/navigation";
-import { getRootScreenTheme } from "~/themes";
 
 function TabButton({
   label,
   icon,
-  colors,
+  screenName,
   focused,
   ...props
 }: {
@@ -26,12 +25,10 @@ function TabButton({
     color: string;
     size: number;
   }) => React.ReactNode;
-  colors: Pick<
-    MD3Theme["colors"],
-    "background" | "primary" | "secondary" | "onSurface"
-  >;
+  screenName: RootScreenName;
   focused: boolean;
 } & Omit<TouchableRippleProps, "children">) {
+  const { colors } = useAppTheme(screenName);
   const color = focused ? colors.primary : colors.onSurface;
   return (
     <TouchableRipple
@@ -46,7 +43,7 @@ function TabButton({
           focused
             ? [
                 makeTransparent(colors.primary, 0),
-                makeTransparent(colors.secondary, 0.06),
+                makeTransparent(colors.tertiary, 0.06),
               ]
             : [colors.background, colors.background]
         }
@@ -62,7 +59,7 @@ function TabButton({
       >
         {focused && (
           <LinearGradient
-            colors={[colors.primary, colors.secondary]}
+            colors={[colors.primary, colors.tertiary]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{
@@ -136,7 +133,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             key={index}
             label={label}
             icon={options.tabBarIcon}
-            colors={getRootScreenTheme(route.name as RootScreenName).colors}
+            screenName={route.name as RootScreenName}
             focused={isFocused}
             onPress={onPress}
             onLongPress={onLongPress}
