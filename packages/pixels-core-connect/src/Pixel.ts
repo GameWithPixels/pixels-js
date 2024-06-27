@@ -18,7 +18,6 @@ import {
   getValueKeyName,
   Mutable,
   safeAssign,
-  unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
@@ -65,6 +64,7 @@ import {
   PixelInfoNotifierMutableProps,
 } from "./PixelInfoNotifier";
 import { PixelSession } from "./PixelSession";
+import { getDefaultPixelName } from "./advertisedNames";
 import {
   PixelConnectCancelledError,
   PixelConnectError,
@@ -503,7 +503,7 @@ export class Pixel
       // Reset profile hash
       this._updateHash(Constants.factoryProfileHashes[this.dieType] ?? 0);
       // Reset name
-      this._updateName("Pixel" + unsigned32ToHex(this._info.pixelId));
+      this._updateName(getDefaultPixelName(this._info.pixelId));
     };
     this.addMessageListener("clearSettingsAck", resetListener);
     this.addMessageListener("programDefaultParametersFinished", resetListener);
