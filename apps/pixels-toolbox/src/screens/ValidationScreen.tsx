@@ -31,7 +31,6 @@ import {
 import {
   Camera,
   CameraPermissionStatus,
-  FrameProcessorPerformanceSuggestion,
   useCameraDevices,
 } from "react-native-vision-camera";
 
@@ -288,7 +287,7 @@ function DecodePixelIdPage({
   // Camera
   const [cameraPermission, setCameraPermission] =
     React.useState<CameraPermissionStatus>();
-  const devices = useCameraDevices("wide-angle-camera");
+  const devices = useCameraDevices();
   const cameraRef = React.useRef<Camera>(null);
 
   // Camera permissions
@@ -305,7 +304,7 @@ function DecodePixelIdPage({
   );
 
   // We use the back camera
-  const device = devices.back;
+  const device = devices.find((d) => d.position === "back");
 
   // Camera status
   const [cameraStatus, setCameraStatus] =
@@ -318,7 +317,7 @@ function DecodePixelIdPage({
     } else if (cameraPermission === "denied") {
       setCameraStatus("needPermission");
       showBoundary(new Error(t("needCameraPermission")));
-    } else if (cameraPermission === "authorized" && device) {
+    } else if (cameraPermission === "granted" && device) {
       setCameraStatus("ready");
     }
   }, [cameraPermission, device, showBoundary, t]);
@@ -328,13 +327,13 @@ function DecodePixelIdPage({
   //   usePixelIdDecoderFrameProcessor();
 
   // Log FPS suggestions for frame processor
-  const onSuggestion = React.useCallback(
-    (suggestion: FrameProcessorPerformanceSuggestion) =>
-      console.log(
-        `Frame processor suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
-      ),
-    []
-  );
+  // const onSuggestion = React.useCallback(
+  //   (suggestion: FrameProcessorPerformanceSuggestion) =>
+  //     console.log(
+  //       `Frame processor suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
+  //     ),
+  //   []
+  // );
   // Notify when pixel id has been decoded
   // React.useEffect(() => {
   //   if (decoderState.pixelId) {
@@ -393,13 +392,13 @@ function DecodePixelIdPage({
           }}
           device={device}
           isActive
-          hdr={false}
+          // hdr={false}
           lowLightBoost={false}
           videoStabilizationMode="off"
           // frameProcessor={frameProcessor}
           fps={30}
-          frameProcessorFps={30}
-          onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
+          // frameProcessorFps={30}
+          // onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
         />
       ) : (
         <Text variant="headlineSmall">{t("startingCamera")}</Text>
