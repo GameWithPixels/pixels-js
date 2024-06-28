@@ -3,7 +3,7 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { View, ViewProps } from "react-native";
+import { View, ViewProps, ScrollView } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 import Animated, {
@@ -31,7 +31,7 @@ export function ProfilePicker({
 }: {
   dieType: PixelDieType;
   onSelectProfile: (profile: Readonly<Profiles.Profile>) => void;
-} & ViewProps) {
+} & Omit<ViewProps, "hitSlop">) {
   const { library: libraryProfiles, dice: diceProfiles } = useProfilesList();
 
   const [tab, setTab] = React.useState<(typeof tabsNames)[number]>(

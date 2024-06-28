@@ -775,7 +775,7 @@ export const ConfigureActionBottomSheet = observer(
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
         {...getBottomSheetProps(colors)}
-        {...androidBottomSheetSliderFix}
+        // {...androidBottomSheetSliderFix}
       >
         <RootSiblingParent>
           <ThemeProvider theme={theme}>
