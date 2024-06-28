@@ -15,11 +15,11 @@
   "dependencies": {
     "@systemic-games/vision-camera-rgb-averages": "*",
     "react": "18.2.0",
-    "react-native": "0.73.6",
+    "react-native": "0.74.2",
     "react-native-vision-camera": "~4.3.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.2",
+    "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.20.0",
     "@react-native/metro-config": "^0.74.2",
