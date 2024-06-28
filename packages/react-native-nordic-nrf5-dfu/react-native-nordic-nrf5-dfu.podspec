@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm}"
 
   s.dependency "React-Core"
-  s.dependency "iOSDFULibrary", "~> 4.13.0"
+  s.dependency "iOSDFULibrary", "~> 4.15.3"
   s.pod_target_xcconfig = {
     "OTHER_CPLUSPLUSFLAGS" => "$(OTHER_CFLAGS) -fcxx-modules"
   }
