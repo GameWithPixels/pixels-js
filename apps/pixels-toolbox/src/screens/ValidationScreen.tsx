@@ -31,8 +31,8 @@ import {
 import {
   Camera,
   CameraPermissionStatus,
-  FrameProcessorPerformanceSuggestion,
-  useCameraDevices,
+  useCameraDevice,
+  useCameraFormat,
 } from "react-native-vision-camera";
 
 import { AppStyles } from "~/AppStyles";
@@ -288,7 +288,7 @@ function DecodePixelIdPage({
   // Camera
   const [cameraPermission, setCameraPermission] =
     React.useState<CameraPermissionStatus>();
-  const devices = useCameraDevices("wide-angle-camera");
+  const device = useCameraDevice("back");
   const cameraRef = React.useRef<Camera>(null);
 
   // Camera permissions
@@ -304,9 +304,6 @@ function DecodePixelIdPage({
     }, [])
   );
 
-  // We use the back camera
-  const device = devices.back;
-
   // Camera status
   const [cameraStatus, setCameraStatus] =
     React.useState<CameraStatus>("initializing");
@@ -318,23 +315,30 @@ function DecodePixelIdPage({
     } else if (cameraPermission === "denied") {
       setCameraStatus("needPermission");
       showBoundary(new Error(t("needCameraPermission")));
-    } else if (cameraPermission === "authorized" && device) {
+    } else if (cameraPermission === "granted" && device) {
       setCameraStatus("ready");
     }
   }, [cameraPermission, device, showBoundary, t]);
+
+  // Format
+  const format = useCameraFormat(device, [
+    { videoAspectRatio: 16 / 9 },
+    { videoResolution: { width: 3048, height: 2160 } },
+    { fps: 60 },
+  ]);
 
   // Frame processor for decoding PixelId
   // const [frameProcessor, decoderState, lastError] =
   //   usePixelIdDecoderFrameProcessor();
 
   // Log FPS suggestions for frame processor
-  const onSuggestion = React.useCallback(
-    (suggestion: FrameProcessorPerformanceSuggestion) =>
-      console.log(
-        `Frame processor suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
-      ),
-    []
-  );
+  // const onSuggestion = React.useCallback(
+  //   (suggestion: FrameProcessorPerformanceSuggestion) =>
+  //     console.log(
+  //       `Frame processor suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
+  //     ),
+  //   []
+  // );
   // Notify when pixel id has been decoded
   // React.useEffect(() => {
   //   if (decoderState.pixelId) {
@@ -391,15 +395,16 @@ function DecodePixelIdPage({
             width: "100%",
             height: "100%",
           }}
-          device={device}
           isActive
-          hdr={false}
+          device={device}
+          format={format}
+          videoHdr={false}
           lowLightBoost={false}
           videoStabilizationMode="off"
           // frameProcessor={frameProcessor}
           fps={30}
-          frameProcessorFps={30}
-          onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
+          // frameProcessorFps={30}
+          // onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
         />
       ) : (
         <Text variant="headlineSmall">{t("startingCamera")}</Text>
