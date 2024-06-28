@@ -9,24 +9,14 @@ import {
   Camera,
   CameraDeviceFormat,
   CameraPermissionStatus,
-  FrameProcessorPerformanceSuggestion,
   useCameraDevices,
   useFrameProcessor,
 } from "react-native-vision-camera";
 
-function getMaxFps(format: CameraDeviceFormat): number {
-  if (!format.frameRateRanges.length) {
-    return 0;
-  }
-  return format.frameRateRanges.reduce((prev, curr) =>
-    curr.maxFrameRate > prev.maxFrameRate ? curr : prev
-  ).maxFrameRate;
-}
-
 function CameraScreen() {
   const [cameraPermission, setCameraPermission] =
     React.useState<CameraPermissionStatus>();
-  const devices = useCameraDevices("wide-angle-camera");
+  const devices = useCameraDevices();
   const cameraRef = React.useRef<Camera>(null);
 
   React.useEffect(() => {
@@ -99,15 +89,15 @@ function CameraScreen() {
     [processRgbAverages]
   );
 
-  const onSuggestion = React.useCallback(
-    (suggestion: FrameProcessorPerformanceSuggestion) =>
-      console.log(
-        `Got FPS suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
-      ),
-    []
-  );
+  // const onSuggestion = React.useCallback(
+  //   (suggestion: FrameProcessorPerformanceSuggestion) =>
+  //     console.log(
+  //       `Got FPS suggestion: ${suggestion.type} ${suggestion.suggestedFrameProcessorFps}`
+  //     ),
+  //   []
+  // );
 
-  const device = devices.back;
+  const device = devices.find((d) => d.position === "back");
 
   // Select format base on those parameters
   const desiredFPS = 60;
@@ -120,16 +110,16 @@ function CameraScreen() {
       const checkFormat = (f: CameraDeviceFormat) =>
         f.videoWidth === desiredWidth &&
         f.videoHeight === desiredHeight &&
-        f.colorSpaces[0] === colorSpace &&
-        getMaxFps(f) >= desiredFPS;
+        // f.colorSpaces[0] === colorSpace &&
+        f.maxFps >= desiredFPS;
       // Favor 420f (for full) over 420v (for video) because it has a larger range
-      const format420f = device.formats
-        .filter((f) => checkFormat(f) && f.pixelFormat === "420f")
-        .sort((a, b) => getMaxFps(b) - getMaxFps(a))[0];
-      const format420v = device.formats
-        .filter((f) => checkFormat(f) && f.pixelFormat === "420v")
-        .sort((a, b) => getMaxFps(b) - getMaxFps(a))[0];
-      const format = format420f ?? format420v;
+      const format = device.formats
+        .filter((f) => checkFormat(f) && f.videoWidth === 420)
+        .sort((a, b) => b.maxFps - a.maxFps)[0];
+      // const format420v = device.formats
+      //   .filter((f) => checkFormat(f) && f.pixelFormat === "420v")
+      //   .sort((a, b) => b.maxFps - a.maxFps)[0];
+      // const format = format420f ?? format420v;
       if (format && Platform.OS === "android") {
         // Workaround with React Native Camera Vision issue on Android
         // that requires dimensions for portrait rather than landscape
@@ -141,11 +131,7 @@ function CameraScreen() {
       if (format) {
         const f = format;
         console.log(
-          `Selected format: video:${f.videoWidth}x${f.videoHeight}, photo=${
-            f.photoWidth
-          }x${f.photoHeight}, max fps: ${getMaxFps(f)}, pixel format: ${
-            f.pixelFormat
-          }, color space: ${f.colorSpaces[0]}`
+          `Selected format: video:${f.videoWidth}x${f.videoHeight}, photo=${f.photoWidth}x${f.photoHeight}, max fps: ${f.maxFps}, pixel format: ${f.videoWidth}x${f.videoHeight}`
         );
       } else {
         console.warn("Couldn't find a matching format");
@@ -170,10 +156,10 @@ function CameraScreen() {
           device={device}
           // format={format} Stick to default format so frame processor FPS works
           fps={desiredFPS}
-          frameProcessorFps={desiredFPS}
+          // frameProcessorFps={desiredFPS}
           isActive
           frameProcessor={frameProcessor}
-          onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
+          // onFrameProcessorPerformanceSuggestionAvailable={onSuggestion}
         />
         {stats && (
           <View style={styles.statsOverlay}>
