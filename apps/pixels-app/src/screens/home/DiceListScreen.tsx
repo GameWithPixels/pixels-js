@@ -106,7 +106,7 @@ function LargeHeader({
           <>
             <PairIcon
               size={26}
-              color={colors.onPrimary}
+              color={colors.onSurface}
               style={{ paddingHorizontal: 30 }}
             />
             <Text>Add Die</Text>
@@ -119,7 +119,7 @@ function LargeHeader({
           <>
             <RollerIcon
               size={26}
-              color={colors.onPrimary}
+              color={colors.onSurface}
               style={{ paddingHorizontal: 30 }}
             />
             <Text>Roller</Text>
@@ -191,7 +191,7 @@ function GridListSelector({
           <MaterialCommunityIcons
             name="dots-horizontal"
             size={28}
-            color={colors.onPrimary}
+            color={colors.onSurface}
           />
         </TouchableRipple>
       </View>
