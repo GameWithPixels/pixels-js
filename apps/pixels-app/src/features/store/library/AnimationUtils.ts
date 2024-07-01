@@ -101,30 +101,25 @@ export const AnimationUtils = {
   },
 
   getGradientColorType(
-    anim?: Readonly<Profiles.Animation>,
-    animUuid?: string
+    anim?: Readonly<Profiles.Animation>
   ):
     | Profiles.NormalsColorOverrideType
     | Profiles.NoiseColorOverrideType
     | undefined {
-    if (!noGradient.includes(animUuid ?? anim?.uuid ?? "")) {
-      anim = AnimationUtils.getMainAnimation(anim);
-      const gct1 =
-        anim instanceof Profiles.AnimationNormals
-          ? anim.gradientColorType
-          : undefined;
-      const gct2 =
-        anim instanceof Profiles.AnimationNoise
-          ? anim.gradientColorType
-          : undefined;
-      return gct1
-        ? getValueKeyName(gct1, Profiles.NormalsColorOverrideTypeValues) ??
-            "none"
-        : gct2
-          ? getValueKeyName(gct2, Profiles.NoiseColorOverrideTypeValues) ??
-            "none"
-          : undefined;
-    }
+    // Do not call getMainAnimation()
+    const gct1 =
+      anim instanceof Profiles.AnimationNormals
+        ? anim.gradientColorType
+        : undefined;
+    const gct2 =
+      anim instanceof Profiles.AnimationNoise
+        ? anim.gradientColorType
+        : undefined;
+    return gct1
+      ? getValueKeyName(gct1, Profiles.NormalsColorOverrideTypeValues) ?? "none"
+      : gct2
+        ? getValueKeyName(gct2, Profiles.NoiseColorOverrideTypeValues) ?? "none"
+        : undefined;
   },
 
   getEditableGradient(
