@@ -35,37 +35,33 @@ export function applyActionOverrides(
   const originalAnim = action.animation;
   if (originalAnim) {
     let anim = originalAnim;
-    const getAnim = () =>
+    const animUuid = originalAnim.uuid;
+    const getEditableAnim = () =>
       anim === originalAnim ? (anim = originalAnim.duplicate()) : anim;
     if (action.duration !== undefined) {
-      getAnim().duration = action.duration;
+      getEditableAnim().duration = action.duration;
     }
-    if (action.fade !== undefined) {
-      getAnim();
-      if ("fade" in anim && typeof anim.fade === "number") {
-        (anim.fade as number) = action.fade;
-      }
+    if (action.fade !== undefined && AnimationUtils.hasEditableFading(anim)) {
+      AnimationUtils.setEditableFading(getEditableAnim(), action.fade);
     }
-    if (action.intensity !== undefined) {
-      getAnim();
-      if ("intensity" in anim && typeof anim.intensity === "number") {
-        (anim.intensity as number) = action.intensity;
-      }
+    if (
+      action.intensity !== undefined &&
+      AnimationUtils.hasEditableIntensity(anim)
+    ) {
+      AnimationUtils.setEditableIntensity(getEditableAnim(), action.intensity);
     }
     if (action.colors.length) {
-      getAnim();
-      if ("color" in anim && anim.color instanceof Profiles.FaceColor) {
-        (anim.color as Profiles.FaceColor) = new Profiles.FaceColor(
-          action.colors[0].duplicate()
+      if (AnimationUtils.hasEditableColor(anim, animUuid)) {
+        AnimationUtils.setEditableColor(
+          getEditableAnim(),
+          new Profiles.FaceColor(action.colors[0].duplicate()),
+          animUuid
         );
       } else {
-        const gradient = AnimationUtils.getEditableGradient(
-          anim,
-          originalAnim.uuid
-        );
+        const gradient = AnimationUtils.getEditableGradient(anim);
         if (gradient && gradient.keyframes.length === action.colors.length) {
           AnimationUtils.setEditableGradient(
-            anim,
+            getEditableAnim(),
             new Profiles.RgbGradient({
               keyframes: action.colors.map((c, i) => {
                 const kf = gradient.keyframes[i].duplicate();
@@ -73,7 +69,7 @@ export function applyActionOverrides(
                 return kf;
               }),
             }),
-            originalAnim.uuid
+            animUuid
           );
         }
       }
