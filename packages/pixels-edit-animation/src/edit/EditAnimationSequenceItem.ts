@@ -14,6 +14,9 @@ export default class EditAnimationSequenceItem {
   }
 
   duplicate(): EditAnimationSequenceItem {
-    return new EditAnimationSequenceItem(this.animation, this.delay);
+    return new EditAnimationSequenceItem(
+      this.animation.duplicate(),
+      this.delay
+    );
   }
 }
