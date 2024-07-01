@@ -98,19 +98,17 @@ export function PixelFocusViewHeader({
         .getScheduler(pairedDie.pixelId)
         .schedule({ type: "resetSettings" });
       // Program default profile
+      // Use profile with pre-serialized data so the hash is stable
       const defaultProfile = preSerializeProfile(
         createLibraryProfile("default", pairedDie.dieType),
         store.getState().library
       );
       store.dispatch(
-        Library.Profiles.update(
-          // Use profile with pre-serialized data so the hash is stable
-          {
-            ...Serializable.fromProfile(defaultProfile),
-            uuid: pairedDie.profileUuid,
-            hash: computeProfileHashWithOverrides(defaultProfile),
-          }
-        )
+        Library.Profiles.update({
+          ...Serializable.fromProfile(defaultProfile),
+          uuid: pairedDie.profileUuid,
+          hash: computeProfileHashWithOverrides(defaultProfile),
+        })
       );
     }
   });
