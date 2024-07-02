@@ -49,9 +49,10 @@ export function PrintDieLabelModal({
               );
         await printDieBoxLabelAsync(
           {
+            kind: "die",
             pixelId: pixel.pixelId,
             name: pixel.name,
-            dieType: pixel.dieType !== "unknown" ? pixel.dieType : "d12",
+            type: pixel.dieType !== "unknown" ? pixel.dieType : "d12",
             colorway,
           },
           (status) => setPrintStatus(t(status + "AsPrintStatus"))

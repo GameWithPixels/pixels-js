@@ -76,21 +76,23 @@ export async function loadCertificationIds(): Promise<
     const upcIndex = getIndex("GS1 US TIN");
 
     // Break up lines in cells
-    const cells = lines.map((l, i) => {
-      const elements = l.split(",");
-      if (elements.length < 5) {
-        throw new Error(
-          `readCertificationIds: Not enough columns (${
-            headers.length
-          }) for line ${i + 1} in CSV file`
-        );
-      }
-      const upcCode = elements[upcIndex];
-      if (upcCode.length === 14 && upcCode.startsWith("00")) {
-        elements[upcIndex] = upcCode.substring(2);
-      }
-      return elements;
-    });
+    const cells = lines
+      .filter((l) => !!l.length)
+      .map((l, i) => {
+        const elements = l.split(",");
+        if (elements.length < 5) {
+          throw new Error(
+            `readCertificationIds: Not enough columns (${
+              headers.length
+            }) for line ${i + 1} in CSV file`
+          );
+        }
+        const upcCode = elements[upcIndex];
+        if (upcCode.length === 14 && upcCode.startsWith("00")) {
+          elements[upcIndex] = upcCode.substring(2);
+        }
+        return elements;
+      });
 
     // Function to get the value of a cell
     const getCellValue = (nameIndex: number, lineIndex: number) => {

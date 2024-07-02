@@ -1,0 +1,15 @@
+export type DiceSetType =
+  | "unknown"
+  | "rpg"
+  | "advantage"
+  | "boardGamer"
+  | "power"
+  | "fudge"
+  | "classicPippedD6"
+  | "initiativeD20"
+  | "rageD12"
+  | "divineD00"
+  | "eldritchD10"
+  | "smiteD8"
+  | "fireballD6"
+  | "healingD4";

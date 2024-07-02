@@ -31,9 +31,9 @@ import { ErrorFallback } from "~/components/ErrorFallback";
 import { AppRootPageName, type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";
 import { BatchScreen } from "~/screens/BatchScreen";
-import { CartonLabelScreen } from "~/screens/CartonLabelScreen";
 import { FirmwareUpdateNavigator } from "~/screens/FirmwareUpdateNavigator";
 import { HomeNavigator } from "~/screens/HomeNavigator";
+import { LabelPrintingScreen } from "~/screens/LabelPrintingScreen";
 import { RollScreen } from "~/screens/RollScreen";
 import { SettingsScreen } from "~/screens/SettingsScreen";
 import { ValidationScreen } from "~/screens/ValidationScreen";
@@ -143,9 +143,9 @@ function AppContent() {
               options={{ title: t("factoryValidation") }}
             />
             <Drawer.Screen
-              name="CartonLabel"
-              component={CartonLabelScreen}
-              options={{ title: t("cartonLabel") }}
+              name="LabelPrinting"
+              component={LabelPrintingScreen}
+              options={{ title: t("labelPrinting") }}
             />
             <Drawer.Screen
               name="FirmwareUpdateNavigator"

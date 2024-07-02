@@ -1,6 +1,7 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import {
   getBootloaderAdvertisedName,
-  PixelInfo,
+  PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 import { printHtmlToZpl } from "@systemic-games/react-native-zpl-print";
 
@@ -9,11 +10,19 @@ import { loadCertificationIds, ProductIds } from "./loadCertificationIds";
 import {
   prepareDieLabelHtmlAsync,
   prepareCartonLabelHtmlAsync,
+  prepareDiceSetLabelHtmlAsync,
 } from "./prepareHtmlAsync";
 import { PrintError, PrintStatus, UnknownProductPrintError } from "./types";
 
+import { ProductInfo } from "~/features/validation/ProductInfo";
+
+function getImageFilename(dieType: PixelDieType): string {
+  assert(dieType !== "unknown", "getImageFilename: dieType is unknown");
+  return `label-icon-${dieType}.png`;
+}
+
 export async function printLabelAsync(
-  pixelInfo: Pick<PixelInfo, "colorway" | "dieType">,
+  productInfo: ProductInfo,
   getHtml: (productIds: ProductIds) => Promise<string>,
   statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
@@ -21,7 +30,7 @@ export async function printLabelAsync(
   // Read certification ids
   const getProductIds = await loadCertificationIds();
   // Get product ids
-  const name = getProductName(pixelInfo);
+  const name = getProductName(productInfo);
   const productIds = getProductIds(name);
   if (productIds) {
     // Read HTML file
@@ -59,34 +68,53 @@ export async function printLabelAsync(
  * @returns A promise resolving when the data has been send to the printer.
  */
 export async function printDieBoxLabelAsync(
-  pixelInfo: Pick<PixelInfo, "pixelId" | "name" | "colorway" | "dieType">,
+  dieInfo: Extract<ProductInfo, { kind: "die" }> & {
+    name: string;
+    pixelId: number;
+  },
   statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
   await printLabelAsync(
-    pixelInfo,
+    dieInfo,
     (product) =>
       prepareDieLabelHtmlAsync({
         ...product,
-        deviceId: getBootloaderAdvertisedName(pixelInfo.pixelId),
-        deviceName: pixelInfo.name,
-        dieTypeImageFilename: "label-icon-" + pixelInfo.dieType + ".png",
+        deviceId: getBootloaderAdvertisedName(dieInfo.pixelId),
+        deviceName: dieInfo.name,
+        dieImageFilename: getImageFilename(dieInfo.type),
+      }),
+    statusCallback
+  );
+}
+
+export async function printDiceSetBoxLabelAsync(
+  setInfo: Extract<ProductInfo, { kind: "set" }>,
+  statusCallback?: (status: PrintStatus) => void
+): Promise<void> {
+  await printLabelAsync(
+    setInfo,
+    (product) =>
+      prepareDiceSetLabelHtmlAsync({
+        ...product,
+        diceImageFilenames: setInfo.dice.map(getImageFilename),
       }),
     statusCallback
   );
 }
 
 export async function printCartonLabelAsync(
-  pixelInfo: Pick<PixelInfo, "colorway" | "dieType">,
+  productInfo: ProductInfo,
   asn: string,
+  quantity: number,
   statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
   await printLabelAsync(
-    pixelInfo,
+    productInfo,
     (product) =>
       prepareCartonLabelHtmlAsync({
         ...product,
-        dieTypeImageFilename: "label-icon-" + pixelInfo.dieType + ".png",
         asn,
+        quantity,
       }),
     statusCallback
   );

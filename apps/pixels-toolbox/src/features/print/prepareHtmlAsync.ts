@@ -1,3 +1,4 @@
+import { assert } from "@systemic-games/pixels-core-utils";
 import * as FileSystem from "expo-file-system";
 
 // By default the HTML for the label is loaded from the same zip file that contain's
@@ -10,6 +11,7 @@ import * as FileSystem from "expo-file-system";
 import { ProductIds } from "./loadCertificationIds";
 
 import cartonLabelHtmlZip from "!/labels/carton-label.zip";
+import diceSetLabelHtmlZip from "!/labels/dice-set-label.zip";
 import dieLabelHtmlZip from "!/labels/single-die-label.zip";
 import Pathname from "~/features/files/Pathname";
 import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
@@ -201,8 +203,8 @@ async function prepareHtmlAsync(
       }
     }
   };
-  await embedFiles("src=", "image/png");
-  await embedFiles("url(", "font/ttf");
+  embedFiles("src=", "image/png");
+  embedFiles("url(", "font/ttf");
 
   return html;
 }
@@ -211,13 +213,13 @@ export async function prepareDieLabelHtmlAsync(
   product: ProductIds & {
     deviceId: string;
     deviceName: string;
-    dieTypeImageFilename: string;
+    dieImageFilename: string;
   }
 ): Promise<string> {
   const substitutions = {
     "PIPPED D6 - MIDNIGHT GALAXY": product.name.toLocaleUpperCase(),
     "PXL-DP6A (MG)": product.model,
-    "label-icon-d6pipped.png": product.dieTypeImageFilename,
+    "label-icon-d6pipped.png": product.dieImageFilename,
     "-MG-": product.colorInitials,
     "2BB52-PXLDIEA": product.fccId1,
     "2BB52-CHG001A": product.fccId2,
@@ -245,17 +247,53 @@ export async function prepareDieLabelHtmlAsync(
   return await prepareHtmlAsync(dieLabelHtmlZip, substitutions, barcodes);
 }
 
+export async function prepareDiceSetLabelHtmlAsync(
+  product: ProductIds & {
+    diceImageFilenames: string[];
+  }
+): Promise<string> {
+  const images = product.diceImageFilenames;
+  assert(
+    images.length === 7,
+    `DiceSet must have 7 dice, but got ${images.length}`
+  );
+  const substitutions = {
+    "STANDARD SET - MIDNIGHT GALAXY": product.name.toLocaleUpperCase(),
+    "Label-Icon-D20.png": images[0],
+    "Label-Icon-D12.png": images[1],
+    "Label-Icon-D00.png": images[2],
+    "Label-Icon-D10.png": images[3],
+    "Label-Icon-D8.png": images[4],
+    "Label-Icon-D6.png": images[5],
+    "Label-Icon-D4.png": images[6],
+    "PXL-DP6A-MG": product.model,
+    "-MG-": product.colorInitials,
+    "2BB52-PXLDP6A": product.fccId1,
+    "2BB52-PXLDP6B": product.icId1,
+  };
+  const barcodes = [
+    {
+      format: "upc",
+      value: product.upcCode,
+      arguments:
+        'font: "Roboto Condensed", width: 2.5, margin: 0, marginLeft: 15',
+      placeholder: "barcode-00850055703353.gif",
+    },
+  ];
+  return await prepareHtmlAsync(diceSetLabelHtmlZip, substitutions, barcodes);
+}
+
 export async function prepareCartonLabelHtmlAsync(
   product: ProductIds & {
-    dieTypeImageFilename: string;
     asn: string;
+    quantity: number;
   }
 ): Promise<string> {
   const substitutions = {
     "PIPPED D6 - MIDNIGHT GALAXY": product.name.toLocaleUpperCase(),
     "PXL-D10A-OB": product.model,
-    "label-icon-d6pipped.png": product.dieTypeImageFilename,
     FASN0000012345: product.asn,
+    "-64-": product.quantity.toString(),
   };
   const barcodes = [
     {
