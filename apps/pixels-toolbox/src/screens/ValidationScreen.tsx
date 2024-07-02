@@ -700,13 +700,13 @@ function RunTestsPage({
 
   // Get result
   const result = getTaskResult(taskChain.status);
-  const onOkCancel = () => {
+  const onOkCancel = React.useCallback(() => {
     if (result) {
       onResult?.(result);
     } else {
       setCancel(true);
     }
-  };
+  }, [onResult, result]);
 
   // Disconnect when test is done
   React.useEffect(() => {
