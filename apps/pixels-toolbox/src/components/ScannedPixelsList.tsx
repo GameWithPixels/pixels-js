@@ -26,6 +26,13 @@ export function ScannedPixelsList({
     useFocusScannedPixelNotifiers({ minUpdateInterval });
   useErrorWithHandler(lastError);
 
+  React.useEffect(() => {
+    const pixel = scannedPixels.find((p) => p.pixelId === 0x6510ae2e);
+    if (pixel) {
+      onSelected(pixel);
+    }
+  }, [onSelected, scannedPixels]);
+
   // FlatList item rendering
   const renderItem = React.useCallback(
     ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
