@@ -5,22 +5,34 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { DiceSetType } from "~/features/validation";
+
 export interface ValidationSettingsState {
   customFirmwareAndProfile?: boolean; // Select with selectCustomFirmwareAndProfile
   profileName?: PrebuildProfileName; // Select with selectProfileName
   skipPrintLabel?: boolean; // Select with selectSkipPrintLabel
   skipBatteryLevel?: boolean; // Select with selectSkipBatteryLevel
-  boxShipment: {
+  cartonLabel: {
     asn: string;
-    dieType: PixelDieType;
+    productType: PixelDieType | DiceSetType;
+    colorway: PixelColorway;
+    quantity: number;
+  };
+  diceSetLabel: {
+    setType: DiceSetType;
     colorway: PixelColorway;
   };
 }
 
 const initialState: ValidationSettingsState = {
-  boxShipment: {
+  cartonLabel: {
     asn: "",
-    dieType: "unknown",
+    productType: "unknown",
+    colorway: "unknown",
+    quantity: 64,
+  },
+  diceSetLabel: {
+    setType: "unknown",
     colorway: "unknown",
   },
 };
@@ -33,23 +45,44 @@ const validationSettingsSlice = createSlice({
     setCustomFirmwareAndProfile(state, action: PayloadAction<boolean>) {
       state.customFirmwareAndProfile = action.payload;
     },
+
     setFactoryProfile(state, action: PayloadAction<PrebuildProfileName>) {
       state.profileName = action.payload;
     },
+
     setSkipPrintLabel(state, action: PayloadAction<boolean>) {
       state.skipPrintLabel = action.payload;
     },
+
     setSkipBatteryLevel(state, action: PayloadAction<boolean>) {
       state.skipBatteryLevel = action.payload;
     },
-    setBoxShipmentAsn(state, action: PayloadAction<string>) {
-      state.boxShipment.asn = action.payload;
+
+    setCartonLabelAsn(state, action: PayloadAction<string>) {
+      state.cartonLabel.asn = action.payload;
     },
-    setBoxShipmentDieType(state, action: PayloadAction<PixelDieType>) {
-      state.boxShipment.dieType = action.payload;
+
+    setCartonLabelProductType(
+      state,
+      action: PayloadAction<PixelDieType | DiceSetType>
+    ) {
+      state.cartonLabel.productType = action.payload;
     },
-    setBoxShipmentDieColorway(state, action: PayloadAction<PixelColorway>) {
-      state.boxShipment.colorway = action.payload;
+
+    setCartonLabelDieColorway(state, action: PayloadAction<PixelColorway>) {
+      state.cartonLabel.colorway = action.payload;
+    },
+
+    setCartonLabelQuantity(state, action: PayloadAction<number>) {
+      state.cartonLabel.quantity = action.payload;
+    },
+
+    setDiceSetLabelSetType(state, action: PayloadAction<DiceSetType>) {
+      state.diceSetLabel.setType = action.payload;
+    },
+
+    setDiceSetLabelDiceColorway(state, action: PayloadAction<PixelColorway>) {
+      state.diceSetLabel.colorway = action.payload;
     },
   },
 });
@@ -59,8 +92,11 @@ export const {
   setFactoryProfile,
   setSkipPrintLabel,
   setSkipBatteryLevel,
-  setBoxShipmentAsn,
-  setBoxShipmentDieType,
-  setBoxShipmentDieColorway,
+  setCartonLabelAsn,
+  setCartonLabelProductType,
+  setCartonLabelDieColorway,
+  setCartonLabelQuantity,
+  setDiceSetLabelSetType,
+  setDiceSetLabelDiceColorway,
 } = validationSettingsSlice.actions;
 export default validationSettingsSlice.reducer;

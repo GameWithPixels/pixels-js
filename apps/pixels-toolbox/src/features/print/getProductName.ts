@@ -1,13 +1,12 @@
-import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
+import { ProductInfo } from "~/features/validation/ProductInfo";
 
-export function getProductName(
-  pixelInfo: Pick<PixelInfo, "colorway" | "dieType">
-) {
-  if (pixelInfo.colorway === "unknown") {
-    throw new Error("getProductName: got unknown colorway");
+export function getProductName(info: ProductInfo) {
+  if (info.colorway === "unknown") {
+    throw new Error("getProductName: got unknown product colorway");
   }
-  if (pixelInfo.dieType === "unknown") {
-    throw new Error("getProductName: got unknown dieType");
+  if (info.type === "unknown") {
+    throw new Error("getProductName: got unknown product type");
   }
-  return `${pixelInfo.dieType}-${pixelInfo.colorway}`.toLowerCase();
+  const prefix = info.kind === "die" ? "" : "set";
+  return `${prefix}${info.type}-${info.colorway}`.toLowerCase();
 }

@@ -5,7 +5,7 @@ import type { StackScreenProps } from "@react-navigation/stack";
 export type RootScreensParamList = {
   HomeNavigator: undefined;
   Validation: undefined;
-  CartonLabel: undefined;
+  LabelPrinting: undefined;
   FirmwareUpdateNavigator: undefined;
   TransferTest: undefined;
   Roll: undefined;
