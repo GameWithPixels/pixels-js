@@ -100,10 +100,11 @@ function printLabel(
 ): void {
   printDieBoxLabelAsync(
     {
+      kind: "die",
       pixelId: pixel.pixelId,
       name: pixel.name,
+      type: dieType,
       colorway: pixel.colorway,
-      dieType,
     },
     (status) => status !== "error" && statusCallback(status)
   ).catch(statusCallback);

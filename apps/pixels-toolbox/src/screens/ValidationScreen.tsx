@@ -358,6 +358,11 @@ function DecodePixelIdPage({
   );
   const onClose = React.useCallback(() => setShowScanList(false), []);
 
+  React.useEffect(() => {
+    const id = setTimeout(() => setShowScanList(true), 1000);
+    return () => clearTimeout(id);
+  }, []);
+
   return showScanList ? (
     <BaseBox w="100%" h="100%">
       <ScannedPixelsList onSelect={onSelect} onClose={onClose} />
@@ -708,6 +713,12 @@ function RunTestsPage({
       scrollRef.current.scrollToEnd();
     }
   });
+
+  React.useEffect(() => {
+    if (result === "succeeded") {
+      onOkCancel();
+    }
+  }, [onOkCancel, result]);
 
   return (
     <BaseVStack

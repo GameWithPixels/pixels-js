@@ -152,7 +152,7 @@ function ValidationCard() {
         <BaseHStack px={5} justifyContent="space-between">
           <PageRadio label="Default" page="" />
           <PageRadio label="Validation" page="Validation" />
-          <PageRadio label="Carton Label" page="CartonLabel" />
+          <PageRadio label="Label Printing" page="LabelPrinting" />
         </BaseHStack>
       </Card.Content>
     </Card>

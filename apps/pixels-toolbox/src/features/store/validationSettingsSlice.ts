@@ -4,18 +4,30 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { DiceSetType } from "~/features/validation";
+
 export interface ValidationSettingsState {
-  boxShipment: {
+  cartonLabel: {
     asn: string;
-    dieType: PixelDieType;
+    productType: PixelDieType | DiceSetType;
+    colorway: PixelColorway;
+    quantity: number;
+  };
+  diceSetLabel: {
+    setType: DiceSetType;
     colorway: PixelColorway;
   };
 }
 
 const initialState: ValidationSettingsState = {
-  boxShipment: {
+  cartonLabel: {
     asn: "",
-    dieType: "unknown",
+    productType: "unknown",
+    colorway: "unknown",
+    quantity: 64,
+  },
+  diceSetLabel: {
+    setType: "unknown",
     colorway: "unknown",
   },
 };
@@ -25,21 +37,41 @@ const validationSettingsSlice = createSlice({
   name: "validationSettings",
   initialState,
   reducers: {
-    setBoxShipmentAsn(state, action: PayloadAction<string>) {
-      state.boxShipment.asn = action.payload;
+    setCartonLabelAsn(state, action: PayloadAction<string>) {
+      state.cartonLabel.asn = action.payload;
     },
-    setBoxShipmentDieType(state, action: PayloadAction<PixelDieType>) {
-      state.boxShipment.dieType = action.payload;
+
+    setCartonLabelProductType(
+      state,
+      action: PayloadAction<PixelDieType | DiceSetType>
+    ) {
+      state.cartonLabel.productType = action.payload;
     },
-    setBoxShipmentDieColorway(state, action: PayloadAction<PixelColorway>) {
-      state.boxShipment.colorway = action.payload;
+
+    setCartonLabelDieColorway(state, action: PayloadAction<PixelColorway>) {
+      state.cartonLabel.colorway = action.payload;
+    },
+
+    setCartonLabelQuantity(state, action: PayloadAction<number>) {
+      state.cartonLabel.quantity = action.payload;
+    },
+
+    setDiceSetLabelSetType(state, action: PayloadAction<DiceSetType>) {
+      state.diceSetLabel.setType = action.payload;
+    },
+
+    setDiceSetLabelDiceColorway(state, action: PayloadAction<PixelColorway>) {
+      state.diceSetLabel.colorway = action.payload;
     },
   },
 });
 
 export const {
-  setBoxShipmentAsn,
-  setBoxShipmentDieType,
-  setBoxShipmentDieColorway,
+  setCartonLabelAsn,
+  setCartonLabelProductType,
+  setCartonLabelDieColorway,
+  setCartonLabelQuantity,
+  setDiceSetLabelSetType,
+  setDiceSetLabelDiceColorway,
 } = validationSettingsSlice.actions;
 export default validationSettingsSlice.reducer;

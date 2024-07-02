@@ -148,7 +148,8 @@ i18n
           descriptionAbbrev: "Desc.",
           preparingAsPrintStatus: "Preparing label...",
           sendingAsPrintStatus: "Sending label to printer...",
-          doneAsPrintStatus: "Print successful!",
+          doneAsPrintStatus: "Print successful",
+          errorAsPrintStatus: "Error printing label",
           playKeyframes: "Play Keyframes",
           setDieType: "Set Die Type",
           setDieColorway: "Set Colorway",
@@ -276,12 +277,32 @@ i18n
           disconnectedFromPixel: "Disconnected from Pixel",
           timedOutWithValue: "Timed out after {{value}}s",
 
-          // Carton label
-          cartonLabel: "Carton Label",
+          // Label printing
+          carton: "Carton",
+          diceSetBox: "Dice Set Box",
           asn: "ASN",
           example: "Example",
-          dieType: "Die Type",
+          productCategory: "Product Category",
+          singleDie: "Single Die",
+          diceSet: "Dice Set",
+          productType: "Product Type",
           colorway: "Colorway",
+          quantity: "Quantity",
+
+          // Dice sets
+          rpg: "RPG",
+          advantage: "Advantage",
+          boardGamer: "Board Gamer",
+          power: "Power",
+          fudge: "Fudge",
+          classicPippedD6: "Classic Pipped D6",
+          initiativeD20: "Initiative D20",
+          rageD12: "Rage D12",
+          divineD00: "Divine D00",
+          eldritchD10: "Eldritch D10",
+          smiteD8: "Smite D8",
+          fireballD6: "Fireball D6",
+          healingD4: "Healing D4",
 
           // Roll Screen
           rollDemo: "Roll Demo",
@@ -503,8 +524,7 @@ i18n
           disconnectedFromPixel: "从Pixel断开连接",
           timedOutWithValue: "等待{{value}}s后超时",
 
-          // Carton label
-          cartonLabel: "大箱标贴",
+          // Label printing
           asn: "ASN",
           example: "示例",
           dieType: "骰子类型",
