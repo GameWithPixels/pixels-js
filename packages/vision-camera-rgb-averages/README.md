@@ -1,4 +1,4 @@
-# vision-camera-rgb-averages
+# @systemic-games/vision-camera-rgb-averages
 
 Vision Camera Frame Processor computing RGB averages
 
