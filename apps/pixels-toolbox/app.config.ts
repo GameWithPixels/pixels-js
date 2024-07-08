@@ -67,7 +67,7 @@ const config = {
         "expo-build-properties",
         {
           android: {
-            // flipper: "0.182.0",
+            minSdkVersion: 26,
           },
         },
       ],
