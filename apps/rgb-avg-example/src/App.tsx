@@ -1,10 +1,9 @@
 import {
-  getImageRgbAverages,
+  getRgbAveragesFrameProcessor,
   ImageRgbAverages,
 } from "@systemic-games/vision-camera-rgb-averages";
 import React from "react";
 import { StyleSheet, View, Text, Platform, SafeAreaView } from "react-native";
-import { runOnJS } from "react-native-reanimated";
 import {
   Camera,
   CameraDeviceFormat,
@@ -12,6 +11,7 @@ import {
   useCameraDevices,
   useFrameProcessor,
 } from "react-native-vision-camera";
+import { Worklets } from "react-native-worklets-core";
 
 function CameraScreen() {
   const [cameraPermission, setCameraPermission] =
@@ -69,24 +69,33 @@ function CameraScreen() {
     []
   );
 
+  // Process the RGB averages on the JS thread
+  const processOnJS = Worklets.createRunOnJS(
+    (rgbAverages: ImageRgbAverages) => {
+      try {
+        processRgbAverages(rgbAverages);
+      } catch (error) {
+        console.error(`Error in processRgbAverages(): ${error}`);
+      }
+    }
+  );
+
+  // Get the frame processor
+  const frameProc = getRgbAveragesFrameProcessor();
+
   // Get the average R, G and B for each image captured by the camera
   const frameProcessor = useFrameProcessor(
     (frame) => {
       "worklet";
-      const result = getImageRgbAverages(frame, {
-        maxPixelsToProcess: 480 * 320, // Limit number of processed pixels for performance reason
-        writeImage: false,
-        writePlanes: false,
+      const result = frameProc?.(frame, {
+        subSamplingX: 2,
+        subSamplingY: 2,
       });
-      if (typeof result === "string") {
-        console.error(
-          `Error in frame processor "getImageRgbAverages": ${result}`
-        );
-      } else {
-        runOnJS(processRgbAverages)(result);
+      if (result) {
+        processOnJS(result);
       }
     },
-    [processRgbAverages]
+    [frameProc, processOnJS]
   );
 
   // const onSuggestion = React.useCallback(
@@ -106,7 +115,7 @@ function CameraScreen() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const format = React.useMemo(() => {
     if (device) {
-      const colorSpace = Platform.select({ android: "yuv", default: "srgb" });
+      // const colorSpace = Platform.select({ android: "yuv", default: "srgb" });
       const checkFormat = (f: CameraDeviceFormat) =>
         f.videoWidth === desiredWidth &&
         f.videoHeight === desiredHeight &&
