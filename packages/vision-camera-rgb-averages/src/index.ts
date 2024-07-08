@@ -24,6 +24,6 @@ const VisionCameraRgbAverages = VisionCameraRgbAveragesModule
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return VisionCameraRgbAverages.multiply(a, b);
+export function install(): Promise<void> {
+  return VisionCameraRgbAverages.install();
 }
