@@ -66,8 +66,11 @@ const config = {
       [
         "expo-build-properties",
         {
+          ios: {
+            newArchEnabled: true,
+          },
           android: {
-            // flipper: "0.182.0",
+            newArchEnabled: true,
           },
         },
       ],
