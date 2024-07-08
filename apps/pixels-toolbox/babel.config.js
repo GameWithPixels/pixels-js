@@ -8,6 +8,7 @@ module.exports = function (api) {
       },
     },
     plugins: [
+      ["react-native-worklets-core/plugin"],
       [
         "babel-plugin-root-import",
         {
