@@ -9,7 +9,7 @@
   "source": "src/index",
   "exports": {
     ".": {
-      "types": "./dist/typescript/src/index.d.ts",
+      "types": "./dist/typescript/index.d.ts",
       "import": "./dist/module/index.mjs",
       "require": "./dist/commonjs/index.cjs"
     }
@@ -60,7 +60,7 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/vision-camera-rgb-averages",
   "devDependencies": {
     "react": "18.2.0",
-    "react-native": "0.74.2",
+    "react-native": "0.74.3",
     "react-native-builder-bob": "^0.25.0",
     "react-native-vision-camera": "4.4.1",
     "react-native-worklets-core": "^1.3.3",
