@@ -9,7 +9,7 @@ export async function unzipFileAsync(
 ): Promise<void> {
   // Copy zip in a temp directory so we don't have any issue unzipping it
   // (we're getting an access error on iOS when trying to unzip the original file)
-  const tempZip = await Pathname.generateTempPathnameAsync(".zip");
+  const tempZip = await Pathname.generateTempPathnameAsync({ postfix: ".zip" });
   try {
     await FileSystem.copyAsync({ from: localUri, to: tempZip });
 

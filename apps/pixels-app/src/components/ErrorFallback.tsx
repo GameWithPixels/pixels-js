@@ -12,10 +12,10 @@ import Pathname from "~/features/files/Pathname";
 import { logError } from "~/features/utils";
 
 async function exportData(data: unknown): Promise<void> {
-  const uri = await Pathname.generateTempPathnameAsync(
-    "pixels-app-data-",
-    ".csv"
-  );
+  const uri = await Pathname.generateTempPathnameAsync({
+    prefix: "pixels-app-data-",
+    postfix: ".csv",
+  });
   try {
     const json = JSON.stringify(data, null, 2);
     await FileSystem.writeAsStringAsync(uri, json);

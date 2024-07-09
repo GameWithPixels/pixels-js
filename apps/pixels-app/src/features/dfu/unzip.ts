@@ -24,7 +24,7 @@ export async function unzipDfuFilesAsync(
   }
 
   // Unzip in temp folder so we can list the unzipped files
-  const tempDir = await Pathname.generateTempPathnameAsync("/");
+  const tempDir = await Pathname.generateTempPathnameAsync({ postfix: "/" });
   try {
     await unzipFileAsync(localUri, tempDir);
 

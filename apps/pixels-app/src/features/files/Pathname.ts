@@ -33,10 +33,10 @@ const Pathname = {
   },
 
   // Returns unique pathname in cache folder
-  async generateTempPathnameAsync(
-    prefix: string,
-    postfix?: string
-  ): Promise<string> {
+  async generateTempPathnameAsync(opt?: {
+    prefix?: string;
+    postfix?: string;
+  }): Promise<string> {
     if (!FileSystem.cacheDirectory) {
       throw new Error(
         `generateTempDirectory: FileSystem.cacheDirectory is null`
@@ -44,7 +44,11 @@ const Pathname = {
     }
     for (let i = 0; i < 100; ++i) {
       const rand = !i ? Date.now() : Math.round(1e9 * Math.random());
-      const name = FileSystem.cacheDirectory + prefix + rand + (postfix ?? "");
+      const name =
+        FileSystem.cacheDirectory +
+        (opt?.prefix ?? "") +
+        rand +
+        (opt?.postfix ?? "");
       const info = await FileSystem.getInfoAsync(name);
       if (!info.exists) {
         return name;
