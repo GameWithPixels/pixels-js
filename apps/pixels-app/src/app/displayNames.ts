@@ -1,7 +1,9 @@
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
+
 import { RootScreenName } from "./navigation";
 import { AppThemes } from "./themes";
 
-export const AppScreenNames: Record<RootScreenName, string> = {
+export const AppScreensNames: Record<RootScreenName, string> = {
   home: "Dice Bag",
   profiles: "Profiles",
   animations: "Animations",
@@ -25,3 +27,12 @@ export const AppThemesNames: Record<keyof typeof AppThemes, string> = {
   cthulhu: "Cthulhu",
   vampire: "Vampire",
 } as const;
+
+export const AnimationsCategories: Record<Profiles.AnimationCategory, string> =
+  {
+    colorful: "Colorful",
+    animated: "Animated",
+    flashy: "Flashy",
+    uniform: "Uniform",
+    system: "System",
+  } as const;

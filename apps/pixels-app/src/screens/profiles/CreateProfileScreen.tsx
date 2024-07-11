@@ -159,7 +159,7 @@ function CreateProfilePage({
           Select a template or an existing Profile to base your new Profile on:
         </Text>
         <TabsHeaders
-          names={tabsNames}
+          keys={tabsNames}
           selected={tab}
           onSelect={(tab) => {
             setTab(tab);

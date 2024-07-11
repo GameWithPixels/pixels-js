@@ -8,6 +8,7 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
+import { AnimationsCategories } from "~/app/displayNames";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
 import { TabsHeaders } from "~/components/TabsHeaders";
@@ -18,14 +19,12 @@ import {
   useBottomSheetPadding,
 } from "~/hooks";
 
-const categories: Profiles.AnimationCategory[] = [
-  "colorful",
-  "animated",
-  "flashy",
-  "uniform",
-  "system",
-] as const;
-const tabsNames = categories.map((c) => c[0].toUpperCase() + c.slice(1));
+const categories = Object.freeze(
+  Object.keys(AnimationsCategories) as Profiles.AnimationCategory[]
+);
+const categoriesNames = Object.freeze(
+  Object.values(AnimationsCategories) as string[]
+);
 
 export function PickAnimationBottomSheet({
   animation,
@@ -43,11 +42,11 @@ export function PickAnimationBottomSheet({
   const allAnimations = useAnimationsList();
   const sortedAnimations = React.useMemo(
     () =>
-      tabsNames.map((_, i) =>
+      categories.map((category) =>
         allAnimations
           .filter(
             (a) =>
-              a.category === categories[i] &&
+              a.category === category &&
               (!dieType || a.dieType === "unknown" || a.dieType === dieType)
           )
           .sort((a, b) => a.name.localeCompare(b.name))
@@ -64,7 +63,7 @@ export function PickAnimationBottomSheet({
       ),
     [allAnimations, dieType]
   );
-  const [tab, setTab] = React.useState(tabsNames[0]);
+  const [tab, setTab] = React.useState(categories[0]);
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
   React.useEffect(() => {
@@ -101,7 +100,8 @@ export function PickAnimationBottomSheet({
               Select Animation
             </Text>
             <TabsHeaders
-              names={tabsNames}
+              keys={categories}
+              names={categoriesNames}
               selected={tab}
               onSelect={(tab) => {
                 scrollRef.current?.scrollTo({ y: 0, animated: false });
@@ -110,7 +110,7 @@ export function PickAnimationBottomSheet({
             />
             <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 10 }}>
               <AnimationsGrid
-                animations={sortedAnimations[tabsNames.indexOf(tab)]}
+                animations={sortedAnimations[categories.indexOf(tab)]}
                 dieType={dieType}
                 numColumns={2}
                 selected={animation}

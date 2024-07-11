@@ -53,7 +53,7 @@ function CreateAnimationPage({
       >
         Select Template
       </PageHeader>
-      <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
+      <TabsHeaders keys={tabsNames} selected={tab} onSelect={setTab} />
       <ScrollView contentContainerStyle={{ gap: 20, paddingBottom: 10 }}>
         <AnimationsGrid
           animations={templates[tabsNames.indexOf(tab)]}

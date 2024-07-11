@@ -696,7 +696,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
       />
       <Text variant="titleMedium">Format</Text>
       <TabsHeaders
-        names={NamedFormatsValues}
+        keys={NamedFormatsValues}
         selected={toNamedFormat(action.format ?? "parameters")} // Format is undefined in actions from v2.1
         onSelect={(f) =>
           runInAction(() => (action.format = fromNamedFormat(f as NamedFormat)))

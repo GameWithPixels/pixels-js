@@ -8,7 +8,7 @@ import {
   ThemeProvider,
 } from "react-native-paper";
 
-import { AppScreenNames, AppThemesNames } from "~/app/displayNames";
+import { AppScreensNames, AppThemesNames } from "~/app/displayNames";
 import { useAppDispatch } from "~/app/hooks";
 import { RootScreenName, ThemesScreenProps } from "~/app/navigation";
 import { getBottomSheetProps, AppThemes } from "~/app/themes";
@@ -49,7 +49,7 @@ function ThemePicker({ screen }: { screen: RootScreenName }) {
   return (
     <>
       <Text>
-        {AppScreenNames[screen]} Screen:{"  "}
+        {AppScreensNames[screen]} Screen:{"  "}
       </Text>
       <View
         style={{
