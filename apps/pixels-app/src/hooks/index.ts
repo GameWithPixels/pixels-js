@@ -11,6 +11,7 @@ export * from "./useDfuFiles";
 export * from "./useDiceNamesForProfile";
 export * from "./useEditableProfile";
 export * from "./useFilteredProfiles";
+export * from "./useFlashAnimationStyle";
 export * from "./useIsDieUpdating";
 export * from "./useIsModifiedDieProfile";
 export * from "./useIsPixelRolling";

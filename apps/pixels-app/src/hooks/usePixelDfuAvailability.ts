@@ -6,13 +6,13 @@ import { pairedDiceSelectors } from "~/app/store";
 import { DfuAvailability, getDieDfuAvailability } from "~/features/dice";
 
 export function usePixelDfuAvailability(
-  pairedDie: Pick<PairedDie, "pixelId"> | number
+  pairedDie?: Pick<PairedDie, "pixelId"> | number
 ): DfuAvailability {
   const { dfuFilesInfo } = useAppDfuFiles();
   const pixelId =
     typeof pairedDie === "number" ? pairedDie : pairedDie?.pixelId;
   const pixelTimestamp = useAppSelector((state) =>
-    pairedDiceSelectors.selectByPixelId(state, pixelId)
+    pairedDiceSelectors.selectByPixelId(state, pixelId ?? 0)
   )?.firmwareTimestamp;
   return pixelTimestamp !== undefined
     ? getDieDfuAvailability(pixelTimestamp, dfuFilesInfo?.timestamp)

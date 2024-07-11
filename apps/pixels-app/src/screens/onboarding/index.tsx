@@ -53,7 +53,6 @@ import { NavigationRoot } from "~/components/NavigationRoot";
 import { PixelDfuList } from "~/components/PixelDfuList";
 import { ScannedPixelsCount } from "~/components/ScannedPixelsCount";
 import { TurnOnDiceHelp } from "~/components/TunOnDiceHelp";
-import { useFlashAnimationStyleOnRoll } from "~/components/ViewFlashOnRoll";
 import { AnimatedText } from "~/components/animated";
 import {
   AnimatedGradientButton,
@@ -83,6 +82,7 @@ import {
   useRollStateLabel,
   useBatteryStateLabel,
   useBottomSheetBackHandler,
+  useFlashAnimationStyleOnRoll,
 } from "~/hooks";
 
 function LightUpYourGameImage({

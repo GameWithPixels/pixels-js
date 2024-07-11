@@ -186,14 +186,13 @@ export function DieWireframe({
         assertNever(dieType);
     }
   };
-  const { colors } = useTheme();
   return (
     <View style={{ width: size, height: size }}>
       <Image
         contentFit="cover"
         style={{ flex: 1 }}
         source={getImage()}
-        tintColor={disabled ? colors.onSurfaceDisabled : undefined}
+        blurRadius={disabled ? 1.5 : undefined}
       />
     </View>
   );

@@ -5,7 +5,7 @@ import { usePixelsCentral } from "./usePixelsCentral";
 
 import { PixelsCentralEventMap } from "~/features/dice";
 
-export function usePixelDfuState(pixelId: number): {
+export function usePixelDfuState(pixelId?: number): {
   state?: DfuState;
   progress?: number;
   error?: Error;

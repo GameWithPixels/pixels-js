@@ -21,6 +21,7 @@ import {
   useOutdatedPixelsCount,
   useUpdateDice,
   useIsAppUpdatingFirmware,
+  useConnectToMissingPixels,
 } from "~/hooks";
 
 export function useConfirmStopUpdatingActionSheet(
@@ -78,6 +79,8 @@ function FirmwareUpdatePage({
   navigation: FirmwareUpdateScreenProps["navigation"];
 }) {
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
+  useConnectToMissingPixels();
+
   const updating = useIsAppUpdatingFirmware();
   const updateDice = useUpdateDice();
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
@@ -86,7 +89,9 @@ function FirmwareUpdatePage({
     stopRequester?.()
   );
   const outdatedCount = useOutdatedPixelsCount();
+
   usePreventRemovingScreen(navigation, updating);
+
   const bottom = useBottomSheetPadding();
   return (
     <View style={{ height: "100%", gap: 10 }}>
@@ -136,7 +141,7 @@ function FirmwareUpdatePage({
               {updating
                 ? "Stop Updating"
                 : outdatedCount
-                  ? `Start Updating (${outdatedCount})`
+                  ? `Start Updating`
                   : "All Dice Up-to-date"}
             </GradientButton>
           )}

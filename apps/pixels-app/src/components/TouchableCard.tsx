@@ -8,10 +8,10 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import { useFlashAnimationStyle } from "./ViewFlashOnRoll";
 import { getBorderColor, makeTransparent } from "./colors";
 
 import { withAnimated } from "~/features/withAnimated";
+import { useFlashAnimationStyle } from "~/hooks";
 
 export type TouchableCardProps = Omit<
   TouchableRippleProps,
@@ -27,6 +27,7 @@ export type TouchableCardProps = Omit<
     noBottomBorder?: boolean;
     frameless?: boolean;
     gradientBorder?: "bright" | "dark";
+    thinBorder?: boolean;
     selectable?: boolean;
     transparent?: boolean;
     flash?: boolean;
@@ -46,6 +47,7 @@ export function TouchableCard({
   noBottomBorder,
   frameless,
   gradientBorder,
+  thinBorder,
   selectable,
   transparent,
   flash,
@@ -55,7 +57,9 @@ export function TouchableCard({
   ...props
 }: TouchableCardProps) {
   const { colors, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: !gradientBorder });
+  const borderRadius =
+    getBorderRadius(roundness, { tight: !gradientBorder }) /
+    (thinBorder ? 2 : 1);
   const cornersStyle = {
     borderTopLeftRadius: squaredTopBorder ? 0 : borderRadius,
     borderTopRightRadius: squaredTopBorder ? 0 : borderRadius,
@@ -102,7 +106,7 @@ export function TouchableCard({
           {
             flexDirection: row ? "row" : "column",
             alignItems: "center",
-            margin: gradientBorder ? 3 : 0,
+            margin: gradientBorder ? (thinBorder ? 2 : 3) : 0,
             padding: gradientBorder ? 3 : 5,
             // Borders (having issues on iOS with those borders applied on the LinearGradient)
             borderWidth: noBorder ?? gradientBorder ? 0 : 1,

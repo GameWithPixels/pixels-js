@@ -1,10 +1,9 @@
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import { assertNever } from "@systemic-games/pixels-core-utils";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
-import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import {
   Pixel,
   PixelInfo,
+  usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -17,97 +16,42 @@ import {
 } from "react-native-paper";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
-import { ViewFlashOnRoll } from "./ViewFlashOnRoll";
 import { DieWireframe } from "./icons";
 
-import { DfuAvailability } from "~/features/dice";
 import { getPixelStatusLabel } from "~/features/profiles";
 import {
-  useWatchedPixel,
+  useBatteryStateLabel,
   usePixelDfuAvailability,
   usePixelDfuState,
   useRollStateLabel,
-  useBatteryStateLabel,
-  useIsDieUpdatingFirmware,
+  useWatchedPixel,
 } from "~/hooks";
-
-function getDfuStatusText(
-  availability: DfuAvailability,
-  state?: DfuState,
-  progress?: number
-): string {
-  if (state) {
-    const done =
-      state === "completed" || state === "aborted" || state === "errored";
-    if (!done || availability === "unknown") {
-      return `State: ${state}${
-        state === "uploading" ? ` ${progress ?? 0}%` : ""
-      }`;
-    }
-  }
-  switch (availability) {
-    case "unknown":
-      return "Not Available";
-    case "outdated":
-      return "Update Required";
-    case "up-to-date":
-      return "Up-To-Date";
-    default:
-      assertNever(availability, `Unsupported availability: ${availability}`);
-  }
-}
 
 function TextStatus({
   pixel,
-  updating,
+  state,
+  progress,
   ...props
-}: { pixel: Pixel; updating?: boolean } & Omit<TextProps<string>, "children">) {
+}: {
+  pixel: Pixel;
+  state?: DfuState;
+  progress?: number;
+} & Omit<TextProps<string>, "children">) {
   const status = usePixelStatus(pixel);
   const rollLabel = useRollStateLabel(pixel);
   const batteryLabel = useBatteryStateLabel(pixel);
   return (
     <Text {...props}>
-      {updating
-        ? "Updating Firmware"
+      {state
+        ? `Updating: ${
+            state === "uploading" ? `uploading ${progress ?? 0}%` : state
+          }`
         : status === "ready"
           ? (batteryLabel ?? "") +
             (batteryLabel && rollLabel ? ", " : "") +
             (rollLabel ?? "")
           : getPixelStatusLabel(status)}
     </Text>
-  );
-}
-
-function PixelStatusInfo({
-  pixelId,
-  pixel,
-  availability,
-}: {
-  pixelId: number;
-  pixel?: Pixel;
-  availability: DfuAvailability;
-}) {
-  const { state, progress, error } = usePixelDfuState(pixelId);
-  const updating =
-    state &&
-    state !== "completed" &&
-    state !== "aborted" &&
-    state !== "errored";
-  return (
-    <>
-      {pixel && (
-        <TextStatus
-          pixel={pixel}
-          updating={updating}
-          style={{ marginTop: 2 }}
-        />
-      )}
-      <Text style={{ marginTop: 5 }}>
-        {error
-          ? String(error)
-          : getDfuStatusText(availability, state, progress)}
-      </Text>
-    </>
   );
 }
 
@@ -121,46 +65,69 @@ function PixelDfuItem({
 } & Omit<TouchableCardProps, "children">) {
   const availability = usePixelDfuAvailability(pairedDie.pixelId);
   const pixel = useWatchedPixel(pairedDie.pixelId);
-  const updating = useIsDieUpdatingFirmware(pairedDie.pixelId);
-  const { roundness, colors } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
+  const status = usePixelStatus(pixel);
+  const rollState = usePixelProp(pixel, "rollState");
+  const { state, progress, error } = usePixelDfuState(pairedDie.pixelId);
+  const updating =
+    state &&
+    state !== "completed" &&
+    state !== "errored" &&
+    state !== "aborted";
+  const unavailable = status !== "ready" && !state;
+  const { colors } = useTheme();
+  const color = unavailable ? colors.onSurfaceDisabled : colors.onSurface;
   return (
-    <ViewFlashOnRoll pixel={pixel} style={{ borderRadius }}>
-      <TouchableCard
-        contentStyle={[
-          {
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 20,
-            paddingVertical: 5,
-            gap: 20,
-          },
-          contentStyle,
-        ]}
-        {...props}
-      >
-        <DieWireframe dieType={pairedDie.dieType} size={40} />
-        <View style={{ flex: 1, flexGrow: 1 }}>
-          <Text variant="bodyLarge">{pairedDie.name}</Text>
-          <PixelStatusInfo
-            pixelId={pairedDie.pixelId}
-            pixel={pixel}
-            availability={availability}
-          />
-        </View>
+    <TouchableCard
+      selected={updating}
+      gradientBorder={
+        unavailable || availability !== "outdated" ? "dark" : "bright"
+      }
+      thinBorder
+      flash={
+        status === "ready" &&
+        (rollState === "rolling" || rollState === "handling")
+      }
+      contentStyle={[
+        {
+          flexDirection: "row",
+          alignItems: "stretch",
+          paddingHorizontal: 20,
+          paddingVertical: 5,
+          gap: 20,
+        },
+        contentStyle,
+      ]}
+      {...props}
+    >
+      <DieWireframe
+        dieType={pairedDie.dieType}
+        disabled={unavailable}
+        size={50}
+      />
+      <View style={{ flexGrow: 1, justifyContent: "space-around" }}>
+        <Text variant="bodyLarge" style={unavailable ? { color } : undefined}>
+          {pairedDie.name}
+        </Text>
+        {unavailable || !pixel || error ? (
+          <Text style={{ color: colors.onSurfaceDisabled }}>
+            {error ? String(error) : "Not Connected"}
+          </Text>
+        ) : (
+          <TextStatus pixel={pixel} state={state} progress={progress} />
+        )}
+      </View>
+      <View style={{ alignSelf: "center" }}>
         {updating ? (
           <ActivityIndicator />
         ) : availability === "outdated" ? (
-          <FontAwesome5 name="download" size={24} color={colors.onSurface} />
+          <FontAwesome5 name="download" size={24} color={color} />
         ) : availability === "up-to-date" ? (
-          <Ionicons
-            name="checkmark-circle"
-            size={24}
-            color={colors.onSurface}
-          />
-        ) : null}
-      </TouchableCard>
-    </ViewFlashOnRoll>
+          <MaterialIcons name="check-circle-outline" size={28} color={color} />
+        ) : (
+          <Text>{availability}</Text>
+        )}
+      </View>
+    </TouchableCard>
   );
 }
 

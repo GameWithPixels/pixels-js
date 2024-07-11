@@ -5,9 +5,8 @@ import {
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { ViewProps } from "react-native/types";
 import { useTheme } from "react-native-paper";
-import Animated, {
+import {
   Easing,
   interpolateColor,
   useAnimatedStyle,
@@ -17,7 +16,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { makeTransparent } from "./colors";
+import { makeTransparent } from "~/components/colors";
 
 export function useFlashAnimationStyle(
   flash: boolean,
@@ -62,21 +61,5 @@ export function useFlashAnimationStyleOnRoll(pixel?: PixelInfoNotifier) {
   const rollState = usePixelInfoProp(pixel, "rollState");
   return useFlashAnimationStyle(
     status === "ready" && (rollState === "rolling" || rollState === "handling")
-  );
-}
-
-export function ViewFlashOnRoll({
-  children,
-  pixel,
-  style,
-  ...props
-}: {
-  pixel?: PixelInfoNotifier;
-} & ViewProps) {
-  const animStyle = useFlashAnimationStyleOnRoll(pixel);
-  return (
-    <Animated.View style={[animStyle, style]} {...props}>
-      {children}
-    </Animated.View>
   );
 }
