@@ -6,8 +6,10 @@ import {
   ProfilesGrouping,
   SortMode,
 } from "~/features/profiles";
+import { RootScreenName } from "~/navigation";
 import { DiceViewMode } from "~/screens/home/DiceListScreen";
 import { ProfilesViewMode } from "~/screens/profiles/ProfilesListScreen";
+import { AppThemes } from "~/themes";
 
 export type ThemeMode = "system" | "dark" | "light";
 
@@ -29,6 +31,7 @@ export interface AppSettingsState {
   diceBrightnessFactor: number;
   rollerCardsSizeRatio: number;
   disablePlayingAnimations: boolean;
+  screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
 }
 
 const initialState: AppSettingsState = {
@@ -49,6 +52,13 @@ const initialState: AppSettingsState = {
   diceBrightnessFactor: 1,
   rollerCardsSizeRatio: 0.5,
   disablePlayingAnimations: false,
+  screensTheme: {
+    onboarding: "blue",
+    home: "blue",
+    profiles: "purple",
+    animations: "yellow",
+    settings: "orange",
+  },
 };
 
 // Redux slice that stores app settings
@@ -127,6 +137,16 @@ const appSettingsSlice = createSlice({
     setDisablePlayingAnimations(state, action: PayloadAction<boolean>) {
       state.disablePlayingAnimations = action.payload;
     },
+
+    setScreenTheme(
+      state,
+      action: PayloadAction<{
+        screen: RootScreenName;
+        themeKey: keyof typeof AppThemes;
+      }>
+    ) {
+      state.screensTheme[action.payload.screen] = action.payload.themeKey;
+    },
   },
 });
 
@@ -149,5 +169,6 @@ export const {
   setDiceBrightnessFactor,
   setRollerCardsSizeRatio,
   setDisablePlayingAnimations,
+  setScreenTheme,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

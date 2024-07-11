@@ -47,8 +47,8 @@ export function Card({
           ? makeTransparent(colors.primary, gradientAlpha)
           : darken(colors.primary, 0.5),
         gradientAlpha <= 1
-          ? makeTransparent(colors.secondary, gradientAlpha)
-          : darken(colors.secondary, 0.5),
+          ? makeTransparent(colors.tertiary, gradientAlpha)
+          : darken(colors.tertiary, 0.5),
       ]}
       style={[{ borderRadius }, style]}
     >

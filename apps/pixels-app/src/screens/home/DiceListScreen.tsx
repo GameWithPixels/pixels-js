@@ -169,9 +169,9 @@ function GridListSelector({
         >
           <GridIcon
             size={28}
-            startColor={viewMode === "grid" ? colors.primary : colors.onPrimary}
+            startColor={viewMode === "grid" ? colors.primary : colors.onSurface}
             stopColor={
-              viewMode === "grid" ? colors.secondary : colors.onPrimary
+              viewMode === "grid" ? colors.secondary : colors.onSurface
             }
           />
         </TouchableRipple>
@@ -181,9 +181,9 @@ function GridListSelector({
         >
           <ListIcon
             size={28}
-            startColor={viewMode === "list" ? colors.primary : colors.onPrimary}
+            startColor={viewMode === "list" ? colors.primary : colors.onSurface}
             stopColor={
-              viewMode === "list" ? colors.secondary : colors.onPrimary
+              viewMode === "list" ? colors.secondary : colors.onSurface
             }
           />
         </TouchableRipple>

@@ -25,7 +25,7 @@ const AnimationName = observer(function AnimationName({
   colors: MD3Theme["colors"];
   disabled?: boolean;
 }) {
-  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
+  const color = disabled ? colors.onSurfaceDisabled : colors.onSurface;
   return (
     <Text numberOfLines={1} style={{ color }} variant="titleMedium">
       {animation.name}
@@ -76,9 +76,9 @@ export function AnimationCard({
           disabled={disabled}
         />
         {AnimationUtils.hasEditableColor(animation) ? (
-          <PaletteIcon size={20} color={colors.onPrimary} style={iconStyle} />
+          <PaletteIcon size={20} color={colors.onSurface} style={iconStyle} />
         ) : AnimationUtils.hasEditableGradient(animation) ? (
-          <GradientIcon size={20} color={colors.onPrimary} style={iconStyle} />
+          <GradientIcon size={20} color={colors.onSurface} style={iconStyle} />
         ) : null}
       </TouchableCard>
     </Animated.View>

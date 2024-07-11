@@ -146,7 +146,6 @@ export function ProfileCard({
     borderBottomLeftRadius:
       !!vertical || squaredBottomBorder ? 0 : borderRadius,
   };
-  const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
 
   const die3dWidth = vertical ? "100%" : 120;
   const height = 100;
@@ -217,7 +216,9 @@ export function ProfileCard({
             modified={modified}
             row={!vertical}
             numberOfLines={2}
-            textStyle={{ color }}
+            textStyle={{
+              color: disabled ? colors.onSurfaceDisabled : colors.onSurface,
+            }}
           />
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <ProfileActionsIcons
@@ -241,7 +242,7 @@ export function ProfileCard({
         <LinearGradient
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          colors={[darken(colors.primary, 0.4), darken(colors.secondary, 0.4)]}
+          colors={[darken(colors.primary, 0.4), darken(colors.tertiary, 0.4)]}
           style={{
             width: "100%",
             height: "100%",

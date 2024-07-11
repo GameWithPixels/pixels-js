@@ -93,7 +93,7 @@ export function TouchableCard({
       end={{ x: 1, y: 0 }}
       colors={[
         makeTransparent(colors.primary, gradientAlpha),
-        makeTransparent(colors.secondary, gradientAlpha),
+        makeTransparent(colors.tertiary, gradientAlpha),
       ]}
       style={[{ ...cornersStyle, overflow: "hidden" }, style]}
     >

@@ -4,15 +4,16 @@ import { ThemeProvider } from "react-native-paper";
 
 import { ErrorFallback } from "./ErrorFallback";
 
+import { useAppTheme } from "~/hooks";
 import { RootScreenName } from "~/navigation";
-import { getRootScreenTheme } from "~/themes";
 
 export function NavigationRoot({
   children,
   screenName,
 }: React.PropsWithChildren<{ screenName: RootScreenName }>) {
+  const theme = useAppTheme(screenName);
   return (
-    <ThemeProvider theme={getRootScreenTheme(screenName)}>
+    <ThemeProvider theme={theme}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         {children}
       </ErrorBoundary>

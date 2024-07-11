@@ -137,7 +137,7 @@ export function StatsList({
           end={{ x: 1, y: 0 }}
           colors={[
             makeTransparent(colors.primary, 0.1),
-            makeTransparent(colors.secondary, 0.1),
+            makeTransparent(colors.tertiary, 0.1),
           ]}
           style={{
             flexDirection: "row",
@@ -198,7 +198,7 @@ export function StatsGrid({
                     end={{ x: 1, y: 0 }}
                     colors={[
                       makeTransparent(colors.primary, 0.4),
-                      makeTransparent(colors.secondary, 0.4),
+                      makeTransparent(colors.tertiary, 0.4),
                     ]}
                     style={{
                       flexDirection: "row",

@@ -46,7 +46,7 @@ import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
-import { AppDarkTheme, PixelThemes } from "./themes";
+import { AppDarkTheme, AppThemes } from "./themes";
 
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
@@ -198,7 +198,7 @@ function updateThemesFonts() {
     ) as MD3Theme["fonts"];
   }
   if (!themeFontsUpdated) {
-    Object.values(PixelThemes).forEach(setupThemeFont);
+    Object.values(AppThemes).forEach(setupThemeFont);
     themeFontsUpdated = true;
   }
 }

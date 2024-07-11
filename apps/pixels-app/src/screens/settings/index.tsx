@@ -7,6 +7,7 @@ import { FirmwareInfoScreen } from "./FirmwareInfoScreen";
 import { SettingsMenuScreen } from "./SettingsMenuScreen";
 import { SupportScreen } from "./SupportScreen";
 import { SystemInfoScreen } from "./SystemInfoScreen";
+import { ThemesScreen } from "./ThemesScreen";
 import { TurnOnDiceScreen } from "./TurnOnDiceScreen";
 
 import { NavigationRoot } from "~/components/NavigationRoot";
@@ -29,6 +30,7 @@ export function SettingsStack({ route }: SettingsStackProps) {
         <Stack.Screen name="turnOnDice" component={TurnOnDiceScreen} />
         <Stack.Screen name="checkForUpdate" component={CheckForUpdateScreen} />
         <Stack.Screen name="appSettings" component={AppSettingsScreen} />
+        <Stack.Screen name="themes" component={ThemesScreen} />
       </Stack.Navigator>
     </NavigationRoot>
   );

@@ -15,13 +15,14 @@ const pages = [
   // "Export Settings",
   // "Import Settings",
   // "Shop",
+  "Check for Update",
+  "Themes",
+  "Settings",
+  "App & System Information",
+  "Dice Firmware Information",
   "How To Turn On Your Dice",
   "Support",
   "Privacy Policy",
-  "App & System Information",
-  "Dice Firmware Information",
-  "Check for Update",
-  "App Settings",
 ] as const;
 
 type PageName = (typeof pages)[number];
@@ -92,7 +93,10 @@ function SettingsMenuPage({
       case "Check for Update":
         navigation.navigate("checkForUpdate");
         break;
-      case "App Settings":
+      case "Themes":
+        navigation.navigate("themes");
+        break;
+      case "Settings":
         navigation.navigate("appSettings");
         break;
     }
@@ -107,17 +111,24 @@ function SettingsMenuPage({
       }}
     >
       <MenuSection
-        title="Help"
+        title="App Configuration"
         start={0}
         end={3}
+        supPagesCount={3}
+        openPage={openPage}
+      />
+      <MenuSection
+        title="Information"
+        start={3}
+        end={5}
         supPagesCount={2}
         openPage={openPage}
       />
       <MenuSection
-        title="Settings"
-        start={3}
-        end={7}
-        supPagesCount={4}
+        title="Help"
+        start={5}
+        end={8}
+        supPagesCount={2}
         openPage={openPage}
       />
     </ScrollView>

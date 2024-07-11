@@ -79,7 +79,7 @@ function AppSettingsPage({
       >
         <View style={{ gap: 10 }}>
           <Text>Global Dice Brightness</Text>
-          <TextSmall>(Applied on top of Profile's brightness)</TextSmall>
+          <TextSmall>(Combined with each Profile's own brightness)</TextSmall>
           <SliderWithValue
             percentage
             value={brightness}

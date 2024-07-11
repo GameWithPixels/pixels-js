@@ -8,17 +8,18 @@ import { EditAdvancedSettingsScreen } from "../profiles/EditAdvancedSettingsScre
 import { EditRollRuleScreen } from "../profiles/EditRolledRulesScreen";
 import { EditRuleScreen } from "../profiles/EditRuleScreen";
 
+import { useAppTheme } from "~/hooks";
 import {
   EditDieProfileStackParamList,
   getStackNavigationOptions,
 } from "~/navigation";
-import { getRootScreenTheme } from "~/themes";
 
 const Stack = createNativeStackNavigator<EditDieProfileStackParamList>();
 
 export function EditDieProfileStack(/* props: EditDieProfileStackProps */) {
+  const theme = useAppTheme("home");
   return (
-    <PaperProvider theme={getRootScreenTheme("home")}>
+    <PaperProvider theme={theme}>
       <BottomSheetModalProvider>
         <Stack.Navigator screenOptions={getStackNavigationOptions()}>
           <Stack.Screen
