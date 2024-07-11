@@ -85,7 +85,7 @@ export function ProfilePicker({
           headerHeight={searchbarHeight}
         />
       </View>
-      <TabsHeaders names={tabsNames} selected={tab} onSelect={setTab} />
+      <TabsHeaders keys={tabsNames} selected={tab} onSelect={setTab} />
       {filteredProfiles.length ? (
         <ProfilesList
           profiles={filteredProfiles}

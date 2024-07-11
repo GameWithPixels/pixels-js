@@ -100,10 +100,10 @@ export function AnimationsList({
   ...props
 }: AnimationsListProps) {
   return (
-    <View {...props}>
+    <View key="anim-list" {...props}>
       {animations.map((a, i) => (
         <AnimationCard
-          key={a.uuid}
+          key={i} // Using the index rather than the UUID lets react re-use the component when switching animations
           row
           animation={a}
           dieType={dieType ?? "d20"}
@@ -128,10 +128,10 @@ function AnimationsColumn({
   ...props
 }: AnimationsListProps) {
   return (
-    <View style={[{ flex: 1, gap: 10 }, style]} {...props}>
+    <View key="anim-column" style={[{ flex: 1, gap: 10 }, style]} {...props}>
       {animations.map((a, i) => (
         <AnimationCard
-          key={a.uuid}
+          key={i} // Using the index rather than the UUID lets react re-use the component when switching animations
           animation={a}
           dieType={dieType ?? "d20"}
           selected={a === selected}

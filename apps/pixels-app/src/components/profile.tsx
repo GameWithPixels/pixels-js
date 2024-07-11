@@ -281,9 +281,9 @@ export function ProfilesList({
       {profilesGroups.map(({ title, values: profiles }, i) => (
         <View key={title + i} style={{ gap: 10 }}>
           <Text variant="headlineSmall">{title}</Text>
-          {profiles.map((p) => (
+          {profiles.map((p, i) => (
             <ProfileCard
-              key={p.uuid}
+              key={i} // Using the index rather than the UUID lets react re-use the component when switching animations
               profile={p}
               selected={p === selected}
               fadeInDelay={i * 50}
@@ -304,10 +304,14 @@ function ProfilesColumn({
   ...props
 }: ProfilesListProps) {
   return (
-    <View style={[{ flex: 1, gap: 10 }, style]} {...props}>
+    <View
+      key="profiles-column"
+      style={[{ flex: 1, gap: 10 }, style]}
+      {...props}
+    >
       {profiles.map((p, i) => (
         <ProfileCard
-          key={p.uuid}
+          key={i} // Using the index rather than the UUID lets react re-use the component when switching animations
           profile={p}
           vertical
           selected={p === selected}
