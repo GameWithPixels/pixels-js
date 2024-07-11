@@ -292,7 +292,6 @@ export function PixelFocusView({
       <Text variant="titleMedium">Profile</Text>
       <View>
         <ProfileCard
-          row
           profile={profile}
           modified={modifiedProfile}
           onPress={onEditProfile}

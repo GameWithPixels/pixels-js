@@ -33,7 +33,7 @@ function PairedDiceColumn({
       {pairedDice.map((d) => (
         <PixelCard
           key={d.pixelId}
-          row
+          vertical
           selectable
           pairedDie={d}
           onPress={() => onSelect?.(d)}

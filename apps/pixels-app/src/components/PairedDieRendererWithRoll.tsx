@@ -9,7 +9,7 @@ export function PairedDieRendererWithRoll({
   pairedDie,
   disabled,
 }: {
-  pairedDie: PairedDie;
+  pairedDie: Pick<PairedDie, "pixelId" | "dieType" | "colorway">;
   disabled: boolean;
 }) {
   const pixel = useWatchedPixel(pairedDie);

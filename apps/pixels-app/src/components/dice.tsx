@@ -66,7 +66,7 @@ export function DiceColumn({
       {pairedDice.map((d) => (
         <PixelCard
           key={d.systemId}
-          row
+          vertical
           pairedDie={d}
           selected={isSelected(d, selection)}
           onPress={() => onSelectDie?.(d)}

@@ -11,7 +11,10 @@ import { usePairedDieProfileUuid, useProfile } from "~/hooks";
 export const PairedDieRenderer = React.memo(function PixelDieRenderer({
   pairedDie,
   speed,
-}: { pairedDie: PairedDie } & Pick<DieRendererProps, "speed">) {
+}: { pairedDie: Pick<PairedDie, "pixelId" | "dieType" | "colorway"> } & Pick<
+  DieRendererProps,
+  "speed"
+>) {
   const profile = useProfile(usePairedDieProfileUuid(pairedDie));
   return getCompatibleDiceTypes(profile.dieType).includes(pairedDie.dieType) ? (
     <ProfileDieRenderer

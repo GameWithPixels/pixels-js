@@ -333,17 +333,17 @@ function PixelHCardContent({
 
 export function PixelCard({
   pairedDie,
-  row,
+  vertical,
   selected,
   selectable,
   contentStyle,
   ...props
 }: {
   pairedDie: PairedDie;
-  row?: boolean;
+  vertical?: boolean;
   selected?: boolean;
   selectable?: boolean;
-} & Omit<TouchableCardProps, "children">) {
+} & Omit<TouchableCardProps, "children" | "row">) {
   const pixel = useWatchedPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const flash = useIsPixelRolling(pixel, status);
@@ -355,10 +355,10 @@ export function PixelCard({
       selected={selected}
       selectable={selectable}
       // contentStyle={{ aspectRatio: 1 }} Creates problems with the layout for vertical cards
-      contentStyle={row ? undefined : [{ padding: 5 }, contentStyle]}
+      contentStyle={vertical ? undefined : [{ padding: 5 }, contentStyle]}
       {...props}
     >
-      {row ? (
+      {vertical ? (
         <PixelVCardContent
           pairedDie={pairedDie}
           pixel={pixel}

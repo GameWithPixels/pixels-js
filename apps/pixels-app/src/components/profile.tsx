@@ -123,7 +123,7 @@ export interface ProfileCardProps extends Omit<TouchableCardProps, "children"> {
 
 export function ProfileCard({
   profile,
-  row,
+  vertical,
   disabled,
   selected,
   modified,
@@ -137,24 +137,25 @@ export function ProfileCard({
   style,
   contentStyle,
   ...props
-}: ProfileCardProps) {
+}: { vertical?: boolean } & Omit<ProfileCardProps, "children" | "row">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dieViewCornersStyle = {
     borderTopLeftRadius: squaredTopBorder ? 0 : borderRadius,
-    borderTopRightRadius: row ?? squaredTopBorder ? 0 : borderRadius,
-    borderBottomLeftRadius: !row || squaredBottomBorder ? 0 : borderRadius,
+    borderTopRightRadius: !vertical ?? squaredTopBorder ? 0 : borderRadius,
+    borderBottomLeftRadius:
+      !!vertical || squaredBottomBorder ? 0 : borderRadius,
   };
   const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
 
-  const die3dWidth = row ? 120 : "100%";
+  const die3dWidth = vertical ? "100%" : 120;
   const height = 100;
   return (
     <Animated.View
       entering={FadeIn.duration(fadeInDuration ?? 300).delay(fadeInDelay ?? 0)}
     >
       <TouchableCard
-        row={row}
+        row={!vertical}
         disabled={disabled}
         style={style}
         contentStyle={[{ padding: 0 }, contentStyle]}
@@ -170,10 +171,10 @@ export function ProfileCard({
             width: die3dWidth,
             // Borders (having issues on iOS with those borders applied on the LinearGradient)
             borderWidth: noBorder ? 0 : 1,
-            borderRightWidth: noBorder ?? row ? 0 : 1,
+            borderRightWidth: noBorder ?? vertical ? 1 : 0,
             borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
             borderBottomWidth:
-              noBorder ?? noBottomBorder ?? !row ? 0 : undefined,
+              noBorder ?? noBottomBorder ?? vertical ? 0 : undefined,
             borderColor: getBorderColor(colors, selected),
             // Corners
             ...dieViewCornersStyle,
@@ -196,34 +197,35 @@ export function ProfileCard({
             flex: 1,
             flexDirection: "column",
             justifyContent: "space-around",
-            paddingHorizontal: row ? 10 : 5,
-            paddingTop: row ? 5 : 0,
+            paddingHorizontal: vertical ? 5 : 10,
+            paddingTop: vertical ? 0 : 5,
             // Borders
             borderWidth: noBorder ? 0 : 1,
-            borderLeftWidth: noBorder ?? row ? 0 : 1,
-            borderTopWidth: noBorder ?? noTopBorder ?? !row ? 0 : 1,
+            borderLeftWidth: noBorder ?? vertical ? 1 : 0,
+            borderTopWidth: noBorder ?? noTopBorder ?? vertical ? 0 : 1,
             borderColor: getBorderColor(colors, selected),
             // Corners
-            borderTopRightRadius: !row || squaredTopBorder ? 0 : borderRadius,
+            borderTopRightRadius:
+              !!vertical || squaredTopBorder ? 0 : borderRadius,
             borderBottomLeftRadius:
-              row ?? squaredBottomBorder ? 0 : borderRadius,
+              !vertical ?? squaredBottomBorder ? 0 : borderRadius,
             borderBottomRightRadius: squaredBottomBorder ? 0 : borderRadius,
           }}
         >
           <ProfileNameAndDescription
             profile={profile}
             modified={modified}
-            row={row}
+            row={!vertical}
             numberOfLines={2}
             textStyle={{ color }}
           />
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <ProfileActionsIcons
               profile={profile}
-              gap={row ? 10 : 5}
+              gap={vertical ? 5 : 10}
               iconColor={colors.onSurface}
             />
-            {row && <ProfileDiceNames profile={profile} />}
+            {!vertical && <ProfileDiceNames profile={profile} />}
           </View>
         </View>
       </TouchableCard>
@@ -281,7 +283,6 @@ export function ProfilesList({
           {profiles.map((p) => (
             <ProfileCard
               key={p.uuid}
-              row
               profile={p}
               selected={p === selected}
               fadeInDelay={i * 50}
@@ -307,6 +308,7 @@ function ProfilesColumn({
         <ProfileCard
           key={p.uuid}
           profile={p}
+          vertical
           selected={p === selected}
           fadeInDuration={500}
           fadeInDelay={i * 100}
