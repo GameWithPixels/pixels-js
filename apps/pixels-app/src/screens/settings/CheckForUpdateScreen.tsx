@@ -9,10 +9,10 @@ import {
 } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { CheckForUpdateScreenProps } from "~/app/navigation";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "~/app/updates";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { CheckForUpdateScreenProps } from "~/navigation";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;

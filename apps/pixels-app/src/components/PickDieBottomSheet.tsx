@@ -10,6 +10,8 @@ import { PixelCard } from "./cards";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
+import { AppStyles } from "~/app/styles";
+import { getBottomSheetProps } from "~/app/themes";
 import { getDieTypeLabel } from "~/features/profiles";
 import { listToText } from "~/features/utils";
 import {
@@ -18,8 +20,6 @@ import {
   usePixelScanner,
   usePixelsCentral,
 } from "~/hooks";
-import { AppStyles } from "~/styles";
-import { getBottomSheetProps } from "~/themes";
 
 function PairedDiceColumn({
   pairedDice,

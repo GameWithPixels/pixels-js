@@ -8,11 +8,11 @@ import {
 } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { FirmwareInfoScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { setUpdateBootloader } from "~/features/store";
 import { useAppDfuFiles } from "~/hooks";
-import { FirmwareInfoScreenProps } from "~/navigation";
 
 function Title(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="titleLarge" {...props} />;

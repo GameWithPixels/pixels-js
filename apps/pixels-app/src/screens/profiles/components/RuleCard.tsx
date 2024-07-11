@@ -14,10 +14,10 @@ import {
 import { ActionDetails, ConditionDetails } from "./ActionDetails";
 
 import CaretRightIcon from "#/icons/profiles/caret-right";
+import { AppStyles } from "~/app/styles";
 import { Card } from "~/components/Card";
 import { rolledConditionComparator } from "~/features/profiles";
 import { useEditableProfile } from "~/hooks";
-import { AppStyles } from "~/styles";
 
 export interface RuleIndex {
   profileUuid: string;

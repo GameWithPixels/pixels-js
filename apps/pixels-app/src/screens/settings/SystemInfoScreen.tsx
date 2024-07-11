@@ -17,9 +17,9 @@ import {
 } from "react-native-paper";
 import { useReducedMotion } from "react-native-reanimated";
 
+import { SettingsInfoScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { SettingsInfoScreenProps } from "~/navigation";
 
 function Title(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="titleLarge" {...props} />;

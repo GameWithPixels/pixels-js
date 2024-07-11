@@ -17,6 +17,7 @@ import { ProfileMenu } from "./components/ProfileMenu";
 import { RuleIndex } from "./components/RuleCard";
 
 import { useAppStore } from "~/app/hooks";
+import { EditProfileScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
@@ -31,7 +32,6 @@ import {
   useIsEditableProfileModified,
   useUpdateProfiles,
 } from "~/hooks";
-import { EditProfileScreenProps } from "~/navigation";
 
 const Header = observer(function Header({
   profile,

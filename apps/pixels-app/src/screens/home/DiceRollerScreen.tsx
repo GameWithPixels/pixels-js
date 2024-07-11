@@ -26,6 +26,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { DiceRollerScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
 import {
@@ -44,8 +46,6 @@ import {
   setRollerCardsSizeRatio,
   setRollerPaused,
 } from "~/features/store";
-import { DiceRollerScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 interface AnimatedRollCardHandle {
   overrideWidth: (w: number) => void;

@@ -2,13 +2,13 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
+import { CreateAnimationScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { AnimationsGrid } from "~/components/animation";
 import { TightTextButton } from "~/components/buttons";
 import { useAnimationsList } from "~/hooks";
-import { CreateAnimationScreenProps } from "~/navigation";
 
 export function createAnimation(name: string): Profiles.Animation {
   return new Profiles.AnimationFlashes({

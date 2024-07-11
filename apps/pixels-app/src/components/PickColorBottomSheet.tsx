@@ -6,9 +6,9 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { ColorWheel } from "./ColorWheel";
 
+import { AppStyles } from "~/app/styles";
+import { getBottomSheetProps } from "~/app/themes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
-import { AppStyles } from "~/styles";
-import { getBottomSheetProps } from "~/themes";
 
 export function PickColorBottomSheet({
   color,

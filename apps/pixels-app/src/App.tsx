@@ -33,20 +33,20 @@ import { AppDfuFiles } from "./app/AppDfuFiles";
 import { AppInit } from "./app/AppInit";
 import { AppPixelsCentral } from "./app/AppPixelsCentral";
 import { useAppSelector } from "./app/hooks";
-import { persistor, store } from "./app/store";
-import { ErrorFallback } from "./components/ErrorFallback";
-import { TabBar } from "./components/TabBar";
-import { UpdateProfileProvider } from "./components/UpdateProfileProvider";
 import {
   BottomTabParamList,
   HomeStackParamList,
   ProfilesStackParamList,
-} from "./navigation";
+} from "./app/navigation";
+import { persistor, store } from "./app/store";
+import { AppDarkTheme, AppThemes } from "./app/themes";
+import { ErrorFallback } from "./components/ErrorFallback";
+import { TabBar } from "./components/TabBar";
+import { UpdateProfileProvider } from "./components/UpdateProfileProvider";
 import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
-import { AppDarkTheme, AppThemes } from "./themes";
 
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";

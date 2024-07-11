@@ -10,13 +10,13 @@ import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
 import { RollsHistoryScreen } from "./RollsHistoryScreen";
 
 import { PairedDie } from "~/app/PairedDie";
-import { NavigationRoot } from "~/components/NavigationRoot";
-import { SelectedPairedDieContext } from "~/hooks";
 import {
   getStackNavigationOptions,
   HomeStackParamList,
   HomeStackProps,
-} from "~/navigation";
+} from "~/app/navigation";
+import { NavigationRoot } from "~/components/NavigationRoot";
+import { SelectedPairedDieContext } from "~/hooks";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 

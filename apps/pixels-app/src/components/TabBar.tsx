@@ -9,8 +9,8 @@ import {
 
 import { makeTransparent } from "./colors";
 
+import { RootScreenName } from "~/app/navigation";
 import { useAppTheme } from "~/hooks";
-import { RootScreenName } from "~/navigation";
 
 function TabButton({
   label,

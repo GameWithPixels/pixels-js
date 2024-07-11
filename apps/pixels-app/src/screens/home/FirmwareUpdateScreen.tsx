@@ -4,6 +4,7 @@ import { ScrollView, View } from "react-native";
 import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
+import { FirmwareUpdateScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
@@ -21,7 +22,6 @@ import {
   useUpdateDice,
   useIsAppUpdatingFirmware,
 } from "~/hooks";
-import { FirmwareUpdateScreenProps } from "~/navigation";
 
 export function useConfirmStopUpdatingActionSheet(
   onConfirm?: () => void,

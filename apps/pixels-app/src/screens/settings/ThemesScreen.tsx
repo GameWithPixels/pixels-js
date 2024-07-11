@@ -10,14 +10,14 @@ import {
 
 import { AppScreenNames, AppThemesNames } from "~/app/displayNames";
 import { useAppDispatch } from "~/app/hooks";
+import { RootScreenName, ThemesScreenProps } from "~/app/navigation";
+import { getBottomSheetProps, AppThemes } from "~/app/themes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TouchableCard } from "~/components/TouchableCard";
 import { OutlineButton } from "~/components/buttons";
 import { setScreenTheme } from "~/features/store";
 import { useAppTheme, useBottomSheetBackHandler } from "~/hooks";
-import { RootScreenName, ThemesScreenProps } from "~/navigation";
-import { getBottomSheetProps, AppThemes } from "~/themes";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;

@@ -25,8 +25,8 @@ import { ActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { getActionTypeLabel } from "~/features/profiles";
 import { makeObservable } from "~/features/utils";
+import { withAnimated } from "~/features/withAnimated";
 import { useEditableProfile } from "~/hooks";
-import { withAnimated } from "~/withAnimated";
 
 const AnimatedActionTypeIcon = withAnimated(ActionTypeIcon);
 const AnimatedTouchableRipple = withAnimated(TouchableRipple);

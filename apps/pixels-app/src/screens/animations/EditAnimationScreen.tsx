@@ -12,6 +12,7 @@ import {
   useTheme,
 } from "react-native-paper";
 
+import { EditAnimationScreenProps } from "~/app/navigation";
 import { AnimationDieRenderer } from "~/components/AnimationDieRenderer";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
@@ -23,7 +24,6 @@ import {
   OutlineButton,
 } from "~/components/buttons";
 import { useConfirmActionSheet, useEditableAnimation } from "~/hooks";
-import { EditAnimationScreenProps } from "~/navigation";
 
 const Header = observer(function Header({
   animation,

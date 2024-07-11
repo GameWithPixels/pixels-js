@@ -5,7 +5,7 @@ import { ImageBackground } from "react-native";
 import { Portal, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { backgroundImageFromColor } from "~/themes";
+import { backgroundImageFromColor } from "~/app/themes";
 
 function ImgBackground({ children }: { children: React.ReactNode }) {
   const { colors } = useTheme();

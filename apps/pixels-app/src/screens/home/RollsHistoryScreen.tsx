@@ -25,6 +25,8 @@ import Animated, {
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { RollsHistoryScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
@@ -55,8 +57,6 @@ import {
   useSetSelectedPairedDie,
   useWatchedPixel,
 } from "~/hooks";
-import { RollsHistoryScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 function computeStats(dieType: PixelDieType, rolls: number[]): RollStats {
   const stats: { [key: number]: number } = {};

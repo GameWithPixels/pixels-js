@@ -1,15 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+import { RootScreenName } from "~/app/navigation";
+import { AppThemes } from "~/app/themes";
 import {
   AnimationsGrouping,
   DiceGrouping,
   ProfilesGrouping,
   SortMode,
 } from "~/features/profiles";
-import { RootScreenName } from "~/navigation";
 import { DiceViewMode } from "~/screens/home/DiceListScreen";
 import { ProfilesViewMode } from "~/screens/profiles/ProfilesListScreen";
-import { AppThemes } from "~/themes";
 
 export type ThemeMode = "system" | "dark" | "light";
 

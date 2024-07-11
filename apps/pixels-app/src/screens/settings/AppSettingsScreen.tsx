@@ -9,6 +9,10 @@ import {
 } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import {
+  AppSettingsScreenProps,
+  SettingsMenuScreenProps,
+} from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
@@ -24,7 +28,6 @@ import {
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
 import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
-import { AppSettingsScreenProps, SettingsMenuScreenProps } from "~/navigation";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;

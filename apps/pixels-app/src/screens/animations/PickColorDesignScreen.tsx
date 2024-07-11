@@ -2,10 +2,10 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View, ScrollView } from "react-native";
 
+import { PickColorDesignScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { ColorDesignPicker } from "~/components/ColorDesignPicker";
 import { PageHeader } from "~/components/PageHeader";
-import { PickColorDesignScreenProps } from "~/navigation";
 
 function PickColorDesignPage({
   pattern,

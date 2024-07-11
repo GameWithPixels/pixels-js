@@ -5,12 +5,12 @@ import { CreateProfileScreen } from "./CreateProfileScreen";
 import { EditProfilesStack } from "./EditProfileStack";
 import { ProfilesListScreen } from "./ProfilesListScreen";
 
-import { NavigationRoot } from "~/components/NavigationRoot";
 import {
   ProfilesStackProps,
   ProfilesStackParamList,
   getStackNavigationOptions,
-} from "~/navigation";
+} from "~/app/navigation";
+import { NavigationRoot } from "~/components/NavigationRoot";
 
 const Stack = createNativeStackNavigator<ProfilesStackParamList>();
 

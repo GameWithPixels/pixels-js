@@ -3,10 +3,10 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import { Text as PaperText, TextProps } from "react-native-paper";
 
+import { SupportScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { OutlineButton } from "~/components/buttons";
-import { SupportScreenProps } from "~/navigation";
 
 const supportEmail = "Luna@GameWithPixels.com";
 

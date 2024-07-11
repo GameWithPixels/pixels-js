@@ -44,6 +44,9 @@ import {
   getBluetoothScanErrorMessage,
   getNoAvailableDiceMessage,
 } from "~/app/messages";
+import { OnboardingScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
+import { getBottomSheetProps } from "~/app/themes";
 import { AppBackground } from "~/components/AppBackground";
 import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { NavigationRoot } from "~/components/NavigationRoot";
@@ -81,9 +84,6 @@ import {
   useBatteryStateLabel,
   useBottomSheetBackHandler,
 } from "~/hooks";
-import { OnboardingScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
-import { getBottomSheetProps } from "~/themes";
 
 function LightUpYourGameImage({
   height = 80,

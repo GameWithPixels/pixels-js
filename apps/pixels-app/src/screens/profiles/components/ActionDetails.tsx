@@ -9,11 +9,11 @@ import React from "react";
 import { View, StyleSheet, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
+import { AppStyles } from "~/app/styles";
 import { DieRendererWithFocus } from "~/components/DieRendererWithFocus";
 import { ActionTypeIcon } from "~/components/actions";
 import { applyActionOverrides, getFacesAsText } from "~/features/profiles";
 import { listToText } from "~/features/utils";
-import { AppStyles } from "~/styles";
 
 function getCountAsText(count: number): string {
   return count === 1 ? "once" : count === 2 ? "twice" : `${count} times`;

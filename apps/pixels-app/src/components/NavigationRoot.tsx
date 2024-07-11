@@ -4,8 +4,8 @@ import { ThemeProvider } from "react-native-paper";
 
 import { ErrorFallback } from "./ErrorFallback";
 
+import { RootScreenName } from "~/app/navigation";
 import { useAppTheme } from "~/hooks";
-import { RootScreenName } from "~/navigation";
 
 export function NavigationRoot({
   children,

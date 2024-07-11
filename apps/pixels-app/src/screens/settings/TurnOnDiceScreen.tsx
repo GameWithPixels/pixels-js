@@ -1,10 +1,10 @@
 import React from "react";
 import { ScrollView, View } from "react-native";
 
+import { TurnOnDiceScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TurnOnDiceHelp } from "~/components/TunOnDiceHelp";
-import { TurnOnDiceScreenProps } from "~/navigation";
 
 function TurnOnDicePage({
   navigation,

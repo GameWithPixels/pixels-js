@@ -12,6 +12,8 @@ import Animated, {
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
+import { ProfilesListScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
 import {
   AnimatedProfileSearchbar,
   profileSearchbarMinHeight,
@@ -44,8 +46,6 @@ import {
   setProfilesViewMode,
 } from "~/features/store";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
-import { ProfilesListScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 export type ProfilesViewMode = "list" | "grid";
 

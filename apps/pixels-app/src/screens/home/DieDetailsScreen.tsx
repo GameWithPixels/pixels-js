@@ -12,6 +12,7 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 
 import { PairedDie } from "~/app/PairedDie";
+import { DieDetailsScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
@@ -31,7 +32,6 @@ import {
   useSetSelectedPairedDie,
   useWatchedPixel,
 } from "~/hooks";
-import { DieDetailsScreenProps } from "~/navigation";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
   return (

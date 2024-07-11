@@ -16,6 +16,7 @@ import { RuleIndex } from "../profiles/components/RuleCard";
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppStore } from "~/app/hooks";
+import { EditDieProfileScreenProps } from "~/app/navigation";
 import { pairedDiceSelectors } from "~/app/store";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
@@ -30,7 +31,6 @@ import {
   useSetSelectedPairedDie,
   useUpdateProfiles,
 } from "~/hooks";
-import { EditDieProfileScreenProps } from "~/navigation";
 
 function EditDieProfilePage({
   pairedDie,

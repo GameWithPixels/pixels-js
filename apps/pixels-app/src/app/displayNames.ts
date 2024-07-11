@@ -1,5 +1,5 @@
-import { RootScreenName } from "../navigation";
-import { AppThemes } from "../themes";
+import { RootScreenName } from "./navigation";
+import { AppThemes } from "./themes";
 
 export const AppScreenNames: Record<RootScreenName, string> = {
   home: "Dice Bag",

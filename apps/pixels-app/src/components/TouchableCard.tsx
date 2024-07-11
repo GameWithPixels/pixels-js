@@ -11,7 +11,7 @@ import {
 import { useFlashAnimationStyle } from "./ViewFlashOnRoll";
 import { getBorderColor, makeTransparent } from "./colors";
 
-import { withAnimated } from "~/withAnimated";
+import { withAnimated } from "~/features/withAnimated";
 
 export type TouchableCardProps = Omit<
   TouchableRippleProps,

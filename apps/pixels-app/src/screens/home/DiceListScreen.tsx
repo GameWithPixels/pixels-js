@@ -19,6 +19,7 @@ import RollerIcon from "#/icons/dice/roller";
 import GridIcon from "#/icons/items-view/grid-gradient";
 import ListIcon from "#/icons/items-view/list-gradient";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { DiceListScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import {
@@ -44,7 +45,6 @@ import {
   setDiceViewMode,
 } from "~/features/store";
 import { useConnectToMissingPixels, useOutdatedPixelsCount } from "~/hooks";
-import { DiceListScreenProps } from "~/navigation";
 
 export type DiceViewMode = "list" | "grid";
 

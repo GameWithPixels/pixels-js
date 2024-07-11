@@ -3,10 +3,10 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 
+import { SettingsMenuScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { MenuButton } from "~/components/buttons";
-import { SettingsMenuScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 const pages = [
   // "Audio Clips",

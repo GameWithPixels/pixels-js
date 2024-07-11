@@ -15,8 +15,8 @@ import {
 } from "react-native-paper";
 import Toast from "react-native-root-toast";
 
-import { makeTransparent } from "./components/colors";
-import { bottomSheetAnimationConfigFix } from "./fixes";
+import { makeTransparent } from "../components/colors";
+import { bottomSheetAnimationConfigFix } from "../fixes";
 
 export type AppColors = MD3Theme["colors"] & { appBackground: string };
 

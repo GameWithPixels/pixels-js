@@ -10,12 +10,12 @@ import { SystemInfoScreen } from "./SystemInfoScreen";
 import { ThemesScreen } from "./ThemesScreen";
 import { TurnOnDiceScreen } from "./TurnOnDiceScreen";
 
-import { NavigationRoot } from "~/components/NavigationRoot";
 import {
   getStackNavigationOptions,
   SettingsStackParamList,
   SettingsStackProps,
-} from "~/navigation";
+} from "~/app/navigation";
+import { NavigationRoot } from "~/components/NavigationRoot";
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 

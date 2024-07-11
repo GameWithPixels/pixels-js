@@ -27,6 +27,8 @@ import {
 } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
+import { AppStyles } from "~/app/styles";
+import { getBottomSheetProps } from "~/app/themes";
 import { ActionPlayAnimDieRenderer } from "~/components/ActionPlayAnimDieRenderer";
 import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
@@ -52,8 +54,6 @@ import {
 import { AnimationUtils } from "~/features/store/library/AnimationUtils";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
-import { AppStyles } from "~/styles";
-import { getBottomSheetProps } from "~/themes";
 
 function TextInput({
   value,

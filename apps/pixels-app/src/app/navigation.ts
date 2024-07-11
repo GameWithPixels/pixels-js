@@ -10,7 +10,7 @@ import {
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
-import { RuleIndex } from "./screens/profiles/components/RuleCard";
+import { RuleIndex } from "../screens/profiles/components/RuleCard";
 
 // Root screens
 export type BottomTabParamList = {

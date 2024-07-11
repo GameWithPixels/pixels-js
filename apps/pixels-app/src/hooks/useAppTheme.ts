@@ -1,6 +1,6 @@
 import { useAppSelector } from "~/app/hooks";
-import { RootScreenName } from "~/navigation";
-import { AppTheme, AppThemes } from "~/themes";
+import { RootScreenName } from "~/app/navigation";
+import { AppTheme, AppThemes } from "~/app/themes";
 
 export function useAppTheme(screenName: RootScreenName): AppTheme {
   return (

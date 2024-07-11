@@ -8,11 +8,11 @@ import { EditProfileScreen } from "./EditProfileScreen";
 import { EditRollRuleScreen } from "./EditRolledRulesScreen";
 import { EditRuleScreen } from "./EditRuleScreen";
 
-import { useAppTheme } from "~/hooks";
 import {
   getStackNavigationOptions,
   EditProfileStackParamList,
-} from "~/navigation";
+} from "~/app/navigation";
+import { useAppTheme } from "~/hooks";
 
 const Stack = createNativeStackNavigator<EditProfileStackParamList>();
 

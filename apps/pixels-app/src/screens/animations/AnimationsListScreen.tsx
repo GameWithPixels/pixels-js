@@ -7,6 +7,8 @@ import { Divider, IconButton, Menu, Text, useTheme } from "react-native-paper";
 import GridIcon from "#/icons/items-view/grid";
 import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { AnimationsListScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderMenuButton } from "~/components/HeaderMenuButton";
 import {
@@ -26,8 +28,6 @@ import {
 } from "~/features/profiles";
 import { setAnimationsGrouping, setAnimationsSortMode } from "~/features/store";
 import { useAnimationsList } from "~/hooks";
-import { AnimationsListScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 export type AnimationsViewMode = "list" | "grid";
 

@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Divider, Menu, MenuProps } from "react-native-paper";
 
-import { AppStyles } from "~/styles";
+import { AppStyles } from "~/app/styles";
 
 export function ProfileMenu({
   onRename,

@@ -12,6 +12,8 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppStore } from "~/app/hooks";
 import { getNoAvailableDiceMessage } from "~/app/messages";
+import { AppStyles } from "~/app/styles";
+import { getBottomSheetProps } from "~/app/themes";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
@@ -27,8 +29,6 @@ import {
   useRollStateLabel,
   useBottomSheetBackHandler,
 } from "~/hooks";
-import { AppStyles } from "~/styles";
-import { getBottomSheetProps } from "~/themes";
 
 function ScannedPixelCard({
   scannedPixel,

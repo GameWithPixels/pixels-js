@@ -5,12 +5,12 @@ import { Text } from "react-native-paper";
 import { EditActionCard } from "./components/EditActionCard";
 import { RuleIndex } from "./components/RuleCard";
 
+import { EditRuleScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { EditorActionTypes, getConditionTypeLabel } from "~/features/profiles";
-import { EditRuleScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
 
 function EditRulePage({
   profileUuid,

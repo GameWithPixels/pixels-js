@@ -5,12 +5,12 @@ import { View, ScrollView } from "react-native";
 import { EditAdvancedRules } from "./components/EditAdvancedRules";
 import { EditRuleCallback, SectionTitle } from "./components/RulesSection";
 
+import { EditAdvancedSettingsScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { ProfileUsage as ProfileUsageStatic } from "~/components/ProfileUsage";
 import { useEditableProfile } from "~/hooks";
-import { EditAdvancedSettingsScreenProps } from "~/navigation";
 
 const ProfileUsage = observer(ProfileUsageStatic);
 

@@ -6,12 +6,12 @@ import { CreateAnimationScreen } from "./CreateAnimationScreen";
 import { EditAnimationScreen } from "./EditAnimationScreen";
 import { PickColorDesignScreen } from "./PickColorDesignScreen";
 
-import { NavigationRoot } from "~/components/NavigationRoot";
 import {
   AnimationsStackParamList,
   AnimationsStackProps,
   getStackNavigationOptions,
-} from "~/navigation";
+} from "~/app/navigation";
+import { NavigationRoot } from "~/components/NavigationRoot";
 
 const Stack = createNativeStackNavigator<AnimationsStackParamList>();
 

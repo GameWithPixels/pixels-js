@@ -14,7 +14,7 @@ import {
   getWebRequestURL,
 } from "./getWebRequestURL";
 
-import { ToastSettings } from "~/themes";
+import { ToastSettings } from "~/app/themes";
 
 const baseDiceIconUrl =
   "https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes";

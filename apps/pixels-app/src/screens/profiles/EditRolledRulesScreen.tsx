@@ -44,6 +44,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ActionDetails, ActionDieRenderer } from "./components/ActionDetails";
 import { ConfigureActionBottomSheet } from "./components/ConfigureActionBottomSheet";
 
+import { EditRollRulesScreenProps } from "~/app/navigation";
+import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
 import { PageHeader } from "~/components/PageHeader";
@@ -60,11 +62,9 @@ import {
   rolledConditionComparator,
 } from "~/features/profiles";
 import { makeObservable } from "~/features/utils";
+import { withAnimated } from "~/features/withAnimated";
 import { fixForScrollViewPadding } from "~/fixes";
 import { useEditableProfile } from "~/hooks";
-import { EditRollRulesScreenProps } from "~/navigation";
-import { AppStyles } from "~/styles";
-import { withAnimated } from "~/withAnimated";
 
 interface InnerScrollViewHandle {
   addPadding: (padding: number) => void;

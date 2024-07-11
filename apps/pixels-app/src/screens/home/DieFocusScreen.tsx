@@ -11,6 +11,7 @@ import {
 
 import { PairedDie } from "~/app/PairedDie";
 import { useAppDispatch } from "~/app/hooks";
+import { DieFocusScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { PageHeader } from "~/components/PageHeader";
@@ -21,7 +22,6 @@ import {
   usePixelsCentral,
   useSetSelectedPairedDie,
 } from "~/hooks";
-import { DieFocusScreenProps } from "~/navigation";
 
 function useUnpairActionSheet(
   pairedDie: PairedDie | undefined,

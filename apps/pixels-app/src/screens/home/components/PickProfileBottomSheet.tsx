@@ -5,10 +5,10 @@ import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { PairedDie } from "~/app/PairedDie";
+import { AppStyles } from "~/app/styles";
+import { getBottomSheetProps } from "~/app/themes";
 import { ProfilePicker } from "~/components/ProfilePicker";
 import { useBottomSheetBackHandler } from "~/hooks";
-import { AppStyles } from "~/styles";
-import { getBottomSheetProps } from "~/themes";
 
 export function PickProfileBottomSheet({
   pairedDie,

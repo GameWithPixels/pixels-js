@@ -9,7 +9,7 @@ import { Platform } from "react-native";
 import { Divider, Menu, MenuProps, useTheme } from "react-native-paper";
 
 import CalibrateIcon from "#/icons/home/calibrate";
-import { AppStyles } from "~/styles";
+import { AppStyles } from "~/app/styles";
 
 export function DieMenu({
   disconnected,

@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import * as React from "react";
 import { Animated, Platform, StyleSheet, useAnimatedValue } from "react-native";
 
-import { AppDarkTheme } from "~/themes";
+import { AppDarkTheme } from "./themes";
 
 // TODO use Constants.expoConfig?.splash?.image
 const splashImage = __DEV__

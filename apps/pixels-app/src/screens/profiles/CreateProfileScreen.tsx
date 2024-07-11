@@ -8,6 +8,7 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Button, Text, TextInput } from "react-native-paper";
 
 import { useAppStore } from "~/app/hooks";
+import { CreateProfileScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TabsHeaders } from "~/components/TabsHeaders";
@@ -24,7 +25,6 @@ import {
   useEditProfilesList,
   useProfilesList,
 } from "~/hooks";
-import { CreateProfileScreenProps } from "~/navigation";
 
 const tabsNames = ["Builtin", "Dice", "Library"] as const;
 
