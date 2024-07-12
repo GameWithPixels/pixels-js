@@ -60,15 +60,11 @@ export function AppInit({ children }: React.PropsWithChildren) {
       // Inform user
       Alert.alert(
         "App Patch Available",
-        "An patch is available, would you like to install it now?\n" +
-          "You can always install it later from the More tab.",
+        "Tap OK to update your app with the latest patch.",
         [
           {
-            text: "Yes",
+            text: "Ok",
             onPress: () => installAppUpdateAsync(appDispatch),
-          },
-          {
-            text: "No",
           },
         ]
       );

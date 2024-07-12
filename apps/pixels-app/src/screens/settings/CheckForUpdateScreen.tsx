@@ -48,7 +48,7 @@ function CheckForUpdatePage({
 
   return (
     <View style={{ height: "100%" }}>
-      <PageHeader onGoBack={() => navigation.goBack()}>App Update</PageHeader>
+      <PageHeader onGoBack={() => navigation.goBack()}>App Patching</PageHeader>
       <ScrollView
         contentContainerStyle={{
           paddingVertical: 20,
@@ -76,8 +76,8 @@ function CheckForUpdatePage({
           )
         )}
         <TextSmall>
-          Patches are delivered directly to your app, on top of app store
-          updates.
+          Patches are small updates delivered directly to your app, on top of
+          app store updates.
         </TextSmall>
         <Button
           mode="outlined"

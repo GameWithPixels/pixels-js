@@ -15,7 +15,7 @@ const pages = [
   // "Export Settings",
   // "Import Settings",
   // "Shop",
-  "Check for Update",
+  "Check for App Patch",
   "Themes",
   "Settings",
   "App & System Information",
@@ -90,7 +90,7 @@ function SettingsMenuPage({
       case "Dice Firmware Information":
         navigation.navigate("firmwareInfo");
         break;
-      case "Check for Update":
+      case "Check for App Patch":
         navigation.navigate("checkForUpdate");
         break;
       case "Themes":
