@@ -41,6 +41,12 @@ module.exports = function withAndroidPermissions(config) {
         $: {
           "android:name": "android.permission.FOREGROUND_SERVICE",
         },
+      },
+      {
+        $: {
+          "android:name":
+            "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
+        },
       }
     );
     return config;

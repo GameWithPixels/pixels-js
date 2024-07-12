@@ -2,10 +2,14 @@
 
     <application>
         <!-- Required to run the Nordic DFU service -->
-        <service android:name=".DfuService"/>
+        <service
+            android:name=".DfuService"
+            android:foregroundServiceType="connectedDevice"
+        />
     </application>
 
     <!-- Required to run the Nordic DFU service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
 
 </manifest>
