@@ -6,7 +6,7 @@ import { Animated, StyleSheet, View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
 import { makeTransparent } from "./colors";
-import { DieIcon } from "./icons";
+import { DieWireframe } from "./icons";
 
 export type RollStats = Readonly<{ [key: number]: number }>;
 
@@ -149,7 +149,7 @@ export function StatsList({
             borderColor: colors.outline,
           }}
         >
-          <DieIcon dieType={dieType} size={16} />
+          <DieWireframe dieType={dieType} size={16} />
           <Text>{f}</Text>
           <View style={{ flexGrow: 1 }} />
           <Text>{rollStats[f]}</Text>
@@ -207,11 +207,7 @@ export function StatsGrid({
                       alignItems: "center",
                     }}
                   >
-                    <DieIcon
-                      dieType={dieType}
-                      size={16}
-                      color={colors.onSurface}
-                    />
+                    <DieWireframe dieType={dieType} size={16} />
                     <Text style={{ marginVertical: 4 }}>{f}</Text>
                   </LinearGradient>
                   <Text style={{ alignSelf: "center", marginVertical: 4 }}>

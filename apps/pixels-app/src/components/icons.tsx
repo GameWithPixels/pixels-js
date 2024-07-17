@@ -1,8 +1,7 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
-import { ColorValue, View, ViewProps } from "react-native";
+import { ColorValue, View } from "react-native";
 import { useTheme } from "react-native-paper";
 
 import { getIconColor } from "./colors";
@@ -28,48 +27,6 @@ export interface IconProps {
   size: number;
   disabled?: boolean;
   color?: ColorValue;
-}
-
-export function DieIcon({
-  dieType,
-  size,
-  disabled,
-  color,
-  ...props
-}: {
-  dieType: PixelDieType;
-} & IconProps &
-  ViewProps) {
-  const getIconName = () => {
-    switch (dieType) {
-      case "d4":
-        return "dice-d4-outline";
-      case "d6":
-      case "d6pipped":
-      case "d6fudge":
-        return "dice-d6-outline";
-      case "d8":
-        return "dice-d8-outline";
-      case "d00":
-      case "d10":
-        return "dice-d10-outline";
-      case "d12":
-        return "dice-d12-outline";
-      case "d20":
-        return "dice-d20-outline";
-      default:
-        return "crosshairs-question";
-    }
-  };
-  const { colors } = useTheme();
-  return (
-    <MaterialCommunityIcons
-      name={getIconName()}
-      size={size}
-      color={color ?? getIconColor(colors, disabled)}
-      {...props}
-    />
-  );
 }
 
 export function RssiIcon({
