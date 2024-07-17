@@ -25,8 +25,8 @@ import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
-import { CreateProfileBanner } from "~/components/banners";
 import { FloatingAddButton } from "~/components/buttons";
+import { EmptyLibraryCard } from "~/components/cards";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import {
   getCompatibleDiceTypes,
@@ -185,14 +185,6 @@ function ProfilesListPage({
   const [filter, setFilter] = React.useState("");
   const filteredProfiles = useFilteredProfiles(profiles, filter);
 
-  const [wasBannerInitiallyVisible, setWasBannerInitiallyVisible] =
-    React.useState(!profiles.length);
-  React.useEffect(() => {
-    if (!profiles.length) {
-      setWasBannerInitiallyVisible(true);
-    }
-  }, [profiles.length]);
-
   React.useEffect(() => {
     aref.current?.scrollTo({ y: initialPosition, animated: false });
   }, [aref, initialPosition]);
@@ -211,44 +203,50 @@ function ProfilesListPage({
         snapToOffsets={[0, initialPosition]}
         snapToEnd={false}
       >
-        <View style={{ marginTop: 35, height: searchbarHeight }}>
-          <AnimatedProfileSearchbar
-            filter={filter}
-            setFilter={setFilter}
-            positionY={scrollHandler}
-            headerHeight={searchbarHeight}
-          />
-        </View>
-        {wasBannerInitiallyVisible && (
-          <CreateProfileBanner
-            visible={!profiles.length}
-            collapsedMarginBottom={-10}
-          />
-        )}
-        {viewMode === "grid" ? (
-          <ProfilesGrid
-            profiles={filteredProfiles}
-            onSelectProfile={editProfile}
-            onProgramDice={setProfileToProgram}
-          />
+        {profiles.length ? (
+          <>
+            <View style={{ marginTop: 35, height: searchbarHeight }}>
+              <AnimatedProfileSearchbar
+                filter={filter}
+                setFilter={setFilter}
+                positionY={scrollHandler}
+                headerHeight={searchbarHeight}
+              />
+            </View>
+            {viewMode === "grid" ? (
+              <ProfilesGrid
+                profiles={filteredProfiles}
+                onSelectProfile={editProfile}
+                onProgramDice={setProfileToProgram}
+              />
+            ) : (
+              <ProfilesList
+                profiles={filteredProfiles}
+                onSelectProfile={editProfile}
+                onProgramDice={setProfileToProgram}
+                groupBy={groupBy}
+                sortMode={sortMode}
+              />
+            )}
+          </>
         ) : (
-          <ProfilesList
-            profiles={filteredProfiles}
-            onSelectProfile={editProfile}
-            onProgramDice={setProfileToProgram}
-            groupBy={groupBy}
-            sortMode={sortMode}
+          <EmptyLibraryCard
+            onPress={() => navigation.navigate("createProfile")}
           />
         )}
       </GHScrollView>
-      <PageHeader
-        viewMode={viewMode}
-        onSelectViewMode={(vm) => store.dispatch(setProfilesViewMode(vm))}
-      />
-      <FloatingAddButton
-        sentry-label="add-profile"
-        onPress={() => navigation.navigate("createProfile")}
-      />
+      {profiles.length > 0 && (
+        <>
+          <PageHeader
+            viewMode={viewMode}
+            onSelectViewMode={(vm) => store.dispatch(setProfilesViewMode(vm))}
+          />
+          <FloatingAddButton
+            sentry-label="add-profile"
+            onPress={() => navigation.navigate("createProfile")}
+          />
+        </>
+      )}
       <PickDieBottomSheet
         dieTypes={
           profileToProgram

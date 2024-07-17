@@ -1,9 +1,11 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { usePixelStatus } from "@systemic-games/pixels-react";
+import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import {
   Pixel,
   PixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
+import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { View } from "react-native";
@@ -24,6 +26,7 @@ import { PixelConnectionStatus } from "./PixelConnectionStatus";
 import { PixelRssi } from "./PixelRssi";
 import { PixelTransferProgressBar } from "./PixelTransferProgressBar";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
+import { GradientButton } from "./buttons";
 import { DieWireframe } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
@@ -374,5 +377,90 @@ export function PixelCard({
         />
       )}
     </TouchableCard>
+  );
+}
+
+export function EmptyDiceBagCard({ onPress }: { onPress: () => void }) {
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
+  return (
+    <LinearGradient
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      colors={[colors.primary, colors.tertiary]}
+      style={{
+        overflow: "hidden",
+        width: "80%",
+        marginTop: 20,
+        alignSelf: "center",
+        borderRadius,
+      }}
+    >
+      <View
+        style={{
+          gap: 40,
+          margin: 2,
+          paddingVertical: 40,
+          paddingHorizontal: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius,
+          backgroundColor: colors.background,
+        }}
+      >
+        <Text variant="titleLarge">Welcome!</Text>
+        <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+          In order to customize your Pixels dice you need to pair them with the
+          app.
+        </Text>
+        <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+          Tap on the "Add Die" button to get started.
+        </Text>
+        <GradientButton onPress={onPress}>Add Die</GradientButton>
+      </View>
+    </LinearGradient>
+  );
+}
+
+export function EmptyLibraryCard({ onPress }: { onPress: () => void }) {
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
+  return (
+    <LinearGradient
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      colors={[colors.primary, colors.tertiary]}
+      style={{
+        overflow: "hidden",
+        width: "80%",
+        marginTop: 60,
+        alignSelf: "center",
+        borderRadius,
+      }}
+    >
+      <View
+        style={{
+          gap: 40,
+          margin: 2,
+          paddingVertical: 40,
+          paddingHorizontal: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius,
+          backgroundColor: colors.background,
+        }}
+      >
+        <Text variant="titleLarge">The Profiles library</Text>
+        <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+          A Profile stores all the data required to animate the LEDs of a Pixels
+          die and trigger actions on rolls.
+        </Text>
+        <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+          Save any of your dice Profile that your like to the library or create
+          new ones from scratch.
+        </Text>
+        <GradientButton onPress={onPress}>Create Profile</GradientButton>
+      </View>
+    </LinearGradient>
   );
 }

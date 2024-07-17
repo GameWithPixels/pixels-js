@@ -59,7 +59,6 @@ import {
   GradientButton,
   TightTextButton,
 } from "~/components/buttons";
-import { makeTransparent } from "~/components/colors";
 import { DieWireframe } from "~/components/icons";
 import { getDieDfuAvailability, pairDie } from "~/features/dice";
 import {
@@ -104,10 +103,8 @@ function LightUpYourGameImage({
 function SkipButton({
   ...props
 }: Omit<ButtonProps, "children" | "style" | "textColor">) {
-  const { colors } = useTheme();
   return (
     <Button
-      textColor={makeTransparent(colors.onBackground, 0.5)}
       style={{ position: "absolute", top: -70, right: -20 }} // TODO better positioning
       {...props}
     >

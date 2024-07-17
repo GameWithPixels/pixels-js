@@ -3,14 +3,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ScrollView, StyleProp, View, ViewStyle } from "react-native";
-import {
-  Card,
-  Icon,
-  Text,
-  TouchableRipple,
-  useTheme,
-} from "react-native-paper";
+import { ScrollView, View } from "react-native";
+import { Icon, Text, TouchableRipple, useTheme } from "react-native-paper";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
 
@@ -27,6 +21,7 @@ import {
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { Banner } from "~/components/banners";
+import { EmptyDiceBagCard } from "~/components/cards";
 import { DiceGrid, DiceList } from "~/components/dice";
 import {
   DiceGrouping,
@@ -47,26 +42,6 @@ import {
 import { useConnectToMissingPixels, useOutdatedPixelsCount } from "~/hooks";
 
 export type DiceViewMode = "list" | "grid";
-
-function NoPairedDie({ style }: { style?: StyleProp<ViewStyle> }) {
-  return (
-    // Set view height so Pair Die button is not clipped during exit animation
-    <View style={[{ height: 400, alignItems: "center", gap: 20 }, style]}>
-      <Card style={{ width: "100%" }}>
-        <Card.Title title="No die paired with the app" />
-        <Card.Content style={{ gap: 10 }}>
-          <Text variant="bodyMedium">
-            In order to customize your Pixels dice you need to pair them with
-            the app.
-          </Text>
-          <Text variant="bodyMedium">
-            Tap on the "Add Die" button above to get started.
-          </Text>
-        </Card.Content>
-      </Card>
-    </View>
-  );
-}
 
 function LargeHeader({
   onShowPairDice,
@@ -281,17 +256,12 @@ function DiceListPage({
             paddingBottom: 20,
           }}
         >
-          <BluetoothStateWarning style={{ marginVertical: 10 }} />
-          {!pairedDice.length ? (
-            <NoPairedDie style={{ marginVertical: 10 }} />
-          ) : (
-            <>
-              {pairedDice.length > 0 && (
-                <GridListSelector
-                  viewMode={viewMode}
-                  onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
-                />
-              )}
+          {pairedDice.length ? (
+            <BluetoothStateWarning style={{ marginVertical: 10 }}>
+              <GridListSelector
+                viewMode={viewMode}
+                onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
+              />
               {viewMode === "grid" ? (
                 <DiceGrid
                   pairedDice={pairedDice}
@@ -309,7 +279,9 @@ function DiceListPage({
                   }
                 />
               )}
-            </>
+            </BluetoothStateWarning>
+          ) : (
+            <EmptyDiceBagCard onPress={() => setShowPairDice(true)} />
           )}
         </ScrollView>
       </View>
