@@ -20,6 +20,7 @@ import {
   Switch,
   Text,
   TextInput,
+  TextInputProps,
   useTheme,
 } from "react-native-paper";
 
@@ -37,6 +38,8 @@ import {
   setDiceSetLabelSetType,
   setDiceSetLabelDiceColorway,
   setCartonLabelProductType,
+  setCartonLabelNumCopies,
+  setDiceSetLabelNumCopies,
 } from "~/features/store/validationSettingsSlice";
 import {
   DiceSetType,
@@ -47,6 +50,38 @@ import {
 } from "~/features/validation";
 
 const asnExample = "FASN0012345";
+
+function NumericTextInput({
+  value,
+  setValue,
+  onEndEditing,
+  ...props
+}: {
+  value: number;
+  setValue: (value: number) => void;
+} & Omit<TextInputProps, "defaultValue" | "value" | "onChangeText">) {
+  const [editedValue, setEditedValue] = React.useState(value.toString());
+  React.useEffect(() => {
+    setEditedValue(value.toString());
+  }, [value]);
+  return (
+    <TextInput
+      mode="outlined"
+      keyboardType="numeric"
+      style={{ minWidth: 100 }}
+      value={editedValue}
+      onChangeText={setEditedValue}
+      onEndEditing={(e) => {
+        let v = parseInt(e.nativeEvent.text, 10);
+        v = isNaN(v) || v < 1 ? value : v;
+        setEditedValue(v.toString());
+        setValue(v);
+        onEndEditing?.(e);
+      }}
+      {...props}
+    />
+  );
+}
 
 function DieTypeColumn<T extends string>({
   values,
@@ -71,8 +106,8 @@ function DieTypeColumn<T extends string>({
               onPress={() => onSelect?.(dt)}
             />
             <Text
-              style={selected === dt ? selectedTextStyle : undefined}
               variant="bodyLarge"
+              style={selected === dt ? selectedTextStyle : undefined}
             >
               {t(dt)}
             </Text>
@@ -111,8 +146,8 @@ function ColorwayColumn({
               }}
             />
             <Text
-              style={selected === c ? selectedTextStyle : undefined}
               variant="bodyLarge"
+              style={selected === c ? selectedTextStyle : undefined}
             >
               {t(c)}
             </Text>
@@ -124,16 +159,34 @@ function ColorwayColumn({
 }
 
 function PrintButtonCard({
+  numCopies,
+  setNumCopies,
   printAsync,
   ...props
 }: Omit<ButtonProps, "children" | "onPress"> & {
+  numCopies: number;
+  setNumCopies: (numCopies: number) => void;
   printAsync: (setPrintStatus: (status: PrintStatus) => void) => Promise<void>;
 }) {
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
   const { t } = useTranslation();
   return (
     <Card>
-      <Card.Content style={{ gap: 10 }}>
+      <Card.Content style={{ gap: 20 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text variant="titleLarge">{t("copies")}</Text>
+          <NumericTextInput
+            value={numCopies}
+            setValue={setNumCopies}
+            style={{ minWidth: 100 }}
+          />
+        </View>
         <Button
           mode="contained-tonal"
           icon="printer"
@@ -145,7 +198,7 @@ function PrintButtonCard({
           }
           {...props}
         >
-          {t("printLabel")}
+          {t("print")}
         </Button>
         <Text variant="bodyLarge">
           {`${t("status")}${t("colonSeparator")}${
@@ -193,14 +246,11 @@ function ColorwaySelectorCard({
 }
 
 function CartonLabelForm() {
-  const { asn, productType, colorway, quantity } = useAppSelector(
+  const { asn, productType, colorway, quantity, numCopies } = useAppSelector(
     (state) => state.validationSettings.cartonLabel
   );
   const appDispatch = useAppDispatch();
 
-  const [editedQuantity, setEditedQuantity] = React.useState(
-    quantity.toString()
-  );
   const productCategory = (ValidationDieTypes as string[]).includes(productType)
     ? "singleDie"
     : "diceSet";
@@ -261,6 +311,7 @@ function CartonLabelForm() {
         <Card.Title title={t("asn")} titleVariant="titleLarge" />
         <Card.Content>
           <TextInput
+            mode="outlined"
             placeholder={t("example") + t("colonSeparator") + asnExample}
             value={asn}
             onChangeText={(t) => appDispatch(setCartonLabelAsn(t))}
@@ -288,19 +339,21 @@ function CartonLabelForm() {
         onSelectColorway={(c) => appDispatch(setCartonLabelDieColorway(c))}
       />
       <Card>
-        <Card.Title title={t("quantity")} titleVariant="titleLarge" />
         <Card.Content>
-          <TextInput
-            value={editedQuantity}
-            keyboardType="numeric"
-            onChangeText={setEditedQuantity}
-            onEndEditing={(e) => {
-              let q = parseInt(e.nativeEvent.text, 10);
-              q = isNaN(q) ? 64 : Math.max(q, 1);
-              setEditedQuantity(q.toString());
-              appDispatch(setCartonLabelQuantity(q));
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
-          />
+          >
+            <Text variant="titleLarge">{t("quantity")}</Text>
+            <NumericTextInput
+              value={quantity}
+              setValue={(v) => appDispatch(setCartonLabelQuantity(v))}
+              style={{ minWidth: 100 }}
+            />
+          </View>
         </Card.Content>
       </Card>
       <PrintButtonCard
@@ -309,6 +362,8 @@ function CartonLabelForm() {
           !(ValidationColorways as string[]).includes(colorway) ||
           asn.length < asnExample.length
         }
+        numCopies={numCopies}
+        setNumCopies={(c) => appDispatch(setCartonLabelNumCopies(c))}
         printAsync={(setPrintStatus) =>
           printCartonLabelAsync(
             productCategory === "singleDie"
@@ -325,6 +380,7 @@ function CartonLabelForm() {
                 },
             asn,
             quantity,
+            numCopies,
             setPrintStatus
           )
         }
@@ -334,7 +390,7 @@ function CartonLabelForm() {
 }
 
 function DiceSetsLabelForm() {
-  const { setType, colorway } = useAppSelector(
+  const { setType, colorway, numCopies } = useAppSelector(
     (state) => state.validationSettings.diceSetLabel
   );
   const appDispatch = useAppDispatch();
@@ -369,6 +425,8 @@ function DiceSetsLabelForm() {
           !ValidationDiceSetTypes.includes(setType) ||
           !ValidationColorways.includes(colorway)
         }
+        numCopies={numCopies}
+        setNumCopies={(c) => appDispatch(setDiceSetLabelNumCopies(c))}
         printAsync={(setPrintStatus) =>
           printDiceSetBoxLabelAsync(
             {
@@ -377,6 +435,7 @@ function DiceSetsLabelForm() {
               colorway,
               dice: getDiceSetDice(setType),
             },
+            numCopies,
             setPrintStatus
           )
         }
