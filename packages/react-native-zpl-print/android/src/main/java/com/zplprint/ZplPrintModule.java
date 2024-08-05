@@ -43,7 +43,7 @@ public class ZplPrintModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void printHtml(String printerName, String html, int imageWidth, boolean enableJs, double blacknessThreshold, Promise promise) {
+    public void printHtml(String printerName, String html, int imageWidth, boolean enableJs, double blacknessThreshold, int numCopies, Promise promise) {
         if (ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -81,7 +81,7 @@ public class ZplPrintModule extends ReactContextBaseJavaModule {
                     // Print bitmap
                     if (bitmap != null) {
                         List<byte[]> zplBytes = ZplPrint.getImage(
-                            bitmap, 0, 0, blacknessThreshold, executor, threadCount);
+                            bitmap, 0, 0, blacknessThreshold, numCopies, executor, threadCount);
                         if (zplBytes != null) {
                             try {
                                 BluetoothPrinter.print(printer, zplBytes);
