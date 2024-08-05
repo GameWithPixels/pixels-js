@@ -184,6 +184,8 @@ export function getColorwayLabel(colorway: PixelColorway): string {
       return "Aurora Sky";
     case "clear":
       return "Clear";
+    case "whiteAurora":
+      return "White Aurora";
     case "custom":
       return "Custom";
     default:
