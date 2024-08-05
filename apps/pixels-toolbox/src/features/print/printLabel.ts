@@ -22,6 +22,7 @@ function getImageFilename(dieType: PixelDieType): string {
 export async function printLabelAsync(
   productInfo: ProductInfo,
   getHtml: (productIds: ProductIds) => Promise<string>,
+  numCopies: number,
   statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
   statusCallback?.("preparing");
@@ -39,6 +40,7 @@ export async function printLabelAsync(
     const result = await printHtmlToZpl("XP-", html, {
       enableJs: true,
       imageWidth: 940,
+      numCopies,
     });
     const success = result === "success";
     statusCallback?.(success ? "done" : "error");
@@ -63,6 +65,7 @@ export async function printLabelAsync(
  *
  * @param pixelInfo Some information about the Pixel for which to print the label.
  * @param statusCallback An optional callback called with the printing status.
+ * @param numCopies The number of copies to print.
  * @returns A promise resolving when the data has been send to the printer.
  */
 export async function printDieBoxLabelAsync(
@@ -70,6 +73,7 @@ export async function printDieBoxLabelAsync(
     name: string;
     pixelId: number;
   },
+  numCopies: number,
   statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
   await printLabelAsync(
@@ -81,12 +85,14 @@ export async function printDieBoxLabelAsync(
         deviceName: dieInfo.name,
         dieImageFilename: getImageFilename(dieInfo.type),
       }),
+    numCopies,
     statusCallback
   );
 }
 
 export async function printDiceSetBoxLabelAsync(
   setInfo: Extract<ProductInfo, { kind: "set" }>,
+  numCopies: number,
   statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
   await printLabelAsync(
@@ -96,6 +102,7 @@ export async function printDiceSetBoxLabelAsync(
         ...product,
         diceImageFilenames: setInfo.dice.map(getImageFilename),
       }),
+    numCopies,
     statusCallback
   );
 }
@@ -104,6 +111,7 @@ export async function printCartonLabelAsync(
   productInfo: ProductInfo,
   asn: string,
   quantity: number,
+  numCopies: number,
   statusCallback?: (status: PrintStatus) => void
 ): Promise<void> {
   await printLabelAsync(
@@ -114,6 +122,7 @@ export async function printCartonLabelAsync(
         asn,
         quantity,
       }),
+    numCopies,
     statusCallback
   );
 }

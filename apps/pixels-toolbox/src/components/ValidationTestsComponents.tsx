@@ -106,6 +106,7 @@ function printLabel(
       type: dieType,
       colorway: pixel.colorway,
     },
+    1, // 1 copy
     (status) => status !== "error" && statusCallback(status)
   ).catch(statusCallback);
 }

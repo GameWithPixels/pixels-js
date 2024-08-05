@@ -289,6 +289,8 @@ i18n
           diceSet: "Dice Set",
           productType: "Product Type",
           quantity: "Quantity",
+          copies: "Copies",
+          print: "Print",
 
           // Dice sets
           rpg: "RPG",
@@ -542,6 +544,8 @@ i18n
           diceSet: "骰子套装",
           productType: "产品类别",
           quantity: "数量",
+          copies: "打印份数",
+          print: "打印",
         },
       },
     },

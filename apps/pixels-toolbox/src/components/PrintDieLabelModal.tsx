@@ -52,6 +52,7 @@ export function PrintDieLabelModal({
             type: pixel.dieType !== "unknown" ? pixel.dieType : "d12",
             colorway,
           },
+          1, // 1 copy
           (status) => setPrintStatus(t(status + "AsPrintStatus"))
         );
       };

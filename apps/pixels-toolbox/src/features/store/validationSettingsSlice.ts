@@ -12,23 +12,27 @@ export interface ValidationSettingsState {
     productType: PixelDieType | DiceSetType;
     colorway: PixelColorway;
     quantity: number;
+    numCopies: number;
   };
   diceSetLabel: {
     setType: DiceSetType;
     colorway: PixelColorway;
+    numCopies: number;
   };
 }
 
 const initialState: ValidationSettingsState = {
   cartonLabel: {
     asn: "",
-    productType: "unknown",
+    productType: "d20",
     colorway: "unknown",
     quantity: 64,
+    numCopies: 1,
   },
   diceSetLabel: {
-    setType: "unknown",
+    setType: "rpg",
     colorway: "unknown",
+    numCopies: 1,
   },
 };
 
@@ -56,12 +60,20 @@ const validationSettingsSlice = createSlice({
       state.cartonLabel.quantity = action.payload;
     },
 
+    setCartonLabelNumCopies(state, action: PayloadAction<number>) {
+      state.cartonLabel.numCopies = action.payload;
+    },
+
     setDiceSetLabelSetType(state, action: PayloadAction<DiceSetType>) {
       state.diceSetLabel.setType = action.payload;
     },
 
     setDiceSetLabelDiceColorway(state, action: PayloadAction<PixelColorway>) {
       state.diceSetLabel.colorway = action.payload;
+    },
+
+    setDiceSetLabelNumCopies(state, action: PayloadAction<number>) {
+      state.diceSetLabel.numCopies = action.payload;
     },
   },
 });
@@ -71,7 +83,9 @@ export const {
   setCartonLabelProductType,
   setCartonLabelDieColorway,
   setCartonLabelQuantity,
+  setCartonLabelNumCopies,
   setDiceSetLabelSetType,
   setDiceSetLabelDiceColorway,
+  setDiceSetLabelNumCopies,
 } = validationSettingsSlice.actions;
 export default validationSettingsSlice.reducer;
