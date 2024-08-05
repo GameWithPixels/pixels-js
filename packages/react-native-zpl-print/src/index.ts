@@ -25,6 +25,8 @@ interface PrintHtmlToZplOptions {
   enableJs?: boolean;
   /** Blackness threshold value, between 0 and 1. */
   blacknessThreshold?: number;
+  /** Number of copies to print. */
+  numCopies?: number;
 }
 
 /**
@@ -45,6 +47,7 @@ export function printHtmlToZpl(
     html,
     opt?.imageWidth ?? 0,
     opt?.enableJs ?? false,
-    opt?.blacknessThreshold ?? 0.3
+    opt?.blacknessThreshold ?? 0.3,
+    opt?.numCopies ?? 1
   );
 }

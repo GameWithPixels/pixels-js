@@ -27,6 +27,7 @@ public class ZplPrint {
                                         int x,
                                         int y,
                                         double blacknessThreshold,
+                                        int numCopies,
                                         @Nullable ExecutorService executorService,
                                         int threadCount) {
         final int width = bitmap.getWidth();
@@ -78,6 +79,7 @@ public class ZplPrint {
         return toBytes(new String[]{"^XA",
             "^PW" + width,
             "^FO" + x + "," + y + "^GFA," + sizeInBytes + "," + sizeInBytes + "," + bytesPerRow + "," + data + "^FS",
+            "^PQ" + numCopies,
             "^XZ"});
     }
 
