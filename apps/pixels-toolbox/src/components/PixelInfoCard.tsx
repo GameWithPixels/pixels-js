@@ -35,6 +35,8 @@ function getColorwayInitials(colorway: PixelColorway): string | undefined {
       return "MG";
     case "auroraSky":
       return "AS";
+    case "whiteAurora":
+      return "WA";
     case "clear":
       return "CL";
     case "custom":

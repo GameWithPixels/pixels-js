@@ -78,6 +78,7 @@ i18n
           hematiteGrey: "Hematite Grey",
           midnightGalaxy: "Midnight Galaxy",
           auroraSky: "Aurora Sky",
+          whiteAurora: "White Aurora",
           clear: "Clear",
           custom: "Custom",
 
@@ -360,6 +361,7 @@ i18n
           hematiteGrey: "赤铁灰",
           midnightGalaxy: "星空色",
           auroraSky: "天蓝色",
+          whiteAurora: "白极光色",
           clear: "透明色",
           custom: "定制色",
 
