@@ -49,6 +49,10 @@ import {
   ValidationDieTypes,
 } from "~/features/validation";
 
+const DiceSetColorways: readonly PixelColorway[] = ValidationColorways.filter(
+  (c) => c !== "whiteAurora"
+);
+
 const asnExample = "FASN0012345";
 
 function NumericTextInput({
@@ -216,10 +220,12 @@ function PrintButtonCard({
 
 function ColorwaySelectorCard({
   colorway,
+  availableColorways,
   numColumns,
   onSelectColorway,
 }: {
   colorway: PixelColorway;
+  availableColorways: readonly PixelColorway[];
   numColumns: number;
   onSelectColorway: (colorway: PixelColorway) => void;
 }) {
@@ -233,7 +239,7 @@ function ColorwaySelectorCard({
             <ColorwayColumn
               key={col}
               selected={colorway}
-              values={ValidationColorways.filter(
+              values={availableColorways.filter(
                 (_, i) => i % numColumns === col
               )}
               onSelect={(c) => onSelectColorway(c)}
@@ -258,6 +264,8 @@ function CartonLabelForm() {
     productCategory === "singleDie"
       ? ValidationDieTypes
       : ValidationDiceSetTypes;
+  const availableColorways =
+    productCategory === "singleDie" ? ValidationColorways : DiceSetColorways;
 
   const numColumns = 2;
   const { colors } = useTheme();
@@ -335,6 +343,7 @@ function CartonLabelForm() {
       </Card>
       <ColorwaySelectorCard
         colorway={colorway}
+        availableColorways={availableColorways}
         numColumns={2}
         onSelectColorway={(c) => appDispatch(setCartonLabelDieColorway(c))}
       />
@@ -359,7 +368,7 @@ function CartonLabelForm() {
       <PrintButtonCard
         disabled={
           !(productTypes as string[]).includes(productType) ||
-          !(ValidationColorways as string[]).includes(colorway) ||
+          !(availableColorways as string[]).includes(colorway) ||
           asn.length < asnExample.length
         }
         numCopies={numCopies}
@@ -417,13 +426,14 @@ function DiceSetsLabelForm() {
       </Card>
       <ColorwaySelectorCard
         colorway={colorway}
+        availableColorways={DiceSetColorways}
         numColumns={2}
         onSelectColorway={(c) => appDispatch(setDiceSetLabelDiceColorway(c))}
       />
       <PrintButtonCard
         disabled={
           !ValidationDiceSetTypes.includes(setType) ||
-          !ValidationColorways.includes(colorway)
+          !DiceSetColorways.includes(colorway)
         }
         numCopies={numCopies}
         setNumCopies={(c) => appDispatch(setDiceSetLabelNumCopies(c))}
