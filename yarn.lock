@@ -1589,10 +1589,10 @@
   resolved "https://registry.yarnpkg.com/@evilmartians/lefthook/-/lefthook-1.6.11.tgz#286b91dc6dcf87828a55c3b2c0e8e7a29129c433"
   integrity sha512-Luvfr90VGcfP4rMaJccjG5YfuZ4ebrVHxmDGi7naSdpPCLMpAbVkLWe8N0WzLd+BoolgDV35TTST7tmoCZiClQ==
 
-"@expo/browser-polyfill@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@expo/browser-polyfill/-/browser-polyfill-1.0.0.tgz#2d93ae0feb3ccc90b78a98f277f8f8ed8bcbd37d"
-  integrity sha512-hwlfansWtt1F/ZUitu6vrGRF5Th2LhBn2HHPxvz3U/MFxKG5XI4TA6SM1bJW2Q2iR2bsIddzz1nNwcf0Sjg1hA==
+"@expo/browser-polyfill@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@expo/browser-polyfill/-/browser-polyfill-1.0.1.tgz#6bcc53f041bbe1f09e60582e1c1c66c767c51634"
+  integrity sha512-0K6USycVKDj/k9Gr2UYa+7MiCjb0f2NznsE4LX11H85vQMJma5JS3a2oe6lxCfleY9hDcQ/9zKCYS8O6crsv3A==
   dependencies:
     expo-2d-context "^0.0.3"
     fbemitter "^2.1.1"
@@ -6536,12 +6536,12 @@ expo-system-ui@~2.9.4:
     "@react-native/normalize-color" "^2.0.0"
     debug "^4.3.2"
 
-expo-three@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/expo-three/-/expo-three-7.0.0.tgz#283fa891b5e15bd0a4dc6ef304341deabccac145"
-  integrity sha512-SVvwEwK88/VddOJGhYcy0fFi0aGeI4trd8M6GjRG/mampJZa/TWZC2fJNo6/EAsWxrLSNJFO+KjhT1OrOxXDbQ==
+expo-three@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/expo-three/-/expo-three-8.0.0.tgz#e9f73987fafd94146e71acf070ab02784a0f7c06"
+  integrity sha512-aGSxS7UEA0DtkdY9UdAHWW4JsJh4Q2vtOQNb3oocIP5bBazb6qTm0PtsXUF0YYo5s9TCJfm4t2ED+0LUz7QwaQ==
   dependencies:
-    "@expo/browser-polyfill" "^1.0.0"
+    "@expo/browser-polyfill" "^1.0.1"
     expo-asset-utils "~3.0.0"
 
 expo-updates-interface@~0.15.1:
@@ -12122,10 +12122,10 @@ thenify-all@^1.0.0:
   dependencies:
     any-promise "^1.0.0"
 
-three@^0.145.0:
-  version "0.145.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.145.0.tgz#a613d71e75effc2aed88be630027ca01e2b6502e"
-  integrity sha512-EKoHQEtEJ4CB6b2BGMBgLZrfwLjXcSUfoI/MiIXUuRpeYsfK5aPWbYhdtIVWOH+x6X0TouldHKHBuc/LAiFzAw==
+three@^0.166.0:
+  version "0.166.1"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.166.1.tgz#322cfc48fff4e751cd47d61fd1558c387d098d7c"
+  integrity sha512-LtuafkKHHzm61AQA1be2MAYIw1IjmhOUxhBa0prrLpEMWbV7ijvxCRHjSgHPGp2493wLBzwKV46tA9nivLEgKg==
 
 throat@^5.0.0:
   version "5.0.0"

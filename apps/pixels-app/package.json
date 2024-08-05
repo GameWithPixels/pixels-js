@@ -71,7 +71,7 @@
     "expo-splash-screen": "~0.26.5",
     "expo-status-bar": "~1.11.1",
     "expo-system-ui": "~2.9.4",
-    "expo-three": "^7.0.0",
+    "expo-three": "^8.0.0",
     "expo-updates": "~0.24.13",
     "mobx": "^6.12.4",
     "mobx-react-lite": "^4.0.7",
@@ -89,7 +89,7 @@
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
-    "three": "^0.145.0"
+    "three": "^0.166.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
