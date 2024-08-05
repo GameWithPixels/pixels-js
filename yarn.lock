@@ -11206,10 +11206,10 @@ react-native-svg@15.2.0:
     css-select "^5.1.0"
     css-tree "^1.1.3"
 
-react-native-vision-camera@4.4.1, react-native-vision-camera@~4.4.1:
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/react-native-vision-camera/-/react-native-vision-camera-4.4.1.tgz#5531b9410d7041304a1a9746b455f793bb7df935"
-  integrity sha512-pWuO+AMwQzMoZ85pOHv4P4G1kPdYGA1QAC26rtGfVBbjZt5UyEpYRTirzRhetkQ7meaBjHIWEE/5Qmo0VockHA==
+react-native-vision-camera@4.5.1, react-native-vision-camera@~4.5.1:
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/react-native-vision-camera/-/react-native-vision-camera-4.5.1.tgz#245a2b4b894b75c104342fd3e14e934462203d90"
+  integrity sha512-ob7gfBYin4lG2zlzRr5y4rYJN3NCCyJotFX1z3ul8V0N2GwkCGh31cko6hF9DXG4VocSPVYKt+K5W0CWLp3y0g==
 
 react-native-worklets-core@^1.3.3:
   version "1.3.3"

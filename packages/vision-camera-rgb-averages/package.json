@@ -62,7 +62,7 @@
     "react": "18.2.0",
     "react-native": "0.74.3",
     "react-native-builder-bob": "^0.25.0",
-    "react-native-vision-camera": "4.4.1",
+    "react-native-vision-camera": "4.5.1",
     "react-native-worklets-core": "^1.3.3",
     "release-it": "^17.2.0"
   },
