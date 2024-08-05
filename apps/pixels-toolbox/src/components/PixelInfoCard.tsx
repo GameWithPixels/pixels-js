@@ -38,10 +38,10 @@ function getColorwayInitials(colorway: PixelColorway): string | undefined {
       return "MG";
     case "auroraSky":
       return "AS";
-    case "clear":
-      return "CL";
     case "whiteAurora":
       return "WA";
+    case "clear":
+      return "CL";
     case "custom":
       return "CS";
     case "unknown":
