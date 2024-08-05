@@ -16,7 +16,7 @@
     "@systemic-games/vision-camera-rgb-averages": "*",
     "react": "18.2.0",
     "react-native": "0.74.3",
-    "react-native-vision-camera": "~4.4.1",
+    "react-native-vision-camera": "~4.5.1",
     "react-native-worklets-core": "^1.3.3"
   },
   "devDependencies": {
