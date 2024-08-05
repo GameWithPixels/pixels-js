@@ -1,4 +1,4 @@
-@import iOSDFULibrary; // Require -fcxx-modules compiler flag
+@import NordicDFU; // Require -fcxx-modules compiler flag
 
 #ifdef RCT_NEW_ARCH_ENABLED
 #import "RNNordicNrf5DfuSpec.h"
