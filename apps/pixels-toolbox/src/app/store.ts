@@ -9,7 +9,9 @@ import {
   PURGE,
   REGISTER,
   REHYDRATE,
+  StateReconciler,
 } from "redux-persist";
+import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 
 import appSettingsReducer, {
   AppSettingsState,
@@ -19,10 +21,11 @@ import validationSettingsReducer, {
   ValidationSettingsState,
 } from "~/features/store/validationSettingsSlice";
 
-function conf(key: string) {
+function conf<S>(key: string, stateReconciler?: false | StateReconciler<S>) {
   return {
     key,
     storage: AsyncStorage,
+    stateReconciler,
   };
 }
 
@@ -36,7 +39,7 @@ export const store = configureStore({
       appSettingsReducer
     ),
     validationSettings: persistReducer<ValidationSettingsState>(
-      conf("validationSettings"),
+      conf<ValidationSettingsState>("validationSettings", autoMergeLevel2),
       validationSettingsReducer
     ),
   },
