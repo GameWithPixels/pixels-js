@@ -10,6 +10,7 @@ import {
   REGISTER,
   REHYDRATE,
 } from "redux-persist";
+import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 
 import appSettingsReducer, {
   AppSettingsState,
@@ -28,7 +29,11 @@ export const store = configureStore({
       appSettingsReducer
     ),
     validationSettings: persistReducer<ValidationSettingsState>(
-      { key: "validationSettings", storage: AsyncStorage },
+      {
+        key: "validationSettings",
+        storage: AsyncStorage,
+        stateReconciler: autoMergeLevel2,
+      },
       validationSettingsReducer
     ),
   },
