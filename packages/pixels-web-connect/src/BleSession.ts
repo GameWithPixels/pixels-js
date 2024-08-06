@@ -127,12 +127,12 @@ export default class BleSession extends PixelSession {
 
       // Get Pixel service and characteristics
       this._notifyConnectionEvent("connected");
-      const service = await server.getPrimaryService(PixelBleUuids.service);
+      const service = await server.getPrimaryService(PixelBleUuids.dieService);
       this._notify = await service.getCharacteristic(
-        PixelBleUuids.notifyCharacteristic
+        PixelBleUuids.dieNotifyCharacteristic
       );
       this._write = await service.getCharacteristic(
-        PixelBleUuids.writeCharacteristic
+        PixelBleUuids.dieWriteCharacteristic
       );
     }
     // Note: always notify the ready state so a new status listener will
