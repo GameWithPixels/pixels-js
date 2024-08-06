@@ -66,16 +66,16 @@ export default class BleSession extends PixelSession {
 
     await Central.subscribeCharacteristic(
       this.systemId,
-      PixelBleUuids.service,
-      PixelBleUuids.notifyCharacteristic,
+      PixelBleUuids.dieService,
+      PixelBleUuids.dieNotifyCharacteristic,
       internalListener
     );
 
     return () => {
       Central.unsubscribeCharacteristic(
         this.systemId,
-        PixelBleUuids.service,
-        PixelBleUuids.notifyCharacteristic
+        PixelBleUuids.dieService,
+        PixelBleUuids.dieNotifyCharacteristic
       ).catch(() => {});
       // TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
     };
@@ -88,8 +88,8 @@ export default class BleSession extends PixelSession {
   ): Promise<void> {
     await Central.writeCharacteristic(
       this.systemId,
-      PixelBleUuids.service,
-      PixelBleUuids.writeCharacteristic,
+      PixelBleUuids.dieService,
+      PixelBleUuids.dieWriteCharacteristic,
       data,
       { withoutResponse, timeoutMs }
     );
