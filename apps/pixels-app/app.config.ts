@@ -11,7 +11,7 @@ const config = {
     name: prod ? "Pixels" : "Pixels Dev",
     slug: prod ? "pixels-app" : "pixels-app-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "50.1", // Major is Expo version, minor is native code revision
+    runtimeVersion: "51.0", // Major is Expo version, minor is native code revision
     version,
     platforms: ["ios", "android"],
     orientation: "portrait",
