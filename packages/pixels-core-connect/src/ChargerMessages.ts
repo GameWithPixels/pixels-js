@@ -25,7 +25,7 @@ import { Constants } from "./Constants";
 export const MessageTypeValues = {
   none: enumValue(0),
   whoAreYou: enumValue(),
-  iAmADie: enumValue(),
+  iAmALCC: enumValue(),
   rollState: enumValue(),
   telemetry: enumValue(),
   bulkSetup: enumValue(),
@@ -452,7 +452,7 @@ export class StatusInfoChunk implements MessageChunk {
  */
 export class IAmADie implements PixelMessage {
   @serializable(1)
-  readonly type = MessageTypeValues.iAmADie;
+  readonly type = MessageTypeValues.iAmALCC;
 
   versionInfo = new VersionInfoChunk();
   dieInfo = new DieInfoChunk();
@@ -462,27 +462,14 @@ export class IAmADie implements PixelMessage {
   statusInfo = new StatusInfoChunk();
 }
 
-/**
- * Message send by a Pixel running a legacy firmware,
- * after receiving a "WhoAmI" message.
- * @category Message
- */
-export class LegacyIAmADie implements PixelMessage {
+export class LegacyIAmALCC implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.iAmADie;
+  readonly type = MessageTypeValues.iAmALCC;
 
   /** Number of LEDs. */
-  @serializable(1)
+  @serializable(1, { padding: 2 })
   ledCount = 0;
-
-  /** Die color. */
-  @serializable(1)
-  colorway = PixelColorwayValues.unknown;
-
-  /** Type of die. */
-  @serializable(1)
-  dieType = PixelDieTypeValues.unknown;
 
   /** Hash of the uploaded profile. */
   @serializable(4)
@@ -490,7 +477,7 @@ export class LegacyIAmADie implements PixelMessage {
 
   /** The Pixel id. */
   @serializable(4)
-  pixelId = 0;
+  lccId = 0;
 
   /** Amount of available flash. */
   @serializable(2)
@@ -499,16 +486,6 @@ export class LegacyIAmADie implements PixelMessage {
   /** UNIX timestamp in seconds for the date of the firmware. */
   @serializable(4)
   buildTimestamp = 0;
-
-  // Roll state
-
-  /** Current roll state. */
-  @serializable(1)
-  rollState = PixelRollStateValues.unknown;
-
-  /** Index of the face that is currently facing up. */
-  @serializable(1)
-  currentFaceIndex = 0;
 
   // Battery level
 
@@ -520,8 +497,8 @@ export class LegacyIAmADie implements PixelMessage {
   @serializable(1)
   batteryState = PixelBatteryStateValues.ok;
 
-  /** Byte size of the LegacyIAmADie message. */
-  static readonly expectedSize = 22;
+  /** Byte size of the LegacyIAmALCC message. */
+  static readonly expectedSize = 20;
 }
 
 /**
@@ -1420,7 +1397,7 @@ export class PlayProfileAnimation implements PixelMessage {
 // Returns the list of message classes defined in this file.
 function _getMessageClasses(): MessageClass[] {
   return [
-    LegacyIAmADie,
+    LegacyIAmALCC,
     RollState,
     Telemetry,
     BulkSetup,

@@ -1,15 +1,18 @@
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 
+import { Charger } from "./Charger";
 import { MessageType } from "./Messages";
 import { Pixel } from "./Pixel";
 
+type PixelType = Pixel | Charger;
+
 /**
- * Base class for errors thrown by the {@link Pixel} class.
+ * Base class for errors thrown by the {@link PixelConnect} or its descendant classes.
  * @category Pixels
  */
 export class PixelError extends Error {
-  /** The Pixel for which the error occurred. */
-  readonly pixel: Pixel;
+  /** The Pixel instance for which the error occurred. */
+  readonly pixel: PixelType;
 
   /** The error description. */
   readonly description: string;
@@ -17,7 +20,7 @@ export class PixelError extends Error {
   /** The original error that caused this error to be thrown. */
   readonly cause?: Error;
 
-  constructor(pixel: Pixel, message: string, cause?: Error) {
+  constructor(pixel: PixelType, message: string, cause?: Error) {
     // We get a code from native errors
     const code = cause && (cause as any).code;
     if (code) {
@@ -37,7 +40,7 @@ export class PixelError extends Error {
  * @category Pixels
  */
 export class PixelConnectError extends PixelError {
-  constructor(pixel: Pixel, msgOrError: string | Error | unknown) {
+  constructor(pixel: PixelType, msgOrError: string | Error | unknown) {
     const isError = msgOrError instanceof Error;
     const isPixelError = isError && msgOrError instanceof PixelError;
     const msg =
@@ -59,7 +62,7 @@ export class PixelConnectError extends PixelError {
  * @category Pixels
  */
 export class PixelConnectTimeoutError extends PixelConnectError {
-  constructor(pixel: Pixel, timeoutMs: number) {
+  constructor(pixel: PixelType, timeoutMs: number) {
     super(pixel, `Connection timeout after ${timeoutMs} ms`);
     this.name = "PixelConnectTimeoutError";
   }
@@ -71,7 +74,7 @@ export class PixelConnectTimeoutError extends PixelConnectError {
  * @category Pixels
  */
 export class PixelConnectCancelledError extends PixelConnectError {
-  constructor(pixel: Pixel) {
+  constructor(pixel: PixelType) {
     super(pixel, `Connection cancelled (current state is ${pixel.status})`);
     this.name = "PixelConnectCancelledError";
   }
@@ -84,7 +87,7 @@ export class PixelConnectCancelledError extends PixelConnectError {
  * @category Pixels
  */
 export class PixelConnectIdMismatchError extends PixelConnectError {
-  constructor(pixel: Pixel, pixelId: number) {
+  constructor(pixel: PixelType, pixelId: number) {
     super(
       pixel,
       "Identification mismatch, expecting " +
@@ -102,7 +105,7 @@ export class PixelConnectIdMismatchError extends PixelConnectError {
  * @category Pixels
  */
 export class PixelWaitForMessageTimeoutError extends PixelError {
-  constructor(pixel: Pixel, timeoutMs: number, messageType: MessageType) {
+  constructor(pixel: PixelType, timeoutMs: number, messageType: MessageType) {
     super(
       pixel,
       `Timeout of ${timeoutMs}ms waiting for message ${messageType}`
@@ -117,7 +120,7 @@ export class PixelWaitForMessageTimeoutError extends PixelError {
  * @category Pixels
  */
 export class PixelWaitForMessageDisconnectError extends PixelError {
-  constructor(pixel: Pixel, messageType: MessageType) {
+  constructor(pixel: PixelType, messageType: MessageType) {
     super(pixel, `Disconnected while waiting for message ${messageType}`);
     this.name = "PixelMessageConnectStatusError";
   }
@@ -130,7 +133,7 @@ export class PixelWaitForMessageDisconnectError extends PixelError {
  */
 export class PixelIncompatibleMessageError extends PixelError {
   constructor(
-    pixel: Pixel,
+    pixel: PixelType,
     name: string,
     libApiVersion: number,
     fwApiVersion: number,
@@ -149,11 +152,11 @@ export class PixelIncompatibleMessageError extends PixelError {
 }
 
 /**
- * Thrown by {@link Pixel.rename} method when an empty name is passed.
+ * Thrown by {@link PixelConnect.rename} method when an empty name is passed.
  * @category Pixels
  */
 export class PixelEmptyNameError extends PixelError {
-  constructor(pixel: Pixel) {
+  constructor(pixel: PixelType) {
     super(pixel, "New Pixel name must have at least one character");
     this.name = "PixelEmptyNameError";
   }
@@ -164,7 +167,7 @@ export class PixelEmptyNameError extends PixelError {
  * @category Pixels
  */
 export class PixelTransferError extends PixelError {
-  constructor(pixel: Pixel, message: string, cause?: Error) {
+  constructor(pixel: PixelType, message: string, cause?: Error) {
     super(pixel, message, cause);
     this.name = "PixelTransferError";
   }
@@ -175,7 +178,7 @@ export class PixelTransferError extends PixelError {
  * @category Pixels
  */
 export class PixelTransferInProgressError extends PixelTransferError {
-  constructor(pixel: Pixel) {
+  constructor(pixel: PixelType) {
     super(pixel, "A data transfer is already in progress");
     this.name = "PixelTransferInProgressError";
   }
@@ -186,7 +189,7 @@ export class PixelTransferInProgressError extends PixelTransferError {
  * @category Pixels
  */
 export class PixelTransferInvalidDataError extends PixelTransferError {
-  constructor(pixel: Pixel) {
+  constructor(pixel: PixelType) {
     super(pixel, "Invalid data to transfer");
     this.name = "PixelTransferInvalidDataError";
   }
@@ -197,7 +200,7 @@ export class PixelTransferInvalidDataError extends PixelTransferError {
  * @category Pixels
  */
 export class PixelTransferCompletedTimeoutError extends PixelTransferError {
-  constructor(pixel: Pixel, ackType: MessageType) {
+  constructor(pixel: PixelType, ackType: MessageType) {
     super(
       pixel,
       `Timeout waiting on device to confirm completed data transfer with ${ackType} message`
@@ -211,7 +214,7 @@ export class PixelTransferCompletedTimeoutError extends PixelTransferError {
  * @category Pixels
  */
 export class PixelTransferOutOfMemoryError extends PixelTransferError {
-  constructor(pixel: Pixel, dataSize: number) {
+  constructor(pixel: PixelType, dataSize: number) {
     super(pixel, `Not enough memory on die to store ${dataSize} bytes`);
     this.name = "PixelTransferOutOfMemoryError";
   }
