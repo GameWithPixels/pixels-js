@@ -2,69 +2,50 @@ import {
   AnimConstants,
   Color,
   Color32Utils,
-  DataSet,
   DiceUtils,
   PixelColorway,
-  PixelColorwayValues,
   PixelDieType,
-  PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
   assert,
-  byteSizeOf,
   createTypedEventEmitter,
   deserialize,
   EventReceiver,
-  getValueKeyName,
   Mutable,
   safeAssign,
+  unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
-import { Constants } from "./Constants";
 import {
   BatteryLevel,
   Blink,
-  BulkData,
-  BulkSetup,
   deserializeMessage,
   getMessageType,
   IAmADie,
-  LegacyIAmADie,
+  LegacyIAmALCC,
   MessageOrType,
   MessageType,
   MessageTypeValues,
-  NotifyUser,
-  NotifyUserAck,
   PixelMessage,
   PixelPowerOperationValues,
   PixelRollState,
-  PixelRollStateValues,
   PlayInstantAnimation,
   PowerOperation,
-  RemoteAction,
   RequestRssi,
-  RollState,
   Rssi,
   serializeMessage,
   SetName,
   TelemetryRequestModeValues,
-  TransferAnimationSet,
-  TransferAnimationSetAck,
-  TransferInstantAnimationSet,
-  TransferInstantAnimationSetAck,
-  TransferInstantAnimationsSetAckTypeValues,
-  TransferTestAnimationSet,
-  TransferTestAnimationSetAck,
   VersionInfoChunk,
-} from "./Messages";
+} from "./ChargerMessages";
+import { Constants } from "./Constants";
 import { PixelInfo } from "./PixelInfo";
 import {
   PixelInfoNotifier,
   PixelInfoNotifierMutableProps,
 } from "./PixelInfoNotifier";
 import { PixelSession } from "./PixelSession";
-import { getDefaultPixelName } from "./advertisedNames";
 import {
   PixelConnectCancelledError,
   PixelConnectError,
@@ -72,11 +53,6 @@ import {
   PixelConnectTimeoutError,
   PixelEmptyNameError,
   PixelIncompatibleMessageError,
-  PixelTransferCompletedTimeoutError,
-  PixelTransferError,
-  PixelTransferInProgressError,
-  PixelTransferInvalidDataError,
-  PixelTransferOutOfMemoryError,
   PixelWaitForMessageDisconnectError as WaitMsgDiscoErr,
   PixelWaitForMessageTimeoutError as WaitMsgTimeoutErr,
 } from "./errors";
@@ -110,28 +86,8 @@ export type PixelStatus =
   | "disconnecting";
 
 /**
- * Data structure for {@link Pixel} roll state events,
- * see {@link PixelEventMap}.
- * @category Pixels
- */
-export type RollEvent = Readonly<{
-  /** The roll state of the Pixel when this event was raised. */
-  state: PixelRollState;
-  /**
-   * The value of the die face that is currently facing up.
-   * @remarks Fudge die will return -1, 0 or 1.
-   **/
-  face: number;
-  /**
-   * The 0-based index of the die face that is currently facing up.
-   * @see {@link PixelInfo.currentFaceIndex} for more details.
-   **/
-  faceIndex: number;
-}>;
-
-/**
- * Data structure for {@link Pixel} battery events,
- * see {@link PixelEventMap}.
+ * Data structure for {@link Charger} battery events,
+ * see {@link ChargerEventMap}.
  * @category Pixels
  */
 export type BatteryEvent = Readonly<{
@@ -140,90 +96,41 @@ export type BatteryEvent = Readonly<{
 }>;
 
 /**
- * Data structure for {@link Pixel} data transfer events,
- * and for {@link Pixel.dataTransferProgress}.
- * see {@link PixelEventMap}.
- * @category Pixels
- */
-export type UserMessageEvent = Readonly<{
-  message: string;
-  withCancel: boolean;
-  response: (okCancel: boolean) => Promise<void>;
-}>;
-
-/**
- * Data structure for {@link Pixel} user message events,
- * see {@link PixelEventMap}.
- * @category Pixels
- */
-export type DataTransferProgress = Readonly<{
-  progressPercent: number; // Integer between 0 and 100
-  transferredBytes: number;
-  totalBytes: number;
-}>;
-
-/**
- * Event map for {@link Pixel} class.
+ * Event map for {@link Charger} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
- * Call {@link Pixel.addEventListener} to subscribe to an event.
+ * Call {@link Charger.addEventListener} to subscribe to an event.
  * @category Pixels
  */
-export interface PixelEventMap {
+export interface ChargerEventMap {
   /** Message received notification. */
   message: MessageOrType;
   /** Message send notification. */
   messageSend: MessageOrType;
-  /** Roll state changed notification. */
-  rollState: RollEvent;
-  /** Roll result notification. */
-  roll: number;
   /** Battery state changed notification. */
   battery: BatteryEvent;
-  /** User message request. */
-  userMessage: UserMessageEvent;
-  /** Remote action request. */
-  remoteAction: number; // Remote action id
-  /** Data transfer. */
-  dataTransfer: Readonly<
-    | {
-        type: "preparing" | "starting" | "completed";
-        totalBytes: number;
-      }
-    | {
-        type: "failed";
-        error: "timeout" | "outOfMemory" | "disconnected" | "unknown";
-      }
-    | ({
-        type: "progress";
-      } & DataTransferProgress)
-  >;
 }
 
 /**
- * The mutable properties of {@link Pixel} not inherited from parent
- * class {@link PixelInfoNotifier}.
+ * The mutable properties of {@link Charger} not inherited from parent
+ * class {@link ChargerInfoNotifier}.
  * @category Pixels
  */
-export interface PixelOwnMutableProps {
+export interface ChargerOwnMutableProps {
   /** Connection status. */
   status: PixelStatus;
-  /** On-die profile hash value. */
-  profileHash: number;
-  /** Ongoing data transfer progress (such as programming a profile). */
-  transferProgress: DataTransferProgress | undefined;
 }
 
 /**
- * The mutable properties of {@link Pixel}.
+ * The mutable properties of {@link Charger}.
  * @category Pixels
  */
-export type PixelMutableProps = PixelInfoNotifierMutableProps &
-  PixelOwnMutableProps;
+export type ChargerMutableProps = PixelInfoNotifierMutableProps &
+  ChargerOwnMutableProps;
 
 /**
- * Represents a Pixels die.
- * Most of its methods require the instance to be connected to the Pixel device.
+ * Represents a Pixels charger.
+ * Most of its methods require the instance to be connected to the charger.
  * Call the {@link connect()} method to initiate a connection.
  *
  * Call {@link addEventListener} to get notified for rolls, connection and
@@ -233,12 +140,15 @@ export type PixelMutableProps = PixelInfoNotifierMutableProps &
  *
  * @category Pixels
  */
-export class Pixel
-  extends PixelInfoNotifier<PixelMutableProps, PixelInfo & PixelOwnMutableProps>
-  implements PixelOwnMutableProps
+export class Charger
+  extends PixelInfoNotifier<
+    ChargerMutableProps,
+    PixelInfo & ChargerOwnMutableProps
+  >
+  implements ChargerOwnMutableProps
 {
   // Our events emitter
-  private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
+  private readonly _evEmitter = createTypedEventEmitter<ChargerEventMap>();
   private readonly _msgEvEmitter = new EventEmitter();
 
   // Log function
@@ -250,16 +160,12 @@ export class Pixel
   private readonly _session: PixelSession;
   private _status: PixelStatus;
 
-  // Pixel data
+  // Charger data
   private readonly _info: Mutable<PixelInfo>;
   private readonly _versions: Omit<
     VersionInfoChunk,
     "chunkSize" | "buildTimestamp"
   >;
-
-  // Profile
-  private _profileHash = 0;
-  private _transferProgress?: DataTransferProgress;
 
   // Clean-up
   private _disposeFunc: () => void;
@@ -288,27 +194,27 @@ export class Pixel
     this._logFunc = logger;
   }
 
-  /** Gets the Pixel last known connection status. */
+  /** Gets the Charger last known connection status. */
   get status(): PixelStatus {
     return this._status;
   }
 
-  /** Shorthand property that indicates if the Pixel status is "ready". */
+  /** Shorthand property that indicates if the Charger status is "ready". */
   get isReady(): boolean {
     return this._status === "ready";
   }
 
-  /** Gets the unique id assigned by the system to the Pixel Bluetooth peripheral. */
+  /** Gets the unique id assigned by the system to the Charger Bluetooth peripheral. */
   get systemId(): string {
     return this._info.systemId;
   }
 
-  /** Gets the unique Pixel id of the device, may be 0 until connected. */
+  /** Gets the unique Pixel id of the charger, may be 0 until connected. */
   get pixelId(): number {
     return this._info.pixelId;
   }
 
-  /** Gets the Pixel name, may be empty until connected to device. */
+  /** Gets the Charger name, may be empty until connected to device. */
   get name(): string {
     // The name from the session may be outdated
     return this._info.name.length
@@ -316,33 +222,26 @@ export class Pixel
       : this._session.pixelName ?? "";
   }
 
-  /** Gets the number of LEDs for the Pixel, may be 0 until connected to device. */
+  /** Gets the number of LEDs for the Charger, may be 0 until connected to device. */
   get ledCount(): number {
     return this._info.ledCount;
   }
 
-  /** Gets the color of the Pixel. */
   get colorway(): PixelColorway {
-    return this._info.colorway;
+    return "unknown";
   }
 
-  /** Gets the die type of the Pixel. */
   get dieType(): PixelDieType {
-    return this._info.dieType;
+    return "unknown";
   }
 
-  /** Gets the number of faces of the Pixel. */
-  get dieFaceCount(): number {
-    return DiceUtils.getFaceCount(this.dieType);
-  }
-
-  /** Gets the Pixel firmware build date. */
+  /** Gets the Charger firmware build date. */
   get firmwareDate(): Date {
     return this._info.firmwareDate;
   }
 
   /**
-   * Gets the last RSSI value notified by the Pixel.
+   * Gets the last RSSI value notified by the Charger.
    * @remarks Call {@link reportRssi()} to automatically update the RSSI value.
    */
   get rssi(): number {
@@ -350,7 +249,7 @@ export class Pixel
   }
 
   /**
-   * Gets the Pixel battery level (percentage).
+   * Gets the Charger battery level (percentage).
    * @remarks This value is automatically updated when the die is connected.
    */
   get batteryLevel(): number {
@@ -358,7 +257,7 @@ export class Pixel
   }
 
   /**
-   * Gets whether the Pixel battery is charging or not.
+   * Gets whether the Charger battery is charging or not.
    * Returns 'true' if fully charged but still on charger.
    * @remarks This value is automatically updated when the die is connected.
    */
@@ -366,52 +265,21 @@ export class Pixel
     return this._info.isCharging;
   }
 
-  /**
-   * Gets the Pixel roll state.
-   * @remarks This value is automatically updated when the die is connected.
-   */
   get rollState(): PixelRollState {
-    return this._info.rollState;
+    return "unknown";
   }
 
-  /**
-   * Gets the die face value that is currently facing up.
-   * @remarks
-   * Fudge die returns +1, 0 and -1.
-   * This value is automatically updated when the die is connected.
-   */
   get currentFace(): number {
-    return this._info.currentFace;
+    return 0;
   }
 
-  /**
-   * Gets the 0-based index of the die face that is currently facing up.
-   * @remarks
-   * This value is automatically updated when the die is connected.
-   * @see {@link PixelInfo.currentFaceIndex} for more details.
-   */
   get currentFaceIndex(): number {
-    return this._info.currentFaceIndex;
+    return 0;
   }
 
   /**
-   * Gets the on-die profile hash value.
-   * This can be used as an identifier for the current profile.
-   */
-  get profileHash(): number {
-    return this._profileHash;
-  }
-
-  /**
-   * Gets an ongoing data transfer progress (such as programming a profile).
-   */
-  get transferProgress(): DataTransferProgress | undefined {
-    return this._transferProgress;
-  }
-
-  /**
-   * Instantiates a Pixel.
-   * @param session The session used to communicate with the Pixel.
+   * Instantiates a Charger.
+   * @param session The session used to communicate with the Charger.
    */
   constructor(
     session: PixelSession,
@@ -465,13 +333,6 @@ export class Pixel
             ? "disconnected"
             : connectionStatus
         );
-        // Reset transfer progress on disconnect
-        if (this._transferProgress) {
-          this._updateTransferProgress({
-            type: "failed",
-            error: "disconnected",
-          });
-        }
       }
     });
 
@@ -488,58 +349,19 @@ export class Pixel
     };
     this.addMessageListener("batteryLevel", batteryLevelListener);
 
-    // Subscribe to roll messages and emit roll event
-    const rollStateListener = (msgOrType: MessageOrType) => {
-      const msg = msgOrType as RollState;
-      this._updateRoll(
-        getValueKeyName(msg.state, PixelRollStateValues) ?? "unknown",
-        msg.faceIndex
-      );
-    };
-    this.addMessageListener("rollState", rollStateListener);
-
     // Reset profile hash & die name on "clear settings" and "program default" ack
     const resetListener = () => {
-      // Reset profile hash
-      this._updateHash(Constants.factoryProfileHashes[this.dieType] ?? 0);
       // Reset name
-      this._updateName(getDefaultPixelName(this._info.pixelId));
+      this._updateName("PxlLcc" + unsigned32ToHex(this._info.pixelId));
     };
     this.addMessageListener("clearSettingsAck", resetListener);
     this.addMessageListener("programDefaultParametersFinished", resetListener);
-
-    // Subscribe to user message requests
-    const notifyUserListener = (msgOrType: MessageOrType) => {
-      const msg = msgOrType as NotifyUser;
-      this._evEmitter.emit("userMessage", {
-        message: msg.message,
-        withCancel: msg.cancel,
-        response: (okCancel: boolean) => {
-          return this.sendMessage(
-            safeAssign(new NotifyUserAck(), {
-              okCancel,
-            })
-          );
-        },
-      });
-    };
-    this.addMessageListener("notifyUser", notifyUserListener);
-
-    // Subscribe to remote action requests
-    const remoteActionListener = (msgOrType: MessageOrType) => {
-      const msg = msgOrType as RemoteAction;
-      this._evEmitter.emit("remoteAction", msg.actionId);
-    };
-    this.addMessageListener("remoteAction", remoteActionListener);
 
     // Unmount function
     this._disposeFunc = () => {
       session.setConnectionEventListener(undefined);
       this.removeMessageListener("rssi", rssiListener);
       this.removeMessageListener("batteryLevel", batteryLevelListener);
-      this.removeMessageListener("rollState", rollStateListener);
-      this.removeMessageListener("notifyUser", notifyUserListener);
-      this.removeMessageListener("remoteAction", remoteActionListener);
       this.removeMessageListener("clearSettingsAck", resetListener);
       this.removeMessageListener(
         "programDefaultParametersFinished",
@@ -558,13 +380,25 @@ export class Pixel
   }
 
   /**
-   * Update Pixel info from an external source such as scanning data.
+   * Update Charger info from an external source such as scanning data.
    * @param info The updated info.
    * @remarks
    * The info will be updated only if the die is disconnected.
    * Roll state and face index are updated only if both are provided.
    */
-  updateInfo(info: Partial<Omit<PixelInfo, "systemId" | "currentFace">>): void {
+  updateInfo(
+    info: Partial<
+      Omit<
+        PixelInfo,
+        | "systemId"
+        | "colorway"
+        | "dieType"
+        | "rollState"
+        | "currentFaceIndex"
+        | "currentFace"
+      >
+    >
+  ): void {
     if (this.status === "disconnected" && this.pixelId === info.pixelId) {
       // Name
       if (info.name) {
@@ -573,22 +407,6 @@ export class Pixel
       // LED count
       if (info.ledCount && info.ledCount > 0 && !this.ledCount) {
         this._updateLedCount(info.ledCount);
-      }
-      // Colorway
-      if (
-        info.colorway &&
-        info.colorway !== "unknown" &&
-        this.colorway === "unknown"
-      ) {
-        this._updateColorway(info.colorway);
-      }
-      // Die type
-      if (
-        info.dieType &&
-        info.dieType !== "unknown" &&
-        this.dieType === "unknown"
-      ) {
-        this._updateDieType(info.dieType);
       }
       // Firmware data
       if (info.firmwareDate && info.firmwareDate.getTime() > 0) {
@@ -605,15 +423,6 @@ export class Pixel
       ) {
         this._updateBattery(info.batteryLevel, info.isCharging);
       }
-      // Roll
-      if (
-        info.rollState !== undefined &&
-        info.currentFaceIndex !== undefined &&
-        info.currentFaceIndex >= 0 &&
-        info.currentFaceIndex < this.dieFaceCount
-      ) {
-        this._updateRoll(info.rollState, info.currentFaceIndex);
-      }
     }
   }
 
@@ -626,7 +435,7 @@ export class Pixel
    *          has completed (whether successfully or not).
    * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
    */
-  async connect(timeoutMs = 0): Promise<Pixel> {
+  async connect(timeoutMs = 0): Promise<Charger> {
     // Timeout
     let hasTimedOut = false;
     const timeoutId =
@@ -679,7 +488,7 @@ export class Pixel
         // just wait for status change (in this case we ignore the timeout)
         // since the connection process is driven from another call to connect)
         await new Promise<void>((resolve) => {
-          const onStatusChange = ({ status }: PixelOwnMutableProps) => {
+          const onStatusChange = ({ status }: ChargerOwnMutableProps) => {
             if (status !== "identifying") {
               this.removePropertyListener("status", onStatusChange);
               resolve();
@@ -717,7 +526,7 @@ export class Pixel
    * Immediately disconnects from the die.
    * @returns A promise that resolves once the disconnect request has been processed.
    **/
-  async disconnect(): Promise<Pixel> {
+  async disconnect(): Promise<Charger> {
     await this._session.disconnect();
     return this;
   }
@@ -725,14 +534,14 @@ export class Pixel
   /**
    * Registers a listener function that will be called when the specified
    * event is raised.
-   * See {@link PixelEventMap} for the list of events and their
+   * See {@link ChargerEventMap} for the list of events and their
    * associated data.
    * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
    */
-  addEventListener<K extends keyof PixelEventMap>(
+  addEventListener<K extends keyof ChargerEventMap>(
     type: K,
-    listener: EventReceiver<PixelEventMap[K]>
+    listener: EventReceiver<ChargerEventMap[K]>
   ): void {
     this._evEmitter.addListener(type, listener);
   }
@@ -740,27 +549,27 @@ export class Pixel
   /**
    * Unregisters a listener from receiving events identified by
    * the given event name.
-   * See {@link PixelEventMap} for the list of events and their
+   * See {@link ChargerEventMap} for the list of events and their
    * associated data.
    * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
    */
-  removeEventListener<K extends keyof PixelEventMap>(
+  removeEventListener<K extends keyof ChargerEventMap>(
     type: K,
-    listener: EventReceiver<PixelEventMap[K]>
+    listener: EventReceiver<ChargerEventMap[K]>
   ): void {
     this._evEmitter.removeListener(type, listener);
   }
 
   /**
    * Registers a listener function that will be called on receiving
-   * raw messages of a given type from the Pixel.
+   * raw messages of a given type from the Charger.
    * @param msgType The type of message to watch for.
    * @param listener The callback function.
    */
   addMessageListener(
     msgType: MessageType,
-    listener: (this: Pixel, message: MessageOrType) => void
+    listener: (this: Charger, message: MessageOrType) => void
   ): void {
     this._msgEvEmitter.addListener(`${msgType}Message`, listener);
   }
@@ -772,13 +581,13 @@ export class Pixel
    */
   removeMessageListener(
     msgType: MessageType,
-    listener: (this: Pixel, msg: MessageOrType) => void
+    listener: (this: Charger, msg: MessageOrType) => void
   ): void {
     this._msgEvEmitter.removeListener(`${msgType}Message`, listener);
   }
 
   /**
-   * Waits for a message from the Pixel.
+   * Waits for a message from the Charger.
    * @param expectedMsgType Type of the message to expect.
    * @param timeoutMs Timeout before aborting the wait.
    * @returns A promise with the received message of the expected type.
@@ -798,7 +607,7 @@ export class Pixel
       // 2. Hook connection status listener
       // Note: We don't check for the initial status so this method
       // may be called before completing the connection sequence.
-      const statusListener = ({ status }: PixelOwnMutableProps) => {
+      const statusListener = ({ status }: ChargerOwnMutableProps) => {
         if (status === "disconnecting" || status === "disconnected") {
           // We got disconnected, stop waiting for message
           cleanup();
@@ -825,7 +634,7 @@ export class Pixel
   }
 
   /**
-   * Sends a message to the Pixel.
+   * Sends a message to the Charger.
    * @param msgOrType Message with the data to send or just a message type.
    * @param withoutAck Whether to request a confirmation that the message was received.
    * @returns A promise that resolves once the message has been send.
@@ -870,7 +679,7 @@ export class Pixel
   }
 
   /**
-   * Sends a message to the Pixel and wait for a specific response.
+   * Sends a message to the Charger and wait for a specific response.
    * @param msgOrTypeToSend Message with the data to send or just a message type.
    * @param responseType Expected response type.
    * @param timeoutMs Timeout in mill-seconds before aborting waiting for the response.
@@ -890,7 +699,7 @@ export class Pixel
   }
 
   /**
-   * Sends a message to the Pixel and wait for a specific response
+   * Sends a message to the Charger and wait for a specific response
    * which is returned casted to the expected type.
    * @param msgOrTypeToSend Message with the data to send or just a message type.
    * @param responseType Expected response class type.
@@ -911,8 +720,8 @@ export class Pixel
   }
 
   /**
-   * Requests the Pixel to change its name.
-   * @param name New name to assign to the Pixel. Must have at least one character.
+   * Requests the Charger to change its name.
+   * @param name New name to assign to the Charger. Must have at least one character.
    * @returns A promise that resolves once the die has confirmed being renamed.
    */
   async rename(name: string): Promise<void> {
@@ -926,14 +735,12 @@ export class Pixel
       safeAssign(new SetName(), { name }),
       "setNameAck"
     );
-    // Reset profile hash
-    this._updateHash(Constants.factoryProfileHashes[this.dieType] ?? 0);
     // And notify name was successfully updated
     this._updateName(name);
   }
 
   /**
-   * Requests the Pixel to start faces calibration sequence.
+   * Requests the Charger to start faces calibration sequence.
    * @returns A promise that resolves once the message has been send.
    */
   async startCalibration(): Promise<void> {
@@ -941,7 +748,7 @@ export class Pixel
   }
 
   /**
-   * Requests the Pixel to regularly send its measured RSSI value.
+   * Requests the Charger to regularly send its measured RSSI value.
    * @param activate Whether to turn or turn off this feature.
    * @param minInterval The minimum time interval in milliseconds
    *                    between two RSSI updates.
@@ -974,7 +781,7 @@ export class Pixel
   }
 
   /**
-   * Requests the Pixel to completely turn off.
+   * Requests the Charger to completely turn off.
    * @returns A promise that resolves once the message has been send.
    */
   async turnOff(): Promise<void> {
@@ -987,7 +794,7 @@ export class Pixel
   }
 
   /**
-   * Requests the Pixel to blink and wait for a confirmation.
+   * Requests the Charger to blink and wait for a confirmation.
    * @param color Blink color.
    * @param opt.count Number of blinks.
    * @param opt.duration Total duration of the animation in milliseconds.
@@ -1018,163 +825,6 @@ export class Pixel
   }
 
   /**
-   * Requests the Pixel to stop all currently playing animations.
-   * @returns A promise.
-   */
-  async stopAllAnimations(): Promise<void> {
-    await this.sendMessage("stopAllAnimations");
-  }
-
-  /**
-   * Uploads the given data set of animations to the Pixel flash memory.
-   * @param dataSet The data set to upload.
-   * @returns A promise that resolves once the transfer has completed.
-   */
-  async transferDataSet(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferProgress) {
-      throw new PixelTransferInProgressError(this);
-    }
-
-    const data = dataSet.toByteArray();
-    const hash = DataSet.computeHash(data);
-
-    const prepareMsg = safeAssign(new TransferAnimationSet(), {
-      paletteSize: dataSet.animationBits.getPaletteSize(),
-      rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-      rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-      keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-      trackCount: dataSet.animationBits.getTrackCount(),
-      animationCount: dataSet.animations.length,
-      animationSize: dataSet.animations.reduce(
-        (acc, anim) => acc + byteSizeOf(anim),
-        0
-      ),
-      conditionCount: dataSet.conditions.length,
-      conditionSize: dataSet.conditions.reduce(
-        (acc, cond) => acc + byteSizeOf(cond),
-        0
-      ),
-      actionCount: dataSet.actions.length,
-      actionSize: dataSet.actions.reduce(
-        (acc, action) => acc + byteSizeOf(action),
-        0
-      ),
-      ruleCount: dataSet.rules.length,
-      brightness: dataSet.brightness,
-    });
-
-    // Transfer animations
-    await this._programDataSet(
-      async () => {
-        const ack = await this.sendAndWaitForTypedResponse(
-          prepareMsg,
-          TransferAnimationSetAck
-        );
-        return ack.result
-          ? TransferInstantAnimationsSetAckTypeValues.download
-          : TransferInstantAnimationsSetAckTypeValues.noMemory;
-      },
-      "transferAnimationSetFinished",
-      data
-    );
-
-    // Notify profile hash
-    this._updateHash(hash);
-  }
-
-  /**
-   * Plays the (single) LEDs animation included in the given data set.
-   * @param dataSet The data set containing just one animation to play.
-   * @returns A promise that resolves once the transfer has completed.
-   */
-  async playTestAnimation(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferProgress) {
-      throw new PixelTransferInProgressError(this);
-    }
-    if (!dataSet.animations.length) {
-      throw new PixelTransferInvalidDataError(this);
-    }
-
-    // Gets the bytes to send
-    const data = dataSet.toAnimationsByteArray();
-    const hash = DataSet.computeHash(data);
-
-    // Prepare the Pixel
-    const prepareMsg = safeAssign(new TransferTestAnimationSet(), {
-      paletteSize: dataSet.animationBits.getPaletteSize(),
-      rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-      rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-      keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-      trackCount: dataSet.animationBits.getTrackCount(),
-      animationCount: dataSet.animations.length,
-      animationSize: dataSet.animations.reduce(
-        (acc, anim) => acc + byteSizeOf(anim),
-        0
-      ),
-      hash,
-    });
-
-    // Transfer animations
-    await this._programDataSet(
-      async () => {
-        const ack = await this.sendAndWaitForTypedResponse(
-          prepareMsg,
-          TransferTestAnimationSetAck
-        );
-        return ack.ackType;
-      },
-      "transferTestAnimationSetFinished",
-      data
-    );
-  }
-
-  /**
-   * Uploads the given data set of animations to the Pixel RAM memory.
-   * Those animations are lost when the Pixel goes to sleep, is turned off or is restarted.
-   * @param dataSet The data set to upload.
-   * @returns A promise that resolves once the transfer has completed.
-   */
-  async transferInstantAnimations(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferProgress) {
-      throw new PixelTransferInProgressError(this);
-    }
-    if (!dataSet.animations.length) {
-      throw new PixelTransferInvalidDataError(this);
-    }
-
-    const data = dataSet.toAnimationsByteArray();
-    const hash = DataSet.computeHash(data);
-
-    // Preparation message
-    const prepareMsg = safeAssign(new TransferInstantAnimationSet(), {
-      paletteSize: dataSet.animationBits.getPaletteSize(),
-      rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
-      rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
-      keyFrameCount: dataSet.animationBits.getKeyframeCount(),
-      trackCount: dataSet.animationBits.getTrackCount(),
-      animationCount: dataSet.animations.length,
-      animationSize: dataSet.animations.reduce(
-        (acc, anim) => acc + byteSizeOf(anim),
-        0
-      ),
-      hash,
-    });
-
-    // Transfer animations
-    await this._programDataSet(
-      async () => {
-        const ack = await this.sendAndWaitForTypedResponse(
-          prepareMsg,
-          TransferInstantAnimationSetAck
-        );
-        return ack.ackType;
-      },
-      "transferInstantAnimationSetFinished",
-      data
-    );
-  }
-
-  /**
    * Plays the instant animation at the given index.
    * See @see transferInstantAnimations().
    * @param animIndex The index of the instant animation to play.
@@ -1190,7 +840,7 @@ export class Pixel
     return `[${_getTime()} - ${this.name}] ${str}`;
   }
 
-  // Log the given message prepended with a timestamp and the Pixel name
+  // Log the given message prepended with a timestamp and the Charger name
   private _log(msg: unknown): void {
     this._logFunc?.(
       this._tagLogString(
@@ -1230,18 +880,21 @@ export class Pixel
     // Subscribe to get messages from die
     await this._session.subscribe((dv: DataView) => this._onValueChanged(dv));
 
-    // Identify Pixel
+    // Identify Charger
     this._log("Waiting on identification message");
     const iAmADie = (await this.sendAndWaitForResponse(
       "whoAreYou",
       "iAmADie"
-    )) as IAmADie | LegacyIAmADie;
+    )) as IAmADie | LegacyIAmALCC;
+    console.log(JSON.stringify(iAmADie));
 
     // Check Pixel id
     const pixelId =
       (iAmADie as LegacyIAmADie).pixelId ??
       (iAmADie as IAmADie).dieInfo?.pixelId;
     if (!pixelId) {
+      const ledCount = (iAmADie as LegacyIAmALCC).ledCount;
+      console.log("ledCount=" + ledCount);
       // This should never happen
       throw new PixelConnectError(this, "Got an empty Pixel id");
     }
@@ -1253,33 +906,17 @@ export class Pixel
     }
 
     const setProperties = (
-      info: Omit<LegacyIAmADie, "type" | "dataSetHash" | "availableFlashSize">
+      info: Omit<LegacyIAmALCC, "type" | "dataSetHash" | "availableFlashSize">
     ): void => {
       this._updateLedCount(info.ledCount);
-      this._updateColorway(
-        getValueKeyName(info.colorway, PixelColorwayValues) ?? "unknown"
-      );
-      const dieType =
-        getValueKeyName(info.dieType, PixelDieTypeValues) ?? "unknown";
-      this._updateDieType(
-        dieType !== "unknown"
-          ? dieType
-          : // Try to guess the die type if we got "unknown" from the message
-            DiceUtils.estimateDieType(this.ledCount)
-      );
       this._updateFirmwareDate(1000 * info.buildTimestamp);
       this._updateBattery(
         info.batteryLevelPercent,
         isPixelChargingOrDone(info.batteryState)
       );
-      this._updateRoll(
-        getValueKeyName(info.rollState, PixelRollStateValues) ?? "unknown",
-        info.currentFaceIndex,
-        { skipEvents: true }
-      );
     };
 
-    if (iAmADie instanceof LegacyIAmADie) {
+    if (iAmADie instanceof LegacyIAmALCC) {
       // Update properties
       setProperties(iAmADie);
 
@@ -1306,12 +943,6 @@ export class Pixel
       // Update name
       this._updateName(iAmADie.dieName.name);
     }
-
-    // Notify profile hash
-    const profileDataHash =
-      (iAmADie as LegacyIAmADie).dataSetHash ??
-      (iAmADie as IAmADie).settingsInfo.profileDataHash;
-    this._updateHash(profileDataHash);
   }
 
   private _updateStatus(status: PixelStatus): void {
@@ -1333,20 +964,6 @@ export class Pixel
     if (this._info.ledCount !== ledCount) {
       this._info.ledCount = ledCount;
       this.emitPropertyEvent("ledCount");
-    }
-  }
-
-  private _updateColorway(colorway: PixelColorway) {
-    if (this._info.colorway !== colorway) {
-      this._info.colorway = colorway;
-      this.emitPropertyEvent("colorway");
-    }
-  }
-
-  private _updateDieType(dieType: PixelDieType) {
-    if (this._info.dieType !== dieType) {
-      this._info.dieType = dieType;
-      this.emitPropertyEvent("dieType");
     }
   }
 
@@ -1385,95 +1002,6 @@ export class Pixel
     }
   }
 
-  private _createRollEvent(
-    state: PixelRollState,
-    faceIndex: number
-  ): RollEvent {
-    if (this.dieType === "d4") {
-      // TODO fix for D4 rolling as D6
-      if (faceIndex === 1 || faceIndex === 4) {
-        // Those faces are not valid for a D4, reuse last valid face instead
-        faceIndex = DiceUtils.indexFromFace(
-          this.currentFace > 0 ? this.currentFace : 1,
-          "d4"
-        );
-        if (state === "onFace") {
-          state = "crooked";
-        }
-      }
-    }
-    // Convert face index to face value
-    const face = DiceUtils.faceFromIndex(faceIndex, this.dieType);
-    return { state, face, faceIndex };
-  }
-
-  private _updateRoll(
-    state: PixelRollState,
-    faceIndex: number,
-    opt?: { skipEvents?: boolean }
-  ) {
-    const ev = this._createRollEvent(state, faceIndex);
-    const stateChanged = this._info.rollState !== ev.state;
-    const indexChanged = this._info.currentFaceIndex !== ev.faceIndex;
-    const faceChanged = this._info.currentFace !== ev.face;
-
-    this._info.rollState = ev.state;
-    this._info.currentFaceIndex = ev.faceIndex;
-    this._info.currentFace = ev.face;
-
-    if (stateChanged) {
-      this.emitPropertyEvent("rollState");
-    }
-    if (indexChanged) {
-      this.emitPropertyEvent("currentFaceIndex");
-    }
-    if (faceChanged) {
-      this.emitPropertyEvent("currentFace");
-    }
-
-    // Notify all die roll events
-    if (!opt?.skipEvents) {
-      const emitRoll = ev.state === "onFace" ? ev.face : undefined;
-      this._evEmitter.emit("rollState", ev);
-      if (emitRoll !== undefined) {
-        this._evEmitter.emit("roll", emitRoll);
-      }
-    }
-  }
-
-  private _updateHash(profileHash: number) {
-    if (profileHash !== this._profileHash) {
-      this._profileHash = profileHash;
-      this.emitPropertyEvent("profileHash");
-    }
-  }
-
-  private _updateTransferProgress(ev: PixelEventMap["dataTransfer"]) {
-    // Update progress
-    const progress =
-      ev.type === "completed" || ev.type === "failed"
-        ? undefined
-        : ev.type === "progress"
-          ? {
-              progressPercent: ev.progressPercent,
-              transferredBytes: ev.transferredBytes,
-              totalBytes: ev.totalBytes,
-            }
-          : {
-              progressPercent: 0,
-              transferredBytes: 0,
-              totalBytes: ev.totalBytes,
-            };
-    const progressChanged = this._transferProgress !== progress;
-    this._transferProgress = progress;
-
-    // Send events
-    this._evEmitter.emit("dataTransfer", ev);
-    if (progressChanged) {
-      this.emitPropertyEvent("transferProgress");
-    }
-  }
-
   // Callback on notify characteristic value change
   private _onValueChanged(dataView: DataView) {
     try {
@@ -1482,8 +1010,8 @@ export class Pixel
       }
       const msgOrType =
         dataView.byteLength &&
-        dataView.getUint8(0) === MessageTypeValues.iAmADie &&
-        dataView.byteLength === LegacyIAmADie.expectedSize
+        dataView.getUint8(0) === MessageTypeValues.iAmALCC &&
+        dataView.byteLength === LegacyIAmALCC.expectedSize
           ? deserializeMessage(dataView)
           : this._deserializeImADie(dataView);
       if (msgOrType) {
@@ -1511,7 +1039,7 @@ export class Pixel
   }
 
   private _deserializeImADie(dataView: DataView): IAmADie {
-    assert(dataView.getUint8(0) === MessageTypeValues.iAmADie);
+    assert(dataView.getUint8(0) === MessageTypeValues.iAmALCC);
     const msg = new IAmADie();
     let offset = 1;
     for (const [key, value] of Object.entries(msg)) {
@@ -1538,185 +1066,5 @@ export class Pixel
       }
     }
     return msg;
-  }
-
-  private async _programDataSet(
-    prepareDie: () => Promise<number>,
-    ackType: MessageType,
-    data: Uint8Array
-  ): Promise<void> {
-    // Notify that we're starting
-    this._updateTransferProgress({
-      type: "preparing",
-      totalBytes: data.byteLength,
-    });
-
-    let ackResult: number | undefined;
-    try {
-      ackResult = await prepareDie();
-    } catch (error) {
-      // Notify failed transfer
-      this._updateTransferProgress({
-        type: "failed",
-        error: "timeout",
-      });
-      throw error;
-    }
-
-    // Handle the setup result
-    switch (ackResult) {
-      case TransferInstantAnimationsSetAckTypeValues.download:
-        // Upload data
-        this._log("Ready to receive animations of size " + data.byteLength);
-        await this._uploadBulkDataWithAck(ackType, data);
-        break;
-
-      case TransferInstantAnimationsSetAckTypeValues.upToDate:
-        // Nothing to do
-        this._log("Animations are already up-to-date");
-        // Notify no transfer
-        this._updateTransferProgress({
-          type: "completed",
-          totalBytes: 0,
-        });
-        break;
-
-      case TransferInstantAnimationsSetAckTypeValues.noMemory:
-        // Not enough memory
-        this._log(
-          "Not enough memory to store animations of size " + data.byteLength
-        );
-        // Notify no transfer
-        this._updateTransferProgress({
-          type: "failed",
-          error: "outOfMemory",
-        });
-        throw new PixelTransferOutOfMemoryError(this, data.byteLength);
-
-      default: {
-        const error = new PixelTransferError(
-          this,
-          `Got unknown transfer result: ${ackResult}`
-        );
-        // Notify failed transfer
-        this._updateTransferProgress({
-          type: "failed",
-          error: "unknown",
-        });
-        throw error;
-      }
-    }
-  }
-
-  /**
-   * Upload the given data to the Pixel.
-   * @param ackType The expected confirmation message type.
-   * @param data The data to send.
-   * @returns A promise that resolves once the transfer has completed.
-   */
-  private async _uploadBulkDataWithAck(
-    ackType: MessageType,
-    data: ArrayBuffer
-  ): Promise<void> {
-    this._updateTransferProgress({
-      type: "starting",
-      totalBytes: data.byteLength,
-    });
-
-    let programmingFinished = false;
-    let stopWaiting: (() => void) | undefined;
-    const onFinished = () => {
-      programmingFinished = true;
-      if (stopWaiting) {
-        stopWaiting();
-        stopWaiting = undefined;
-      }
-    };
-    this.addMessageListener(ackType, onFinished);
-
-    try {
-      await this._uploadBulkData(data);
-      this._log(
-        "Done sending dataset, waiting for Pixel to finish programming"
-      );
-
-      const promise = new Promise<void>((resolve, reject) => {
-        if (programmingFinished) {
-          // Programming may already be finished
-          resolve();
-        } else {
-          const timeoutId = setTimeout(() => {
-            reject(new PixelTransferCompletedTimeoutError(this, ackType));
-          }, Constants.ackMessageTimeout);
-          stopWaiting = () => {
-            clearTimeout(timeoutId);
-            resolve();
-          };
-        }
-      });
-      await promise;
-      this._log("Programming done");
-
-      this._updateTransferProgress({
-        type: "completed",
-        totalBytes: data.byteLength,
-      });
-    } catch (error) {
-      // Notify failed transfer
-      this._updateTransferProgress({
-        type: "failed",
-        error: "timeout",
-      });
-      throw error;
-    } finally {
-      this.removeMessageListener(ackType, onFinished);
-    }
-  }
-
-  // Upload the given data to the Pixel
-  private async _uploadBulkData(data: ArrayBuffer): Promise<void> {
-    let remainingSize = data.byteLength;
-    this._log(`Sending ${remainingSize} bytes of bulk data`);
-
-    // Send setup message
-    const setupMsg = new BulkSetup();
-    setupMsg.size = remainingSize;
-    await this.sendAndWaitForResponse(setupMsg, "bulkSetupAck");
-    this._log("Ready for receiving data");
-
-    this._updateTransferProgress({
-      type: "progress",
-      progressPercent: 0,
-      transferredBytes: 0,
-      totalBytes: data.byteLength,
-    });
-
-    // Then transfer data
-    let lastProgress = 0;
-    let offset = 0;
-    const dataMsg = new BulkData();
-    while (remainingSize > 0) {
-      dataMsg.offset = offset;
-      dataMsg.size = Math.min(remainingSize, Constants.maxMessageSize);
-      dataMsg.data = data.slice(offset, offset + dataMsg.size);
-
-      await this.sendAndWaitForResponse(dataMsg, "bulkDataAck");
-
-      remainingSize -= dataMsg.size;
-      offset += dataMsg.size;
-      const progress = Math.round((100 * offset) / data.byteLength);
-      if (progress > lastProgress) {
-        // Notify that we're starting
-        this._updateTransferProgress({
-          type: "progress",
-          progressPercent: progress,
-          transferredBytes: offset,
-          totalBytes: data.byteLength,
-        });
-        lastProgress = progress;
-      }
-    }
-
-    this._log("Finished sending bulk data");
   }
 }
