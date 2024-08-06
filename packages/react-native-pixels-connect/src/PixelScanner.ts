@@ -242,7 +242,7 @@ export class PixelScanner {
         this._startPromise = (async () => {
           try {
             await Central.startScan(
-              PixelBleUuids.service,
+              PixelBleUuids.dieService,
               this._processScanEvents.bind(this)
             );
           } finally {

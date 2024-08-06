@@ -19,8 +19,8 @@ export function getScannedPixel(
   peripheral: ScannedPeripheral
 ): ScannedPixel | undefined {
   const advData = peripheral.advertisementData;
-  if (!advData.services?.includes(PixelBleUuids.service)) {
-    // Not a Pixel
+  if (!advData.services?.includes(PixelBleUuids.dieService)) {
+    // Not a Pixels die
     return;
   }
 
