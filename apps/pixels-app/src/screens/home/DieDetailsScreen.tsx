@@ -63,7 +63,7 @@ export function DieStatus({
             ? `Connection Status: ${getPixelStatusLabel(status)}`
             : "Die not found so far"}
         </Text>
-        {pixel?.isReady && (
+        {pixel?.status === "ready" && (
           <>
             <Text>RSSI: {rssi ?? pixel.rssi} dBm</Text>
             <Text>Battery: {batteryLevel}%</Text>
