@@ -7,93 +7,42 @@ import {
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 import {
-  assert,
   createTypedEventEmitter,
-  deserialize,
   EventReceiver,
   Mutable,
   safeAssign,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
-import { EventEmitter } from "events";
 
 import {
   BatteryLevel,
   Blink,
   deserializeMessage,
   getMessageType,
-  IAmADie,
+  IAmALCC,
   LegacyIAmALCC,
   MessageOrType,
   MessageType,
   MessageTypeValues,
   PixelMessage,
-  PixelPowerOperationValues,
-  PixelRollState,
-  PlayInstantAnimation,
-  PowerOperation,
   RequestRssi,
   Rssi,
-  serializeMessage,
   SetName,
-  TelemetryRequestModeValues,
   VersionInfoChunk,
 } from "./ChargerMessages";
 import { Constants } from "./Constants";
+import { PixelConnect, PixelConnectMutableProps } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
-import {
-  PixelInfoNotifier,
-  PixelInfoNotifierMutableProps,
-} from "./PixelInfoNotifier";
+import { PixelRollState } from "./PixelRollState";
 import { PixelSession } from "./PixelSession";
+import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
 import {
-  PixelConnectCancelledError,
   PixelConnectError,
   PixelConnectIdMismatchError,
-  PixelConnectTimeoutError,
   PixelEmptyNameError,
   PixelIncompatibleMessageError,
-  PixelWaitForMessageDisconnectError as WaitMsgDiscoErr,
-  PixelWaitForMessageTimeoutError as WaitMsgTimeoutErr,
 } from "./errors";
 import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
-
-// Returns a string with the current time with a millisecond precision
-function _getTime(): string {
-  const to2 = (n: number) => n.toString().padStart(2, "0");
-  const to3 = (n: number) => n.toString().padStart(3, "0");
-  const d = new Date();
-  return (
-    to2(d.getHours()) +
-    ":" +
-    to2(d.getMinutes()) +
-    ":" +
-    to2(d.getSeconds()) +
-    "." +
-    to3(d.getMilliseconds())
-  );
-}
-
-/**
- * The different possible connection statuses of a Pixel.
- * @category Pixels
- */
-export type PixelStatus =
-  | "disconnected"
-  | "connecting"
-  | "identifying"
-  | "ready"
-  | "disconnecting";
-
-/**
- * Data structure for {@link Charger} battery events,
- * see {@link ChargerEventMap}.
- * @category Pixels
- */
-export type BatteryEvent = Readonly<{
-  level: number; // Percentage
-  isCharging: boolean;
-}>;
 
 /**
  * Event map for {@link Charger} class.
@@ -104,28 +53,28 @@ export type BatteryEvent = Readonly<{
  */
 export interface ChargerEventMap {
   /** Message received notification. */
-  message: MessageOrType;
+  messageReceived: MessageOrType;
   /** Message send notification. */
   messageSend: MessageOrType;
   /** Battery state changed notification. */
-  battery: BatteryEvent;
+  battery: Readonly<{
+    level: number; // Percentage
+    isCharging: boolean;
+  }>;
 }
 
 /**
  * The mutable properties of {@link Charger} not inherited from parent
- * class {@link ChargerInfoNotifier}.
+ * class {@link PixelConnect}.
  * @category Pixels
  */
-export interface ChargerOwnMutableProps {
-  /** Connection status. */
-  status: PixelStatus;
-}
+export interface ChargerOwnMutableProps {}
 
 /**
  * The mutable properties of {@link Charger}.
  * @category Pixels
  */
-export type ChargerMutableProps = PixelInfoNotifierMutableProps &
+export type ChargerMutableProps = PixelConnectMutableProps &
   ChargerOwnMutableProps;
 
 /**
@@ -141,24 +90,14 @@ export type ChargerMutableProps = PixelInfoNotifierMutableProps &
  * @category Pixels
  */
 export class Charger
-  extends PixelInfoNotifier<
+  extends PixelConnect<
     ChargerMutableProps,
-    PixelInfo & ChargerOwnMutableProps
+    PixelConnectMutableProps & ChargerOwnMutableProps
   >
   implements ChargerOwnMutableProps
 {
   // Our events emitter
   private readonly _evEmitter = createTypedEventEmitter<ChargerEventMap>();
-  private readonly _msgEvEmitter = new EventEmitter();
-
-  // Log function
-  private _logFunc: ((msg: string) => void) | undefined | null;
-  private _logMessages = false;
-  private _logData = false;
-
-  // Connection data
-  private readonly _session: PixelSession;
-  private _status: PixelStatus;
 
   // Charger data
   private readonly _info: Mutable<PixelInfo>;
@@ -169,40 +108,6 @@ export class Charger
 
   // Clean-up
   private _disposeFunc: () => void;
-
-  /** Toggle logging information about each send and received message. */
-  get logMessages(): boolean {
-    return this._logMessages;
-  }
-  set logMessages(enabled: boolean) {
-    this._logMessages = enabled;
-  }
-
-  /** Toggle logging the serialized (binary) data for each send and received message. */
-  get logMessagesSerializedData(): boolean {
-    return this._logData;
-  }
-  set logMessagesSerializedData(enabled: boolean) {
-    this._logData = enabled;
-  }
-
-  /** Set logger to use by this instance. */
-  get logger(): ((msg: string) => void) | undefined | null {
-    return this._logFunc;
-  }
-  set logger(logger: ((msg: string) => void) | undefined | null) {
-    this._logFunc = logger;
-  }
-
-  /** Gets the Charger last known connection status. */
-  get status(): PixelStatus {
-    return this._status;
-  }
-
-  /** Shorthand property that indicates if the Charger status is "ready". */
-  get isReady(): boolean {
-    return this._status === "ready";
-  }
 
   /** Gets the unique id assigned by the system to the Charger Bluetooth peripheral. */
   get systemId(): string {
@@ -219,7 +124,7 @@ export class Charger
     // The name from the session may be outdated
     return this._info.name.length
       ? this._info.name
-      : this._session.pixelName ?? "";
+      : this.sessionDeviceName ?? "";
   }
 
   /** Gets the number of LEDs for the Charger, may be 0 until connected to device. */
@@ -227,10 +132,12 @@ export class Charger
     return this._info.ledCount;
   }
 
+  /** Always return "unknown". */
   get colorway(): PixelColorway {
     return "unknown";
   }
 
+  /** Always return "unknown". */
   get dieType(): PixelDieType {
     return "unknown";
   }
@@ -265,14 +172,17 @@ export class Charger
     return this._info.isCharging;
   }
 
+  /** Always return "unknown". */
   get rollState(): PixelRollState {
     return "unknown";
   }
 
+  /** Always return "0". */
   get currentFace(): number {
     return 0;
   }
 
+  /** Always return "0". */
   get currentFaceIndex(): number {
     return 0;
   }
@@ -291,9 +201,7 @@ export class Charger
       >
     >
   ) {
-    super();
-    this._session = session;
-    this._status = "disconnected"; // TODO use the getLastConnectionStatus()
+    super(session);
     this._info = {
       systemId: session.systemId,
       pixelId: info?.pixelId ?? 0,
@@ -321,20 +229,19 @@ export class Charger
       compatManagementApiVersion: 0,
     };
 
-    // Listen to session connection status changes
-    session.setConnectionEventListener(({ connectionStatus }) => {
-      if (connectionStatus === "connected" || connectionStatus === "ready") {
-        // It's possible that we skip some steps and get a "ready" without
-        // getting first a "connecting" if the device was already connected
-        this._updateStatus("connecting");
-      } else {
-        this._updateStatus(
-          connectionStatus === "failedToConnect"
-            ? "disconnected"
-            : connectionStatus
-        );
+    // Subscribe to instance status change
+    const statusListener = ({ status }: ChargerMutableProps) => {
+      // Notify battery state
+      if (status === "ready") {
+        this._evEmitter.emit("battery", {
+          level: this._info.batteryLevel,
+          isCharging: this._info.isCharging,
+        });
+        // We don't raise roll and roll state events as those should occur
+        // only when the die is actually moved
       }
-    });
+    };
+    this.addPropertyListener("status", statusListener);
 
     // Subscribe to rssi messages and emit event
     const rssiListener = (msgOrType: MessageOrType) => {
@@ -360,6 +267,7 @@ export class Charger
     // Unmount function
     this._disposeFunc = () => {
       session.setConnectionEventListener(undefined);
+      this.removePropertyListener("status", statusListener);
       this.removeMessageListener("rssi", rssiListener);
       this.removeMessageListener("batteryLevel", batteryLevelListener);
       this.removeMessageListener("clearSettingsAck", resetListener);
@@ -436,89 +344,7 @@ export class Charger
    * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
    */
   async connect(timeoutMs = 0): Promise<Charger> {
-    // Timeout
-    let hasTimedOut = false;
-    const timeoutId =
-      timeoutMs > 0 &&
-      setTimeout(() => {
-        // Disconnect on timeout
-        hasTimedOut = true;
-        this._session.disconnect().catch(() => {});
-      }, timeoutMs);
-
-    try {
-      // Connect to the peripheral
-      await this._session.connect();
-
-      // And prepare our instance for communications with the device
-      if (this.status === "connecting") {
-        // Notify we're connected and proceeding with die identification
-        this._updateStatus("identifying");
-
-        try {
-          // Setup our instance
-          await this._internalSetup();
-
-          // We're ready!
-          //@ts-expect-error the status could have changed during the above async call
-          if (this.status === "identifying") {
-            this._updateStatus("ready");
-
-            // Notify battery state
-            this._evEmitter.emit("battery", {
-              level: this._info.batteryLevel,
-              isCharging: this._info.isCharging,
-            });
-
-            // We don't raise roll and roll state events as those should occur
-            // only when the die is actually moved
-          }
-        } catch (error) {
-          // Note: the error may be cause by a call to disconnect
-          try {
-            this._warn(`Disconnecting after getting error: ${error}`);
-            await this._session.disconnect();
-          } catch {}
-          // Ignore any disconnection error and throw the error
-          // that got us there in the first place
-          throw error;
-        }
-      } else if (this.status === "identifying") {
-        // Another call to connect has put us in identifying state,
-        // just wait for status change (in this case we ignore the timeout)
-        // since the connection process is driven from another call to connect)
-        await new Promise<void>((resolve) => {
-          const onStatusChange = ({ status }: ChargerOwnMutableProps) => {
-            if (status !== "identifying") {
-              this.removePropertyListener("status", onStatusChange);
-              resolve();
-            }
-          };
-          this.addPropertyListener("status", onStatusChange);
-        });
-      }
-
-      // Check if a status changed occurred during the connection process
-      if (this.status !== "ready") {
-        throw new PixelConnectCancelledError(this);
-      }
-    } catch (error) {
-      // Check if the error was caused by the connection timeout
-      if (hasTimedOut) {
-        throw new PixelConnectTimeoutError(this, timeoutMs);
-      } else if (error instanceof PixelConnectError) {
-        // Forward other connection errors
-        throw error;
-      } else {
-        // Wrap any other type of error in a connection error
-        throw new PixelConnectError(this, error);
-      }
-    } finally {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    }
-
+    await this._internalConnect(timeoutMs);
     return this;
   }
 
@@ -527,7 +353,7 @@ export class Charger
    * @returns A promise that resolves once the disconnect request has been processed.
    **/
   async disconnect(): Promise<Charger> {
-    await this._session.disconnect();
+    await this._internalDisconnect();
     return this;
   }
 
@@ -562,78 +388,6 @@ export class Charger
   }
 
   /**
-   * Registers a listener function that will be called on receiving
-   * raw messages of a given type from the Charger.
-   * @param msgType The type of message to watch for.
-   * @param listener The callback function.
-   */
-  addMessageListener(
-    msgType: MessageType,
-    listener: (this: Charger, message: MessageOrType) => void
-  ): void {
-    this._msgEvEmitter.addListener(`${msgType}Message`, listener);
-  }
-
-  /**
-   * Unregisters a listener from receiving raw messages of a given type.
-   * @param msgType The type of message to watch for.
-   * @param listener The callback function to unregister.
-   */
-  removeMessageListener(
-    msgType: MessageType,
-    listener: (this: Charger, msg: MessageOrType) => void
-  ): void {
-    this._msgEvEmitter.removeListener(`${msgType}Message`, listener);
-  }
-
-  /**
-   * Waits for a message from the Charger.
-   * @param expectedMsgType Type of the message to expect.
-   * @param timeoutMs Timeout before aborting the wait.
-   * @returns A promise with the received message of the expected type.
-   */
-  private waitForMessage(
-    expectedMsgType: MessageType,
-    timeoutMs: number = Constants.ackMessageTimeout
-  ): Promise<MessageOrType> {
-    return new Promise((resolve, reject) => {
-      let cleanup: () => void;
-      // 1. Hook message listener
-      const messageListener = (msg: MessageOrType) => {
-        cleanup();
-        resolve(msg);
-      };
-      this.addMessageListener(expectedMsgType, messageListener);
-      // 2. Hook connection status listener
-      // Note: We don't check for the initial status so this method
-      // may be called before completing the connection sequence.
-      const statusListener = ({ status }: ChargerOwnMutableProps) => {
-        if (status === "disconnecting" || status === "disconnected") {
-          // We got disconnected, stop waiting for message
-          cleanup();
-          reject(new WaitMsgDiscoErr(this, expectedMsgType));
-        }
-      };
-      this.addPropertyListener("status", statusListener);
-      // 3. Setup timeout
-      let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      timeoutId = setTimeout(() => {
-        timeoutId = undefined;
-        cleanup();
-        reject(new WaitMsgTimeoutErr(this, timeoutMs, expectedMsgType));
-      }, timeoutMs);
-      cleanup = () => {
-        // Cancel timeout and unhook listeners
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        this.removeMessageListener(expectedMsgType, messageListener);
-        this.removePropertyListener("status", statusListener);
-      };
-    });
-  }
-
-  /**
    * Sends a message to the Charger.
    * @param msgOrType Message with the data to send or just a message type.
    * @param withoutAck Whether to request a confirmation that the message was received.
@@ -643,10 +397,6 @@ export class Charger
     msgOrType: MessageOrType,
     withoutAck = false
   ): Promise<void> {
-    if (this._logMessages) {
-      const msgName = getMessageType(msgOrType);
-      this._log(`Sending message ${msgName} (${MessageTypeValues[msgName]})`);
-    }
     // Check API version
     const fwVer = this._versions.firmwareVersion;
     if (fwVer > 0 && Constants.compatApiVersion > fwVer) {
@@ -668,13 +418,7 @@ export class Charger
         "firmware"
       );
     }
-    // Serialize message
-    const data = serializeMessage(msgOrType);
-    if (this._logData) {
-      this._logArray(data);
-    }
-    // And send it
-    await this._session.writeValue(data, withoutAck);
+    await this._internalSendMessage(msgOrType, withoutAck);
     this._evEmitter.emit("messageSend", msgOrType);
   }
 
@@ -690,12 +434,11 @@ export class Charger
     responseType: MessageType,
     timeoutMs: number = Constants.ackMessageTimeout
   ): Promise<MessageOrType> {
-    // Gets the session object, throws an error if invalid
-    const result = await Promise.all([
-      this.waitForMessage(responseType, timeoutMs),
-      this.sendMessage(msgOrTypeToSend),
-    ]);
-    return result[0];
+    return await this._internalSendAndWaitForResponse(
+      msgOrTypeToSend,
+      responseType,
+      timeoutMs
+    );
   }
 
   /**
@@ -711,12 +454,11 @@ export class Charger
     responseType: { new (): T },
     timeoutMs: number = Constants.ackMessageTimeout
   ): Promise<T> {
-    // Gets the session object, throws an error if invalid
-    return (await this.sendAndWaitForResponse(
+    return await this._internalSendAndWaitForTypedResponse(
       msgOrTypeToSend,
-      getMessageType(new responseType().type),
+      responseType,
       timeoutMs
-    )) as T;
+    );
   }
 
   /**
@@ -737,14 +479,6 @@ export class Charger
     );
     // And notify name was successfully updated
     this._updateName(name);
-  }
-
-  /**
-   * Requests the Charger to start faces calibration sequence.
-   * @returns A promise that resolves once the message has been send.
-   */
-  async startCalibration(): Promise<void> {
-    await this.sendMessage("calibrate");
   }
 
   /**
@@ -781,19 +515,6 @@ export class Charger
   }
 
   /**
-   * Requests the Charger to completely turn off.
-   * @returns A promise that resolves once the message has been send.
-   */
-  async turnOff(): Promise<void> {
-    await this.sendMessage(
-      safeAssign(new PowerOperation(), {
-        operation: PixelPowerOperationValues.turnOff,
-      }),
-      true // withoutAck
-    );
-  }
-
-  /**
    * Requests the Charger to blink and wait for a confirmation.
    * @param color Blink color.
    * @param opt.count Number of blinks.
@@ -824,74 +545,25 @@ export class Charger
     await this.sendAndWaitForResponse(blinkMsg, "blinkAck");
   }
 
-  /**
-   * Plays the instant animation at the given index.
-   * See @see transferInstantAnimations().
-   * @param animIndex The index of the instant animation to play.
-   * @returns A promise that resolves once the message has been send.
-   */
-  async playInstantAnimation(animIndex: number): Promise<void> {
-    await this.sendMessage(
-      safeAssign(new PlayInstantAnimation(), { animation: animIndex })
-    );
-  }
-
-  private _tagLogString(str: string): string {
-    return `[${_getTime()} - ${this.name}] ${str}`;
-  }
-
-  // Log the given message prepended with a timestamp and the Charger name
-  private _log(msg: unknown): void {
-    this._logFunc?.(
-      this._tagLogString(
-        (msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg)
-      )
-    );
-  }
-
-  private _warn(msg: unknown): void {
-    this._logFunc?.(
-      this._tagLogString(
-        "WARN: " +
-          ((msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg))
-      )
-    );
-  }
-
-  private _logArray(arr: ArrayBuffer) {
-    if (this._logFunc) {
-      this._logFunc(
-        this._tagLogString(
-          `${[...new Uint8Array(arr)]
-            .map((b) => (b >>> 0).toString(16).padStart(2, "0"))
-            .join(":")}`
-        )
-      );
-    }
-  }
-
-  private async _internalSetup(): Promise<void> {
+  protected async _internalSetup(): Promise<void> {
     // Reset version numbers
     let verProp: keyof typeof this._versions;
     for (verProp in this._versions) {
       this._versions[verProp] = 0;
     }
 
-    // Subscribe to get messages from die
-    await this._session.subscribe((dv: DataView) => this._onValueChanged(dv));
-
     // Identify Charger
     this._log("Waiting on identification message");
     const iAmADie = (await this.sendAndWaitForResponse(
       "whoAreYou",
-      "iAmADie"
-    )) as IAmADie | LegacyIAmALCC;
+      "iAmALCC"
+    )) as IAmALCC | LegacyIAmALCC;
     console.log(JSON.stringify(iAmADie));
 
     // Check Pixel id
     const pixelId =
-      (iAmADie as LegacyIAmADie).pixelId ??
-      (iAmADie as IAmADie).dieInfo?.pixelId;
+      (iAmADie as LegacyIAmALCC).pixelId ??
+      (iAmADie as IAmALCC).dieInfo?.pixelId;
     if (!pixelId) {
       const ledCount = (iAmADie as LegacyIAmALCC).ledCount;
       console.log("ledCount=" + ledCount);
@@ -945,12 +617,18 @@ export class Charger
     }
   }
 
-  private _updateStatus(status: PixelStatus): void {
-    if (status !== this._status) {
-      this._status = status;
-      this._log(`Status changed to ${status}`);
-      this.emitPropertyEvent("status");
+  protected _internalDeserializeMessage(dataView: DataView): MessageOrType {
+    const msgOrType =
+      dataView.byteLength &&
+      dataView.getUint8(0) === MessageTypeValues.iAmALCC &&
+      dataView.byteLength === LegacyIAmALCC.expectedSize
+        ? deserializeMessage(dataView)
+        : this._deserializeImALCC(dataView);
+    if (msgOrType) {
+      // Notify
+      this._evEmitter.emit("messageReceived", msgOrType);
     }
+    return msgOrType;
   }
 
   private _updateName(name: string) {
@@ -1000,71 +678,5 @@ export class Charger
         isCharging: isCharging ?? this.isCharging,
       });
     }
-  }
-
-  // Callback on notify characteristic value change
-  private _onValueChanged(dataView: DataView) {
-    try {
-      if (this._logData) {
-        this._logArray(dataView.buffer);
-      }
-      const msgOrType =
-        dataView.byteLength &&
-        dataView.getUint8(0) === MessageTypeValues.iAmALCC &&
-        dataView.byteLength === LegacyIAmALCC.expectedSize
-          ? deserializeMessage(dataView)
-          : this._deserializeImADie(dataView);
-      if (msgOrType) {
-        const msgName = getMessageType(msgOrType);
-        if (this._logMessages) {
-          this._log(
-            `Received message ${msgName} (${MessageTypeValues[msgName]})`
-          );
-          if (typeof msgOrType === "object") {
-            // Log message contents
-            this._log(msgOrType);
-          }
-        }
-        // Dispatch generic message event
-        this._evEmitter.emit("message", msgOrType);
-        // Dispatch specific message event
-        this._msgEvEmitter.emit(`${msgName}Message`, msgOrType);
-      } else {
-        this._log("Received invalid message");
-      }
-    } catch (error) {
-      this._log(`Message deserialization error: ${error}`);
-      // TODO the error should be propagated to listeners of that message
-    }
-  }
-
-  private _deserializeImADie(dataView: DataView): IAmADie {
-    assert(dataView.getUint8(0) === MessageTypeValues.iAmALCC);
-    const msg = new IAmADie();
-    let offset = 1;
-    for (const [key, value] of Object.entries(msg)) {
-      if (key !== ("type" as keyof IAmADie)) {
-        assert(typeof value === "object" && "chunkSize" in value);
-        const dataSize = dataView.getUint8(offset);
-        if (value.chunkSize > 0 && dataSize !== value.chunkSize) {
-          this._warn(
-            `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
-          );
-        }
-        deserialize(
-          value,
-          new DataView(
-            dataView.buffer,
-            dataView.byteOffset + offset,
-            value.chunkSize === 0
-              ? dataSize
-              : Math.min(dataSize, value.chunkSize)
-          ),
-          { allowSkipLastProps: true }
-        );
-        offset += dataSize;
-      }
-    }
-    return msg;
   }
 }

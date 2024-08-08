@@ -1,11 +1,15 @@
 export * from "./advertisedNames";
+// export * from "./Charger";
+// export * from "./ChargerMessages";
 export * from "./Constants";
 export * from "./errors";
 export * from "./Messages";
 export * from "./Pixel";
+export * from "./PixelBatteryControllerState";
+export * from "./PixelBatteryState";
 export * from "./PixelBleUuids";
 export * from "./PixelInfo";
 export * from "./PixelInfoNotifier";
-export * from "./PixelSession";
+export * from "./PixelRollState";
 export * from "./repeatConnect";
 export * from "./toFullUuid";
