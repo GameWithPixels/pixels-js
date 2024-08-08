@@ -3,8 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "types": [
-      "jest",
-      "node" // For EventEmitter
+      "jest"
     ],
     "experimentalDecorators": true
   },
