@@ -28,6 +28,7 @@ import {
   SetName,
   VersionInfoChunk,
 } from "./ChargerMessages";
+import { deserializeChunkedMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
 import { PixelConnect, PixelConnectMutableProps } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
@@ -618,10 +619,11 @@ export class Charger
       dataView.byteLength !== LegacyIAmALCC.expectedSize
     ) {
       const iAmALCC = new IAmALCC();
-      this._deserializeChunkedMessage(
+      deserializeChunkedMessage(
         dataView,
         // @ts-ignore Missing index signature for class 'IAmALCC'.
-        iAmALCC
+        iAmALCC,
+        (msg) => this._warn(msg)
       );
       msgOrType = iAmALCC;
     } else {
