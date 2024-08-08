@@ -1,21 +1,15 @@
+import { AnimConstants } from "@systemic-games/pixels-core-animation";
 import {
-  AnimConstants,
-  PixelColorwayValues,
-  PixelDieTypeValues,
-} from "@systemic-games/pixels-core-animation";
-import {
-  assert,
   enumValue,
-  deserialize,
   serializable,
-  SerializationError,
-  serialize,
   byteSizeOf,
 } from "@systemic-games/pixels-core-utils";
 
 import { Constants } from "./Constants";
+import { MessageSerializer } from "./MessageSerializer";
 import { PixelBatteryStateValues } from "./PixelBatteryState";
 import { PixelChipModelValues } from "./PixelChipModel";
+import { PixelMessage } from "./PixelMessage";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
 
 /**
@@ -25,7 +19,7 @@ import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
  * @enum
  * @category Message
  */
-export const MessageTypeValues = {
+export const ChargerMessageTypeValues = {
   none: enumValue(0),
   whoAreYou: enumValue(),
   iAmALCC: enumValue(),
@@ -62,212 +56,18 @@ export const MessageTypeValues = {
 } as const;
 
 /**
- * The names for the "enum" type {@link MessageTypeValues}.
+ * The names for the "enum" type {@link ChargerMessageTypeValues}.
  * @category Message
  */
-export type MessageType = keyof typeof MessageTypeValues;
+export type ChargerMessageType = keyof typeof ChargerMessageTypeValues;
 
 /**
- * Base type for all Pixel messages.
- * @remarks Messages that have no data don't require a class,
- * a {@link MessageTypeValues} is used instead.
- * @category Message
- */
-export interface PixelMessage {
-  /** Type of the message. */
-  readonly type: number;
-}
-
-/**
- * Union type of {@link PixelMessage} and {@link MessageType} types.
+ * Union type of {@link PixelMessage} and {@link ChargerMessageType} types.
  * Messages without parameter have no {@link PixelMessage} class to represent them,
- * instead they are represent by the corresponding {@link MessageTypeValues}.
+ * instead they are represent by the corresponding {@link ChargerMessageTypeValues}.
  * @category Message
  */
-export type MessageOrType = PixelMessage | MessageType;
-
-/**
- * Type representing a PixelMessage constructor.
- * @category Message
- */
-export type MessageClass = new () => PixelMessage;
-
-// Lookup table from message type value to message name
-const _messageNamesLookup: Readonly<MessageType[]> = [];
-function _getMessageNameFromValue(typeValue: number): MessageType | undefined {
-  if (!_messageNamesLookup.length) {
-    const lookup = _messageNamesLookup as MessageType[];
-    for (const [key, value] of Object.entries(MessageTypeValues)) {
-      lookup[value] = key as MessageType;
-    }
-  }
-  return _messageNamesLookup[typeValue];
-}
-
-// Lookup table from MessageClass to MessageType
-const _reverseMsgClassesLookup: Readonly<Map<MessageClass, number>> = new Map();
-function _getMessageTypeValue(msgClass: MessageClass): number {
-  if (!_reverseMsgClassesLookup) {
-    const lookup = _reverseMsgClassesLookup as Map<MessageClass, number>;
-    for (const ctor of _getMessageClasses()) {
-      lookup.set(ctor, new ctor().type);
-    }
-  }
-  return _reverseMsgClassesLookup.get(msgClass) ?? MessageTypeValues.none;
-}
-
-// Lookup table from message type value to MessageClass
-const _messageClassesLookup: Readonly<Map<number, MessageClass>> = new Map();
-function _getMessageClass(msgTypeValue: number): MessageClass | undefined {
-  if (!_messageClassesLookup.size) {
-    const lookup = _messageClassesLookup as Map<number, MessageClass>;
-    for (const ctor of _getMessageClasses()) {
-      lookup.set(new ctor().type, ctor);
-    }
-  }
-  return _messageClassesLookup.get(msgTypeValue);
-}
-
-// Get message type value from message type
-function _checkGetMessageTypeValue(msgType: MessageType): number {
-  const typeValue = MessageTypeValues[msgType];
-  assert(typeValue, `No Pixel message type value for ${msgType}`);
-  return typeValue;
-}
-
-/**
- * Gets the type of the given message or message type value.
- * @param msgOrTypeOrClass A message or a message type value.
- * @returns The message type.
- * @category Message
- */
-export function getMessageTypeValue(
-  msgOrTypeOrClass: MessageOrType | MessageClass
-): number {
-  return typeof msgOrTypeOrClass === "function"
-    ? _getMessageTypeValue(msgOrTypeOrClass)
-    : typeof msgOrTypeOrClass === "string"
-      ? _checkGetMessageTypeValue(msgOrTypeOrClass)
-      : msgOrTypeOrClass.type;
-}
-
-/**
- * Get the message name (as listed in {@link MessageTypeValues}).
- * @param msgOrTypeOrTypeValue A message or a message type value
- *                             or the numerical value of a message type.
- * @returns The message name.
- * @category Message
- */
-export function getMessageType(
-  msgOrTypeOrTypeValue: MessageOrType | number
-): MessageType {
-  if (typeof msgOrTypeOrTypeValue === "string") {
-    return msgOrTypeOrTypeValue;
-  } else {
-    const typeValue =
-      typeof msgOrTypeOrTypeValue === "number"
-        ? msgOrTypeOrTypeValue
-        : msgOrTypeOrTypeValue.type;
-    const type = _getMessageNameFromValue(typeValue);
-    if (type) {
-      return type;
-    }
-    throw Error(
-      `getMessageName: ${typeValue} is not a value in MessageTypeValues`
-    );
-  }
-}
-
-/**
- * Creates a message object for the given message type.
- * @param type Type of message.
- * @returns A PixelMessage object with the given message type.
- * @category Message
- */
-export function instantiateMessage(type: MessageType): PixelMessage {
-  const typeValue = _checkGetMessageTypeValue(type);
-  const ctor = _getMessageClass(typeValue);
-  if (ctor) {
-    return new ctor();
-  } else {
-    return new GenericPixelMessage(typeValue);
-  }
-}
-
-/**
- * Serialize the given Pixel message.
- * @param msgOrTypeOrTypeValue A message or a message type value
- *                             or the numerical value of a message type.
- * @returns The serialized data.
- * @category Message
- */
-export function serializeMessage(
-  msgOrTypeOrTypeValue: MessageOrType | number
-): ArrayBuffer {
-  if (typeof msgOrTypeOrTypeValue === "object") {
-    const msg = msgOrTypeOrTypeValue;
-    const [dataView] = serialize(msg);
-    assert(dataView.byteLength > 0, "Got empty buffer from deserialization");
-    assert(
-      dataView.getUint8(0) === getMessageTypeValue(msg),
-      `Unexpected message type, got ${dataView.getUint8(0)} ` +
-        `instead of ${getMessageTypeValue(msg)}`
-    );
-    return dataView.buffer;
-  } else {
-    const typeValue =
-      typeof msgOrTypeOrTypeValue === "number"
-        ? msgOrTypeOrTypeValue
-        : MessageTypeValues[msgOrTypeOrTypeValue];
-    assert(typeValue, `No Pixel message value for ${msgOrTypeOrTypeValue}`);
-    return Uint8Array.of(typeValue);
-  }
-}
-
-/**
- * Attempts to deserialize the data of the given buffer into a Pixel message.
- * @param dataView The data to deserialize the message from.
- * @returns The deserialized message or just its type value (for messages with no class).
- * @category Message
- */
-export function deserializeMessage(dataView: DataView): MessageOrType {
-  if (!dataView.byteLength) {
-    throw new SerializationError("Can't deserialize an empty buffer");
-  }
-  const msgTypeValue = dataView.getUint8(0);
-  if (dataView.byteLength === 1) {
-    return getMessageType(msgTypeValue);
-  } else {
-    const msg = instantiateMessage(getMessageType(msgTypeValue));
-    const bytesRead = deserialize(msg, dataView);
-    if (bytesRead !== dataView.byteLength) {
-      console.warn(
-        `The last ${
-          dataView.byteLength - bytesRead
-        } bytes were not read while deserializing message of type ${msg.type}`
-      );
-    }
-    assert(
-      msg.type === msgTypeValue,
-      `Incorrect message type after deserializing ${msg.type} but expecting ${msgTypeValue}`
-    );
-    return msg;
-  }
-}
-
-/**
- * Generic class representing any message without any data.
- * @category Message
- */
-export class GenericPixelMessage implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type: number;
-
-  constructor(type: number) {
-    this.type = type;
-  }
-}
+export type ChargerMessageOrType = PixelMessage | ChargerMessageType;
 
 export interface MessageChunk {
   // On initialization: size of serializable object
@@ -299,39 +99,24 @@ export class VersionInfoChunk implements MessageChunk {
   compatManagementApiVersion = 0;
 }
 
-export class DieInfoChunk implements MessageChunk {
-  /** Size in bytes of the die info data chunk. */
+export class ChargerInfoChunk implements MessageChunk {
+  /** Size in bytes of the charger info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
 
-  /** The Pixel id. */
+  /** The charger unique Pixel id. */
   @serializable(4)
   pixelId = 0;
 
   @serializable(1)
   chipModel = PixelChipModelValues.unknown;
 
-  @serializable(1)
-  dieType = PixelDieTypeValues.unknown;
-
   /** Number of LEDs. */
   @serializable(1)
   ledCount = 0;
-
-  /** Die look. */
-  @serializable(1)
-  colorway = PixelColorwayValues.unknown;
 }
 
-export class CustomDesignAndColorNameChunk implements MessageChunk {
-  @serializable(1)
-  chunkSize = 0;
-
-  @serializable(0, { terminator: true })
-  name = "";
-}
-
-export class DieNameChunk implements MessageChunk {
+export class ChargerNameChunk implements MessageChunk {
   @serializable(1)
   chunkSize = 0;
 
@@ -343,10 +128,6 @@ export class SettingsInfoChunk implements MessageChunk {
   /** Size in bytes of the settings info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
-
-  /** Hash of the uploaded profile. */
-  @serializable(4)
-  profileDataHash = 0;
 
   /** Amount of available flash to store data. */
   @serializable(4)
@@ -379,20 +160,19 @@ export class StatusInfoChunk implements MessageChunk {
  */
 export class IAmALCC implements PixelMessage {
   @serializable(1)
-  readonly type = MessageTypeValues.iAmALCC;
+  readonly type = ChargerMessageTypeValues.iAmALCC;
 
-  versionInfo = new VersionInfoChunk();
-  dieInfo = new DieInfoChunk();
-  customDesignAndColorName = new CustomDesignAndColorNameChunk();
-  dieName = new DieNameChunk();
-  settingsInfo = new SettingsInfoChunk();
-  statusInfo = new StatusInfoChunk();
+  readonly versionInfo = new VersionInfoChunk();
+  readonly chargerInfo = new ChargerInfoChunk();
+  readonly dieName = new ChargerNameChunk();
+  readonly settingsInfo = new SettingsInfoChunk();
+  readonly statusInfo = new StatusInfoChunk();
 }
 
 export class LegacyIAmALCC implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.iAmALCC;
+  readonly type = ChargerMessageTypeValues.iAmALCC;
 
   /** Number of LEDs. */
   @serializable(1, { padding: 2 })
@@ -402,9 +182,9 @@ export class LegacyIAmALCC implements PixelMessage {
   @serializable(4)
   dataSetHash = 0;
 
-  /** The Pixel id. */
+  /** The charger unique Pixel id. */
   @serializable(4)
-  lccId = 0;
+  pixelId = 0;
 
   /** Amount of available flash. */
   @serializable(2)
@@ -437,7 +217,7 @@ export class LegacyIAmALCC implements PixelMessage {
 export class BulkSetup implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.bulkSetup;
+  readonly type = ChargerMessageTypeValues.bulkSetup;
 
   @serializable(2)
   size = 0;
@@ -451,7 +231,7 @@ export class BulkSetup implements PixelMessage {
 export class BulkData implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.bulkData;
+  readonly type = ChargerMessageTypeValues.bulkData;
 
   @serializable(1)
   size = 0;
@@ -468,7 +248,7 @@ export class BulkData implements PixelMessage {
 export class BulkDataAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.bulkDataAck;
+  readonly type = ChargerMessageTypeValues.bulkDataAck;
 
   @serializable(2)
   offset = 0;
@@ -481,7 +261,7 @@ export class BulkDataAck implements PixelMessage {
 export class DebugLog implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.debugLog;
+  readonly type = ChargerMessageTypeValues.debugLog;
 
   /** The message to log. */
   @serializable(0, { terminator: true })
@@ -495,7 +275,7 @@ export class DebugLog implements PixelMessage {
 export class Blink implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.blink;
+  readonly type = ChargerMessageTypeValues.blink;
 
   /** Number of flashes. */
   @serializable(1)
@@ -529,7 +309,7 @@ export class Blink implements PixelMessage {
 export class BatteryLevel implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.batteryLevel;
+  readonly type = ChargerMessageTypeValues.batteryLevel;
 
   /** The battery charge level in percent. */
   @serializable(1)
@@ -547,7 +327,7 @@ export class BatteryLevel implements PixelMessage {
 export class RequestRssi implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.requestRssi;
+  readonly type = ChargerMessageTypeValues.requestRssi;
 
   /** Telemetry mode used for sending the RSSI update(s). */
   @serializable(1)
@@ -568,7 +348,7 @@ export class RequestRssi implements PixelMessage {
 export class Rssi implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.rssi;
+  readonly type = ChargerMessageTypeValues.rssi;
 
   /** The RSSI value, in dBm. */
   @serializable(1, { numberFormat: "signed" })
@@ -583,9 +363,9 @@ export class Rssi implements PixelMessage {
 export class NotifyUser implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.notifyUser;
+  readonly type = ChargerMessageTypeValues.notifyUser;
 
-  /** Timeout after which the die won't listen for an answer. */
+  /** Timeout after which the charger won't listen for an answer. */
   @serializable(1)
   timeoutSec = 0;
 
@@ -609,7 +389,7 @@ export class NotifyUser implements PixelMessage {
 export class NotifyUserAck implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.notifyUserAck;
+  readonly type = ChargerMessageTypeValues.notifyUserAck;
 
   /** Whether the use selected OK or Cancel. */
   @serializable(1)
@@ -623,7 +403,7 @@ export class NotifyUserAck implements PixelMessage {
 export class SetName implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.setName;
+  readonly type = ChargerMessageTypeValues.setName;
 
   /** The name to set. */
   @serializable(Constants.maxNameByteSize + 1) // +1 for null terminator
@@ -637,11 +417,11 @@ export class SetName implements PixelMessage {
 export class Temperature implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = MessageTypeValues.temperature;
+  readonly type = ChargerMessageTypeValues.temperature;
 
   /**
    * The microcontroller temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
-   * If the die was unable to read the temperature, value will be 0xffff.
+   * If the charger was unable to read the temperature, value will be 0xffff.
    */
   @serializable(2)
   mcuTemperatureTimes100 = 0;
@@ -653,9 +433,9 @@ export class Temperature implements PixelMessage {
   batteryTemperatureTimes100 = 0;
 }
 
-// Returns the list of message classes defined in this file.
-function _getMessageClasses(): MessageClass[] {
-  return [
+export const serializer = new MessageSerializer<ChargerMessageType>(
+  Object.entries(ChargerMessageTypeValues) as [ChargerMessageType, number][],
+  [
     LegacyIAmALCC,
     BulkSetup,
     BulkData,
@@ -669,5 +449,5 @@ function _getMessageClasses(): MessageClass[] {
     NotifyUserAck,
     SetName,
     Temperature,
-  ];
-}
+  ]
+);

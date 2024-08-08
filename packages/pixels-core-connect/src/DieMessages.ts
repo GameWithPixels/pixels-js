@@ -4,19 +4,17 @@ import {
   PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
-  assert,
   enumValue,
-  deserialize,
   serializable,
-  SerializationError,
-  serialize,
   byteSizeOf,
 } from "@systemic-games/pixels-core-utils";
 
 import { Constants } from "./Constants";
+import { MessageSerializer } from "./MessageSerializer";
 import { PixelBatteryControllerStateValues } from "./PixelBatteryControllerState";
 import { PixelBatteryStateValues } from "./PixelBatteryState";
 import { PixelChipModelValues } from "./PixelChipModel";
+import { PixelMessage } from "./PixelMessage";
 import { PixelRollStateValues } from "./PixelRollState";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
 
@@ -120,206 +118,12 @@ export const MessageTypeValues = {
 export type MessageType = keyof typeof MessageTypeValues;
 
 /**
- * Base type for all Pixel messages.
- * @remarks Messages that have no data don't require a class,
- * a {@link MessageTypeValues} is used instead.
- * @category Message
- */
-export interface PixelMessage {
-  /** Type of the message. */
-  readonly type: number;
-}
-
-/**
  * Union type of {@link PixelMessage} and {@link MessageType} types.
  * Messages without parameter have no {@link PixelMessage} class to represent them,
  * instead they are represent by the corresponding {@link MessageTypeValues}.
  * @category Message
  */
 export type MessageOrType = PixelMessage | MessageType;
-
-/**
- * Type representing a PixelMessage constructor.
- * @category Message
- */
-export type MessageClass = new () => PixelMessage;
-
-// Lookup table from message type value to message name
-const _messageNamesLookup: Readonly<MessageType[]> = [];
-function _getMessageNameFromValue(typeValue: number): MessageType | undefined {
-  if (!_messageNamesLookup.length) {
-    const lookup = _messageNamesLookup as MessageType[];
-    for (const [key, value] of Object.entries(MessageTypeValues)) {
-      lookup[value] = key as MessageType;
-    }
-  }
-  return _messageNamesLookup[typeValue];
-}
-
-// Lookup table from MessageClass to MessageType
-const _reverseMsgClassesLookup: Readonly<Map<MessageClass, number>> = new Map();
-function _getMessageTypeValue(msgClass: MessageClass): number {
-  if (!_reverseMsgClassesLookup) {
-    const lookup = _reverseMsgClassesLookup as Map<MessageClass, number>;
-    for (const ctor of _getMessageClasses()) {
-      lookup.set(ctor, new ctor().type);
-    }
-  }
-  return _reverseMsgClassesLookup.get(msgClass) ?? MessageTypeValues.none;
-}
-
-// Lookup table from message type value to MessageClass
-const _messageClassesLookup: Readonly<Map<number, MessageClass>> = new Map();
-function _getMessageClass(msgTypeValue: number): MessageClass | undefined {
-  if (!_messageClassesLookup.size) {
-    const lookup = _messageClassesLookup as Map<number, MessageClass>;
-    for (const ctor of _getMessageClasses()) {
-      lookup.set(new ctor().type, ctor);
-    }
-  }
-  return _messageClassesLookup.get(msgTypeValue);
-}
-
-// Get message type value from message type
-function _checkGetMessageTypeValue(msgType: MessageType): number {
-  const typeValue = MessageTypeValues[msgType];
-  assert(typeValue, `No Pixel message type value for ${msgType}`);
-  return typeValue;
-}
-
-/**
- * Gets the type of the given message or message type value.
- * @param msgOrTypeOrClass A message or a message type value.
- * @returns The message type.
- * @category Message
- */
-export function getMessageTypeValue(
-  msgOrTypeOrClass: MessageOrType | MessageClass
-): number {
-  return typeof msgOrTypeOrClass === "function"
-    ? _getMessageTypeValue(msgOrTypeOrClass)
-    : typeof msgOrTypeOrClass === "string"
-      ? _checkGetMessageTypeValue(msgOrTypeOrClass)
-      : msgOrTypeOrClass.type;
-}
-
-/**
- * Get the message name (as listed in {@link MessageTypeValues}).
- * @param msgOrTypeOrTypeValue A message or a message type value
- *                             or the numerical value of a message type.
- * @returns The message name.
- * @category Message
- */
-export function getMessageType(
-  msgOrTypeOrTypeValue: MessageOrType | number
-): MessageType {
-  if (typeof msgOrTypeOrTypeValue === "string") {
-    return msgOrTypeOrTypeValue;
-  } else {
-    const typeValue =
-      typeof msgOrTypeOrTypeValue === "number"
-        ? msgOrTypeOrTypeValue
-        : msgOrTypeOrTypeValue.type;
-    const type = _getMessageNameFromValue(typeValue);
-    if (type) {
-      return type;
-    }
-    throw Error(
-      `getMessageName: ${typeValue} is not a value in MessageTypeValues`
-    );
-  }
-}
-
-/**
- * Creates a message object for the given message type.
- * @param type Type of message.
- * @returns A PixelMessage object with the given message type.
- * @category Message
- */
-export function instantiateMessage(type: MessageType): PixelMessage {
-  const typeValue = _checkGetMessageTypeValue(type);
-  const ctor = _getMessageClass(typeValue);
-  if (ctor) {
-    return new ctor();
-  } else {
-    return new GenericPixelMessage(typeValue);
-  }
-}
-
-/**
- * Serialize the given Pixel message.
- * @param msgOrTypeOrTypeValue A message or a message type value
- *                             or the numerical value of a message type.
- * @returns The serialized data.
- * @category Message
- */
-export function serializeMessage(
-  msgOrTypeOrTypeValue: MessageOrType | number
-): ArrayBuffer {
-  if (typeof msgOrTypeOrTypeValue === "object") {
-    const msg = msgOrTypeOrTypeValue;
-    const [dataView] = serialize(msg);
-    assert(dataView.byteLength > 0, "Got empty buffer from deserialization");
-    assert(
-      dataView.getUint8(0) === getMessageTypeValue(msg),
-      `Unexpected message type, got ${dataView.getUint8(0)} ` +
-        `instead of ${getMessageTypeValue(msg)}`
-    );
-    return dataView.buffer;
-  } else {
-    const typeValue =
-      typeof msgOrTypeOrTypeValue === "number"
-        ? msgOrTypeOrTypeValue
-        : MessageTypeValues[msgOrTypeOrTypeValue];
-    assert(typeValue, `No Pixel message value for ${msgOrTypeOrTypeValue}`);
-    return Uint8Array.of(typeValue);
-  }
-}
-
-/**
- * Attempts to deserialize the data of the given buffer into a Pixel message.
- * @param dataView The data to deserialize the message from.
- * @returns The deserialized message or just its type value (for messages with no class).
- * @category Message
- */
-export function deserializeMessage(dataView: DataView): MessageOrType {
-  if (!dataView.byteLength) {
-    throw new SerializationError("Can't deserialize an empty buffer");
-  }
-  const msgTypeValue = dataView.getUint8(0);
-  if (dataView.byteLength === 1) {
-    return getMessageType(msgTypeValue);
-  } else {
-    const msg = instantiateMessage(getMessageType(msgTypeValue));
-    const bytesRead = deserialize(msg, dataView);
-    if (bytesRead !== dataView.byteLength) {
-      console.warn(
-        `The last ${
-          dataView.byteLength - bytesRead
-        } bytes were not read while deserializing message of type ${msg.type}`
-      );
-    }
-    assert(
-      msg.type === msgTypeValue,
-      `Incorrect message type after deserializing ${msg.type} but expecting ${msgTypeValue}`
-    );
-    return msg;
-  }
-}
-
-/**
- * Generic class representing any message without any data.
- * @category Message
- */
-export class GenericPixelMessage implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type: number;
-
-  constructor(type: number) {
-    this.type = type;
-  }
-}
 
 export interface MessageChunk {
   // On initialization: size of serializable object
@@ -356,7 +160,7 @@ export class DieInfoChunk implements MessageChunk {
   @serializable(1)
   chunkSize = byteSizeOf(this);
 
-  /** The Pixel id. */
+  /** The unique Pixel id. */
   @serializable(4)
   pixelId = 0;
 
@@ -443,12 +247,12 @@ export class IAmADie implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.iAmADie;
 
-  versionInfo = new VersionInfoChunk();
-  dieInfo = new DieInfoChunk();
-  customDesignAndColorName = new CustomDesignAndColorNameChunk();
-  dieName = new DieNameChunk();
-  settingsInfo = new SettingsInfoChunk();
-  statusInfo = new StatusInfoChunk();
+  readonly versionInfo = new VersionInfoChunk();
+  readonly dieInfo = new DieInfoChunk();
+  readonly customDesignAndColorName = new CustomDesignAndColorNameChunk();
+  readonly dieName = new DieNameChunk();
+  readonly settingsInfo = new SettingsInfoChunk();
+  readonly statusInfo = new StatusInfoChunk();
 }
 
 /**
@@ -477,7 +281,7 @@ export class LegacyIAmADie implements PixelMessage {
   @serializable(4)
   dataSetHash = 0;
 
-  /** The Pixel id. */
+  /** The unique Pixel id. */
   @serializable(4)
   pixelId = 0;
 
@@ -1280,9 +1084,9 @@ export class PlayProfileAnimation implements PixelMessage {
   loopCount = 1;
 }
 
-// Returns the list of message classes defined in this file.
-function _getMessageClasses(): MessageClass[] {
-  return [
+export const serializer = new MessageSerializer<MessageType>(
+  Object.entries(MessageTypeValues) as [MessageType, number][],
+  [
     LegacyIAmADie,
     RollState,
     Telemetry,
@@ -1314,5 +1118,5 @@ function _getMessageClasses(): MessageClass[] {
     Discharge,
     BlinkId,
     TransferTest,
-  ];
-}
+  ]
+);

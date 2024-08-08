@@ -10,10 +10,8 @@ import {
   PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
-  assert,
   byteSizeOf,
   createTypedEventEmitter,
-  deserialize,
   EventReceiver,
   getValueKeyName,
   Mutable,
@@ -26,8 +24,6 @@ import {
   Blink,
   BulkData,
   BulkSetup,
-  deserializeMessage,
-  getMessageType,
   IAmADie,
   LegacyIAmADie,
   MessageOrType,
@@ -35,7 +31,6 @@ import {
   MessageTypeValues,
   NotifyUser,
   NotifyUserAck,
-  PixelMessage,
   PixelPowerOperationValues,
   PlayInstantAnimation,
   PowerOperation,
@@ -43,6 +38,7 @@ import {
   RequestRssi,
   RollState,
   Rssi,
+  serializer,
   SetName,
   TransferAnimationSet,
   TransferAnimationSetAck,
@@ -52,9 +48,10 @@ import {
   TransferTestAnimationSet,
   TransferTestAnimationSetAck,
   VersionInfoChunk,
-} from "./Messages";
+} from "./DieMessages";
 import { PixelConnect, PixelConnectMutableProps } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
+import { PixelMessage } from "./PixelMessage";
 import { PixelRollState, PixelRollStateValues } from "./PixelRollState";
 import { PixelSession } from "./PixelSession";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
@@ -196,7 +193,8 @@ export type PixelMutableProps = PixelConnectMutableProps & PixelOwnMutableProps;
 export class Pixel
   extends PixelConnect<
     PixelMutableProps,
-    PixelConnectMutableProps & PixelOwnMutableProps
+    PixelConnectMutableProps & PixelOwnMutableProps,
+    MessageType
   >
   implements PixelOwnMutableProps
 {
@@ -342,7 +340,7 @@ export class Pixel
       >
     >
   ) {
-    super(session);
+    super(serializer, session);
     this._info = {
       systemId: session.systemId,
       pixelId: info?.pixelId ?? 0,
@@ -606,7 +604,7 @@ export class Pixel
     if (fwVer > 0 && Constants.compatApiVersion > fwVer) {
       throw new PixelIncompatibleMessageError(
         this,
-        getMessageType(msgOrType),
+        this._serializer.getMessageType(msgOrType),
         Constants.compatApiVersion,
         fwVer,
         "library"
@@ -616,7 +614,7 @@ export class Pixel
     if (fwCompatVer > 0 && Constants.apiVersion < fwCompatVer) {
       throw new PixelIncompatibleMessageError(
         this,
-        getMessageType(msgOrType),
+        this._serializer.getMessageType(msgOrType),
         Constants.apiVersion,
         fwCompatVer,
         "firmware"
@@ -714,9 +712,8 @@ export class Pixel
   }
 
   /**
-   * Asynchronously gets the battery state.
-   * @returns A promise revolving to an object with the batter level in
-   *          percentage and flag indicating whether it is charging or not.
+   * Asynchronously gets the Pixel RSSI value.
+   * @returns A promise revolving to a negative number representing the RSSI value.
    */
   async queryRssi(): Promise<number> {
     const rssi = (await this.sendAndWaitForResponse(
@@ -1033,12 +1030,22 @@ export class Pixel
   }
 
   protected _internalDeserializeMessage(dataView: DataView): MessageOrType {
-    const msgOrType =
+    let msgOrType: MessageOrType;
+    if (
       dataView.byteLength &&
       dataView.getUint8(0) === MessageTypeValues.iAmADie &&
-      dataView.byteLength === LegacyIAmADie.expectedSize
-        ? deserializeMessage(dataView)
-        : this._deserializeImADie(dataView);
+      dataView.byteLength !== LegacyIAmADie.expectedSize
+    ) {
+      const iAmADie = new IAmADie();
+      this._deserializeChunkedMessage(
+        dataView,
+        // @ts-ignore Missing index signature for class 'IAmADie'.
+        iAmADie
+      );
+      msgOrType = iAmADie;
+    } else {
+      msgOrType = this._serializer.deserializeMessage(dataView);
+    }
     if (msgOrType) {
       // Notify
       this._evEmitter.emit("messageReceived", msgOrType);
@@ -1196,36 +1203,6 @@ export class Pixel
     if (progressChanged) {
       this.emitPropertyEvent("transferProgress");
     }
-  }
-
-  private _deserializeImADie(dataView: DataView): IAmADie {
-    assert(dataView.getUint8(0) === MessageTypeValues.iAmADie);
-    const msg = new IAmADie();
-    let offset = 1;
-    for (const [key, value] of Object.entries(msg)) {
-      if (key !== ("type" as keyof IAmADie)) {
-        assert(typeof value === "object" && "chunkSize" in value);
-        const dataSize = dataView.getUint8(offset);
-        if (value.chunkSize > 0 && dataSize !== value.chunkSize) {
-          this._warn(
-            `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
-          );
-        }
-        deserialize(
-          value,
-          new DataView(
-            dataView.buffer,
-            dataView.byteOffset + offset,
-            value.chunkSize === 0
-              ? dataSize
-              : Math.min(dataSize, value.chunkSize)
-          ),
-          { allowSkipLastProps: true }
-        );
-        offset += dataSize;
-      }
-    }
-    return msg;
   }
 
   private async _programDataSet(

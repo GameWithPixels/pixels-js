@@ -17,22 +17,21 @@ import {
 import {
   BatteryLevel,
   Blink,
-  deserializeMessage,
-  getMessageType,
+  ChargerMessageOrType,
+  ChargerMessageType,
+  ChargerMessageTypeValues,
   IAmALCC,
   LegacyIAmALCC,
-  MessageOrType,
-  MessageType,
-  MessageTypeValues,
-  PixelMessage,
   RequestRssi,
   Rssi,
+  serializer,
   SetName,
   VersionInfoChunk,
 } from "./ChargerMessages";
 import { Constants } from "./Constants";
 import { PixelConnect, PixelConnectMutableProps } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
+import { PixelMessage } from "./PixelMessage";
 import { PixelRollState } from "./PixelRollState";
 import { PixelSession } from "./PixelSession";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
@@ -53,9 +52,9 @@ import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
  */
 export interface ChargerEventMap {
   /** Message received notification. */
-  messageReceived: MessageOrType;
+  messageReceived: ChargerMessageOrType;
   /** Message send notification. */
-  messageSend: MessageOrType;
+  messageSend: ChargerMessageOrType;
   /** Battery state changed notification. */
   battery: Readonly<{
     level: number; // Percentage
@@ -92,7 +91,8 @@ export type ChargerMutableProps = PixelConnectMutableProps &
 export class Charger
   extends PixelConnect<
     ChargerMutableProps,
-    PixelConnectMutableProps & ChargerOwnMutableProps
+    PixelConnectMutableProps & ChargerOwnMutableProps,
+    ChargerMessageType
   >
   implements ChargerOwnMutableProps
 {
@@ -194,21 +194,16 @@ export class Charger
   constructor(
     session: PixelSession,
     // Static values
-    info?: Partial<
-      Pick<
-        PixelInfo,
-        "pixelId" | "ledCount" | "dieType" | "colorway" | "firmwareDate"
-      >
-    >
+    info?: Partial<Pick<PixelInfo, "pixelId" | "ledCount" | "firmwareDate">>
   ) {
-    super(session);
+    super(serializer, session);
     this._info = {
       systemId: session.systemId,
       pixelId: info?.pixelId ?? 0,
       name: "",
       ledCount: info?.ledCount ?? 0,
-      colorway: info?.colorway ?? "unknown",
-      dieType: info?.dieType ?? "unknown",
+      colorway: "unknown",
+      dieType: "unknown",
       firmwareDate: info?.firmwareDate ?? new Date(0),
       rssi: 0,
       batteryLevel: 0,
@@ -244,13 +239,13 @@ export class Charger
     this.addPropertyListener("status", statusListener);
 
     // Subscribe to rssi messages and emit event
-    const rssiListener = (msgOrType: MessageOrType) => {
+    const rssiListener = (msgOrType: ChargerMessageOrType) => {
       this._updateRssi((msgOrType as Rssi).value);
     };
     this.addMessageListener("rssi", rssiListener);
 
     // Subscribe to battery messages and emit battery event
-    const batteryLevelListener = (msgOrType: MessageOrType) => {
+    const batteryLevelListener = (msgOrType: ChargerMessageOrType) => {
       const msg = msgOrType as BatteryLevel;
       this._updateBattery(msg.levelPercent, isPixelChargingOrDone(msg.state));
     };
@@ -261,7 +256,6 @@ export class Charger
       // Reset name
       this._updateName("PxlLcc" + unsigned32ToHex(this._info.pixelId));
     };
-    this.addMessageListener("clearSettingsAck", resetListener);
     this.addMessageListener("programDefaultParametersFinished", resetListener);
 
     // Unmount function
@@ -270,7 +264,6 @@ export class Charger
       this.removePropertyListener("status", statusListener);
       this.removeMessageListener("rssi", rssiListener);
       this.removeMessageListener("batteryLevel", batteryLevelListener);
-      this.removeMessageListener("clearSettingsAck", resetListener);
       this.removeMessageListener(
         "programDefaultParametersFinished",
         resetListener
@@ -394,7 +387,7 @@ export class Charger
    * @returns A promise that resolves once the message has been send.
    */
   async sendMessage(
-    msgOrType: MessageOrType,
+    msgOrType: ChargerMessageOrType,
     withoutAck = false
   ): Promise<void> {
     // Check API version
@@ -402,7 +395,7 @@ export class Charger
     if (fwVer > 0 && Constants.compatApiVersion > fwVer) {
       throw new PixelIncompatibleMessageError(
         this,
-        getMessageType(msgOrType),
+        this._serializer.getMessageType(msgOrType),
         Constants.compatApiVersion,
         fwVer,
         "library"
@@ -412,7 +405,7 @@ export class Charger
     if (fwCompatVer > 0 && Constants.apiVersion < fwCompatVer) {
       throw new PixelIncompatibleMessageError(
         this,
-        getMessageType(msgOrType),
+        this._serializer.getMessageType(msgOrType),
         Constants.apiVersion,
         fwCompatVer,
         "firmware"
@@ -430,10 +423,10 @@ export class Charger
    * @returns A promise resolving to the response in the form of a message type or a message object.
    */
   async sendAndWaitForResponse(
-    msgOrTypeToSend: MessageOrType,
-    responseType: MessageType,
+    msgOrTypeToSend: ChargerMessageOrType,
+    responseType: ChargerMessageType,
     timeoutMs: number = Constants.ackMessageTimeout
-  ): Promise<MessageOrType> {
+  ): Promise<ChargerMessageOrType> {
     return await this._internalSendAndWaitForResponse(
       msgOrTypeToSend,
       responseType,
@@ -450,7 +443,7 @@ export class Charger
    * @returns A promise resolving to a message object of the expected type.
    */
   async sendAndWaitForTypedResponse<T extends PixelMessage>(
-    msgOrTypeToSend: MessageOrType,
+    msgOrTypeToSend: ChargerMessageOrType,
     responseType: { new (): T },
     timeoutMs: number = Constants.ackMessageTimeout
   ): Promise<T> {
@@ -500,9 +493,8 @@ export class Charger
   }
 
   /**
-   * Asynchronously gets the battery state.
-   * @returns A promise revolving to an object with the batter level in
-   *          percentage and flag indicating whether it is charging or not.
+   * Asynchronously gets the Charger RSSI value.
+   * @returns A promise revolving to a negative number representing the RSSI value.
    */
   async queryRssi(): Promise<number> {
     const rssi = (await this.sendAndWaitForResponse(
@@ -554,18 +546,17 @@ export class Charger
 
     // Identify Charger
     this._log("Waiting on identification message");
-    const iAmADie = (await this.sendAndWaitForResponse(
+    const iAmALCC = (await this.sendAndWaitForResponse(
       "whoAreYou",
       "iAmALCC"
     )) as IAmALCC | LegacyIAmALCC;
-    console.log(JSON.stringify(iAmADie));
 
     // Check Pixel id
     const pixelId =
-      (iAmADie as LegacyIAmALCC).pixelId ??
-      (iAmADie as IAmALCC).dieInfo?.pixelId;
+      (iAmALCC as LegacyIAmALCC).pixelId ??
+      (iAmALCC as IAmALCC).chargerInfo?.pixelId;
     if (!pixelId) {
-      const ledCount = (iAmADie as LegacyIAmALCC).ledCount;
+      const ledCount = (iAmALCC as LegacyIAmALCC).ledCount;
       console.log("ledCount=" + ledCount);
       // This should never happen
       throw new PixelConnectError(this, "Got an empty Pixel id");
@@ -588,9 +579,9 @@ export class Charger
       );
     };
 
-    if (iAmADie instanceof LegacyIAmALCC) {
+    if (iAmALCC instanceof LegacyIAmALCC) {
       // Update properties
-      setProperties(iAmADie);
+      setProperties(iAmALCC);
 
       // Set versions
       const legacyVersion = 0x100;
@@ -602,28 +593,40 @@ export class Charger
     } else {
       // Update properties
       setProperties({
-        ...iAmADie.dieInfo,
-        ...iAmADie.versionInfo,
-        ...iAmADie.statusInfo,
+        ...iAmALCC.chargerInfo,
+        ...iAmALCC.versionInfo,
+        ...iAmALCC.statusInfo,
       });
 
       // Store versions
       for (verProp in this._versions) {
-        this._versions[verProp] = iAmADie.versionInfo[verProp];
+        this._versions[verProp] = iAmALCC.versionInfo[verProp];
       }
 
       // Update name
-      this._updateName(iAmADie.dieName.name);
+      this._updateName(iAmALCC.dieName.name);
     }
   }
 
-  protected _internalDeserializeMessage(dataView: DataView): MessageOrType {
-    const msgOrType =
+  protected _internalDeserializeMessage(
+    dataView: DataView
+  ): ChargerMessageOrType {
+    let msgOrType: ChargerMessageOrType;
+    if (
       dataView.byteLength &&
-      dataView.getUint8(0) === MessageTypeValues.iAmALCC &&
-      dataView.byteLength === LegacyIAmALCC.expectedSize
-        ? deserializeMessage(dataView)
-        : this._deserializeImALCC(dataView);
+      dataView.getUint8(0) === ChargerMessageTypeValues.iAmALCC &&
+      dataView.byteLength !== LegacyIAmALCC.expectedSize
+    ) {
+      const iAmALCC = new IAmALCC();
+      this._deserializeChunkedMessage(
+        dataView,
+        // @ts-ignore Missing index signature for class 'IAmALCC'.
+        iAmALCC
+      );
+      msgOrType = iAmALCC;
+    } else {
+      msgOrType = this._serializer.deserializeMessage(dataView);
+    }
     if (msgOrType) {
       // Notify
       this._evEmitter.emit("messageReceived", msgOrType);
