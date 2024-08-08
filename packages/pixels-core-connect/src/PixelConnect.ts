@@ -1,4 +1,3 @@
-import { assert, deserialize } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
 import { Constants } from "./Constants";
@@ -62,8 +61,16 @@ export interface PixelConnectOwnMutableProps {
 export type PixelConnectMutableProps = PixelInfoNotifierMutableProps &
   PixelConnectOwnMutableProps;
 
+/**
+ *  {@link PixelInfo} type extend with PixelConnect props.
+ * @category Pixels
+ */
 export type PixelInfoWithStatus = PixelInfo & PixelConnectOwnMutableProps;
 
+/**
+ * Abstract class that represents a connection to a Pixel device (die, charger, etc.).
+ * @category Pixels
+ */
 export abstract class PixelConnect<
   MutableProps extends PixelConnectMutableProps = PixelConnectMutableProps,
   Type extends PixelInfoWithStatus = PixelInfoWithStatus,
@@ -264,43 +271,6 @@ export abstract class PixelConnect<
    **/
   protected async _internalDisconnect(): Promise<void> {
     await this._session.disconnect();
-  }
-
-  protected _deserializeChunkedMessage<
-    ChunksMessage extends Readonly<
-      { type: number } & {
-        [key: string]: { chunkSize: number };
-      }
-    >,
-  >(dataView: DataView, msg: ChunksMessage): void {
-    assert(
-      dataView.getUint8(0) === msg.type,
-      `Unexpected message type, got ${dataView.getUint8(0)} instead of ${msg.type}`
-    );
-    let offset = 1;
-    for (const [key, value] of Object.entries(msg)) {
-      if (key !== ("type" as keyof ChunksMessage)) {
-        assert(typeof value === "object" && "chunkSize" in value);
-        const dataSize = dataView.getUint8(offset);
-        if (value.chunkSize > 0 && dataSize !== value.chunkSize) {
-          this._warn(
-            `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
-          );
-        }
-        deserialize(
-          value,
-          new DataView(
-            dataView.buffer,
-            dataView.byteOffset + offset,
-            value.chunkSize === 0
-              ? dataSize
-              : Math.min(dataSize, value.chunkSize)
-          ),
-          { allowSkipLastProps: true }
-        );
-        offset += dataSize;
-      }
-    }
   }
 
   // Callback on notify characteristic value change

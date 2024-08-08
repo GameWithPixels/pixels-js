@@ -9,6 +9,7 @@ import {
   byteSizeOf,
 } from "@systemic-games/pixels-core-utils";
 
+import { ChunkMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
 import { MessageSerializer } from "./MessageSerializer";
 import { PixelBatteryControllerStateValues } from "./PixelBatteryControllerState";
@@ -125,13 +126,11 @@ export type MessageType = keyof typeof MessageTypeValues;
  */
 export type MessageOrType = PixelMessage | MessageType;
 
-export interface MessageChunk {
-  // On initialization: size of serializable object
-  // After deserialization: number of bytes read from buffer
-  chunkSize: number;
-}
-
-export class VersionInfoChunk implements MessageChunk {
+/**
+ * Pixel version info message chunk.
+ * @category Message
+ */
+export class VersionInfoChunk implements ChunkMessage {
   /** Size in bytes of the version info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -155,7 +154,11 @@ export class VersionInfoChunk implements MessageChunk {
   compatManagementApiVersion = 0;
 }
 
-export class DieInfoChunk implements MessageChunk {
+/**
+ * Pixel general info message chunk.
+ * @category Message
+ */
+export class DieInfoChunk implements ChunkMessage {
   /** Size in bytes of the die info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -179,7 +182,11 @@ export class DieInfoChunk implements MessageChunk {
   colorway = PixelColorwayValues.unknown;
 }
 
-export class CustomDesignAndColorNameChunk implements MessageChunk {
+/**
+ * Pixel custom design & color name message chunk.
+ * @category Message
+ */
+export class CustomDesignAndColorNameChunk implements ChunkMessage {
   @serializable(1)
   chunkSize = 0;
 
@@ -187,7 +194,11 @@ export class CustomDesignAndColorNameChunk implements MessageChunk {
   name = "";
 }
 
-export class DieNameChunk implements MessageChunk {
+/**
+ * Pixel name message chunk.
+ * @category Message
+ */
+export class DieNameChunk implements ChunkMessage {
   @serializable(1)
   chunkSize = 0;
 
@@ -195,7 +206,11 @@ export class DieNameChunk implements MessageChunk {
   name = "";
 }
 
-export class SettingsInfoChunk implements MessageChunk {
+/**
+ * Pixel settings message chunk.
+ * @category Message
+ */
+export class SettingsInfoChunk implements ChunkMessage {
   /** Size in bytes of the settings info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -213,7 +228,11 @@ export class SettingsInfoChunk implements MessageChunk {
   totalUsableFlash = 0;
 }
 
-export class StatusInfoChunk implements MessageChunk {
+/**
+ * Pixel status message chunk.
+ * @category Message
+ */
+export class StatusInfoChunk implements ChunkMessage {
   /** Size in bytes of the battery info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);

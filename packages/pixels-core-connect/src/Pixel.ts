@@ -18,6 +18,7 @@ import {
   safeAssign,
 } from "@systemic-games/pixels-core-utils";
 
+import { deserializeChunkedMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
 import {
   BatteryLevel,
@@ -1037,10 +1038,11 @@ export class Pixel
       dataView.byteLength !== LegacyIAmADie.expectedSize
     ) {
       const iAmADie = new IAmADie();
-      this._deserializeChunkedMessage(
+      deserializeChunkedMessage(
         dataView,
         // @ts-ignore Missing index signature for class 'IAmADie'.
-        iAmADie
+        iAmADie,
+        (msg) => this._warn(msg)
       );
       msgOrType = iAmADie;
     } else {

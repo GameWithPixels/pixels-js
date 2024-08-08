@@ -5,6 +5,7 @@ import {
   byteSizeOf,
 } from "@systemic-games/pixels-core-utils";
 
+import { ChunkMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
 import { MessageSerializer } from "./MessageSerializer";
 import { PixelBatteryStateValues } from "./PixelBatteryState";
@@ -69,13 +70,11 @@ export type ChargerMessageType = keyof typeof ChargerMessageTypeValues;
  */
 export type ChargerMessageOrType = PixelMessage | ChargerMessageType;
 
-export interface MessageChunk {
-  // On initialization: size of serializable object
-  // After deserialization: number of bytes read from buffer
-  chunkSize: number;
-}
-
-export class VersionInfoChunk implements MessageChunk {
+/**
+ * Charger version info message chunk.
+ * @category Message
+ */
+export class VersionInfoChunk implements ChunkMessage {
   /** Size in bytes of the version info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -99,7 +98,11 @@ export class VersionInfoChunk implements MessageChunk {
   compatManagementApiVersion = 0;
 }
 
-export class ChargerInfoChunk implements MessageChunk {
+/**
+ * Charger general info message chunk.
+ * @category Message
+ */
+export class ChargerInfoChunk implements ChunkMessage {
   /** Size in bytes of the charger info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -116,7 +119,11 @@ export class ChargerInfoChunk implements MessageChunk {
   ledCount = 0;
 }
 
-export class ChargerNameChunk implements MessageChunk {
+/**
+ * Charger name message chunk.
+ * @category Message
+ */
+export class ChargerNameChunk implements ChunkMessage {
   @serializable(1)
   chunkSize = 0;
 
@@ -124,7 +131,11 @@ export class ChargerNameChunk implements MessageChunk {
   name = "";
 }
 
-export class SettingsInfoChunk implements MessageChunk {
+/**
+ * Charger settings message chunk.
+ * @category Message
+ */
+export class SettingsInfoChunk implements ChunkMessage {
   /** Size in bytes of the settings info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -138,7 +149,11 @@ export class SettingsInfoChunk implements MessageChunk {
   totalUsableFlash = 0;
 }
 
-export class StatusInfoChunk implements MessageChunk {
+/**
+ * Charger status message chunk.
+ * @category Message
+ */
+export class StatusInfoChunk implements ChunkMessage {
   /** Size in bytes of the battery info data chunk. */
   @serializable(1)
   chunkSize = byteSizeOf(this);
@@ -155,7 +170,7 @@ export class StatusInfoChunk implements MessageChunk {
 }
 
 /**
- * Message send by a Pixel after receiving a "WhoAmI" message.
+ * Message send by a Charger after receiving a "WhoAmI" message.
  * @category Message
  */
 export class IAmALCC implements PixelMessage {
@@ -209,7 +224,7 @@ export class LegacyIAmALCC implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to request a transfer of data.
+ * Message send to a Charger to request a transfer of data.
  * This is usually done after initiating an animation transfer request
  * and followed by BulkData messages with the actual data.
  * @category Message
@@ -224,7 +239,7 @@ export class BulkSetup implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to request to transfer a piece of data.
+ * Message send to a Charger to request to transfer a piece of data.
  * A BulkSetup message must be send first.
  * @category Message
  */
@@ -242,7 +257,7 @@ export class BulkData implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel after receiving a BulkData request.
+ * Message send by a Charger after receiving a BulkData request.
  * @category Message
  */
 export class BulkDataAck implements PixelMessage {
@@ -255,7 +270,7 @@ export class BulkDataAck implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel to report a log message to the application.
+ * Message send by a Charger to report a log message to the application.
  * @category Message
  */
 export class DebugLog implements PixelMessage {
@@ -269,7 +284,7 @@ export class DebugLog implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to have it blink its LEDs.
+ * Message send to a Charger to have it blink its LEDs.
  * @category Message
  */
 export class Blink implements PixelMessage {
@@ -303,7 +318,7 @@ export class Blink implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel to notify of its battery level and state.
+ * Message send by a Charger to notify of its battery level and state.
  * @category Message
  */
 export class BatteryLevel implements PixelMessage {
@@ -321,7 +336,7 @@ export class BatteryLevel implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to configure RSSI reporting.
+ * Message send to a Charger to configure RSSI reporting.
  * @category Message
  */
 export class RequestRssi implements PixelMessage {
@@ -342,7 +357,7 @@ export class RequestRssi implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel to notify of its measured RSSI.
+ * Message send by a Charger to notify of its measured RSSI.
  * @category Message
  */
 export class Rssi implements PixelMessage {
@@ -356,7 +371,7 @@ export class Rssi implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel to request the application to show
+ * Message send by a Charger to request the application to show
  * a message to the user, and with optionally a required action.
  * @category Message
  */
@@ -383,7 +398,7 @@ export class NotifyUser implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel in response to getting a NotifyUser request.
+ * Message send to a Charger in response to getting a NotifyUser request.
  * @category Message
  */
 export class NotifyUserAck implements PixelMessage {
@@ -397,7 +412,7 @@ export class NotifyUserAck implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to change its Bluetooth name.
+ * Message send to a Charger to change its Bluetooth name.
  * @category Message
  */
 export class SetName implements PixelMessage {
@@ -411,7 +426,7 @@ export class SetName implements PixelMessage {
 }
 
 /**
- * Message send by a Pixel to notify of its internal temperature.
+ * Message send by a Charger to notify of its internal temperature.
  * @category Message
  */
 export class Temperature implements PixelMessage {
