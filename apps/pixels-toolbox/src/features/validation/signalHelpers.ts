@@ -65,7 +65,7 @@ export function connectedSignal(
   pixel: Pixel
 ): [AbortSignal, (() => void) | undefined] {
   const controller = new AbortControllerWithReason();
-  if (!pixel.isReady) {
+  if (pixel.status !== "ready") {
     controller.abortWithReason(new SignalDisconnectedError(pixel));
     return [controller.signal, undefined];
   } else {

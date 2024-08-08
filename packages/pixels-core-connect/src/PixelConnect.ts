@@ -120,11 +120,6 @@ export abstract class PixelConnect<
     return this._status;
   }
 
-  /** Shorthand property that indicates if the Pixel status is "ready". */
-  get isReady(): boolean {
-    return this._status === "ready";
-  }
-
   protected get sessionDeviceName(): string | undefined {
     return this._session.pixelName;
   }
