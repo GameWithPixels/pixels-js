@@ -17,7 +17,6 @@ import {
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
-  getMessageType,
   getPixelOrThrow,
   MessageOrType,
   MessageTypeValues,
@@ -35,6 +34,7 @@ import {
   ScannedPixel,
   ScannedPixelNotifier,
   ScannedPixelNotifierMutableProps,
+  serializer,
   Telemetry,
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
@@ -346,7 +346,7 @@ class PixelDispatcher
     );
     const write = (action: "send" | "received", msgOrType: MessageOrType) => {
       const timestamp = Date.now();
-      const type = getMessageType(msgOrType);
+      const type = serializer.getMessageType(msgOrType);
       const data =
         typeof msgOrType === "string"
           ? { type: MessageTypeValues[msgOrType] }

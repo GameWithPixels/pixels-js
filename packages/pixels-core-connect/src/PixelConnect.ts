@@ -1,19 +1,14 @@
+import { assert, deserialize } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
 import { Constants } from "./Constants";
-import {
-  MessageTypeValues,
-  getMessageType,
-  MessageType,
-  MessageOrType,
-  serializeMessage,
-  PixelMessage,
-} from "./Messages";
+import { MessageSerializer } from "./MessageSerializer";
 import { PixelInfo } from "./PixelInfo";
 import {
   PixelInfoNotifierMutableProps,
   PixelInfoNotifier,
 } from "./PixelInfoNotifier";
+import { PixelMessage } from "./PixelMessage";
 import { PixelSession } from "./PixelSession";
 import {
   PixelConnectCancelledError,
@@ -72,9 +67,13 @@ export type PixelInfoWithStatus = PixelInfo & PixelConnectOwnMutableProps;
 export abstract class PixelConnect<
   MutableProps extends PixelConnectMutableProps = PixelConnectMutableProps,
   Type extends PixelInfoWithStatus = PixelInfoWithStatus,
+  MessageType extends string = string,
 > extends PixelInfoNotifier<MutableProps, Type> {
   // Message event emitter
-  private readonly _msgEvEmitter = new EventEmitter();
+  protected readonly _msgEvEmitter = new EventEmitter();
+
+  // Message serializer
+  protected readonly _serializer: MessageSerializer<MessageType>;
 
   // Log function
   private _logFunc: ((msg: string) => void) | undefined | null;
@@ -123,8 +122,12 @@ export abstract class PixelConnect<
     return this._session.pixelName;
   }
 
-  protected constructor(session: PixelSession) {
+  protected constructor(
+    serializer: MessageSerializer<MessageType>,
+    session: PixelSession
+  ) {
     super();
+    this._serializer = serializer;
     this._session = session;
     this._status = "disconnected"; // TODO use the getLastConnectionStatus()
 
@@ -152,7 +155,7 @@ export abstract class PixelConnect<
    */
   addMessageListener(
     msgType: MessageType,
-    listener: (this: PixelConnect, message: MessageOrType) => void
+    listener: (this: PixelConnect, message: PixelMessage | MessageType) => void
   ): void {
     this._msgEvEmitter.addListener(`${msgType}Message`, listener);
   }
@@ -164,7 +167,7 @@ export abstract class PixelConnect<
    */
   removeMessageListener(
     msgType: MessageType,
-    listener: (this: PixelConnect, msg: MessageOrType) => void
+    listener: (this: PixelConnect, msg: PixelMessage | MessageType) => void
   ): void {
     this._msgEvEmitter.removeListener(`${msgType}Message`, listener);
   }
@@ -172,7 +175,7 @@ export abstract class PixelConnect<
   protected abstract _internalSetup(): Promise<void>;
   protected abstract _internalDeserializeMessage(
     dataView: DataView
-  ): MessageOrType;
+  ): PixelMessage | MessageType;
 
   protected async _internalConnect(timeoutMs = 0): Promise<void> {
     // Timeout
@@ -263,6 +266,43 @@ export abstract class PixelConnect<
     await this._session.disconnect();
   }
 
+  protected _deserializeChunkedMessage<
+    ChunksMessage extends Readonly<
+      { type: number } & {
+        [key: string]: { chunkSize: number };
+      }
+    >,
+  >(dataView: DataView, msg: ChunksMessage): void {
+    assert(
+      dataView.getUint8(0) === msg.type,
+      `Unexpected message type, got ${dataView.getUint8(0)} instead of ${msg.type}`
+    );
+    let offset = 1;
+    for (const [key, value] of Object.entries(msg)) {
+      if (key !== ("type" as keyof ChunksMessage)) {
+        assert(typeof value === "object" && "chunkSize" in value);
+        const dataSize = dataView.getUint8(offset);
+        if (value.chunkSize > 0 && dataSize !== value.chunkSize) {
+          this._warn(
+            `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
+          );
+        }
+        deserialize(
+          value,
+          new DataView(
+            dataView.buffer,
+            dataView.byteOffset + offset,
+            value.chunkSize === 0
+              ? dataSize
+              : Math.min(dataSize, value.chunkSize)
+          ),
+          { allowSkipLastProps: true }
+        );
+        offset += dataSize;
+      }
+    }
+  }
+
   // Callback on notify characteristic value change
   private _onValueChanged(dataView: DataView) {
     try {
@@ -270,10 +310,10 @@ export abstract class PixelConnect<
         this._logArray(dataView.buffer);
       }
       const msgOrType = this._internalDeserializeMessage(dataView);
-      const msgName = getMessageType(msgOrType);
+      const msgName = this._serializer.getMessageType(msgOrType);
       if (this._logMessages) {
         this._log(
-          `Received message ${msgName} (${MessageTypeValues[msgName]})`
+          `Received message ${msgName} (${this._serializer.getMessageTypeValue(msgName)})`
         );
         if (typeof msgOrType === "object") {
           // Log message contents
@@ -283,7 +323,7 @@ export abstract class PixelConnect<
       // Dispatch specific message event
       this._msgEvEmitter.emit(`${msgName}Message`, msgOrType);
     } catch (error) {
-      this._log(`Message deserialization error: ${error}`);
+      this._warn(`Message deserialization error: ${error}`);
       // TODO the error should be propagated to listeners of that message
     }
   }
@@ -297,11 +337,11 @@ export abstract class PixelConnect<
   protected _internalWaitForMessage(
     expectedMsgType: MessageType,
     timeoutMs: number = Constants.ackMessageTimeout
-  ): Promise<MessageOrType> {
+  ): Promise<PixelMessage | MessageType> {
     return new Promise((resolve, reject) => {
       let cleanup: () => void;
       // 1. Hook message listener
-      const messageListener = (msg: MessageOrType) => {
+      const messageListener = (msg: PixelMessage | MessageType) => {
         cleanup();
         resolve(msg);
       };
@@ -342,15 +382,17 @@ export abstract class PixelConnect<
    * @returns A promise that resolves once the message has been send.
    */
   protected async _internalSendMessage(
-    msgOrType: MessageOrType,
+    msgOrType: PixelMessage | MessageType,
     withoutAck = false
   ): Promise<void> {
     // Serialize message
-    const data = serializeMessage(msgOrType);
+    const data = this._serializer.serialize(msgOrType);
     // Log about it
     if (this._logMessages) {
-      const msgName = getMessageType(msgOrType);
-      this._log(`Sending message ${msgName} (${MessageTypeValues[msgName]})`);
+      const msgName = this._serializer.getMessageType(msgOrType);
+      this._log(
+        `Sending message ${msgName} (${this._serializer.getMessageTypeValue(msgName)})`
+      );
     }
     if (this._logData) {
       this._logArray(data);
@@ -367,10 +409,10 @@ export abstract class PixelConnect<
    * @returns A promise resolving to the response in the form of a message type or a message object.
    */
   protected async _internalSendAndWaitForResponse(
-    msgOrTypeToSend: MessageOrType,
+    msgOrTypeToSend: PixelMessage | MessageType,
     responseType: MessageType,
     timeoutMs: number = Constants.ackMessageTimeout
-  ): Promise<MessageOrType> {
+  ): Promise<PixelMessage | MessageType> {
     // Gets the session object, throws an error if invalid
     const result = await Promise.all([
       this._internalWaitForMessage(responseType, timeoutMs),
@@ -388,14 +430,14 @@ export abstract class PixelConnect<
    * @returns A promise resolving to a message object of the expected type.
    */
   protected async _internalSendAndWaitForTypedResponse<T extends PixelMessage>(
-    msgOrTypeToSend: MessageOrType,
+    msgOrTypeToSend: PixelMessage | MessageType,
     responseType: { new (): T },
     timeoutMs: number = Constants.ackMessageTimeout
   ): Promise<T> {
     // Gets the session object, throws an error if invalid
     return (await this._internalSendAndWaitForResponse(
       msgOrTypeToSend,
-      getMessageType(new responseType().type),
+      this._serializer.getMessageType(new responseType().type),
       timeoutMs
     )) as T;
   }
