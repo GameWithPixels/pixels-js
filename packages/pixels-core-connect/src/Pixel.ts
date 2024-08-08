@@ -19,7 +19,6 @@ import {
   Mutable,
   safeAssign,
 } from "@systemic-games/pixels-core-utils";
-import { EventEmitter } from "events";
 
 import { Constants } from "./Constants";
 import {
@@ -38,17 +37,13 @@ import {
   NotifyUserAck,
   PixelMessage,
   PixelPowerOperationValues,
-  PixelRollState,
-  PixelRollStateValues,
   PlayInstantAnimation,
   PowerOperation,
   RemoteAction,
   RequestRssi,
   RollState,
   Rssi,
-  serializeMessage,
   SetName,
-  TelemetryRequestModeValues,
   TransferAnimationSet,
   TransferAnimationSetAck,
   TransferInstantAnimationSet,
@@ -58,18 +53,15 @@ import {
   TransferTestAnimationSetAck,
   VersionInfoChunk,
 } from "./Messages";
+import { PixelConnect, PixelConnectMutableProps } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
-import {
-  PixelInfoNotifier,
-  PixelInfoNotifierMutableProps,
-} from "./PixelInfoNotifier";
+import { PixelRollState, PixelRollStateValues } from "./PixelRollState";
 import { PixelSession } from "./PixelSession";
+import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
 import { getDefaultPixelName } from "./advertisedNames";
 import {
-  PixelConnectCancelledError,
   PixelConnectError,
   PixelConnectIdMismatchError,
-  PixelConnectTimeoutError,
   PixelEmptyNameError,
   PixelIncompatibleMessageError,
   PixelTransferCompletedTimeoutError,
@@ -77,37 +69,8 @@ import {
   PixelTransferInProgressError,
   PixelTransferInvalidDataError,
   PixelTransferOutOfMemoryError,
-  PixelWaitForMessageDisconnectError as WaitMsgDiscoErr,
-  PixelWaitForMessageTimeoutError as WaitMsgTimeoutErr,
 } from "./errors";
 import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
-
-// Returns a string with the current time with a millisecond precision
-function _getTime(): string {
-  const to2 = (n: number) => n.toString().padStart(2, "0");
-  const to3 = (n: number) => n.toString().padStart(3, "0");
-  const d = new Date();
-  return (
-    to2(d.getHours()) +
-    ":" +
-    to2(d.getMinutes()) +
-    ":" +
-    to2(d.getSeconds()) +
-    "." +
-    to3(d.getMilliseconds())
-  );
-}
-
-/**
- * The different possible connection statuses of a Pixel.
- * @category Pixels
- */
-export type PixelStatus =
-  | "disconnected"
-  | "connecting"
-  | "identifying"
-  | "ready"
-  | "disconnecting";
 
 /**
  * Data structure for {@link Pixel} roll state events,
@@ -171,7 +134,7 @@ export type DataTransferProgress = Readonly<{
  */
 export interface PixelEventMap {
   /** Message received notification. */
-  message: MessageOrType;
+  messageReceived: MessageOrType;
   /** Message send notification. */
   messageSend: MessageOrType;
   /** Roll state changed notification. */
@@ -202,12 +165,10 @@ export interface PixelEventMap {
 
 /**
  * The mutable properties of {@link Pixel} not inherited from parent
- * class {@link PixelInfoNotifier}.
+ * class {@link PixelConnect}.
  * @category Pixels
  */
 export interface PixelOwnMutableProps {
-  /** Connection status. */
-  status: PixelStatus;
   /** On-die profile hash value. */
   profileHash: number;
   /** Ongoing data transfer progress (such as programming a profile). */
@@ -218,8 +179,7 @@ export interface PixelOwnMutableProps {
  * The mutable properties of {@link Pixel}.
  * @category Pixels
  */
-export type PixelMutableProps = PixelInfoNotifierMutableProps &
-  PixelOwnMutableProps;
+export type PixelMutableProps = PixelConnectMutableProps & PixelOwnMutableProps;
 
 /**
  * Represents a Pixels die.
@@ -234,21 +194,14 @@ export type PixelMutableProps = PixelInfoNotifierMutableProps &
  * @category Pixels
  */
 export class Pixel
-  extends PixelInfoNotifier<PixelMutableProps, PixelInfo & PixelOwnMutableProps>
+  extends PixelConnect<
+    PixelMutableProps,
+    PixelConnectMutableProps & PixelOwnMutableProps
+  >
   implements PixelOwnMutableProps
 {
-  // Our events emitter
+  // Event emitter
   private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
-  private readonly _msgEvEmitter = new EventEmitter();
-
-  // Log function
-  private _logFunc: ((msg: string) => void) | undefined | null;
-  private _logMessages = false;
-  private _logData = false;
-
-  // Connection data
-  private readonly _session: PixelSession;
-  private _status: PixelStatus;
 
   // Pixel data
   private readonly _info: Mutable<PixelInfo>;
@@ -263,40 +216,6 @@ export class Pixel
 
   // Clean-up
   private _disposeFunc: () => void;
-
-  /** Toggle logging information about each send and received message. */
-  get logMessages(): boolean {
-    return this._logMessages;
-  }
-  set logMessages(enabled: boolean) {
-    this._logMessages = enabled;
-  }
-
-  /** Toggle logging the serialized (binary) data for each send and received message. */
-  get logMessagesSerializedData(): boolean {
-    return this._logData;
-  }
-  set logMessagesSerializedData(enabled: boolean) {
-    this._logData = enabled;
-  }
-
-  /** Set logger to use by this instance. */
-  get logger(): ((msg: string) => void) | undefined | null {
-    return this._logFunc;
-  }
-  set logger(logger: ((msg: string) => void) | undefined | null) {
-    this._logFunc = logger;
-  }
-
-  /** Gets the Pixel last known connection status. */
-  get status(): PixelStatus {
-    return this._status;
-  }
-
-  /** Shorthand property that indicates if the Pixel status is "ready". */
-  get isReady(): boolean {
-    return this._status === "ready";
-  }
 
   /** Gets the unique id assigned by the system to the Pixel Bluetooth peripheral. */
   get systemId(): string {
@@ -313,7 +232,7 @@ export class Pixel
     // The name from the session may be outdated
     return this._info.name.length
       ? this._info.name
-      : this._session.pixelName ?? "";
+      : this.sessionDeviceName ?? "";
   }
 
   /** Gets the number of LEDs for the Pixel, may be 0 until connected to device. */
@@ -423,9 +342,7 @@ export class Pixel
       >
     >
   ) {
-    super();
-    this._session = session;
-    this._status = "disconnected"; // TODO use the getLastConnectionStatus()
+    super(session);
     this._info = {
       systemId: session.systemId,
       pixelId: info?.pixelId ?? 0,
@@ -453,27 +370,30 @@ export class Pixel
       compatManagementApiVersion: 0,
     };
 
-    // Listen to session connection status changes
-    session.setConnectionEventListener(({ connectionStatus }) => {
-      if (connectionStatus === "connected" || connectionStatus === "ready") {
-        // It's possible that we skip some steps and get a "ready" without
-        // getting first a "connecting" if the device was already connected
-        this._updateStatus("connecting");
-      } else {
-        this._updateStatus(
-          connectionStatus === "failedToConnect"
-            ? "disconnected"
-            : connectionStatus
-        );
-        // Reset transfer progress on disconnect
-        if (this._transferProgress) {
-          this._updateTransferProgress({
-            type: "failed",
-            error: "disconnected",
-          });
-        }
+    // Subscribe to instance status change
+    const statusListener = ({ status }: PixelMutableProps) => {
+      // Reset transfer progress on disconnect
+      if (
+        this._transferProgress &&
+        status !== "identifying" &&
+        status !== "ready"
+      ) {
+        this._updateTransferProgress({
+          type: "failed",
+          error: "disconnected",
+        });
       }
-    });
+      // Notify battery state
+      if (status === "ready") {
+        this._evEmitter.emit("battery", {
+          level: this._info.batteryLevel,
+          isCharging: this._info.isCharging,
+        });
+        // We don't raise roll and roll state events as those should occur
+        // only when the die is actually moved
+      }
+    };
+    this.addPropertyListener("status", statusListener);
 
     // Subscribe to rssi messages and emit event
     const rssiListener = (msgOrType: MessageOrType) => {
@@ -535,6 +455,7 @@ export class Pixel
     // Unmount function
     this._disposeFunc = () => {
       session.setConnectionEventListener(undefined);
+      this.removePropertyListener("status", statusListener);
       this.removeMessageListener("rssi", rssiListener);
       this.removeMessageListener("batteryLevel", batteryLevelListener);
       this.removeMessageListener("rollState", rollStateListener);
@@ -627,89 +548,7 @@ export class Pixel
    * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
    */
   async connect(timeoutMs = 0): Promise<Pixel> {
-    // Timeout
-    let hasTimedOut = false;
-    const timeoutId =
-      timeoutMs > 0 &&
-      setTimeout(() => {
-        // Disconnect on timeout
-        hasTimedOut = true;
-        this._session.disconnect().catch(() => {});
-      }, timeoutMs);
-
-    try {
-      // Connect to the peripheral
-      await this._session.connect();
-
-      // And prepare our instance for communications with the device
-      if (this.status === "connecting") {
-        // Notify we're connected and proceeding with die identification
-        this._updateStatus("identifying");
-
-        try {
-          // Setup our instance
-          await this._internalSetup();
-
-          // We're ready!
-          //@ts-expect-error the status could have changed during the above async call
-          if (this.status === "identifying") {
-            this._updateStatus("ready");
-
-            // Notify battery state
-            this._evEmitter.emit("battery", {
-              level: this._info.batteryLevel,
-              isCharging: this._info.isCharging,
-            });
-
-            // We don't raise roll and roll state events as those should occur
-            // only when the die is actually moved
-          }
-        } catch (error) {
-          // Note: the error may be cause by a call to disconnect
-          try {
-            this._warn(`Disconnecting after getting error: ${error}`);
-            await this._session.disconnect();
-          } catch {}
-          // Ignore any disconnection error and throw the error
-          // that got us there in the first place
-          throw error;
-        }
-      } else if (this.status === "identifying") {
-        // Another call to connect has put us in identifying state,
-        // just wait for status change (in this case we ignore the timeout)
-        // since the connection process is driven from another call to connect)
-        await new Promise<void>((resolve) => {
-          const onStatusChange = ({ status }: PixelOwnMutableProps) => {
-            if (status !== "identifying") {
-              this.removePropertyListener("status", onStatusChange);
-              resolve();
-            }
-          };
-          this.addPropertyListener("status", onStatusChange);
-        });
-      }
-
-      // Check if a status changed occurred during the connection process
-      if (this.status !== "ready") {
-        throw new PixelConnectCancelledError(this);
-      }
-    } catch (error) {
-      // Check if the error was caused by the connection timeout
-      if (hasTimedOut) {
-        throw new PixelConnectTimeoutError(this, timeoutMs);
-      } else if (error instanceof PixelConnectError) {
-        // Forward other connection errors
-        throw error;
-      } else {
-        // Wrap any other type of error in a connection error
-        throw new PixelConnectError(this, error);
-      }
-    } finally {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    }
-
+    await this._internalConnect(timeoutMs);
     return this;
   }
 
@@ -718,7 +557,7 @@ export class Pixel
    * @returns A promise that resolves once the disconnect request has been processed.
    **/
   async disconnect(): Promise<Pixel> {
-    await this._session.disconnect();
+    await this._internalDisconnect();
     return this;
   }
 
@@ -753,78 +592,6 @@ export class Pixel
   }
 
   /**
-   * Registers a listener function that will be called on receiving
-   * raw messages of a given type from the Pixel.
-   * @param msgType The type of message to watch for.
-   * @param listener The callback function.
-   */
-  addMessageListener(
-    msgType: MessageType,
-    listener: (this: Pixel, message: MessageOrType) => void
-  ): void {
-    this._msgEvEmitter.addListener(`${msgType}Message`, listener);
-  }
-
-  /**
-   * Unregisters a listener from receiving raw messages of a given type.
-   * @param msgType The type of message to watch for.
-   * @param listener The callback function to unregister.
-   */
-  removeMessageListener(
-    msgType: MessageType,
-    listener: (this: Pixel, msg: MessageOrType) => void
-  ): void {
-    this._msgEvEmitter.removeListener(`${msgType}Message`, listener);
-  }
-
-  /**
-   * Waits for a message from the Pixel.
-   * @param expectedMsgType Type of the message to expect.
-   * @param timeoutMs Timeout before aborting the wait.
-   * @returns A promise with the received message of the expected type.
-   */
-  private waitForMessage(
-    expectedMsgType: MessageType,
-    timeoutMs: number = Constants.ackMessageTimeout
-  ): Promise<MessageOrType> {
-    return new Promise((resolve, reject) => {
-      let cleanup: () => void;
-      // 1. Hook message listener
-      const messageListener = (msg: MessageOrType) => {
-        cleanup();
-        resolve(msg);
-      };
-      this.addMessageListener(expectedMsgType, messageListener);
-      // 2. Hook connection status listener
-      // Note: We don't check for the initial status so this method
-      // may be called before completing the connection sequence.
-      const statusListener = ({ status }: PixelOwnMutableProps) => {
-        if (status === "disconnecting" || status === "disconnected") {
-          // We got disconnected, stop waiting for message
-          cleanup();
-          reject(new WaitMsgDiscoErr(this, expectedMsgType));
-        }
-      };
-      this.addPropertyListener("status", statusListener);
-      // 3. Setup timeout
-      let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      timeoutId = setTimeout(() => {
-        timeoutId = undefined;
-        cleanup();
-        reject(new WaitMsgTimeoutErr(this, timeoutMs, expectedMsgType));
-      }, timeoutMs);
-      cleanup = () => {
-        // Cancel timeout and unhook listeners
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        this.removeMessageListener(expectedMsgType, messageListener);
-        this.removePropertyListener("status", statusListener);
-      };
-    });
-  }
-
-  /**
    * Sends a message to the Pixel.
    * @param msgOrType Message with the data to send or just a message type.
    * @param withoutAck Whether to request a confirmation that the message was received.
@@ -834,10 +601,6 @@ export class Pixel
     msgOrType: MessageOrType,
     withoutAck = false
   ): Promise<void> {
-    if (this._logMessages) {
-      const msgName = getMessageType(msgOrType);
-      this._log(`Sending message ${msgName} (${MessageTypeValues[msgName]})`);
-    }
     // Check API version
     const fwVer = this._versions.firmwareVersion;
     if (fwVer > 0 && Constants.compatApiVersion > fwVer) {
@@ -859,13 +622,7 @@ export class Pixel
         "firmware"
       );
     }
-    // Serialize message
-    const data = serializeMessage(msgOrType);
-    if (this._logData) {
-      this._logArray(data);
-    }
-    // And send it
-    await this._session.writeValue(data, withoutAck);
+    await this._internalSendMessage(msgOrType, withoutAck);
     this._evEmitter.emit("messageSend", msgOrType);
   }
 
@@ -881,12 +638,11 @@ export class Pixel
     responseType: MessageType,
     timeoutMs: number = Constants.ackMessageTimeout
   ): Promise<MessageOrType> {
-    // Gets the session object, throws an error if invalid
-    const result = await Promise.all([
-      this.waitForMessage(responseType, timeoutMs),
-      this.sendMessage(msgOrTypeToSend),
-    ]);
-    return result[0];
+    return await this._internalSendAndWaitForResponse(
+      msgOrTypeToSend,
+      responseType,
+      timeoutMs
+    );
   }
 
   /**
@@ -902,12 +658,11 @@ export class Pixel
     responseType: { new (): T },
     timeoutMs: number = Constants.ackMessageTimeout
   ): Promise<T> {
-    // Gets the session object, throws an error if invalid
-    return (await this.sendAndWaitForResponse(
+    return await this._internalSendAndWaitForTypedResponse(
       msgOrTypeToSend,
-      getMessageType(new responseType().type),
+      responseType,
       timeoutMs
-    )) as T;
+    );
   }
 
   /**
@@ -1186,49 +941,12 @@ export class Pixel
     );
   }
 
-  private _tagLogString(str: string): string {
-    return `[${_getTime()} - ${this.name}] ${str}`;
-  }
-
-  // Log the given message prepended with a timestamp and the Pixel name
-  private _log(msg: unknown): void {
-    this._logFunc?.(
-      this._tagLogString(
-        (msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg)
-      )
-    );
-  }
-
-  private _warn(msg: unknown): void {
-    this._logFunc?.(
-      this._tagLogString(
-        "WARN: " +
-          ((msg as PixelMessage)?.type ? JSON.stringify(msg) : String(msg))
-      )
-    );
-  }
-
-  private _logArray(arr: ArrayBuffer) {
-    if (this._logFunc) {
-      this._logFunc(
-        this._tagLogString(
-          `${[...new Uint8Array(arr)]
-            .map((b) => (b >>> 0).toString(16).padStart(2, "0"))
-            .join(":")}`
-        )
-      );
-    }
-  }
-
-  private async _internalSetup(): Promise<void> {
+  protected async _internalSetup(): Promise<void> {
     // Reset version numbers
     let verProp: keyof typeof this._versions;
     for (verProp in this._versions) {
       this._versions[verProp] = 0;
     }
-
-    // Subscribe to get messages from die
-    await this._session.subscribe((dv: DataView) => this._onValueChanged(dv));
 
     // Identify Pixel
     this._log("Waiting on identification message");
@@ -1314,12 +1032,18 @@ export class Pixel
     this._updateHash(profileDataHash);
   }
 
-  private _updateStatus(status: PixelStatus): void {
-    if (status !== this._status) {
-      this._status = status;
-      this._log(`Status changed to ${status}`);
-      this.emitPropertyEvent("status");
+  protected _internalDeserializeMessage(dataView: DataView): MessageOrType {
+    const msgOrType =
+      dataView.byteLength &&
+      dataView.getUint8(0) === MessageTypeValues.iAmADie &&
+      dataView.byteLength === LegacyIAmADie.expectedSize
+        ? deserializeMessage(dataView)
+        : this._deserializeImADie(dataView);
+    if (msgOrType) {
+      // Notify
+      this._evEmitter.emit("messageReceived", msgOrType);
     }
+    return msgOrType;
   }
 
   private _updateName(name: string) {
@@ -1471,42 +1195,6 @@ export class Pixel
     this._evEmitter.emit("dataTransfer", ev);
     if (progressChanged) {
       this.emitPropertyEvent("transferProgress");
-    }
-  }
-
-  // Callback on notify characteristic value change
-  private _onValueChanged(dataView: DataView) {
-    try {
-      if (this._logData) {
-        this._logArray(dataView.buffer);
-      }
-      const msgOrType =
-        dataView.byteLength &&
-        dataView.getUint8(0) === MessageTypeValues.iAmADie &&
-        dataView.byteLength === LegacyIAmADie.expectedSize
-          ? deserializeMessage(dataView)
-          : this._deserializeImADie(dataView);
-      if (msgOrType) {
-        const msgName = getMessageType(msgOrType);
-        if (this._logMessages) {
-          this._log(
-            `Received message ${msgName} (${MessageTypeValues[msgName]})`
-          );
-          if (typeof msgOrType === "object") {
-            // Log message contents
-            this._log(msgOrType);
-          }
-        }
-        // Dispatch generic message event
-        this._evEmitter.emit("message", msgOrType);
-        // Dispatch specific message event
-        this._msgEvEmitter.emit(`${msgName}Message`, msgOrType);
-      } else {
-        this._log("Received invalid message");
-      }
-    } catch (error) {
-      this._log(`Message deserialization error: ${error}`);
-      // TODO the error should be propagated to listeners of that message
     }
   }
 

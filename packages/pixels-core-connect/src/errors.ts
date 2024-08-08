@@ -3,8 +3,9 @@ import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import { Charger } from "./Charger";
 import { MessageType } from "./Messages";
 import { Pixel } from "./Pixel";
+import { PixelConnect } from "./PixelConnect";
 
-type PixelType = Pixel | Charger;
+type PixelType = PixelConnect | Pixel | Charger;
 
 /**
  * Base class for errors thrown by the {@link PixelConnect} or its descendant classes.

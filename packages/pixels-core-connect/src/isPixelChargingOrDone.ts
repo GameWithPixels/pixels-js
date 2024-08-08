@@ -1,4 +1,4 @@
-import { PixelBatteryStateValues } from "./Messages";
+import { PixelBatteryStateValues } from "./PixelBatteryState";
 
 /**
  * Returns whether the given battery controller state means that the pixel

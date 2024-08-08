@@ -3,7 +3,7 @@ import {
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
 
-import { PixelRollState } from "./Messages";
+import { PixelRollState } from "./PixelRollState";
 
 /**
  * Common accessible values for all Pixel implementations.

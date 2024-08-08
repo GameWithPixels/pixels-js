@@ -14,6 +14,9 @@ import {
 } from "@systemic-games/pixels-core-utils";
 
 import { Constants } from "./Constants";
+import { PixelBatteryStateValues } from "./PixelBatteryState";
+import { PixelChipModelValues } from "./PixelChipModel";
+import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
 
 /**
  * Lists all the Pixel dice message types.
@@ -26,86 +29,36 @@ export const MessageTypeValues = {
   none: enumValue(0),
   whoAreYou: enumValue(),
   iAmALCC: enumValue(),
-  rollState: enumValue(),
-  telemetry: enumValue(),
   bulkSetup: enumValue(),
   bulkSetupAck: enumValue(),
   bulkData: enumValue(),
   bulkDataAck: enumValue(),
-  transferAnimationSet: enumValue(),
-  transferAnimationSetAck: enumValue(),
-  transferAnimationSetFinished: enumValue(),
   transferSettings: enumValue(),
   transferSettingsAck: enumValue(),
   transferSettingsFinished: enumValue(),
-  transferTestAnimationSet: enumValue(),
-  transferTestAnimationSetAck: enumValue(),
-  transferTestAnimationSetFinished: enumValue(),
   debugLog: enumValue(),
-  playAnimation: enumValue(),
-  playAnimationEvent: enumValue(),
-  stopAnimation: enumValue(),
-  remoteAction: enumValue(),
-  requestRollState: enumValue(),
-  requestAnimationSet: enumValue(),
   requestSettings: enumValue(),
-  requestTelemetry: enumValue(),
-  programDefaultAnimationSet: enumValue(),
-  programDefaultAnimationSetFinished: enumValue(),
   blink: enumValue(),
   blinkAck: enumValue(),
-  requestDefaultAnimationSetColor: enumValue(),
-  defaultAnimationSetColor: enumValue(),
   requestBatteryLevel: enumValue(),
   batteryLevel: enumValue(),
   requestRssi: enumValue(),
   rssi: enumValue(),
-  calibrate: enumValue(),
-  calibrateFace: enumValue(),
   notifyUser: enumValue(),
   notifyUserAck: enumValue(),
-  testHardware: enumValue(),
-  storeValue: enumValue(),
-  storeValueAck: enumValue(),
-  setTopLevelState: enumValue(),
   programDefaultParameters: enumValue(),
   programDefaultParametersFinished: enumValue(),
-  setDesignAndColor: enumValue(),
-  setDesignAndColorAck: enumValue(),
-  setCurrentBehavior: enumValue(),
-  setCurrentBehaviorAck: enumValue(),
   setName: enumValue(),
   setNameAck: enumValue(),
-  powerOperation: enumValue(),
-  exitValidation: enumValue(),
-  transferInstantAnimationSet: enumValue(),
-  transferInstantAnimationSetAck: enumValue(),
-  transferInstantAnimationSetFinished: enumValue(),
-  playInstantAnimation: enumValue(),
-  stopAllAnimations: enumValue(),
   requestTemperature: enumValue(),
   temperature: enumValue(),
-  setBatteryControllerMode: enumValue(),
-  _unused: enumValue(),
-  discharge: enumValue(),
-  blinkId: enumValue(),
-  blinkIdAck: enumValue(),
-  transferTest: enumValue(),
-  transferTestAck: enumValue(),
-  transferTestFinished: enumValue(),
-  clearSettings: enumValue(),
-  clearSettingsAck: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
   testBulkReceive: enumValue(),
-  setAllLEDsToColor: enumValue(),
   attractMode: enumValue(),
-  printNormals: enumValue(),
   printA2DReadings: enumValue(),
-  lightUpFace: enumValue(),
-  setLEDToColor: enumValue(),
-  debugAnimationController: enumValue(),
+  printAnimationControllerState: enumValue(),
 } as const;
 
 /**
@@ -316,22 +269,6 @@ export class GenericPixelMessage implements PixelMessage {
   }
 }
 
-/**
- * The possible chip models used for Pixels dice.
- * @enum
- * @category Message
- */
-export const PixelChipModelValues = {
-  unknown: enumValue(0),
-  nRF52810: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelChipModelValues}.
- * @category Message
- */
-export type PixelChipModel = keyof typeof PixelChipModelValues;
-
 export interface MessageChunk {
   // On initialization: size of serializable object
   // After deserialization: number of bytes read from buffer
@@ -434,23 +371,13 @@ export class StatusInfoChunk implements MessageChunk {
   /** The charging state of the battery. */
   @serializable(1)
   batteryState = PixelBatteryStateValues.ok;
-
-  // Rolls
-
-  /** Current roll state. */
-  @serializable(1)
-  rollState = PixelRollStateValues.unknown;
-
-  /** Face index, starts at 0. */
-  @serializable(1)
-  currentFaceIndex = 0;
 }
 
 /**
  * Message send by a Pixel after receiving a "WhoAmI" message.
  * @category Message
  */
-export class IAmADie implements PixelMessage {
+export class IAmALCC implements PixelMessage {
   @serializable(1)
   readonly type = MessageTypeValues.iAmALCC;
 
@@ -502,168 +429,6 @@ export class LegacyIAmALCC implements PixelMessage {
 }
 
 /**
- * Pixel roll states.
- * @enum
- * @category Message
- */
-export const PixelRollStateValues = {
-  /** The Pixel roll state could not be determined. */
-  unknown: enumValue(0),
-
-  /** The Pixel is resting in a position with a face up. */
-  onFace: enumValue(),
-
-  /** The Pixel is being handled. */
-  handling: enumValue(),
-
-  /** The Pixel is rolling. */
-  rolling: enumValue(),
-
-  /** The Pixel is resting in a crooked position. */
-  crooked: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelRollStateValues}.
- * @category Message
- */
-export type PixelRollState = keyof typeof PixelRollStateValues;
-
-/**
- * Message send by a Pixel to notify of its rolling state.
- * @category Message
- */
-export class RollState implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.rollState;
-
-  /** Current roll state. */
-  @serializable(1)
-  state = PixelRollStateValues.unknown;
-
-  /** Index of the face facing up (if applicable). */
-  @serializable(1)
-  faceIndex = 0;
-}
-
-/**
- * Available Pixel battery controller modes.
- * @enum
- * @category Message
- */
-export const PixelBatteryControllerModeValues = {
-  /** Charging allowed. */
-  default: enumValue(0),
-
-  /** Disable charging. */
-  forceDisableCharging: enumValue(),
-
-  /** Ignore battery temperature. */
-  forceEnableCharging: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelBatteryControllerModeValues}.
- * @category Message
- */
-export type PixelBatteryControllerMode =
-  keyof typeof PixelBatteryControllerModeValues;
-
-/**
- * Message send by a Pixel to notify of its telemetry data.
- * @category Message
- */
-export class Telemetry implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.telemetry;
-
-  // Accelerometer
-
-  @serializable(2, { numberFormat: "signed" })
-  accXTimes1000 = 0;
-  @serializable(2, { numberFormat: "signed" })
-  accYTimes1000 = 0;
-  @serializable(2, { numberFormat: "signed" })
-  accZTimes1000 = 0;
-
-  @serializable(4, { numberFormat: "signed" })
-  faceConfidenceTimes1000 = 0;
-
-  /** Firmware time in ms for when the data was gathered. */
-  @serializable(4)
-  timeMs = 0;
-
-  /** Current roll state. */
-  @serializable(1)
-  rollState = PixelRollStateValues.unknown;
-
-  /** Index of the face facing up (if applicable). */
-  @serializable(1)
-  faceIndex = 0;
-
-  // Battery & power
-
-  /** The battery charge level in percent. */
-  @serializable(1)
-  batteryLevelPercent = 0;
-
-  /** The charging state of the battery. */
-  @serializable(1)
-  batteryState = PixelBatteryStateValues.ok;
-
-  /** The internal state of the battery controller itself. */
-  @serializable(1)
-  batteryControllerState = PixelBatteryControllerStateValues.ok;
-
-  /** The measured battery voltage multiplied by 50. */
-  @serializable(1)
-  voltageTimes50 = 0;
-
-  /** The measured coil voltage multiplied by 50. */
-  @serializable(1)
-  vCoilTimes50 = 0;
-
-  // RSSI
-
-  /** The RSSI value, in dBm. */
-  @serializable(1, { numberFormat: "signed" })
-  rssi = 0;
-
-  /** The data channel index of which the RSSI is measured. */
-  @serializable(1)
-  channelIndex = 0;
-
-  // Temperature
-
-  /**
-   * The microcontroller temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
-   * If the die was unable to read the temperature, value will be 0xffff.
-   */
-  @serializable(2)
-  mcuTemperatureTimes100 = 0;
-
-  /**
-   * The battery temperature, in celsius, times 100 (i.e. 500 == 5 degrees C).
-   */
-  @serializable(2)
-  batteryTemperatureTimes100 = 0;
-
-  /** Internal charge state */
-  @serializable(1)
-  internalChargeState = false;
-
-  /** Internal disabling of charging (because of temperature for instance) */
-  @serializable(1)
-  batteryControllerMode = PixelBatteryControllerModeValues.default;
-
-  /** led power draw in mA */
-  @serializable(1)
-  ledCurrent = 0;
-}
-
-/**
  * Message send to a Pixel to request a transfer of data.
  * This is usually done after initiating an animation transfer request
  * and followed by BulkData messages with the actual data.
@@ -710,120 +475,6 @@ export class BulkDataAck implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to request a transfer of a
- * full animation data set (stored in flash memory).
- * @category Message
- */
-export class TransferAnimationSet implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferAnimationSet;
-
-  @serializable(2)
-  paletteSize = 0;
-  @serializable(2)
-  rgbKeyFrameCount = 0;
-  @serializable(2)
-  rgbTrackCount = 0;
-  @serializable(2)
-  keyFrameCount = 0;
-  @serializable(2)
-  trackCount = 0;
-  @serializable(2)
-  animationCount = 0;
-  @serializable(2)
-  animationSize = 0;
-  @serializable(2)
-  conditionCount = 0;
-  @serializable(2)
-  conditionSize = 0;
-  @serializable(2)
-  actionCount = 0;
-  @serializable(2)
-  actionSize = 0;
-  @serializable(2)
-  ruleCount = 0;
-  @serializable(1)
-  brightness = 0;
-}
-
-/**
- * Message send by a Pixel after receiving a TransferAnimationSet request.
- * @category Message
- */
-export class TransferAnimationSetAck implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferAnimationSetAck;
-
-  @serializable(1)
-  result = 0;
-}
-
-/**
- * Message send to a Pixel to request a transfer of a
- * test animation (stored in RAM memory).
- * @category Message
- */
-export class TransferTestAnimationSet implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferTestAnimationSet;
-
-  @serializable(2)
-  paletteSize = 0;
-  @serializable(2)
-  rgbKeyFrameCount = 0;
-  @serializable(2)
-  rgbTrackCount = 0;
-  @serializable(2)
-  keyFrameCount = 0;
-  @serializable(2)
-  trackCount = 0;
-  @serializable(2)
-  animationCount = 0;
-  @serializable(2)
-  animationSize = 0;
-  @serializable(4)
-  hash = 0;
-}
-
-/**
- * Transfer animation ack values.
- * @enum
- * @category Message
- */
-export const TransferInstantAnimationsSetAckTypeValues = {
-  /** Die is ready to download animation set. */
-  download: enumValue(0),
-  /** Die already has the contents of the animation set. */
-  upToDate: enumValue(),
-  /** Die doesn't have enough memory to store animation set. */
-  noMemory: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link TransferInstantAnimationsSetAckTypeValues}.
- * @category Message
- */
-export type TransferInstantAnimationsSetAckType =
-  keyof typeof TransferInstantAnimationsSetAckTypeValues;
-
-/**
- * Message send by a Pixel after receiving a TransferTestAnimationSet request.
- * @category Message
- */
-export class TransferTestAnimationSetAck implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferTestAnimationSetAck;
-
-  /** The expected action to be taken upon receiving this message. */
-  @serializable(1)
-  ackType = TransferInstantAnimationsSetAckTypeValues.download;
-}
-
-/**
  * Message send by a Pixel to report a log message to the application.
  * @category Message
  */
@@ -835,62 +486,6 @@ export class DebugLog implements PixelMessage {
   /** The message to log. */
   @serializable(0, { terminator: true })
   message = "";
-}
-
-/**
- * Message send by a Pixel to request running a specific remote action.
- * @category Message
- */
-export class RemoteAction implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.remoteAction;
-
-  /** Type of remote action. */
-  // @serializable(1)
-  // readonly remoteActionType: RemoteActionType = 0;
-
-  /** The action id to run. */
-  @serializable(2)
-  actionId = 0;
-}
-
-/**
- * Available modes for telemetry requests.
- * @enum
- * @category Message
- */
-export const TelemetryRequestModeValues = {
-  /* Request Pixel to stop automatically sending telemetry updates. */
-  off: enumValue(0),
-
-  /* Request Pixel to immediately send a single telemetry update. */
-  once: enumValue(),
-
-  /* Request Pixel to automatically send telemetry updates. */
-  automatic: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link TelemetryRequestModeValues}.
- * @category Message
- */
-export type TelemetryRequestMode = keyof typeof TelemetryRequestModeValues;
-
-/**
- * Message send to a Pixel to have it start or stop sending telemetry messages.
- * @category Message
- */
-export class RequestTelemetry implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.requestTelemetry;
-
-  @serializable(1)
-  requestMode = TelemetryRequestModeValues.off;
-
-  @serializable(2)
-  minInterval = 0; // Milliseconds, 0 for no cap on rate
 }
 
 /**
@@ -926,82 +521,6 @@ export class Blink implements PixelMessage {
   @serializable(1)
   loopCount = 1;
 }
-
-/**
- * The different possible battery charging states.
- * @enum
- * @category Message
- */
-export const PixelBatteryStateValues = {
-  /** Battery looks fine, nothing is happening. */
-  ok: enumValue(0),
-  /** Battery level is low, notify user they should recharge. */
-  low: enumValue(),
-  /** Battery is currently recharging. */
-  charging: enumValue(),
-  /** Battery is full and finished charging. */
-  done: enumValue(),
-  /**
-   * Coil voltage is bad, die is probably positioned incorrectly.
-   * Note that currently this state is triggered during transition between charging and not charging...
-   */
-  badCharging: enumValue(),
-  /** Charge state doesn't make sense (charging but no coil voltage detected for instance). */
-  error: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelBatteryStateValues}.
- * @category Message
- */
-export type PixelBatteryState = keyof typeof PixelBatteryStateValues;
-
-/**
- * The different possible battery charging states.
- * @enum
- * @category Message
- */
-export const PixelBatteryControllerStateValues = {
-  unknown: enumValue(0),
-  // Battery looks fine, nothing is happening
-  ok: enumValue(),
-  // Battery voltage is so low the die might turn off at any time
-  empty: enumValue(),
-  // Battery level is low, notify user they should recharge
-  low: enumValue(),
-  // Coil voltage is bad, but we don't know yet if that's because we just put the die
-  // on the coil, or if indeed the die is incorrectly positioned
-  transitionOn: enumValue(),
-  // Coil voltage is bad, but we don't know yet if that's because we removed the die and
-  // the coil cap is still discharging, or if indeed the die is incorrectly positioned
-  transitionOff: enumValue(),
-  // Coil voltage is bad, die is probably positioned incorrectly
-  // Note that currently this state is triggered during transition between charging and not charging...
-  badCharging: enumValue(),
-  // Charge state doesn't make sense (charging but no coil voltage detected for instance)
-  error: enumValue(),
-  // Battery is currently recharging, but still really low
-  chargingLow: enumValue(),
-  // Battery is currently recharging
-  charging: enumValue(),
-  // Battery is currently cooling down
-  cooldown: enumValue(),
-  // Battery is currently recharging, but at 99%
-  trickle: enumValue(),
-  // Battery is full and finished charging
-  done: enumValue(),
-  // Battery is too cold
-  lowTemp: enumValue(),
-  // Battery is too hot
-  highTemp: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link PixelBatteryControllerStateValues}.
- * @category Message
- */
-export type PixelBatteryControllerState =
-  keyof typeof PixelBatteryControllerStateValues;
 
 /**
  * Message send by a Pixel to notify of its battery level and state.
@@ -1098,84 +617,6 @@ export class NotifyUserAck implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to store a 32 bits value.
- * @category Message
- */
-export class StoreValue implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.storeValue;
-
-  /** Value to write. */
-  @serializable(4)
-  value = 0;
-}
-
-/**
- * The different possible result of requesting to store a value.
- * @enum
- * @category Message
- */
-export const StoreValueResultValues = {
-  /** Value stored successfully. */
-  success: enumValue(0),
-  /** Some error occurred. */
-  unknownError: enumValue(),
-  /** Store is full, value wasn't saved. */
-  storeFull: enumValue(),
-  /**
-   * Store request was discarded because the value is outside of the
-   * valid range (value can't be 0).
-   */
-  invalidRange: enumValue(),
-  /* Operation not permitted in the current die state. */
-  notPermitted: enumValue(),
-} as const;
-
-/**
- * The names for the "enum" type {@link StoreValueResultValues}.
- * @category Message
- */
-export type StoreValueResult = keyof typeof StoreValueResultValues;
-
-/**
- * Message send by a Pixel is response to receiving a
- * {@link StoreValue} message.
- * @category Message
- */
-export class StoreValueAck implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.storeValueAck;
-
-  /** Store operation result. */
-  @serializable(1)
-  result = 0;
-
-  /** Index at which the value was written. */
-  @serializable(1)
-  index = StoreValueResultValues.success;
-}
-
-/**
- * Message send to a Pixel to configure the die type and color.
- * @category Message
- */
-export class SetDesignAndColor implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.setDesignAndColor;
-
-  /** A value from the {@link PixelDieType} enumeration.*/
-  @serializable(1)
-  dieType: number = 0;
-
-  /** A value from the {@link PixelColorwayValues} enumeration.*/
-  @serializable(1)
-  colorway: number = 0;
-}
-
-/**
  * Message send to a Pixel to change its Bluetooth name.
  * @category Message
  */
@@ -1187,98 +628,6 @@ export class SetName implements PixelMessage {
   /** The name to set. */
   @serializable(Constants.maxNameByteSize + 1) // +1 for null terminator
   name = "";
-}
-
-/**
- * The different power operations available on a Pixel.
- * @enum
- * @category Message
- */
-export const PixelPowerOperationValues = {
-  // Turn off all systems.
-  turnOff: enumValue(0),
-  // Reset die chip.
-  reset: enumValue(),
-  // Put die in low power mode, will be "awaken" when moved.
-  sleep: enumValue(),
-} as const;
-
-/**
- * Message send to a Pixel to modify it's power state.
- * @category Message
- */
-export class PowerOperation implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.powerOperation;
-
-  /** The name to set. */
-  @serializable(1)
-  operation = PixelPowerOperationValues.sleep;
-}
-
-/**
- * Message send to a Pixel to request a transfer of a set of
- * instant animations (stored in RAM memory)
- * @category Message
- */
-export class TransferInstantAnimationSet implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferInstantAnimationSet;
-
-  @serializable(2)
-  paletteSize = 0;
-  @serializable(2)
-  rgbKeyFrameCount = 0;
-  @serializable(2)
-  rgbTrackCount = 0;
-  @serializable(2)
-  keyFrameCount = 0;
-  @serializable(2)
-  trackCount = 0;
-  @serializable(2)
-  animationCount = 0;
-  @serializable(2)
-  animationSize = 0;
-  @serializable(4)
-  hash = 0;
-}
-
-/**
- * Message send by a Pixel after receiving a TransferInstantAnimationSet request.
- * @category Message
- */
-export class TransferInstantAnimationSetAck implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferInstantAnimationSetAck;
-
-  /** The expected action to be taken upon receiving this message. */
-  @serializable(1)
-  ackType = TransferInstantAnimationsSetAckTypeValues.download;
-}
-
-/**
- * Message send to a Pixel to have it play an already uploaded instant animation.
- * @category Message
- */
-export class PlayInstantAnimation implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.playInstantAnimation;
-
-  /** Animation index to play. */
-  @serializable(1)
-  animation = 0;
-
-  /** Face index on which to play the animation. */
-  @serializable(1)
-  faceIndex = 0;
-
-  /** How many times to loop the animation. */
-  @serializable(1)
-  loopCount = 1;
 }
 
 /**
@@ -1304,129 +653,21 @@ export class Temperature implements PixelMessage {
   batteryTemperatureTimes100 = 0;
 }
 
-/**
- * Message send to a Pixel to set its battery controller mode.
- * @category Message
- */
-export class SetBatteryControllerMode implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.setBatteryControllerMode;
-
-  /**
-   * The battery controller mode to set.
-   */
-  @serializable(1)
-  mode = PixelBatteryControllerModeValues.default;
-}
-
-/**
- * Message send to a Pixel to make it light up its LEDs to quickly discharge the battery.
- * @category Message
- */
-export class Discharge implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.discharge;
-
-  /**
-   * The current draw, in mA, or 0 to reset.
-   */
-  @serializable(1)
-  currentMA = 0;
-}
-
-/**
- * Message send to a Pixel to make it blink it Pixel Id.
- * @category Message
- */
-export class BlinkId implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.blinkId;
-
-  /**
-   * The brightness of the blinking LEDs.
-   */
-  @serializable(1)
-  brightness = 0;
-
-  /** How many times to loop the animation. */
-  @serializable(1)
-  loopCount = 1;
-}
-
-/**
- * Message send to a Pixel to test transfer rates.
- * @category Message
- */
-export class TransferTest implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferTest;
-
-  /**
-   * The amount of data to be send.
-   */
-  @serializable(2, { padding: 1 })
-  size = 0;
-}
-
-/**
- * Message send to a Pixel to play an animation from the stored profile.
- * @category Message
- */
-export class PlayProfileAnimation implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.playAnimation;
-
-  /** Index of the animation in the profile's animation list. */
-  @serializable(1)
-  animationIndex = 0;
-
-  /** Face on which to play the animation (the animations are designed assuming that the higher face value is up). */
-  @serializable(1)
-  remapToFace = 0;
-
-  /** How many times to loop the animation. */
-  @serializable(1)
-  loopCount = 1;
-}
-
 // Returns the list of message classes defined in this file.
 function _getMessageClasses(): MessageClass[] {
   return [
     LegacyIAmALCC,
-    RollState,
-    Telemetry,
     BulkSetup,
     BulkData,
     BulkDataAck,
-    TransferAnimationSet,
-    TransferAnimationSetAck,
-    TransferTestAnimationSet,
-    TransferTestAnimationSetAck,
     DebugLog,
-    RemoteAction,
     Blink,
     BatteryLevel,
     RequestRssi,
     Rssi,
     NotifyUser,
     NotifyUserAck,
-    StoreValue,
-    StoreValueAck,
-    SetDesignAndColor,
     SetName,
-    PowerOperation,
-    TransferInstantAnimationSet,
-    TransferInstantAnimationSetAck,
-    PlayInstantAnimation,
     Temperature,
-    SetBatteryControllerMode,
-    Discharge,
-    BlinkId,
-    TransferTest,
   ];
 }
