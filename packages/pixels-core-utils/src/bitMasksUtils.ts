@@ -14,7 +14,7 @@ export function bitsToIndices(value?: number): number[] {
     let bits = value.toString(2);
     let index = 0;
     while (bits.length) {
-      if (bits.at(-1) === "1") {
+      if (bits[bits.length - 1] === "1") {
         indices.push(index);
       }
       bits = bits.substring(0, bits.length - 1);
