@@ -1,7 +1,6 @@
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 
 import { Charger } from "./Charger";
-import { MessageType } from "./Messages";
 import { Pixel } from "./Pixel";
 import { PixelConnect } from "./PixelConnect";
 
@@ -106,7 +105,7 @@ export class PixelConnectIdMismatchError extends PixelConnectError {
  * @category Pixels
  */
 export class PixelWaitForMessageTimeoutError extends PixelError {
-  constructor(pixel: PixelType, timeoutMs: number, messageType: MessageType) {
+  constructor(pixel: PixelType, timeoutMs: number, messageType: string) {
     super(
       pixel,
       `Timeout of ${timeoutMs}ms waiting for message ${messageType}`
@@ -121,7 +120,7 @@ export class PixelWaitForMessageTimeoutError extends PixelError {
  * @category Pixels
  */
 export class PixelWaitForMessageDisconnectError extends PixelError {
-  constructor(pixel: PixelType, messageType: MessageType) {
+  constructor(pixel: PixelType, messageType: string) {
     super(pixel, `Disconnected while waiting for message ${messageType}`);
     this.name = "PixelMessageConnectStatusError";
   }
@@ -201,7 +200,7 @@ export class PixelTransferInvalidDataError extends PixelTransferError {
  * @category Pixels
  */
 export class PixelTransferCompletedTimeoutError extends PixelTransferError {
-  constructor(pixel: PixelType, ackType: MessageType) {
+  constructor(pixel: PixelType, ackType: string) {
     super(
       pixel,
       `Timeout waiting on device to confirm completed data transfer with ${ackType} message`
