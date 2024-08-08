@@ -363,7 +363,7 @@ class PixelDispatcher
     this._pixel.addEventListener("messageSend", (msgOrType) =>
       write("send", msgOrType)
     );
-    this._pixel.addEventListener("message", (msgOrType) =>
+    this._pixel.addEventListener("messageReceived", (msgOrType) =>
       write("received", msgOrType)
     );
     // Forward scanned pixel property events

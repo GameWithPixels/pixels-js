@@ -7,8 +7,8 @@ import {
   EventReceiver,
 } from "@systemic-games/pixels-core-utils";
 
-import { PixelRollState } from "./Messages";
 import { PixelInfo } from "./PixelInfo";
+import { PixelRollState } from "./PixelRollState";
 
 /**
  * The mutable properties of {@link PixelInfoNotifier}.
