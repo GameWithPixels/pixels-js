@@ -115,8 +115,12 @@ async function testAnimation(pixel: Pixel): Promise<void> {
 
 function BatchPage() {
   // Scanned Pixels
-  const [scannedPixels, scanDispatch, scanStatus] =
+  const [scannedDevices, scanDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
+  const scannedPixels = React.useMemo(
+    () => scannedDevices.filter((i) => i.type === "pixel"),
+    [scannedDevices]
+  );
   const [pixels, setPixels] = React.useState<Pixel[]>([]);
   const [stayConnected, setStayConnected] = React.useState(false);
   React.useEffect(() => {

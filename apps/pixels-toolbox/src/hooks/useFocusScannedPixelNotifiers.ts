@@ -5,6 +5,7 @@ import {
   ScannedPixelNotifier,
   useScannedPixelNotifiers,
   PixelScannerStatus,
+  ScannedChargerNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
@@ -12,7 +13,7 @@ import React from "react";
 export function useFocusScannedPixelNotifiers(
   opt?: PixelScannerOptions
 ): [
-  ScannedPixelNotifier[],
+  (ScannedPixelNotifier | ScannedChargerNotifier)[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {

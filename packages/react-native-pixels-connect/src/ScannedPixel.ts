@@ -12,6 +12,11 @@ import type { PixelInfo } from "@systemic-games/pixels-core-connect";
  **/
 export type ScannedPixel = PixelInfo &
   Readonly<{
-    readonly address: number; // Bluetooth MAC address, 48 bits, Not available on iOS
-    readonly timestamp: Date; // Timestamp when the advertisement data was received
+    type: "pixel";
+
+    /** Bluetooth MAC address, 48 bits, Not available on iOS. */
+    address: number;
+
+    /** Timestamp when the advertisement data was received. */
+    timestamp: Date;
   }>;

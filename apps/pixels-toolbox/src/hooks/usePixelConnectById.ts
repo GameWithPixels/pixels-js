@@ -35,7 +35,7 @@ export function usePixelConnectById(): [
   Error?,
 ] {
   const [lastError, setLastError] = React.useState<Error>();
-  const [scannedPixels, scannerDispatch, scanStatus] = useScannedPixels();
+  const [scannedDevices, scannerDispatch, scanStatus] = useScannedPixels();
   const [pixelId, setPixelId] = React.useState<number>(0);
   const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
   const [pixel, setPixel] = React.useState<Pixel>();
@@ -88,14 +88,15 @@ export function usePixelConnectById(): [
   // Assign Pixel
   React.useEffect(() => {
     if (pixelId) {
-      const i = scannedPixels.findIndex((p) => p.pixelId === pixelId);
-      if (i >= 0) {
-        setPixel(getPixel(scannedPixels[i].systemId));
+      const i = scannedDevices.findIndex((p) => p.pixelId === pixelId);
+      const sp = scannedDevices[i];
+      if (sp?.type === "pixel") {
+        setPixel(getPixel(sp.systemId));
         setPixelId(0);
-        setScannedPixel(scannedPixels[i]);
+        setScannedPixel(sp);
       }
     }
-  }, [pixelId, scannedPixels]);
+  }, [pixelId, scannedDevices]);
 
   // Clean up
   React.useEffect(() => {

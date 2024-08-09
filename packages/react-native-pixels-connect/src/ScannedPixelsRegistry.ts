@@ -1,26 +1,33 @@
+import { ScannedCharger } from "./ScannedCharger";
 import { ScannedPixel } from "./ScannedPixel";
 
-const _pixelIdMap = new Map<number, ScannedPixel>();
+const _pixelIdMap = new Map<number, ScannedPixel | ScannedCharger>();
 
 // For internal use only
 export const ScannedPixelsRegistry = {
-  register(scannedPixel: ScannedPixel): void {
-    _pixelIdMap.set(scannedPixel.pixelId, scannedPixel);
+  register(scannedDevice: ScannedPixel | ScannedCharger): void {
+    _pixelIdMap.set(scannedDevice.pixelId, scannedDevice);
   },
 
-  find(id: string | number): ScannedPixel | undefined {
+  find(id: string | number): ScannedPixel | ScannedCharger | undefined {
     if (typeof id === "number") {
       return _pixelIdMap.get(id);
     } else {
-      for (const sp of _pixelIdMap.values()) {
-        if (sp.systemId === id) {
-          return sp;
+      for (const entry of _pixelIdMap.values()) {
+        if (entry.systemId === id) {
+          return entry;
         }
       }
     }
   },
 
-  getAll(): ScannedPixel[] {
-    return [..._pixelIdMap.values()];
+  findPixel(id: string | number): ScannedPixel | undefined {
+    const scannedDevice = ScannedPixelsRegistry.find(id);
+    return scannedDevice?.type === "pixel" ? scannedDevice : undefined;
+  },
+
+  findCharger(id: string | number): ScannedCharger | undefined {
+    const scannedDevice = ScannedPixelsRegistry.find(id);
+    return scannedDevice?.type === "charger" ? scannedDevice : undefined;
   },
 } as const;
