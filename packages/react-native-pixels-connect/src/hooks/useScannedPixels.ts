@@ -36,14 +36,14 @@ export function useScannedPixels(
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "scanned": {
+          case "pixel": {
             const index = retItems.findIndex(
-              (sp) => sp.pixelId === op.scannedPixel.pixelId
+              (sp) => sp.pixelId === op.item.pixelId
             );
             if (index < 0) {
-              retItems.push(op.scannedPixel);
+              retItems.push(op.item);
             } else {
-              retItems[index] = op.scannedPixel;
+              retItems[index] = op.item;
             }
             break;
           }
@@ -52,6 +52,8 @@ export function useScannedPixels(
             retItems.splice(index, 1);
             break;
           }
+          case "charger":
+            break;
           default:
             assertNever(t);
         }

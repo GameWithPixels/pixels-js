@@ -41,11 +41,11 @@ export function useScannedPixelNotifiers(
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "scanned": {
+          case "pixel": {
             // The same instance will always be returned for a given Pixel id
-            const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
+            const notifier = ScannedPixelNotifier.getInstance(op.item);
             const index = retItems.findIndex(
-              (sp) => sp.pixelId === op.scannedPixel.pixelId
+              (sp) => sp.pixelId === op.item.pixelId
             );
             if (index < 0) {
               if (retItems === items) {
@@ -65,6 +65,8 @@ export function useScannedPixelNotifiers(
             }
             break;
           }
+          case "charger":
+            break;
           default:
             assertNever(t);
         }

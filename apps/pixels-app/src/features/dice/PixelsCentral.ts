@@ -484,8 +484,8 @@ export class PixelsCentral {
     for (const op of ops) {
       const t = op.type;
       switch (t) {
-        case "scanned": {
-          const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
+        case "pixel": {
+          const notifier = ScannedPixelNotifier.getInstance(op.item);
           if (
             this._scannedPixels.every((sp) => sp.pixelId !== notifier.pixelId)
           ) {
@@ -507,6 +507,8 @@ export class PixelsCentral {
           }
           break;
         }
+        case "charger":
+          break;
         default:
           assertNever(t);
       }
