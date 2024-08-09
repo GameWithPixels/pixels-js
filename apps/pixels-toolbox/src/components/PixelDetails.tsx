@@ -102,7 +102,6 @@ function Button({ ...props }: Omit<ButtonProps, "style">) {
 }
 
 function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
-  const { t } = useTranslation();
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -115,6 +114,7 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
       pixel.removePropertyListener("firmwareDate", listener);
     };
   }, [pixel, forceUpdate]);
+  const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
     <>
@@ -135,6 +135,35 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
         {pixel.firmwareDate.toLocaleDateString()}
         {t("commaSeparator")}
         {pixel.firmwareDate.toLocaleTimeString()}
+      </TextEntry>
+    </>
+  );
+}
+
+function ChargerInfo({ charger }: { charger: PixelInfoNotifier }) {
+  const forceUpdate = useForceUpdate();
+  React.useEffect(() => {
+    const listener = () => forceUpdate();
+    charger.addPropertyListener("firmwareDate", listener);
+    return () => {
+      charger.removePropertyListener("firmwareDate", listener);
+    };
+  }, [charger, forceUpdate]);
+  const { t } = useTranslation();
+  const TextEntry = useTextEntry(t("colonSeparator"));
+  return (
+    <>
+      <TextEntry title={t("pixelId")}>
+        {unsigned32ToHex(charger.pixelId)}
+        {t("commaSeparator")}
+      </TextEntry>
+      <TextEntry title={t("descriptionShort")}>
+        {charger.ledCount} {t("leds")}
+      </TextEntry>
+      <TextEntry title={t("firmware")}>
+        {charger.firmwareDate.toLocaleDateString()}
+        {t("commaSeparator")}
+        {charger.firmwareDate.toLocaleTimeString()}
       </TextEntry>
     </>
   );
@@ -813,8 +842,14 @@ export function PixelDetails({
       <View style={AppStyles.mv3} />
       <Card>
         <Card.Content>
-          <BaseInfo pixel={pd} />
-          <TelemetryInfo pixel={pixel} />
+          {pd.type === "pixel" ? (
+            <>
+              <BaseInfo pixel={pd} />
+              <TelemetryInfo pixel={pixel} />
+            </>
+          ) : (
+            <ChargerInfo charger={pd} />
+          )}
         </Card.Content>
       </Card>
       <View style={AppStyles.mv3} />
@@ -824,38 +859,42 @@ export function PixelDetails({
             {lastError ? (
               <ErrorCard error={lastError} clear={clearError} />
             ) : (
-              <BottomButtons
-                pixelDispatcher={pd}
-                onShowTelemetry={showTelemetry}
-                onExportTelemetry={() => {
-                  const filename =
-                    getDatedFilename([pd.name, "telemetry"]) + ".csv";
-                  exportCsv(filename, pd.telemetryData).catch(setLastError);
-                }}
-                onExportMessages={() => {
-                  const filename =
-                    getDatedFilename([pd.name, "messages"]) + ".json";
-                  const saveFile = async () => {
-                    // The boolean below is always false to test file sharing on Android
-                    const isAndroid = false && Platform.OS === "android";
-                    const uri = isAndroid
-                      ? await requestUserFileAsync(filename)
-                      : FileSystem.cacheDirectory + filename;
-                    try {
-                      await pd.exportMessages(uri);
-                      if (!isAndroid) {
-                        await shareFileAsync(uri);
+              pd.type === "pixel" && (
+                <BottomButtons
+                  pixelDispatcher={pd}
+                  onShowTelemetry={showTelemetry}
+                  onExportTelemetry={() => {
+                    const filename =
+                      getDatedFilename([pd.name, "telemetry"]) + ".csv";
+                    exportCsv(filename, pd.telemetryData).catch(setLastError);
+                  }}
+                  onExportMessages={() => {
+                    const filename =
+                      getDatedFilename([pd.name, "messages"]) + ".json";
+                    const saveFile = async () => {
+                      // The boolean below is always false to test file sharing on Android
+                      const isAndroid = false && Platform.OS === "android";
+                      const uri = isAndroid
+                        ? await requestUserFileAsync(filename)
+                        : FileSystem.cacheDirectory + filename;
+                      try {
+                        await pd.exportMessages(uri);
+                        if (!isAndroid) {
+                          await shareFileAsync(uri);
+                        }
+                      } finally {
+                        if (!isAndroid) {
+                          await FileSystem.deleteAsync(uri, {
+                            idempotent: true,
+                          });
+                        }
                       }
-                    } finally {
-                      if (!isAndroid) {
-                        await FileSystem.deleteAsync(uri, { idempotent: true });
-                      }
-                    }
-                  };
-                  saveFile().catch(setLastError);
-                }}
-                onPrintLabel={() => onPrintLabel?.(pd)}
-              />
+                    };
+                    saveFile().catch(setLastError);
+                  }}
+                  onPrintLabel={() => onPrintLabel?.(pd)}
+                />
+              )
             )}
           </Card.Content>
         </Card>

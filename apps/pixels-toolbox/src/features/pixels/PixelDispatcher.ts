@@ -31,6 +31,8 @@ import {
   PixelInfoNotifier,
   PixelRollState,
   PixelStatus,
+  ScannedCharger,
+  ScannedChargerNotifier,
   ScannedPixel,
   ScannedPixelNotifier,
   ScannedPixelNotifierMutableProps,
@@ -176,6 +178,7 @@ class PixelDispatcher
   private readonly _pixel: Pixel;
   // Latest prop values coming both from scan data and Pixel instance
   private readonly _info: Mutable<ScannedPixel>;
+  private readonly _type: "pixel" | "charger";
   // More props
   private _lastDiscoTime = 0;
   private _lastActivityMs = 0;
@@ -187,6 +190,10 @@ class PixelDispatcher
   // Our own event emitter
   private readonly _evEmitter =
     createTypedEventEmitter<PixelDispatcherEventMap>();
+
+  get type(): "pixel" | "charger" {
+    return this._type;
+  }
 
   get systemId(): string {
     return this._info.systemId;
@@ -297,42 +304,69 @@ class PixelDispatcher
   }
 
   static getDispatcher(
-    scannedPixel: ScannedPixelNotifier | ScannedPixel
+    scannedDevice:
+      | ScannedPixelNotifier
+      | ScannedPixel
+      | ScannedChargerNotifier
+      | ScannedCharger
   ): PixelDispatcher {
     // Assume we have a notifier and check flag
     // We don't use 'instanceof' as it doesn't work after a fast refresh (RN 71)
-    const notifier = scannedPixel as ScannedPixelNotifier;
     return (
-      Static.instances.get(scannedPixel.pixelId) ??
+      Static.instances.get(scannedDevice.pixelId) ??
       new PixelDispatcher(
-        notifier.isNotifier
-          ? notifier
-          : ScannedPixelNotifier.getInstance(scannedPixel)
+        "isNotifier" in scannedDevice
+          ? scannedDevice
+          : scannedDevice.type === "pixel"
+            ? ScannedPixelNotifier.getInstance(scannedDevice)
+            : ScannedChargerNotifier.getInstance(scannedDevice)
       )
     );
   }
 
-  private constructor(scannedPixel: ScannedPixelNotifier) {
-    super(scannedPixel);
+  // TODO temporary hack until we more properly handle ScannedCharger
+  private static toScannedPixel(
+    scannedDevice: ScannedPixelNotifier | ScannedChargerNotifier
+  ): ScannedPixel {
+    if (scannedDevice.type === "pixel") {
+      return scannedDevice as ScannedPixel;
+    } else {
+      // @ts-ignore
+      return {
+        ...scannedDevice,
+        colorway: "unknown",
+        dieType: "unknown",
+        rollState: "unknown",
+        currentFace: 0,
+        currentFaceIndex: 0,
+      };
+    }
+  }
+
+  private constructor(
+    scannedDevice: ScannedPixelNotifier | ScannedChargerNotifier
+  ) {
+    super(PixelDispatcher.toScannedPixel(scannedDevice));
+    this._type = scannedDevice.type;
     this._info = {
       type: "pixel",
-      systemId: scannedPixel.systemId,
-      pixelId: scannedPixel.pixelId,
-      name: scannedPixel.name,
-      ledCount: scannedPixel.ledCount,
-      colorway: scannedPixel.colorway,
-      dieType: scannedPixel.dieType,
-      firmwareDate: scannedPixel.firmwareDate,
-      rssi: scannedPixel.rssi,
-      batteryLevel: scannedPixel.batteryLevel,
-      isCharging: scannedPixel.isCharging,
-      rollState: scannedPixel.rollState,
-      currentFace: scannedPixel.currentFace,
-      currentFaceIndex: scannedPixel.currentFaceIndex,
-      address: scannedPixel.address,
-      timestamp: scannedPixel.timestamp,
+      systemId: scannedDevice.systemId,
+      pixelId: scannedDevice.pixelId,
+      name: scannedDevice.name,
+      ledCount: scannedDevice.ledCount,
+      colorway: scannedDevice.colorway,
+      dieType: scannedDevice.dieType,
+      firmwareDate: scannedDevice.firmwareDate,
+      rssi: scannedDevice.rssi,
+      batteryLevel: scannedDevice.batteryLevel,
+      isCharging: scannedDevice.isCharging,
+      rollState: scannedDevice.rollState,
+      currentFace: scannedDevice.currentFace,
+      currentFaceIndex: scannedDevice.currentFaceIndex,
+      address: scannedDevice.address,
+      timestamp: scannedDevice.timestamp,
     };
-    this._pixel = getPixelOrThrow(scannedPixel.systemId);
+    this._pixel = getPixelOrThrow(scannedDevice.systemId);
     Static.instances.set(this.pixelId, this);
     // Log messages in file
     const filename = `${getDatedFilename(this.name)}~${Math.round(
@@ -372,8 +406,8 @@ class PixelDispatcher
       dst[key] = src[key];
     }
     for (const prop of ScannedPixelNotifier.ExtendedMutablePropsList) {
-      scannedPixel.addPropertyListener(prop, () => {
-        copyProp(scannedPixel, this._info, prop);
+      scannedDevice.addPropertyListener(prop, () => {
+        copyProp(scannedDevice, this._info, prop);
         this.emitPropertyEvent(prop);
         if (prop === "timestamp") {
           this.emitPropertyEvent("lastScanUpdate");
