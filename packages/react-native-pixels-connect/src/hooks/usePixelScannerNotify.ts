@@ -2,6 +2,7 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import { PixelScanner, PixelScannerListOperation } from "../PixelScanner";
+import { ScannedCharger } from "../ScannedCharger";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
@@ -20,7 +21,7 @@ export type PixelScannerStatus = "started" | "stopped" | Error;
  */
 export interface PixelScannerOptions {
   /** Optional filter to only keep certain Pixels in the list. */
-  scanFilter?: (scannedPixel: ScannedPixel) => boolean;
+  scanFilter?: (item: ScannedPixel | ScannedCharger) => boolean;
 
   /**
    * Minimum interval in milliseconds between two React state updates.

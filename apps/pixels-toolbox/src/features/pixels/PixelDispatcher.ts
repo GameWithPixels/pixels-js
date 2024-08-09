@@ -305,7 +305,7 @@ class PixelDispatcher
     return (
       Static.instances.get(scannedPixel.pixelId) ??
       new PixelDispatcher(
-        notifier.isScannedPixelNotifier
+        notifier.isNotifier
           ? notifier
           : ScannedPixelNotifier.getInstance(scannedPixel)
       )
@@ -315,6 +315,7 @@ class PixelDispatcher
   private constructor(scannedPixel: ScannedPixelNotifier) {
     super(scannedPixel);
     this._info = {
+      type: "pixel",
       systemId: scannedPixel.systemId,
       pixelId: scannedPixel.pixelId,
       name: scannedPixel.name,

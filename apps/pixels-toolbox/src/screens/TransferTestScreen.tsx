@@ -56,8 +56,12 @@ function SelectPixel({
   onSelect: (pixel: PixelInfoNotifier) => void;
 }) {
   // Scanning
-  const [scannedPixels, scannerDispatch, scanStatus] =
+  const [scannedDevices, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
+  const scannedPixels = React.useMemo(
+    () => scannedDevices.filter((i) => i.type === "pixel"),
+    [scannedDevices]
+  );
 
   const [refreshing, setRefreshing] = React.useState(false);
 

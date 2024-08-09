@@ -29,8 +29,12 @@ export function ScannedPixelsList({
   ledCount?: number; // Ignored if dieType is set
   minUpdateInterval?: number;
 }) {
-  const [scannedPixels, scannerDispatch, scanStatus] =
+  const [scannedDevices, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
+  const scannedPixels = React.useMemo(
+    () => scannedDevices.filter((i) => i.type === "pixel"),
+    [scannedDevices]
+  );
   useErrorWithHandler(
     !(typeof scanStatus === "string") ? scanStatus : undefined
   );

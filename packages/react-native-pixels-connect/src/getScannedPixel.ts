@@ -28,9 +28,9 @@ export function getScannedPixel(
   const manufacturerData = advData.manufacturersData?.[0];
   const serviceData = advData.servicesData?.[0];
 
-  // Check the manufacturers data
-  const isOldAdv = !serviceData && manufacturerData?.data.length === 7;
+  // Check the service data
   const hasServiceData = serviceData && serviceData.data.length >= 8;
+  const isOldAdv = !serviceData && manufacturerData?.data.length === 7;
   if (
     (isOldAdv || hasServiceData) &&
     manufacturerData &&
@@ -47,7 +47,7 @@ export function getScannedPixel(
     let rollStateValue: number;
     let faceIndex: number;
 
-    // Create a Scanned Pixel object with some default values
+    // Create data reader for the manufacturer data
     const manufBuffer = new Uint8Array(manufacturerData.data);
     const manufReader = new SequentialDataReader(
       new DataView(manufBuffer.buffer)
@@ -56,15 +56,17 @@ export function getScannedPixel(
     // Check the services data, Pixels use to share some information
     // in the scan response packet
     if (hasServiceData) {
-      // Update the Scanned Pixel with values from manufacturers and services data
+      // Create data reader for the service data
       const serviceBuffer = new Uint8Array(serviceData.data);
       const serviceReader = new SequentialDataReader(
         new DataView(serviceBuffer.buffer)
       );
 
+      // Read the advertised values from the service data
       pixelId = serviceReader.readU32();
       firmwareDate = new Date(1000 * serviceReader.readU32());
 
+      // Read the advertised values from the manufacturer data
       ledCount = manufReader.readU8();
       const designAndColor = manufReader.readU8();
       colorwayValue = designAndColor & 0xf;
@@ -77,7 +79,7 @@ export function getScannedPixel(
       isCharging = (battery & 0x80) > 0;
     } else {
       assert(isOldAdv);
-      // Update the Scanned Pixel with values from manufacturers data
+      // Read the advertised values from manufacturers data
       // as advertised from before July 2022
       const companyId = manufacturerData.companyId ?? 0;
       ledCount = (companyId >> 8) & 0xff;
@@ -104,6 +106,7 @@ export function getScannedPixel(
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
       const currentFace = DiceUtils.faceFromIndex(faceIndex, dieType);
       const scannedPixel = {
+        type: "pixel" as "pixel",
         systemId,
         pixelId,
         address: peripheral.address,
@@ -134,7 +137,7 @@ export function getScannedPixel(
         peripheral.name
       }: Received unsupported advertising data (manufacturerData: ${
         manufacturerData?.data.length ?? -1
-      }, serviceData: ${serviceData?.data.length ?? -1})`
+      } bytes, serviceData: ${serviceData?.data.length ?? -1} bytes)`
     );
   }
 }

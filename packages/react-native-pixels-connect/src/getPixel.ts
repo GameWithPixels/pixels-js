@@ -23,7 +23,7 @@ class GetPixelError extends Error {
  */
 export function getPixel(id: string | number): Pixel | undefined {
   if (typeof id === "number" ? id !== 0 : id?.length > 0) {
-    const sp = ScannedPixelsRegistry.find(id);
+    const sp = ScannedPixelsRegistry.findPixel(id);
     // Get system id from the input data
     const systemId = typeof id === "string" ? id : sp?.systemId;
     if (systemId?.length) {

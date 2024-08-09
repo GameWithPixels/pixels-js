@@ -485,15 +485,17 @@ export class PixelsCentral {
       const t = op.type;
       switch (t) {
         case "scanned": {
-          const notifier = ScannedPixelNotifier.getInstance(op.scannedPixel);
-          if (
-            this._scannedPixels.every((sp) => sp.pixelId !== notifier.pixelId)
-          ) {
-            if (!this._watched.has(notifier.pixelId)) {
-              this._scannedPixels.push(notifier);
-            } else if (this._connectFromScan.has(notifier.pixelId)) {
-              // Connect to our die if paired and in the watched list
-              this._autoConnect(notifier.pixelId);
+          if (op.item.type === "pixel") {
+            const notifier = ScannedPixelNotifier.getInstance(op.item);
+            if (
+              this._scannedPixels.every((sp) => sp.pixelId !== notifier.pixelId)
+            ) {
+              if (!this._watched.has(notifier.pixelId)) {
+                this._scannedPixels.push(notifier);
+              } else if (this._connectFromScan.has(notifier.pixelId)) {
+                // Connect to our die if paired and in the watched list
+                this._autoConnect(notifier.pixelId);
+              }
             }
           }
           break;

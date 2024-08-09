@@ -9,35 +9,41 @@ import {
 } from "@systemic-games/pixels-core-connect";
 import { Mutable } from "@systemic-games/pixels-core-utils";
 
+import { ScannedCharger } from "./ScannedCharger";
+import { ScannedChargerNotifiersMap as instancesMap } from "./ScannedChargerNotifiersMap";
 import { ScannedPixel } from "./ScannedPixel";
-import { ScannedPixelNotifiersMap as instancesMap } from "./ScannedPixelNotifiersMap";
 
-/** Type for an object with all the mutable props of {@link ScannedPixelNotifier}. */
-export type ScannedPixelNotifierMutableProps = PixelInfoNotifierMutableProps &
+/** Type for an object with all the mutable props of {@link ScannedChargerNotifier}. */
+export type ScannedChargerNotifierMutableProps = PixelInfoNotifierMutableProps &
   Pick<
-    ScannedPixel,
-    (typeof ScannedPixelNotifier.ExtendedMutablePropsList)[number]
+    ScannedCharger,
+    (typeof ScannedChargerNotifier.ExtendedMutablePropsList)[number]
   >;
 
 /**
- * Wraps a {@link ScannedPixel} to raise events on mutable property changes.
+ * Wraps a {@link ScannedCharger} to raise events on mutable property changes.
  */
-export class ScannedPixelNotifier<
+export class ScannedChargerNotifier<
     MutableProps extends
-      ScannedPixelNotifierMutableProps = ScannedPixelNotifierMutableProps,
-    Type extends ScannedPixel = ScannedPixel,
+      ScannedChargerNotifierMutableProps = ScannedChargerNotifierMutableProps,
+    Type extends ScannedPixel = ScannedPixel, // TODO ScannedCharger
   >
   extends PixelInfoNotifier<MutableProps, Type>
-  implements ScannedPixel
+  implements ScannedCharger
 {
-  static ExtendedMutablePropsList: readonly (keyof ScannedPixel)[] = [
+  static ExtendedMutablePropsList: readonly (keyof ScannedCharger)[] = [
     "timestamp", // We want to update timestamp first
-    ...PixelInfoNotifier.MutablePropsList,
+    "name",
+    "ledCount",
+    "firmwareDate",
+    "rssi",
+    "batteryLevel",
+    "isCharging",
   ];
 
-  private _data: Mutable<ScannedPixel>;
+  private _data: Mutable<ScannedCharger>;
 
-  readonly type = "pixel";
+  readonly type = "charger";
   readonly isNotifier = true;
 
   // PixelInfo props
@@ -54,10 +60,10 @@ export class ScannedPixelNotifier<
     return this._data.ledCount;
   }
   get colorway(): PixelColorway {
-    return this._data.colorway;
+    return "unknown";
   }
   get dieType(): PixelDieType {
-    return this._data.dieType;
+    return "unknown";
   }
   get firmwareDate(): Date {
     return this._data.firmwareDate;
@@ -72,16 +78,16 @@ export class ScannedPixelNotifier<
     return this._data.isCharging;
   }
   get rollState(): PixelRollState {
-    return this._data.rollState;
+    return "unknown";
   }
   get currentFace(): number {
-    return this._data.currentFace;
+    return 0;
   }
   get currentFaceIndex(): number {
-    return this._data.currentFaceIndex;
+    return 0;
   }
 
-  // Additional ScannedPixel props
+  // Additional ScannedCharger props
   get address(): number {
     return this._data.address;
   }
@@ -89,27 +95,27 @@ export class ScannedPixelNotifier<
     return this._data.timestamp;
   }
 
-  static findInstance(pixelId: number): ScannedPixelNotifier | undefined {
+  static findInstance(pixelId: number): ScannedChargerNotifier | undefined {
     return instancesMap.get(pixelId);
   }
 
-  static getInstance(scannedPixel: ScannedPixel): ScannedPixelNotifier {
+  static getInstance(scannedPixel: ScannedCharger): ScannedChargerNotifier {
     const notifier = instancesMap.get(scannedPixel.pixelId);
     if (notifier) {
       notifier.updateProperties(scannedPixel);
       return notifier;
     } else {
-      const newNotifier = new ScannedPixelNotifier(scannedPixel);
+      const newNotifier = new ScannedChargerNotifier(scannedPixel);
       instancesMap.set(scannedPixel.pixelId, newNotifier);
       return newNotifier;
     }
   }
 
   /**
-   * Instantiate a {@link ScannedPixelNotifier} with the properties
-   * of a {@link ScannedPixel} object.
+   * Instantiate a {@link ScannedChargerNotifier} with the properties
+   * of a {@link ScannedCharger} object.
    */
-  protected constructor(scannedPixel: ScannedPixel) {
+  protected constructor(scannedPixel: ScannedCharger) {
     super();
     this._data = { ...scannedPixel };
   }
@@ -118,7 +124,7 @@ export class ScannedPixelNotifier<
    * Update the mutable properties and raise the corresponding events.
    * @param props The new values for the properties to update.
    */
-  updateProperties(props: Partial<ScannedPixelNotifierMutableProps>): void {
+  updateProperties(props: Partial<ScannedChargerNotifierMutableProps>): void {
     if (props.timestamp && this._data.timestamp < props.timestamp) {
       // Timestamp first
       if (
@@ -129,7 +135,7 @@ export class ScannedPixelNotifier<
         this.emitPropertyEvent("timestamp");
       }
       // Other props
-      for (const prop of ScannedPixelNotifier.ExtendedMutablePropsList) {
+      for (const prop of ScannedChargerNotifier.ExtendedMutablePropsList) {
         if (prop === "firmwareDate") {
           if (
             props.firmwareDate &&
