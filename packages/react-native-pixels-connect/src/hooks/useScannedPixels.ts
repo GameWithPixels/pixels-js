@@ -8,6 +8,7 @@ import {
   PixelScannerStatus,
 } from "./usePixelScannerNotify";
 import { PixelScannerListOperation } from "../PixelScanner";
+import { ScannedCharger } from "../ScannedCharger";
 import { ScannedPixel } from "../ScannedPixel";
 
 /**
@@ -24,19 +25,22 @@ import { ScannedPixel } from "../ScannedPixel";
 export function useScannedPixels(
   opt?: PixelScannerOptions
 ): [
-  ScannedPixel[],
+  (ScannedPixel | ScannedCharger)[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {
   const passthrough = React.useCallback(
-    (items: ScannedPixel[], ops: PixelScannerListOperation[]) => {
+    (
+      items: (ScannedPixel | ScannedCharger)[],
+      ops: PixelScannerListOperation[]
+    ) => {
       // Create new list to trigger a React re-render
       const retItems = [...items];
       // Apply updates
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "pixel": {
+          case "scanned": {
             const index = retItems.findIndex(
               (sp) => sp.pixelId === op.item.pixelId
             );
@@ -52,8 +56,6 @@ export function useScannedPixels(
             retItems.splice(index, 1);
             break;
           }
-          case "charger":
-            break;
           default:
             assertNever(t);
         }

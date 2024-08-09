@@ -484,16 +484,18 @@ export class PixelsCentral {
     for (const op of ops) {
       const t = op.type;
       switch (t) {
-        case "pixel": {
-          const notifier = ScannedPixelNotifier.getInstance(op.item);
-          if (
-            this._scannedPixels.every((sp) => sp.pixelId !== notifier.pixelId)
-          ) {
-            if (!this._watched.has(notifier.pixelId)) {
-              this._scannedPixels.push(notifier);
-            } else if (this._connectFromScan.has(notifier.pixelId)) {
-              // Connect to our die if paired and in the watched list
-              this._autoConnect(notifier.pixelId);
+        case "scanned": {
+          if (op.item.type === "pixel") {
+            const notifier = ScannedPixelNotifier.getInstance(op.item);
+            if (
+              this._scannedPixels.every((sp) => sp.pixelId !== notifier.pixelId)
+            ) {
+              if (!this._watched.has(notifier.pixelId)) {
+                this._scannedPixels.push(notifier);
+              } else if (this._connectFromScan.has(notifier.pixelId)) {
+                // Connect to our die if paired and in the watched list
+                this._autoConnect(notifier.pixelId);
+              }
             }
           }
           break;
@@ -507,8 +509,6 @@ export class PixelsCentral {
           }
           break;
         }
-        case "charger":
-          break;
         default:
           assertNever(t);
       }

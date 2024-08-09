@@ -106,6 +106,7 @@ export function getScannedPixel(
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
       const currentFace = DiceUtils.faceFromIndex(faceIndex, dieType);
       const scannedPixel = {
+        type: "pixel" as "pixel",
         systemId,
         pixelId,
         address: peripheral.address,

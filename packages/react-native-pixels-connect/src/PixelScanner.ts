@@ -13,7 +13,6 @@ import {
 
 import { ScannedCharger } from "./ScannedCharger";
 import { ScannedPixel } from "./ScannedPixel";
-import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
 import { getScannedCharger } from "./getScannedCharger";
 import { getScannedPixel } from "./getScannedPixel";
 
@@ -22,12 +21,8 @@ import { getScannedPixel } from "./getScannedPixel";
  */
 export type PixelScannerListOperation = Readonly<
   | {
-      type: "pixel";
-      item: ScannedPixel;
-    }
-  | {
-      type: "charger";
-      item: ScannedCharger;
+      type: "scanned";
+      item: ScannedPixel | ScannedCharger;
     }
   | { type: "removed"; pixelId: number }
 >;
@@ -60,7 +55,7 @@ export interface PixelScannerEventMap {
  * Type for a callback filtering {@link ScannedPixel}, used by {@link PixelScanner}.
  */
 export type PixelScannerFilter =
-  | ((scannedPixel: ScannedPixel) => boolean)
+  | ((item: ScannedPixel | ScannedCharger) => boolean)
   | null
   | undefined;
 
@@ -90,8 +85,7 @@ export class PixelScanner {
   private static readonly _sharedQueue = new SequentialPromiseQueue();
 
   // Instance internal data
-  private readonly _pixels: ScannedPixel[] = [];
-  private readonly _chargers: ScannedCharger[] = [];
+  private readonly _items: (ScannedPixel | ScannedCharger)[] = [];
   private readonly _evEmitter = createTypedEventEmitter<PixelScannerEventMap>();
   private _startPromise?: Promise<void>;
   private _status: ScanStatus = "stopped";
@@ -101,7 +95,7 @@ export class PixelScanner {
   private _keepAliveDuration = 5000;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdateMs = 0;
-  private readonly _touched = new Set<number>();
+  private readonly _touched = new Set<number | "pixel" | "charger">();
   private _onBluetoothState?: (ev: { state: BluetoothState }) => void;
 
   /**
@@ -124,7 +118,7 @@ export class PixelScanner {
    * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
    */
   get scannedPixels(): ScannedPixel[] {
-    return [...this._pixels];
+    return this._items.filter((i) => i.type === "pixel");
   }
 
   /**
@@ -132,7 +126,7 @@ export class PixelScanner {
    * if {@link PixelScanner.keepAliveDuration} is greater than zero).
    */
   get scannedChargers(): ScannedCharger[] {
-    return [...this._chargers];
+    return this._items.filter((i) => i.type === "charger");
   }
 
   /**
@@ -319,12 +313,12 @@ export class PixelScanner {
       if (services?.includes(PixelBleUuids.dieService)) {
         const pixel = getScannedPixel(ev.peripheral);
         if (pixel) {
-          this._processScannedPixel(pixel);
+          this._processItem(pixel);
         }
       } else if (services?.includes(PixelBleUuids.chargerService)) {
         const charger = getScannedCharger(ev.peripheral);
         if (charger) {
-          this._processScannedCharger(charger);
+          this._processItem(charger);
         }
       }
     } else {
@@ -361,12 +355,11 @@ export class PixelScanner {
           this._keepAliveDuration > 0
         ) {
           // Clear all Pixels & Chargers if Bluetooth has become unavailable
-          (this._pixels as { pixelId: number }[])
-            .concat(this._chargers)
-            .map((sp) => sp.pixelId)
-            .forEach((id) => this._touched.add(id));
-          this._pixels.length = 0;
-          this._chargers.length = 0;
+          for (const { type, pixelId } of this._items) {
+            this._touched.add(type);
+            this._touched.add(pixelId);
+          }
+          this._items.length = 0;
         }
         // Flush pending operations on stop
         this._notify(Date.now());
@@ -381,43 +374,27 @@ export class PixelScanner {
     }
   }
 
-  private _processScannedPixel(sp: ScannedPixel): void {
+  private _processItem(sp: ScannedPixel | ScannedCharger): void {
     if (!this._scanFilter || this._scanFilter(sp)) {
       // Have we already seen this Pixel?
-      const index = this._pixels.findIndex((p) => p.pixelId === sp.pixelId);
+      const index = this._items.findIndex(
+        ({ pixelId }) => pixelId === sp.pixelId
+      );
       if (index < 0) {
         // New entry
-        this._pixels.push(sp);
+        this._items.push(sp);
       } else {
         // Replace previous entry
-        this._pixels[index] = sp;
+        this._items[index] = sp;
       }
       // Store the operation for later notification
       this._touched.add(sp.pixelId);
+      this._touched.add("pixel");
       this._scheduleNotify();
       // Start pruning if needed
       if (this._keepAliveDuration > 0 && !this._pruneTimeoutId) {
         this._pruneOutdated();
       }
-    }
-  }
-
-  private _processScannedCharger(sc: ScannedCharger): void {
-    // Have we already seen this Charger?
-    const index = this._chargers.findIndex((p) => p.pixelId === sc.pixelId);
-    if (index < 0) {
-      // New entry
-      this._chargers.push(sc);
-    } else {
-      // Replace previous entry
-      this._chargers[index] = sc;
-    }
-    // Store the operation for later notification
-    this._touched.add(sc.pixelId);
-    this._scheduleNotify();
-    // Start pruning if needed
-    if (this._keepAliveDuration > 0 && !this._pruneTimeoutId) {
-      this._pruneOutdated();
     }
   }
 
@@ -449,23 +426,16 @@ export class PixelScanner {
       let hasCharger = false;
       const ops: PixelScannerListOperation[] = [];
       for (const pixelId of this._touched) {
-        const sp = this._pixels.find((sp) => sp.pixelId === pixelId);
-        const sc = !sp && this._chargers.find((sc) => sc.pixelId === pixelId);
-        ops.push(
-          sp
-            ? {
-                type: "pixel",
-                item: sp,
-              }
-            : sc
-              ? {
-                  type: "charger",
-                  item: sc,
-                }
-              : { type: "removed", pixelId }
-        );
-        hasPixel ||= !!ScannedPixelsRegistry.findPixel(pixelId);
-        hasCharger ||= !!ScannedPixelsRegistry.findCharger(pixelId);
+        if (pixelId === "pixel") {
+          hasPixel = true;
+        } else if (pixelId === "charger") {
+          hasCharger = true;
+        } else {
+          const item = this._items.find((sp) => sp.pixelId === pixelId);
+          ops.push(
+            item ? { type: "scanned", item } : { type: "removed", pixelId }
+          );
+        }
       }
       this._touched.clear();
       if (ops.length) {
@@ -488,21 +458,21 @@ export class PixelScanner {
     if (this._keepAliveDuration > 0) {
       const now = Date.now();
       // Find expired advertisements
-      const expired = this._pixels.filter(
+      const expired = this._items.filter(
         (p) => now - p.timestamp.getTime() > this._keepAliveDuration
       );
       if (expired.length) {
         // And remove them
         for (const sp of expired.reverse()) {
-          const index = this._pixels.indexOf(sp);
-          this._pixels.splice(index, 1);
+          const index = this._items.indexOf(sp);
+          this._items.splice(index, 1);
           this._touched.add(sp.pixelId);
         }
         this._scheduleNotify();
       }
       // Schedule next pruning
-      if (this._pixels.length) {
-        const older = this._pixels.reduce(
+      if (this._items.length) {
+        const older = this._items.reduce(
           (prev, curr) => Math.min(prev, curr.timestamp.getTime()),
           now
         );

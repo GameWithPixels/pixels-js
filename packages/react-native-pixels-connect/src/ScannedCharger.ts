@@ -1,4 +1,6 @@
 export type ScannedCharger = Readonly<{
+  type: "charger";
+
   /** The unique id assigned by the system to the Pixel Bluetooth peripheral. */
   systemId: string;
 

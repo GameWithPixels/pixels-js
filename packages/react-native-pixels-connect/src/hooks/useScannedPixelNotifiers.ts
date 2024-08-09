@@ -8,6 +8,7 @@ import {
   PixelScannerStatus,
 } from "./usePixelScannerNotify";
 import { PixelScannerListOperation } from "../PixelScanner";
+import { ScannedChargerNotifier } from "../ScannedChargerNotifier";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
 /**
@@ -28,12 +29,15 @@ import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 export function useScannedPixelNotifiers(
   opt?: PixelScannerOptions
 ): [
-  ScannedPixelNotifier[],
+  (ScannedPixelNotifier | ScannedChargerNotifier)[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {
   const mapItems = React.useCallback(
-    (items: ScannedPixelNotifier[], ops: PixelScannerListOperation[]) => {
+    (
+      items: (ScannedPixelNotifier | ScannedChargerNotifier)[],
+      ops: PixelScannerListOperation[]
+    ) => {
       // We only want to create a React re-render when items are added
       // or removed but not when they are modified
       let retItems = items;
@@ -41,9 +45,12 @@ export function useScannedPixelNotifiers(
       for (const op of ops) {
         const t = op.type;
         switch (t) {
-          case "pixel": {
+          case "scanned": {
             // The same instance will always be returned for a given Pixel id
-            const notifier = ScannedPixelNotifier.getInstance(op.item);
+            const notifier =
+              op.item.type === "pixel"
+                ? ScannedPixelNotifier.getInstance(op.item)
+                : ScannedChargerNotifier.getInstance(op.item);
             const index = retItems.findIndex(
               (sp) => sp.pixelId === op.item.pixelId
             );
@@ -65,8 +72,6 @@ export function useScannedPixelNotifiers(
             }
             break;
           }
-          case "charger":
-            break;
           default:
             assertNever(t);
         }

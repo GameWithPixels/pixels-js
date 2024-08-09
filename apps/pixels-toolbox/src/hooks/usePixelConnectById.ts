@@ -89,10 +89,11 @@ export function usePixelConnectById(): [
   React.useEffect(() => {
     if (pixelId) {
       const i = scannedPixels.findIndex((p) => p.pixelId === pixelId);
-      if (i >= 0) {
-        setPixel(getPixel(scannedPixels[i].systemId));
+      const sp = scannedPixels[i];
+      if (sp?.type === "pixel") {
+        setPixel(getPixel(sp.systemId));
         setPixelId(0);
-        setScannedPixel(scannedPixels[i]);
+        setScannedPixel(sp);
       }
     }
   }, [pixelId, scannedPixels]);

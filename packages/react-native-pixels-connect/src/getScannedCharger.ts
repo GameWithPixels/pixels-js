@@ -52,6 +52,7 @@ export function getScannedCharger(
     if (pixelId) {
       const systemId = peripheral.systemId;
       const scannedCharger = {
+        type: "charger" as "charger",
         systemId,
         pixelId,
         address: peripheral.address,
