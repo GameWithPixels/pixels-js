@@ -548,7 +548,7 @@ function RunTestsPage({
     setScannedPixel({ ...scannedPixel });
     // Going through the PixelDispatcher to retrieve the Pixel instance
     // to ensure that logging is enabled
-    setPixel(PixelDispatcher.getDispatcher(scannedPixel).pixel);
+    setPixel(PixelDispatcher.getOrCreateDispatcher(scannedPixel).pixel);
   }, []);
 
   const [cancel, setCancel] = React.useState(false);

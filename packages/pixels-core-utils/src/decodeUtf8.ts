@@ -41,7 +41,7 @@ export function decodeUtf8(bytes: Uint8Array): string {
           (bytes[i++] & 63);
       } else
         throw new DecodeUtf8Error(
-          `Unknown multibyte start 0x${c.toString(16)} at index ${i - 1}`,
+          `Unknown multibyte start 0x${c.toString(16).padStart(2, "0")} at index ${i - 1}`,
           s
         );
     }
@@ -52,7 +52,7 @@ export function decodeUtf8(bytes: Uint8Array): string {
       s += String.fromCharCode((c & 0x3ff) | 0xdc00);
     } else
       throw new DecodeUtf8Error(
-        `Code point 0x${c.toString(16)} exceeds UTF-16 reach`,
+        `Code point 0x${c.toString(16).padStart(2, "0")} exceeds UTF-16 reach`,
         s
       );
   }

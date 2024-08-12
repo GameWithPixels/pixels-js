@@ -39,8 +39,11 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import RNFS from "react-native-fs";
 
-import { PixelDispatcherStatic as Static } from "./PixelDispatcherStatic";
 import { TelemetryData, toTelemetryData } from "./TelemetryData";
+import {
+  getPixelDispatcher,
+  DeviceDispatcherStatic as Static,
+} from "./dispatchers";
 import {
   pixelBlinkId,
   pixelDischarge,
@@ -138,7 +141,8 @@ export class PixelDispatcherError extends Error {
 /**
  * Interface with the props of {@link PixelDispatcher}.
  */
-interface IPixelDispatcher extends ScannedPixel {
+export interface IPixelDispatcher extends Omit<ScannedPixel, "type"> {
+  type: "pixel" | "charger"; // TODO until we have a parent class & interface for the dispatchers
   status: PixelStatus;
   isReady: boolean;
   durationSinceLastActivity: number;
@@ -154,7 +158,7 @@ interface IPixelDispatcher extends ScannedPixel {
 /**
  * Helper class to dispatch commands to a Pixel and get notified on changes.
  */
-class PixelDispatcher
+export class PixelDispatcher
   extends ScannedPixelNotifier<PixelDispatcherMutableProps, PixelDispatcher>
   implements IPixelDispatcher
 {
@@ -292,21 +296,14 @@ class PixelDispatcher
     return this._pixel;
   }
 
-  static findDispatcher(pixelId: number) {
-    return Static.instances.get(pixelId);
-  }
-
-  static getDispatcher(
+  static getOrCreateDispatcher(
     scannedPixel: ScannedPixelNotifier | ScannedPixel
   ): PixelDispatcher {
-    // Assume we have a notifier and check flag
-    // We don't use 'instanceof' as it doesn't work after a fast refresh (RN 71)
-    const notifier = scannedPixel as ScannedPixelNotifier;
     return (
-      Static.instances.get(scannedPixel.pixelId) ??
+      getPixelDispatcher(scannedPixel.pixelId) ??
       new PixelDispatcher(
-        notifier.isNotifier
-          ? notifier
+        "isNotifier" in scannedPixel
+          ? scannedPixel
           : ScannedPixelNotifier.getInstance(scannedPixel)
       )
     );
@@ -360,7 +357,7 @@ class PixelDispatcher
         console.error(`PixelDispatcher file write error: ${e.message}`)
       );
     };
-    // TODO remove listeners
+    // TODO remove listeners on dispose
     this._pixel.addEventListener("messageSend", (msgOrType) =>
       write("send", msgOrType)
     );
@@ -734,6 +731,10 @@ class PixelDispatcher
       // Run next update if any
       const pixel = Static.dfuQueue.pending[0];
       if (pixel) {
+        assert(
+          pixel.type === "pixel",
+          "Queued DFU device is not of pixel type"
+        );
         pixel._guard(pixel._startDFU(), "startDfu");
       }
     }
