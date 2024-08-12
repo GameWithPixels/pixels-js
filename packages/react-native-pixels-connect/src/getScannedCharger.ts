@@ -1,8 +1,8 @@
-import { PixelBleUuids } from "@systemic-games/pixels-core-connect";
+import { PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
 import { ScannedPeripheral } from "@systemic-games/react-native-bluetooth-le";
 
 import { ScannedCharger } from "./ScannedCharger";
-import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
+import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
 import SequentialDataReader from "./SequentialDataReader";
 
 // Function processing scan events from Central and returning a ScannedPixel
@@ -10,7 +10,7 @@ export function getScannedCharger(
   peripheral: ScannedPeripheral
 ): ScannedCharger | undefined {
   const advData = peripheral.advertisementData;
-  if (!advData.services?.includes(PixelBleUuids.chargerService)) {
+  if (!advData.services?.includes(PixelsBluetoothIds.charger.service)) {
     // Not a Pixels charger
     return;
   }
@@ -64,7 +64,7 @@ export function getScannedCharger(
         isCharging,
         timestamp: new Date(),
       };
-      ScannedPixelsRegistry.register(scannedCharger);
+      ScannedDevicesRegistry.register(scannedCharger);
       return scannedCharger;
     } else {
       console.error(

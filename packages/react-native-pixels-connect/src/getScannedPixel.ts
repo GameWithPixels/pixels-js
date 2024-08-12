@@ -4,14 +4,14 @@ import {
   PixelDieTypeValues,
 } from "@systemic-games/pixels-core-animation";
 import {
-  PixelBleUuids,
+  PixelsBluetoothIds,
   PixelRollStateValues,
 } from "@systemic-games/pixels-core-connect";
 import { assert, getValueKeyName } from "@systemic-games/pixels-core-utils";
 import { ScannedPeripheral } from "@systemic-games/react-native-bluetooth-le";
 
+import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
 import { ScannedPixel } from "./ScannedPixel";
-import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
 import SequentialDataReader from "./SequentialDataReader";
 
 // Function processing scan events from Central and returning a ScannedPixel
@@ -19,7 +19,7 @@ export function getScannedPixel(
   peripheral: ScannedPeripheral
 ): ScannedPixel | undefined {
   const advData = peripheral.advertisementData;
-  if (!advData.services?.includes(PixelBleUuids.dieService)) {
+  if (!advData.services?.includes(PixelsBluetoothIds.pixel.service)) {
     // Not a Pixels die
     return;
   }
@@ -123,7 +123,7 @@ export function getScannedPixel(
         currentFaceIndex: faceIndex,
         timestamp: new Date(),
       };
-      ScannedPixelsRegistry.register(scannedPixel);
+      ScannedDevicesRegistry.register(scannedPixel);
       return scannedPixel;
     } else {
       console.error(

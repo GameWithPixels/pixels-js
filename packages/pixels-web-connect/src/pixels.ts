@@ -1,4 +1,4 @@
-import { Pixel } from "@systemic-games/pixels-core-connect";
+import { PixelsBluetoothIds, Pixel } from "@systemic-games/pixels-core-connect";
 
 import BleSession from "./BleSession";
 import { PixelsDevices } from "./PixelsDevices";
@@ -9,7 +9,10 @@ function getOrCreatePixel(device: BluetoothDevice): Pixel {
   // Keep Pixel instances
   let pixel = _pixels.get(device.id);
   if (!pixel) {
-    const session = new BleSession(device.id);
+    const session = new BleSession({
+      systemId: device.id,
+      uuids: PixelsBluetoothIds.pixel,
+    });
     pixel = new Pixel(session);
     _pixels.set(device.id, pixel);
   }

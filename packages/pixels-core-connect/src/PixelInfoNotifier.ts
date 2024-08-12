@@ -23,7 +23,7 @@ export type PixelInfoNotifierMutableProps = Pick<
  * Abstract implementation of {@link PixelInfo} type with the addition
  * of events that are emitted when mutable properties change.
  * The concrete implementation is responsible of calling the
- * {@link PixelInfoNotifier.emitPropertyEvent} function when a property is mutated.
+ * {@link PixelInfoNotifier.emitPropertyEvent()} function when a property is mutated.
  * @category Pixels
  */
 export abstract class PixelInfoNotifier<
@@ -49,6 +49,12 @@ export abstract class PixelInfoNotifier<
   private readonly _infoEvEmitter = createTypedEventEmitter<{
     [K in string & keyof MutableProps]: Type;
   }>();
+
+  // Device type
+  abstract type: "pixel" | "charger"; // TODO also "charger" until we have a separate class for ScannedChargerNotifier
+
+  // It's a notifier object
+  readonly isNotifier = true;
 
   abstract get systemId(): string;
   abstract get pixelId(): number;

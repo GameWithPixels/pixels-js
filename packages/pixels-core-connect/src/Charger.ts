@@ -110,6 +110,9 @@ export class Charger
   // Clean-up
   private _disposeFunc: () => void;
 
+  /** Device type is Pixels charger. */
+  readonly type = "charger";
+
   /** Gets the unique id assigned by the system to the Charger Bluetooth peripheral. */
   get systemId(): string {
     return this._info.systemId;

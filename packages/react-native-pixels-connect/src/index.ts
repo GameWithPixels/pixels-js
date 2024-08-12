@@ -4,6 +4,7 @@ export { Profiles };
 export * from "@systemic-games/react-native-bluetooth-le";
 
 export * from "./initBluetooth";
+export * from "./getCharger";
 export * from "./getPixel";
 export * from "./ScannedCharger";
 export * from "./ScannedChargerNotifier";

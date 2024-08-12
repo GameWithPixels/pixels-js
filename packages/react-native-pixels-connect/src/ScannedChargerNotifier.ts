@@ -10,8 +10,8 @@ import {
 import { Mutable } from "@systemic-games/pixels-core-utils";
 
 import { ScannedCharger } from "./ScannedCharger";
-import { ScannedChargerNotifiersMap as instancesMap } from "./ScannedChargerNotifiersMap";
 import { ScannedPixel } from "./ScannedPixel";
+import { NotifiersMap } from "./static";
 
 /** Type for an object with all the mutable props of {@link ScannedChargerNotifier}. */
 export type ScannedChargerNotifierMutableProps = PixelInfoNotifierMutableProps &
@@ -43,8 +43,8 @@ export class ScannedChargerNotifier<
 
   private _data: Mutable<ScannedCharger>;
 
+  // Device type
   readonly type = "charger";
-  readonly isNotifier = true;
 
   // PixelInfo props
   get systemId(): string {
@@ -96,17 +96,20 @@ export class ScannedChargerNotifier<
   }
 
   static findInstance(pixelId: number): ScannedChargerNotifier | undefined {
-    return instancesMap.get(pixelId);
+    const notifier = NotifiersMap.get(pixelId);
+    return notifier?.type === "charger" ? notifier : undefined;
   }
 
-  static getInstance(scannedPixel: ScannedCharger): ScannedChargerNotifier {
-    const notifier = instancesMap.get(scannedPixel.pixelId);
+  static getInstance(scannedCharger: ScannedCharger): ScannedChargerNotifier {
+    const notifier = ScannedChargerNotifier.findInstance(
+      scannedCharger.pixelId
+    );
     if (notifier) {
-      notifier.updateProperties(scannedPixel);
+      notifier.updateProperties(scannedCharger);
       return notifier;
     } else {
-      const newNotifier = new ScannedChargerNotifier(scannedPixel);
-      instancesMap.set(scannedPixel.pixelId, newNotifier);
+      const newNotifier = new ScannedChargerNotifier(scannedCharger);
+      NotifiersMap.set(scannedCharger.pixelId, newNotifier);
       return newNotifier;
     }
   }

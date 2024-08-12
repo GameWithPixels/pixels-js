@@ -1,6 +1,8 @@
+import { PixelsConnectUuids } from "./PixelsBluetoothIds";
+
 /**
  * List of possible connection statuses for a {@link PixelSession}.
- * @category PixelSession
+ * @category Pixels
  */
 export type PixelSessionConnectionStatus =
   | "connecting"
@@ -12,7 +14,7 @@ export type PixelSessionConnectionStatus =
 
 /**
  * Data for a connection event.
- * @category PixelSession
+ * @category Pixels
  */
 export interface PixelSessionConnectionEvent {
   systemId: string;
@@ -23,21 +25,23 @@ export interface PixelSessionConnectionEvent {
 /**
  * Represents a session with a Pixel die.
  * This class is used to abstract the underlying platform used to connect to Pixels.
- * @category PixelSession
+ * @category Pixels
  */
 export abstract class PixelSession {
   protected readonly _systemId: string;
   protected _connStatusCb?: (ev: PixelSessionConnectionEvent) => void;
   private _lastConnStatus: PixelSessionConnectionStatus;
+  protected readonly _bleUuids: PixelsConnectUuids;
 
   /**
    * Instantiates a session with a Pixel.
    * No attempt is made to connect to the die at this point.
    * @param systemId The peripheral system id (as assigned by the OS).
    */
-  constructor(systemId: string) {
-    this._systemId = systemId;
+  constructor(params: { systemId: string; uuids: PixelsConnectUuids }) {
+    this._systemId = params.systemId;
     this._lastConnStatus = "disconnected";
+    this._bleUuids = { ...params.uuids };
   }
 
   /** Gets the peripheral system id (as assigned by the OS). */

@@ -4,7 +4,7 @@ import { ScannedPixel } from "./ScannedPixel";
 const _pixelIdMap = new Map<number, ScannedPixel | ScannedCharger>();
 
 // For internal use only
-export const ScannedPixelsRegistry = {
+export const ScannedDevicesRegistry = {
   register(scannedDevice: ScannedPixel | ScannedCharger): void {
     _pixelIdMap.set(scannedDevice.pixelId, scannedDevice);
   },
@@ -22,12 +22,12 @@ export const ScannedPixelsRegistry = {
   },
 
   findPixel(id: string | number): ScannedPixel | undefined {
-    const scannedDevice = ScannedPixelsRegistry.find(id);
+    const scannedDevice = ScannedDevicesRegistry.find(id);
     return scannedDevice?.type === "pixel" ? scannedDevice : undefined;
   },
 
   findCharger(id: string | number): ScannedCharger | undefined {
-    const scannedDevice = ScannedPixelsRegistry.find(id);
+    const scannedDevice = ScannedDevicesRegistry.find(id);
     return scannedDevice?.type === "charger" ? scannedDevice : undefined;
   },
 } as const;

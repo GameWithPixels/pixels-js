@@ -1,6 +1,6 @@
 import {
+  PixelsConnectUuids,
   PixelSession,
-  PixelBleUuids,
 } from "@systemic-games/pixels-core-connect";
 import {
   Central,
@@ -22,9 +22,13 @@ export default class BleSession extends PixelSession {
     return this._name;
   }
 
-  constructor(systemId: string, name?: string) {
-    super(systemId);
-    this._name = name;
+  constructor(params: {
+    systemId: string;
+    name?: string;
+    uuids: PixelsConnectUuids;
+  }) {
+    super(params);
+    this._name = params.name;
     this._centralConnStatusCb = (ev: PeripheralConnectionEvent) => {
       this._notifyConnectionEvent(ev.connectionStatus);
     };
@@ -66,16 +70,16 @@ export default class BleSession extends PixelSession {
 
     await Central.subscribeCharacteristic(
       this.systemId,
-      PixelBleUuids.dieService,
-      PixelBleUuids.dieNotifyCharacteristic,
+      this._bleUuids.service,
+      this._bleUuids.notifyCharacteristic,
       internalListener
     );
 
     return () => {
       Central.unsubscribeCharacteristic(
         this.systemId,
-        PixelBleUuids.dieService,
-        PixelBleUuids.dieNotifyCharacteristic
+        this._bleUuids.service,
+        this._bleUuids.notifyCharacteristic
       ).catch(() => {});
       // TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
     };
@@ -88,8 +92,8 @@ export default class BleSession extends PixelSession {
   ): Promise<void> {
     await Central.writeCharacteristic(
       this.systemId,
-      PixelBleUuids.dieService,
-      PixelBleUuids.dieWriteCharacteristic,
+      this._bleUuids.service,
+      this._bleUuids.writeCharacteristic,
       data,
       { withoutResponse, timeoutMs }
     );

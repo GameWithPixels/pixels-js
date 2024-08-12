@@ -1,4 +1,4 @@
-import { PixelBleUuids } from "@systemic-games/pixels-core-connect";
+import { PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
 
 const _devices = new Map<string, BluetoothDevice>();
 
@@ -18,7 +18,7 @@ export const PixelsDevices = {
     }
     // Request user to select a Pixel
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [PixelBleUuids.dieService] }],
+      filters: [{ services: [PixelsBluetoothIds.pixel.service] }],
     });
     _devices.set(device.id, device);
     return device;

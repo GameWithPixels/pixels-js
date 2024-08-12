@@ -1,6 +1,6 @@
 import {
   PixelSession,
-  PixelBleUuids,
+  PixelsConnectUuids,
 } from "@systemic-games/pixels-core-connect";
 
 import { PixelsDevices } from "./PixelsDevices";
@@ -56,12 +56,12 @@ export default class BleSession extends PixelSession {
   private _notify?: BluetoothRemoteGATTCharacteristic;
   private _write?: BluetoothRemoteGATTCharacteristic;
 
-  constructor(systemId: string) {
-    super(systemId);
-    const device = PixelsDevices.getKnownDevice(systemId);
+  constructor(params: { systemId: string; uuids: PixelsConnectUuids }) {
+    super(params);
+    const device = PixelsDevices.getKnownDevice(params.systemId);
     if (!device) {
       throw new BleSessionError(
-        `No known Bluetooth device with system id: ${systemId}`
+        `No known Bluetooth device with system id: ${params.systemId}`
       );
     }
     this._device = device;
@@ -127,12 +127,12 @@ export default class BleSession extends PixelSession {
 
       // Get Pixel service and characteristics
       this._notifyConnectionEvent("connected");
-      const service = await server.getPrimaryService(PixelBleUuids.dieService);
+      const service = await server.getPrimaryService(this._bleUuids.service);
       this._notify = await service.getCharacteristic(
-        PixelBleUuids.dieNotifyCharacteristic
+        this._bleUuids.notifyCharacteristic
       );
       this._write = await service.getCharacteristic(
-        PixelBleUuids.dieWriteCharacteristic
+        this._bleUuids.writeCharacteristic
       );
     }
     // Note: always notify the ready state so a new status listener will
