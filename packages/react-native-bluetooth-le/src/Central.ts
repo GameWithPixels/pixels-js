@@ -364,8 +364,9 @@ export const Central = {
   // switch back to "stopped" status and give a stop reason).
   // On Android, BLE scanning will fail without error when started
   // more than 5 times over the last 30 seconds.
+  // Devices supporting at least one of the services will be reported.
   async startScan(
-    services: string | string[],
+    services: string | readonly string[],
     scanCallback: (ev: ScanEvent) => void
   ): Promise<void> {
     if (!_nativeEmitter) {
@@ -438,9 +439,14 @@ export const Central = {
     // Make sure we are still the active scan
     checkActive();
 
-    // Get list of required services
-    const requiredServices =
-      typeof services === "string" ? services : services?.join(",") ?? "";
+    // Requested services
+    const servicesArray =
+      services === ""
+        ? []
+        : typeof services === "string"
+          ? [services]
+          : [...services];
+    const servicesStr = servicesArray.join(",");
 
     // Listen to native scan events
     _scanResultSubs?.remove();
@@ -455,7 +461,16 @@ export const Central = {
           ...ev.device,
           advertisementData: ev.advertisementData,
         };
+        const name = ev.device.name ?? "<unknown>";
         const pInf = peripheralsMap.get(ev.device.systemId);
+        const requiredServices = servicesArray
+          .filter((s) => ev.advertisementData.services?.includes(s))
+          ?.join(",");
+        if (servicesArray.length && !requiredServices.length) {
+          console.warn(
+            `[BLE ${name}] Reported services ${ev.advertisementData.services?.join(",") ?? ""} do not include any of the requested services`
+          );
+        }
         if (pInf) {
           pInf.scannedPeripheral = peripheral;
           pInf.requiredServices = requiredServices;
@@ -473,14 +488,14 @@ export const Central = {
           _scanCallback?.({ type: "peripheral", peripheral });
         } catch (error) {
           const e = errToStr(error);
-          console.error(`[BLE] Uncaught error in Scan callback: ${e}`);
+          console.error(`[BLE ${name}] Uncaught error in Scan callback: ${e}`);
         }
       }
     });
 
     // Start scan
     try {
-      await BluetoothLE.startScan(requiredServices);
+      await BluetoothLE.startScan(servicesStr);
     } catch (e) {
       // Failed to start scan, Android only
       const message = (e as Error)?.message;
@@ -511,9 +526,7 @@ export const Central = {
 
     console.log(
       `[BLE] Started scan for BLE peripherals with ${
-        requiredServices.length
-          ? `service(s) ${requiredServices}`
-          : "no specific service"
+        servicesStr.length ? `service(s) ${servicesStr}` : "no specific service"
       }`
     );
 
@@ -585,7 +598,7 @@ export const Central = {
         // Connect to peripheral
         await BluetoothLE.connectPeripheral(
           sysId,
-          pInf.requiredServices ?? "",
+          pInf.requiredServices,
           false
         );
 
