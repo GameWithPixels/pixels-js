@@ -1,4 +1,4 @@
-import { PixelBleUuids } from "@systemic-games/pixels-core-connect";
+import { PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
 import {
   createTypedEventEmitter,
   SequentialPromiseQueue,
@@ -256,7 +256,10 @@ export class PixelScanner {
         this._startPromise = (async () => {
           try {
             await Central.startScan(
-              [PixelBleUuids.dieService, PixelBleUuids.chargerService],
+              [
+                PixelsBluetoothIds.pixel.service,
+                PixelsBluetoothIds.charger.service,
+              ],
               this._processScanEvents.bind(this)
             );
           } finally {
@@ -310,12 +313,12 @@ export class PixelScanner {
   private _processScanEvents(ev: ScanEvent): void {
     if (ev.type === "peripheral") {
       const services = ev.peripheral.advertisementData.services;
-      if (services?.includes(PixelBleUuids.dieService)) {
+      if (services?.includes(PixelsBluetoothIds.pixel.service)) {
         const pixel = getScannedPixel(ev.peripheral);
         if (pixel) {
           this._processItem(pixel);
         }
-      } else if (services?.includes(PixelBleUuids.chargerService)) {
+      } else if (services?.includes(PixelsBluetoothIds.charger.service)) {
         const charger = getScannedCharger(ev.peripheral);
         if (charger) {
           this._processItem(charger);

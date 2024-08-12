@@ -1,8 +1,8 @@
-import { Pixel } from "@systemic-games/pixels-core-connect";
+import { Pixel, PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
 
 import BleSession from "./BleSession";
-import { PixelsMap } from "./PixelsMap";
-import { ScannedPixelsRegistry } from "./ScannedPixelsRegistry";
+import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
+import { DevicesMap } from "./static";
 
 /**
  * Error thrown when a Pixel device can't be found.
@@ -23,18 +23,27 @@ class GetPixelError extends Error {
  */
 export function getPixel(id: string | number): Pixel | undefined {
   if (typeof id === "number" ? id !== 0 : id?.length > 0) {
-    const sp = ScannedPixelsRegistry.findPixel(id);
+    const sp = ScannedDevicesRegistry.findPixel(id);
     // Get system id from the input data
     const systemId = typeof id === "string" ? id : sp?.systemId;
     if (systemId?.length) {
       // Check for an existing Pixel object for the given system id
-      const exitingPixel = PixelsMap.get(systemId);
+      const dev = DevicesMap.get(systemId);
+      const exitingPixel = dev instanceof Pixel ? dev : undefined;
       // Or create a new Pixel instance
       const pixel =
-        exitingPixel ?? new Pixel(new BleSession(systemId, sp?.name), sp);
+        exitingPixel ??
+        new Pixel(
+          new BleSession({
+            systemId,
+            name: sp?.name,
+            uuids: PixelsBluetoothIds.pixel,
+          }),
+          sp
+        );
       if (!exitingPixel) {
         // Keep track of this new instance
-        PixelsMap.set(systemId, pixel);
+        DevicesMap.set(systemId, pixel);
       }
       return pixel;
     }
