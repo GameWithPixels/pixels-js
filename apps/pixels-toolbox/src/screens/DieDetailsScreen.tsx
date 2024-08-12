@@ -5,27 +5,28 @@ import { useErrorBoundary } from "react-error-boundary";
 import { AppPage } from "~/components/AppPage";
 import { PixelDetails } from "~/components/PixelDetails";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { getPixelDispatcher } from "~/features/pixels/dispatchers";
 import { usePrintDieLabel } from "~/hooks/usePrintDieLabel";
 import { DieDetailsScreenProps } from "~/navigation";
 
 export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {
   const { showBoundary } = useErrorBoundary();
   const { pixelId } = route.params;
-  const pixelDispatcher = PixelDispatcher.findDispatcher(pixelId);
+  const dispatcher = getPixelDispatcher(pixelId);
   React.useEffect(() => {
-    if (!pixelDispatcher) {
+    if (!dispatcher) {
       showBoundary(
         new Error(`Unknown given Pixel Id: ${unsigned32ToHex(pixelId)}`)
       );
     }
-  }, [pixelDispatcher, pixelId, showBoundary]);
+  }, [dispatcher, pixelId, showBoundary]);
   const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
   const { printDieLabel } = usePrintDieLabel();
   return (
     <AppPage>
-      {pixelDispatcher && (
+      {dispatcher && (
         <PixelDetails
-          pixelDispatcher={pixelDispatcher}
+          pixelDispatcher={dispatcher as PixelDispatcher} // TODO hack until this component is updated
           goBack={goBack}
           onPrintLabel={printDieLabel}
         />

@@ -237,8 +237,8 @@ async function scanForPixelWithTimeout(
 
   // Setup scanner
   const scanner = new PixelScanner();
-  scanner.scanFilter = (item: ScannedPixel | ScannedCharger) =>
-    item.pixelId === pixelId;
+  scanner.scanFilter = (device: ScannedPixel | ScannedCharger) =>
+    device.pixelId === pixelId;
   scanner.minNotifyInterval = 0;
 
   // Wait until we find our Pixel or timeout
@@ -267,13 +267,13 @@ async function scanForPixelWithTimeout(
         }
       });
       // Start scanning
-      console.log(`Scanning for Pixel with id ${pixelId.toString(16)}`);
+      console.log(`Scanning for Pixel with id ${unsigned32ToHex(pixelId)}`);
       scanner.startAsync();
     },
     () => scanner.stopAsync()
   );
   console.log(
-    `Found Pixel with id ${pixelId.toString(16)}: ${scannedPixel.name}`
+    `Found Pixel with id ${unsigned32ToHex(pixelId)}: ${scannedPixel.name}`
   );
   return scannedPixel;
 }
@@ -288,7 +288,7 @@ async function updateFactoryFirmware(
 ): Promise<void> {
   // Get our Pixel and prepare for DFU
   // We're using the latest known firmware date (scannedPixel might be outdated)
-  const dfuTarget = PixelDispatcher.getDispatcher(scannedPixel);
+  const dfuTarget = PixelDispatcher.getOrCreateDispatcher(scannedPixel);
   // Use firmware date from scanned data as it is the most up-to-date
   console.log(
     "Validation firmware build timestamp is",

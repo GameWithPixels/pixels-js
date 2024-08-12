@@ -17,6 +17,7 @@ import {
   PixelSwipeableCard,
   SwipeablePixelCardProps,
 } from "~/components/PixelSwipeableCard";
+import ChargerDispatcher from "~/features/pixels/ChargerDispatcher";
 import PixelDispatcher, {
   PixelDispatcherActionMap,
 } from "~/features/pixels/PixelDispatcher";
@@ -37,24 +38,24 @@ export const SwipeablePixelsList = React.memo(function ({
   // Scanning
   const [scannedDevices, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
-  const scannedPixels = React.useMemo(
-    () => scannedDevices.filter((i) => i.type === "pixel"),
-    [scannedDevices]
-  );
 
   // Build our PixelDispatcher instances
-  const lastPixelsList = React.useRef<PixelDispatcher[]>([]);
-  const pixels = React.useMemo(() => {
-    const dispatchers = scannedPixels.map((scannedPixel) =>
-      PixelDispatcher.getDispatcher(scannedPixel)
+  const lastDispatchersList = React.useRef<
+    (PixelDispatcher | ChargerDispatcher)[]
+  >([]);
+  const dispatchers = React.useMemo(() => {
+    const scanned = scannedDevices.map((dev) =>
+      dev.type === "pixel"
+        ? PixelDispatcher.getOrCreateDispatcher(dev)
+        : ChargerDispatcher.getOrCreateDispatcher(dev)
     );
-    const pixels = lastPixelsList.current.filter(
-      (p) => p.isInUse || dispatchers.includes(p)
+    const dispatchers = lastDispatchersList.current.filter(
+      (p) => p.isInUse || scanned.includes(p)
     );
-    pixels.push(...dispatchers.filter((p) => !pixels.includes(p)));
-    lastPixelsList.current = pixels;
-    return pixels;
-  }, [scannedPixels]);
+    dispatchers.push(...scanned.filter((p) => !dispatchers.includes(p)));
+    lastDispatchersList.current = dispatchers;
+    return dispatchers;
+  }, [scannedDevices]);
 
   // Values for UI
   const { t } = useTranslation();
@@ -66,8 +67,11 @@ export const SwipeablePixelsList = React.memo(function ({
     <T extends keyof PixelDispatcherActionMap>(
       action: T,
       params?: PixelDispatcherActionMap[T]
-    ) => pixels.forEach((p) => p.dispatch(action, params)),
-    [pixels]
+    ) =>
+      dispatchers.forEach(
+        (p) => p.type === "pixel" && p.dispatch(action, params)
+      ),
+    [dispatchers]
   );
   const { showActionSheetWithOptions } = useActionSheet();
   const showActionSheet = React.useCallback(() => {
@@ -94,6 +98,7 @@ export const SwipeablePixelsList = React.memo(function ({
         cancelButtonIndex: options.length - 1,
       },
       (index?: number) => {
+        const pixels = dispatchers.filter((p) => p.type === "pixel");
         switch (index) {
           case 0:
             dispatchAll("connect");
@@ -143,14 +148,14 @@ export const SwipeablePixelsList = React.memo(function ({
         }
       }
     );
-  }, [dispatchAll, pixels, showActionSheetWithOptions, t]);
+  }, [dispatchAll, dispatchers, showActionSheetWithOptions, t]);
 
   // FlatList item rendering
   const renderItem = React.useCallback(
-    ({ item: pixelDispatcher }: { item: PixelDispatcher }) => (
+    ({ item: dispatcher }: { item: PixelDispatcher | ChargerDispatcher }) => (
       <PixelSwipeableCard
-        key={pixelDispatcher.pixelId}
-        pixelDispatcher={pixelDispatcher}
+        key={dispatcher.pixelId}
+        pixelDispatcher={dispatcher as PixelDispatcher} // TODO hack until this component is updated
         onShowDetails={onShowDetails}
         onPrintLabel={onPrintLabel}
       />
@@ -183,19 +188,19 @@ export const SwipeablePixelsList = React.memo(function ({
       >
         <EmojiButton onPress={() => setExpandedInfo((b) => !b)}>ℹ️</EmojiButton>
         <Text variant="headlineMedium">
-          {t("pixelsWithCount", { count: pixels.length })}
+          {t("pixelsWithCount", { count: dispatchers.length })}
         </Text>
         <EmojiButton onPress={showActionSheet}>⚙️</EmojiButton>
       </BaseHStack>
       {!(typeof scanStatus === "string") ? (
         <Text>{String(scanStatus)}</Text>
-      ) : pixels.length ? (
+      ) : dispatchers.length ? (
         <PixelInfoCardModeContext.Provider
           value={expandedInfo ? "expanded" : "normal"}
         >
           <FlatList
             contentContainerStyle={AppStyles.listContentContainer}
-            data={pixels}
+            data={dispatchers}
             renderItem={renderItem}
             refreshControl={refreshControl}
           />

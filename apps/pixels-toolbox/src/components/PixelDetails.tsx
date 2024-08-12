@@ -65,6 +65,7 @@ import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { exportCsv } from "~/features/files/exportCsv";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
 import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
+import ChargerDispatcher from "~/features/pixels/ChargerDispatcher";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
@@ -102,7 +103,6 @@ function Button({ ...props }: Omit<ButtonProps, "style">) {
 }
 
 function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
-  const { t } = useTranslation();
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     const listener = () => forceUpdate();
@@ -115,6 +115,7 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
       pixel.removePropertyListener("firmwareDate", listener);
     };
   }, [pixel, forceUpdate]);
+  const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
     <>
@@ -135,6 +136,35 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
         {pixel.firmwareDate.toLocaleDateString()}
         {t("commaSeparator")}
         {pixel.firmwareDate.toLocaleTimeString()}
+      </TextEntry>
+    </>
+  );
+}
+
+function ChargerInfo({ charger }: { charger: PixelInfoNotifier }) {
+  const forceUpdate = useForceUpdate();
+  React.useEffect(() => {
+    const listener = () => forceUpdate();
+    charger.addPropertyListener("firmwareDate", listener);
+    return () => {
+      charger.removePropertyListener("firmwareDate", listener);
+    };
+  }, [charger, forceUpdate]);
+  const { t } = useTranslation();
+  const TextEntry = useTextEntry(t("colonSeparator"));
+  return (
+    <>
+      <TextEntry title={t("charger")}>{t("yes")}</TextEntry>
+      <TextEntry title={t("pixelId")}>
+        {unsigned32ToHex(charger.pixelId)}
+      </TextEntry>
+      <TextEntry title={t("descriptionShort")}>
+        {charger.ledCount} {t("leds")}
+      </TextEntry>
+      <TextEntry title={t("firmware")}>
+        {charger.firmwareDate.toLocaleDateString()}
+        {t("commaSeparator")}
+        {charger.firmwareDate.toLocaleTimeString()}
       </TextEntry>
     </>
   );
@@ -396,6 +426,7 @@ function BottomButtons({
 }) {
   const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
+  const isCharger = pd instanceof ChargerDispatcher; // TODO until we have a better support for chargers
 
   // Charger mode modal
   const {
@@ -443,7 +474,7 @@ function BottomButtons({
           <Button onPress={() => pd.dispatch(connectStr)}>
             {t(connectStr)}
           </Button>
-          {status === "ready" && (
+          {status === "ready" && !isCharger && (
             <>
               <Button onPress={showDischarge}>{t("discharge")}</Button>
               <Button onPress={() => pd.dispatch("blinkId")}>
@@ -559,10 +590,12 @@ function BottomButtons({
               <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
             </>
           )}
-          <Button onPress={onPrintLabel}>{t("printLabel")}</Button>
+          {!isCharger && (
+            <Button onPress={onPrintLabel}>{t("printLabel")}</Button>
+          )}
         </BaseVStack>
         <BaseVStack gap={4}>
-          {status === "ready" && (
+          {status === "ready" && !isCharger && (
             <>
               <Button onPress={() => pd.dispatch("turnOff")}>
                 {t("turnOff")}
@@ -813,8 +846,14 @@ export function PixelDetails({
       <View style={AppStyles.mv3} />
       <Card>
         <Card.Content>
-          <BaseInfo pixel={pd} />
-          <TelemetryInfo pixel={pixel} />
+          {pd.type === "pixel" ? (
+            <>
+              <BaseInfo pixel={pd} />
+              <TelemetryInfo pixel={pixel} />
+            </>
+          ) : (
+            <ChargerInfo charger={pd} />
+          )}
         </Card.Content>
       </Card>
       <View style={AppStyles.mv3} />
@@ -848,7 +887,9 @@ export function PixelDetails({
                       }
                     } finally {
                       if (!isAndroid) {
-                        await FileSystem.deleteAsync(uri, { idempotent: true });
+                        await FileSystem.deleteAsync(uri, {
+                          idempotent: true,
+                        });
                       }
                     }
                   };

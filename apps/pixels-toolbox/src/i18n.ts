@@ -155,6 +155,7 @@ i18n
           playAnimation: "Play Animation",
           setDieType: "Set Die Type",
           setDieColorway: "Set Colorway",
+          charger: "Charger",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -392,6 +393,7 @@ i18n
           preparingAsPrintStatus: "准备标贴",
           sendingAsPrintStatus: "发送标贴到打印机",
           doneAsPrintStatus: "打印成功",
+          charger: "充电器",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
