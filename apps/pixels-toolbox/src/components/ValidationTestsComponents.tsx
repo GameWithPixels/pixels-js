@@ -306,7 +306,9 @@ async function updateFactoryFirmware(
   ) {
     onFirmwareUpdate?.("updating");
     // Prepare for updating firmware
-    const blPath = reconfigure ? "" : dfuFilesBundle.bootloader.pathname;
+    const blPath = reconfigure
+      ? undefined
+      : dfuFilesBundle.bootloader?.pathname;
     const fwPath = reconfigure
       ? dfuFilesBundle.reconfigFirmware.pathname
       : dfuFilesBundle.firmware.pathname;
@@ -415,9 +417,9 @@ function MessageYesNo({
 }
 
 export type ValidationTestsSettings = Readonly<{
-  readonly sequence: ValidationSequence;
-  readonly dieType: PixelDieType;
-  readonly dfuFilesBundle: FactoryDfuFilesBundle;
+  sequence: ValidationSequence;
+  dieType: PixelDieType;
+  dfuFilesBundle: FactoryDfuFilesBundle;
 }>;
 
 export interface ValidationTestProps extends TaskComponentProps {
