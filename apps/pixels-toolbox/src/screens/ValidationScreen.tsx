@@ -554,7 +554,9 @@ function RunTestsPage({
     React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
-  const noPrint = useAppSelector(selectSkipPrintLabel);
+  const noPrintRef = React.useRef(
+    useAppSelector(selectSkipPrintLabel) // May change during the test
+  );
 
   // We must have a Pixel once past the UpdateFirmware task
   const getPixel = (): Pixel => {
@@ -655,7 +657,7 @@ function RunTestsPage({
           {...p}
           settings={settings}
           pixel={getPixel()}
-          onPrintStatus={noPrint ? undefined : setPrintStatus}
+          onPrintStatus={noPrintRef.current ? undefined : setPrintStatus}
         />
       )),
       skipPrepare
@@ -693,7 +695,7 @@ function RunTestsPage({
           onPrintStatus={setPrintStatus}
         />
       )),
-      { skip: noPrint || skipPrepare.skip }
+      { skip: noPrintRef.current || skipPrepare.skip }
     );
 
   // Get result

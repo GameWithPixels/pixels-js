@@ -718,7 +718,9 @@ export function CheckBoard({
 }: ValidationTestProps) {
   const { t } = useTranslation();
 
-  const setEmptyProfile = useAppSelector(selectCustomFirmwareAndProfile);
+  const setEmptyProfileRef = React.useRef(
+    useAppSelector(selectCustomFirmwareAndProfile) // May change during the test
+  );
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "CheckBoard")
     .withTask(
@@ -761,7 +763,7 @@ export function CheckBoard({
         title: t("resetProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
       }),
-      { skip: !setEmptyProfile }
+      { skip: !setEmptyProfileRef.current }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -778,7 +780,9 @@ export function WaitCharging({
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
 
-  const skipBatteryLevel = useAppSelector(selectSkipBatteryLevel);
+  const skipBatteryLevelRef = React.useRef(
+    useAppSelector(selectSkipBatteryLevel) // May change during the test
+  );
   const taskChain = useTaskChain(action, "WaitCharging")
     .withTask(
       React.useCallback(
@@ -809,13 +813,13 @@ export function WaitCharging({
     )
     .withTask(
       React.useCallback(async () => {
-        if (!skipBatteryLevel && pixel.batteryLevel < 75) {
+        if (!skipBatteryLevelRef.current && pixel.batteryLevel < 75) {
           throw new TaskCanceledError(
             "WaitCharging",
             t("lowBatteryPleaseCharge")
           );
         }
-      }, [pixel, skipBatteryLevel, t]),
+      }, [pixel, t]),
       createTaskStatusContainer(t("batteryLevel")),
       { skip: !notCharging || settings.sequence !== "dieFinal" }
     )
@@ -1082,7 +1086,9 @@ export function PrepareDie({
   const { t } = useTranslation();
 
   const appDispatch = useAppDispatch();
-  const selectProfile = useAppSelector(selectCustomFirmwareAndProfile);
+  const selectProfileRef = React.useRef(
+    useAppSelector(selectCustomFirmwareAndProfile) // May change during the test
+  );
   const profile = useAppSelector(selectProfileName);
   const setProfile = React.useCallback(
     (p: PrebuildProfileName) => appDispatch(setFactoryProfile(p)),
@@ -1101,8 +1107,8 @@ export function PrepareDie({
   const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
       React.useCallback(
-        (abortSignal) =>
-          withTimeoutAndDisconnect(
+        async (abortSignal) => {
+          await withTimeoutAndDisconnect(
             abortSignal,
             pixel,
             60 * 60 * 1000, // 1h timeout
@@ -1113,7 +1119,8 @@ export function PrepareDie({
                 (resolve) => setResolveSelectProfilePromise(() => resolve),
                 () => setResolveSelectProfilePromise(undefined)
               )
-          ),
+          );
+        },
         [pixel]
       ),
       createTaskStatusContainer({
@@ -1152,7 +1159,7 @@ export function PrepareDie({
           </BaseHStack>
         ),
       }),
-      { skip: !selectProfile }
+      { skip: !selectProfileRef.current }
     )
     .withTask(
       React.useCallback(
