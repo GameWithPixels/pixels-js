@@ -1,8 +1,4 @@
 import { useFocusEffect } from "@react-navigation/core";
-import {
-  BaseBox,
-  BaseHStack,
-} from "@systemic-games/react-native-base-components";
 import * as Localization from "expo-localization";
 import * as Updates from "expo-updates";
 import React from "react";
@@ -24,6 +20,8 @@ import {
 import { AppStyles, useModalStyle } from "~/AppStyles";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
+import { BaseBox } from "~/components/BaseBox";
+import { BaseHStack } from "~/components/BaseHStack";
 import {
   setOpenPageOnStart,
   setThemeMode,

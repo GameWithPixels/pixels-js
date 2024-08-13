@@ -1,5 +1,4 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   StyleProp,
@@ -31,6 +30,7 @@ import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
 import CaretLeftIcon from "#/icons/profiles/caret-left";
 import CaretRightIcon from "#/icons/profiles/caret-right";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { withAnimated } from "~/features/withAnimated";
 
 // const emptyText = "";

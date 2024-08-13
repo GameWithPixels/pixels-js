@@ -1,9 +1,0 @@
-{
-  "extends": "./../../tsconfig.expo.build",
-  "compilerOptions": {
-    "noEmit": false
-  },
-  "include": [
-    "src/**/*"
-  ]
-}

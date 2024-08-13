@@ -1,10 +1,5 @@
 import { range } from "@systemic-games/pixels-core-utils";
 import {
-  BaseVStack,
-  AppPage,
-  BaseHStack,
-} from "@systemic-games/react-native-base-components";
-import {
   PixelColorway,
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
@@ -25,6 +20,9 @@ import {
 } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { AppPage } from "~/components/AppPage";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import {
   printCartonLabelAsync,

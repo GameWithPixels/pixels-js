@@ -5,7 +5,6 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { assert, assertNever } from "@systemic-games/pixels-core-utils";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   Color,
   DiceUtils,
@@ -42,6 +41,7 @@ import {
 } from "~/components/SliderWithValue";
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { GradientButton, OutlineButton } from "~/components/buttons";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   getColorOverrideLabel,
   getDieTypeLabel,
@@ -52,7 +52,7 @@ import {
   playActionSpeakText,
 } from "~/features/profiles";
 import { AnimationUtils } from "~/features/store/library/AnimationUtils";
-import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
+import { TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 
 function TextInput({

@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -23,6 +22,7 @@ import { RuleIndex } from "./RuleCard";
 import { Card } from "~/components/Card";
 import { ActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { getActionTypeLabel } from "~/features/profiles";
 import { makeObservable } from "~/features/utils";
 import { withAnimated } from "~/features/withAnimated";

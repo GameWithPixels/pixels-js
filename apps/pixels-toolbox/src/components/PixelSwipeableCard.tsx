@@ -1,8 +1,3 @@
-import {
-  BaseHStack,
-  BaseVStack,
-  useVisibility,
-} from "@systemic-games/react-native-base-components";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   UserMessageEvent,
@@ -21,8 +16,11 @@ import { PixelInfoCard, PixelInfoCardProps } from "./PixelInfoCard";
 import { ProgressBar } from "./ProgressBar";
 
 import { AppStyles } from "~/AppStyles";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { isDfuDone } from "~/features/dfu/updateFirmware";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
+import { useVisibility } from "~/features/useVisibility";
 
 function UserMessageDialog({
   title,

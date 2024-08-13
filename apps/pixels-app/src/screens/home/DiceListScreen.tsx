@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -23,6 +22,7 @@ import {
 import { Banner } from "~/components/banners";
 import { EmptyDiceBagCard } from "~/components/cards";
 import { DiceGrid, DiceList } from "~/components/dice";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   DiceGrouping,
   DiceGroupingList,

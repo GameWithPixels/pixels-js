@@ -41,7 +41,6 @@
     "@reduxjs/toolkit": "~1.9.5",
     "@sentry/react-native": "~5.22.0",
     "@systemic-games/pixels-edit-animation": "*",
-    "@systemic-games/react-native-base-components": "*",
     "@systemic-games/react-native-bluetooth-le": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
     "@systemic-games/react-native-pixels-connect": "*",

@@ -1,9 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { BaseHStack } from "@systemic-games/react-native-base-components";
 import Constants from "expo-constants";
 import { Pressable, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { BaseHStack } from "~/components/BaseHStack";
 
 function getVersion(): string {
   const version = Constants.expoConfig?.version;

@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assert } from "@systemic-games/pixels-core-utils";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   DiceUtils,
   PixelDieType,
@@ -53,6 +52,7 @@ import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProg
 import { getActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
 import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   EditorActionTypes,
   getActionTypeDescription,

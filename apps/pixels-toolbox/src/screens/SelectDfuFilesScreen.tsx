@@ -1,8 +1,4 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import {
-  BaseHStack,
-  BaseVStack,
-} from "@systemic-games/react-native-base-components";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import React from "react";
@@ -13,6 +9,8 @@ import { AppStyles } from "~/AppStyles";
 import { useAppDispatch } from "~/app/hooks";
 import { store } from "~/app/store";
 import { AppPage } from "~/components/AppPage";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import {
   addImportedDfuFiles,

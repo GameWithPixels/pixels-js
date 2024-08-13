@@ -1,4 +1,3 @@
-import { BaseVStack } from "@systemic-games/react-native-base-components";
 import {
   PixelColorway,
   PixelInfo,
@@ -18,6 +17,7 @@ import {
 import { SelectColorwayModal } from "./SelectColorwayModal";
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
+import { BaseVStack } from "~/components/BaseVStack";
 import { printDieBoxLabelAsync } from "~/features/print";
 
 export function PrintDieLabelModal({

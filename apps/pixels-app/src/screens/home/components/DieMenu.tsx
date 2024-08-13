@@ -3,13 +3,13 @@ import {
   FontAwesome5,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Platform } from "react-native";
 import { Divider, Menu, MenuProps, useTheme } from "react-native-paper";
 
 import CalibrateIcon from "#/icons/home/calibrate";
 import { AppStyles } from "~/app/styles";
+import { getBorderRadius } from "~/features/getBorderRadius";
 
 export function DieMenu({
   disconnected,

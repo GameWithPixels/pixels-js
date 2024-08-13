@@ -1,5 +1,4 @@
 import Slider, { SliderProps } from "@react-native-community/slider";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import React from "react";
 import {
   Platform,
@@ -18,6 +17,8 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
+
+import { getBorderRadius } from "~/features/getBorderRadius";
 
 // https://stackoverflow.com/a/19722641
 function round(value: number, places: number): number {

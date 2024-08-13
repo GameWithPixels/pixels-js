@@ -1,10 +1,6 @@
 import Slider from "@react-native-community/slider";
 import { useFocusEffect } from "@react-navigation/native";
 import {
-  BaseVStack,
-  Point,
-} from "@systemic-games/react-native-base-components";
-import {
   Pixel,
   PixelInfoNotifier,
   ScannedPixelNotifier,
@@ -26,6 +22,7 @@ import { Button, ProgressBar, Text } from "react-native-paper";
 
 import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
+import { BaseVStack } from "~/components/BaseVStack";
 import { LineChart } from "~/components/LineChart";
 import { PixelInfoCard } from "~/components/PixelInfoCard";
 import Pathname from "~/features/files/Pathname";
@@ -120,6 +117,11 @@ function RunTest({ pixelInfo }: { pixelInfo: PixelInfoNotifier }) {
       {pixel && <SendData pixel={pixel} />}
     </>
   );
+}
+
+interface Point {
+  x: number;
+  y: number;
 }
 
 class DataRate {

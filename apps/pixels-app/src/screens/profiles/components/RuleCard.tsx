@@ -1,4 +1,3 @@
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -16,6 +15,7 @@ import { ActionDetails, ConditionDetails } from "./ActionDetails";
 import CaretRightIcon from "#/icons/profiles/caret-right";
 import { AppStyles } from "~/app/styles";
 import { Card } from "~/components/Card";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { rolledConditionComparator } from "~/features/profiles";
 import { useEditableProfile } from "~/hooks";
 

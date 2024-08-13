@@ -11,12 +11,6 @@ import {
   PrebuildProfilesNames,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseBoxProps,
-  BaseHStack,
-  BaseVStack,
-  useVisibility,
-} from "@systemic-games/react-native-base-components";
-import {
   DfuState,
   DfuUpdateError,
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
@@ -42,6 +36,9 @@ import { Button, Menu, Text } from "react-native-paper";
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { BaseBoxProps } from "~/components/BaseBox";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
@@ -71,6 +68,7 @@ import {
 import { useTaskChain } from "~/features/tasks/useTaskChain";
 import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
+import { useVisibility } from "~/features/useVisibility";
 import {
   AbortControllerWithReason,
   getBoardOrDie,

@@ -1,4 +1,3 @@
-import { BaseVStack } from "@systemic-games/react-native-base-components";
 import { PixelColorway } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 import { FlatList } from "react-native";
@@ -13,6 +12,7 @@ import {
 import { ColorwayImage } from "./ColorwayImage";
 
 import { useModalStyle, AppStyles } from "~/AppStyles";
+import { BaseVStack } from "~/components/BaseVStack";
 import { Colorways } from "~/features/pixels/colorways";
 
 export function SelectColorwayModal({

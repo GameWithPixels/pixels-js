@@ -1,8 +1,4 @@
 import {
-  BaseHStack,
-  BaseVStack,
-} from "@systemic-games/react-native-base-components";
-import {
   PixelDieType,
   ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
@@ -12,6 +8,8 @@ import { FlatList, Pressable } from "react-native";
 import { Button, Text } from "react-native-paper";
 
 import { AppStyles } from "~/AppStyles";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { PixelInfoCard } from "~/components/PixelInfoCard";
 import { useErrorWithHandler } from "~/hooks/useErrorWithHandler";
 import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
