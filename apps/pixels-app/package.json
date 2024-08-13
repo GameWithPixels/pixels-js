@@ -92,7 +92,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
-    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-env": "^7.20.0",
     "@types/color": "^3.0.5",
     "@types/events": "^3.0.3",
     "@types/react": "18.2.79",
