@@ -7,7 +7,7 @@ import { DfuFileInfo } from "~/features/dfu/getDfuFileInfo";
 import { selectCustomFirmwareAndProfile } from "~/features/store/validationSelectors";
 
 export type FactoryDfuFilesBundle = Readonly<{
-  readonly bootloader: DfuFileInfo;
+  readonly bootloader?: DfuFileInfo;
   readonly firmware: DfuFileInfo;
   readonly reconfigFirmware: DfuFileInfo;
   readonly date: Date;
@@ -26,14 +26,15 @@ export function useFactoryDfuFilesBundle(): [
   const useCustomFirmware = useAppSelector(selectCustomFirmwareAndProfile);
   const pickedBundle = useCustomFirmware
     ? selectedBundle
-    : availableBundles.find((b) => b.kind === "factory");
-  const reconfigDfuBundle = availableBundles.find((b) =>
-    b.firmware?.comment?.includes("reconfigure")
+    : availableBundles.find(
+        (b) => b.kind === "factory" && b.firmware?.comment?.includes("sdk17")
+      );
+  const reconfigDfuBundle = availableBundles.find(
+    (b) => b.kind === "factory" && b.firmware?.comment?.includes("reconfigure")
   );
-  const hasBL = notEmpty(pickedBundle?.bootloader);
   const hasFW = notEmpty(pickedBundle?.firmware);
   const hasCF = notEmpty(reconfigDfuBundle?.firmware);
-  const hasError = hasBL && hasFW && hasCF;
+  const hasError = hasFW && hasCF;
   const factoryBundle = React.useMemo(
     () =>
       hasError
@@ -49,16 +50,14 @@ export function useFactoryDfuFilesBundle(): [
   );
   const pickError = React.useMemo(
     () =>
-      !hasBL
-        ? new Error("Validation DFU bootloader file not found or problematic")
-        : !hasFW
-          ? new Error("Validation DFU firmware file not found or problematic")
-          : !hasCF
-            ? new Error(
-                "Validation DFU firmware file for reconfiguration not found"
-              )
-            : undefined,
-    [hasBL, hasCF, hasFW]
+      !hasFW
+        ? new Error("Validation DFU firmware file not found")
+        : !hasCF
+          ? new Error(
+              "Validation DFU firmware file for reconfiguration not found"
+            )
+          : undefined,
+    [hasCF, hasFW]
   );
   return [
     factoryBundle,
