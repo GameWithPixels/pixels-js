@@ -1,16 +1,14 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { PrebuildAnimations } from "@systemic-games/pixels-edit-animation";
-import {
-  BaseBoxProps,
-  BaseHStack,
-  BaseVStack,
-} from "@systemic-games/react-native-base-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
 import { Text } from "react-native-paper";
 
 import { AppStyles } from "~/AppStyles";
+import { BaseBoxProps } from "~/components/BaseBox";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { EmojiButton } from "~/components/EmojiButton";
 import { PixelInfoCardModeContext } from "~/components/PixelInfoCard";
 import {

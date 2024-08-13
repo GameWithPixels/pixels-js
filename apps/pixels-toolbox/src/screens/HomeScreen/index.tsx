@@ -1,9 +1,4 @@
 import { useFocusEffect } from "@react-navigation/native";
-import {
-  BaseBox,
-  BaseHStack,
-  BaseVStack,
-} from "@systemic-games/react-native-base-components";
 import * as Updates from "expo-updates";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -14,6 +9,9 @@ import { SwipeablePixelsList } from "./SwipeablePixelsList";
 
 import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
+import { BaseBox } from "~/components/BaseBox";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { PrintDieLabelModal } from "~/components/PrintDieLabelModal";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";

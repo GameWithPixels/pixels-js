@@ -12,11 +12,6 @@ import {
   PrebuildProfilesNames,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseHStack,
-  BaseVStack,
-  useVisibility,
-} from "@systemic-games/react-native-base-components";
-import {
   DiceUtils,
   Pixel,
   PixelBatteryControllerMode,
@@ -59,6 +54,8 @@ import {
 } from "./DynamicLinesChart";
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ProgressBar } from "~/components/ProgressBar";
 import { PatternImages } from "~/features/PatternImages";
 import { createPatternFromImage } from "~/features/createPatternFromImage";
@@ -69,6 +66,7 @@ import ChargerDispatcher from "~/features/pixels/ChargerDispatcher";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
 import { shareFileAsync } from "~/features/shareFileAsync";
+import { useVisibility } from "~/features/useVisibility";
 import { useAppBackgroundState } from "~/hooks/useAppBackgroundState";
 import { capitalize } from "~/i18n";
 

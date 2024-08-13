@@ -1,11 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
-  BaseBox,
-  BaseHStack,
-  BaseVStack,
-} from "@systemic-games/react-native-base-components";
-import {
   BleScanner,
   isBootloaderName,
   ScannedPeripheral,
@@ -19,6 +14,9 @@ import { Button, Card, Text, useTheme } from "react-native-paper";
 import { AppStyles } from "~/AppStyles";
 import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
+import { BaseBox } from "~/components/BaseBox";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ProgressBar } from "~/components/ProgressBar";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { isDfuDone } from "~/features/dfu/updateFirmware";

@@ -9,10 +9,6 @@ import {
   EditPattern,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseHStack,
-  BaseVStack,
-} from "@systemic-games/react-native-base-components";
-import {
   Color,
   getPixelOrThrow,
   usePixelStatus,
@@ -22,6 +18,8 @@ import { ScrollView } from "react-native";
 import { Button, Divider, Switch, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { PatternImages } from "~/features/PatternImages";
 import { createPatternFromImage } from "~/features/createPatternFromImage";
 import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";

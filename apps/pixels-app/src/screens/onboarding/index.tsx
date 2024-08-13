@@ -1,7 +1,6 @@
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import {
   BluetoothNotAuthorizedError,
   Pixel,
@@ -61,6 +60,7 @@ import {
 } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { getDieDfuAvailability, pairDie } from "~/features/dice";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   getDieTypeAndColorwayLabel,
   getFirmwareUpdateAvailable,

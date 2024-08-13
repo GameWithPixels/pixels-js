@@ -1,6 +1,7 @@
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { View } from "react-native";
 import { useTheme } from "react-native-paper";
+
+import { getBorderRadius } from "~/features/getBorderRadius";
 
 export interface ProgressBarProps {
   percent: number;

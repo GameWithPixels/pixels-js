@@ -1,12 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { range } from "@systemic-games/pixels-core-utils";
 import {
-  BaseBox,
-  BaseHStack,
-  BaseVStack,
-  getBorderRadius,
-} from "@systemic-games/react-native-base-components";
-import {
   DiceUtils,
   Pixel,
   PixelDieType,
@@ -39,6 +33,9 @@ import {
 import { AppStyles } from "~/AppStyles";
 import { useAppSelector } from "~/app/hooks";
 import { AppPage } from "~/components/AppPage";
+import { BaseBox } from "~/components/BaseBox";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import {
@@ -57,6 +54,7 @@ import {
   WaitDieInCase,
   WaitFaceUp,
 } from "~/components/ValidationTestsComponents";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrintStatus } from "~/features/print";
 import { selectSkipPrintLabel } from "~/features/store/validationSelectors";

@@ -1,7 +1,10 @@
 import React, { PropsWithChildren } from "react";
 import { View as RnView } from "react-native";
 
-import { BaseFlexProps, expandShorthandStyle } from "../expandShorthandStyle";
+import {
+  BaseFlexProps,
+  expandShorthandStyle,
+} from "~/features/expandShorthandStyle";
 
 export interface BaseBoxProps extends PropsWithChildren<BaseFlexProps> {}
 

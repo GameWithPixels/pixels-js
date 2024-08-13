@@ -6,7 +6,6 @@ import {
   NavigationContainer,
 } from "@react-navigation/native";
 import * as Sentry from "@sentry/react-native";
-import { BaseVStack } from "@systemic-games/react-native-base-components";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
@@ -27,6 +26,7 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import { useAppSelector } from "~/app/hooks";
 import { persistor, store } from "~/app/store";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ErrorFallback } from "~/components/ErrorFallback";
 import { AppRootPageName, type RootScreensParamList } from "~/navigation";
 import { AnimationsScreen } from "~/screens/AnimationsScreen";

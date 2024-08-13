@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
@@ -14,6 +13,7 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { ActionTypeIcon } from "./actions";
 import { darken, getBorderColor } from "./colors";
 
+import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   groupAndSortProfiles,
   ProfilesGrouping,

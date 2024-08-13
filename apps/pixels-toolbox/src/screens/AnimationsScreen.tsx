@@ -19,10 +19,6 @@ import {
   createDataSetForAnimation,
 } from "@systemic-games/pixels-edit-animation";
 import {
-  BaseHStack,
-  BaseVStack,
-} from "@systemic-games/react-native-base-components";
-import {
   Color,
   AnimConstants,
   getPixel,
@@ -37,6 +33,8 @@ import { Button, Divider, Text } from "react-native-paper";
 import standardProfilesJson from "!/profiles/standard-profiles.json";
 import { AppStyles } from "~/AppStyles";
 import { AppPage } from "~/components/AppPage";
+import { BaseHStack } from "~/components/BaseHStack";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import { useErrorWithHandler } from "~/hooks/useErrorWithHandler";
 

@@ -1,5 +1,4 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import { Color, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -17,6 +16,7 @@ import { KeyframeGradient } from "./KeyframeGradient";
 
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 
 export function EditGradientBottomSheet({

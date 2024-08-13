@@ -3,10 +3,6 @@ import {
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import {
-  BaseBox,
-  BaseHStack,
-} from "@systemic-games/react-native-base-components";
-import {
   PixelColorway,
   PixelInfoNotifier,
   useForceUpdate,
@@ -26,6 +22,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { AppStyles } from "~/AppStyles";
+import { BaseBox } from "~/components/BaseBox";
+import { BaseHStack } from "~/components/BaseHStack";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 
 function getColorwayInitials(colorway: PixelColorway): string | undefined {

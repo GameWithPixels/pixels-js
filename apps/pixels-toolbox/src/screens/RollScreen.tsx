@@ -1,4 +1,3 @@
-import { BaseVStack } from "@systemic-games/react-native-base-components";
 import {
   ScannedPixel,
   getPixel,
@@ -10,6 +9,7 @@ import { Pressable, StyleSheet } from "react-native";
 import { Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
+import { BaseVStack } from "~/components/BaseVStack";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
 import { useErrorWithHandler } from "~/hooks/useErrorWithHandler";
 

@@ -1,9 +1,9 @@
 import { delay } from "@systemic-games/pixels-core-utils";
-import { BaseVStack } from "@systemic-games/react-native-base-components";
 import React from "react";
 import { Button, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
+import { BaseVStack } from "~/components/BaseVStack";
 import { useTaskChain } from "~/features/tasks/useTaskChain";
 import {
   TaskComponentProps,

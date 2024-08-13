@@ -203,6 +203,7 @@ async function loadMaterialAsync(
 
     switch (colorway) {
       case "auroraSky":
+      case "whiteAurora":
         material.map = await loadTextureAsync(
           require("#/textures/dice/aurora-sky-base.png"),
           "textures/aurora-sky-base.png"

@@ -1,6 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { usePixelStatus } from "@systemic-games/pixels-react";
-import { getBorderRadius } from "@systemic-games/react-native-pixels-components";
 import {
   Pixel,
   PixelStatus,
@@ -30,6 +29,7 @@ import { GradientButton } from "./buttons";
 import { DieWireframe } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { getRollStateAndFaceLabel } from "~/features/profiles";
 import {
   useIsModifiedDieProfile,

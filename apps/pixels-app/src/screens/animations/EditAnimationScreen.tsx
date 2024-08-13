@@ -1,4 +1,3 @@
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -23,6 +22,7 @@ import {
   MenuButton,
   OutlineButton,
 } from "~/components/buttons";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { useConfirmActionSheet, useEditableAnimation } from "~/hooks";
 
 const Header = observer(function Header({

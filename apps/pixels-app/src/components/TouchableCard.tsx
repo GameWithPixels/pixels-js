@@ -1,4 +1,3 @@
-import { getBorderRadius } from "@systemic-games/react-native-base-components";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { StyleProp, ViewStyle } from "react-native";
@@ -10,6 +9,7 @@ import {
 
 import { getBorderColor, makeTransparent } from "./colors";
 
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { withAnimated } from "~/features/withAnimated";
 import { useFlashAnimationStyle } from "~/hooks";
 
