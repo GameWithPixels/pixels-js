@@ -92,10 +92,19 @@ export const DiceUtils = {
     switch (dieType) {
       case "d4":
         if (noFix) return faceIndex + 1;
-        if (faceIndex === 2) return 2;
-        if (faceIndex === 3) return 3;
+        // Account for bad normals in firmware 2023-11-17
+        if (faceIndex === 3) return 2;
+        if (faceIndex === 2) return 3;
         if (faceIndex === 5) return 4;
         return 1;
+      case "d6":
+        if (noFix) return faceIndex + 1;
+        // Account for bad normals in firmware 2023-11-17
+        if (faceIndex === 4) return 2;
+        if (faceIndex === 3) return 3;
+        if (faceIndex === 2) return 4;
+        if (faceIndex === 1) return 5;
+        return faceIndex + 1;
       case "d10":
         return faceIndex;
       case "d00":
@@ -112,10 +121,19 @@ export const DiceUtils = {
     switch (dieType) {
       case "d4":
         if (noFix) return face - 1;
-        if (face === 2) return 2;
-        if (face === 3) return 3;
+        // Account for bad normals in firmware 2023-11-17
+        if (face === 2) return 3;
+        if (face === 3) return 2;
         if (face === 4) return 5;
         return 0;
+      case "d6":
+        if (noFix) return face - 1;
+        // Account for bad normals in firmware 2023-11-17
+        if (face === 2) return 4;
+        if (face === 3) return 3;
+        if (face === 4) return 2;
+        if (face === 5) return 1;
+        return face - 1;
       case "d10":
         return face;
       case "d00":
