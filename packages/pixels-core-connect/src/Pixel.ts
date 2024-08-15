@@ -1148,6 +1148,16 @@ export class Pixel
     faceIndex: number,
     opt?: { skipEvents?: boolean }
   ) {
+    // Fix for accelerometer being slightly tilted on some D6/D4/Fudge
+    // Also fixed in Firmware commit 380f496, May 22nd 2024
+    if (
+      this._info.firmwareDate.getTime() < 1716382800000 &&
+      this._info.ledCount === 6 &&
+      state === "crooked"
+    ) {
+      state = "onFace";
+    }
+
     const ev = this._createRollEvent(state, faceIndex);
     const stateChanged = this._info.rollState !== ev.state;
     const indexChanged = this._info.currentFaceIndex !== ev.faceIndex;
