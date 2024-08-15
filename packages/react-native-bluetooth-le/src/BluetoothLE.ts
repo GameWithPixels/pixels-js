@@ -28,22 +28,22 @@ export type Device = Readonly<{
 
 export type ManufacturerData = Readonly<{
   companyId: number;
-  data: number[];
+  data: readonly number[];
 }>;
 
 export type ServiceData = Readonly<{
   service: string;
-  data: number[];
+  data: readonly number[];
 }>;
 
 export type AdvertisementData = Readonly<{
   isConnectable: boolean;
   rssi: number;
   txPowerLevel: number;
-  services?: string[];
-  solicitedServices?: string[];
-  manufacturersData?: ManufacturerData[];
-  servicesData?: ServiceData[];
+  services?: readonly string[];
+  solicitedServices?: readonly string[];
+  manufacturersData?: readonly ManufacturerData[];
+  servicesData?: readonly ServiceData[];
 }>;
 
 export type Characteristic = Readonly<{

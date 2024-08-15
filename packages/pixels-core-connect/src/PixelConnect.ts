@@ -49,10 +49,10 @@ export type PixelStatus =
  * class {@link PixelInfoNotifier}.
  * @category Pixels
  */
-export interface PixelConnectOwnMutableProps {
+export type PixelConnectOwnMutableProps = {
   /** Connection status. */
   status: PixelStatus;
-}
+};
 
 /**
  * The mutable properties of {@link PixelConnect}.

@@ -81,7 +81,7 @@ export type PeripheralCharacteristicValueChangedEvent = Readonly<{
   service: string;
   characteristic: string;
   characteristicIndex: number;
-  value: number[]; // Array of bytes
+  value: readonly number[]; // Array of bytes
 }>;
 
 export type PeripheralOrSystemId = ScannedPeripheral | string;
@@ -91,10 +91,10 @@ export type PeripheralOrSystemId = ScannedPeripheral | string;
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  */
-export type CentralEventMap = {
-  bluetoothState: Readonly<{ state: BluetoothState }>;
-  scanStatus: Readonly<{ status: ScanStatus }>;
-};
+export type CentralEventMap = Readonly<{
+  bluetoothState: { state: BluetoothState };
+  scanStatus: { status: ScanStatus };
+}>;
 
 // Our native event emitter and subscriptions
 let _nativeEmitter: NativeEventEmitter | undefined;

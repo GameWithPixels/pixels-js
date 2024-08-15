@@ -56,7 +56,7 @@ export interface PixelScannerOptions {
  *          {@link useScannedPixels} or {@link useScannedPixelNotifiers}.
  */
 export function usePixelScannerNotify<T>(
-  updateItems: (items: T[], ops: PixelScannerListOperation[]) => T[],
+  updateItems: (items: T[], ops: readonly PixelScannerListOperation[]) => T[],
   opt?: PixelScannerOptions
 ): [T[], (action: PixelScannerDispatchAction) => void, PixelScannerStatus] {
   const [status, setStatus] = React.useState<PixelScannerStatus>("stopped");

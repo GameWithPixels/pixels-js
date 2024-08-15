@@ -32,7 +32,7 @@ export function useScannedPixels(
   const passthrough = React.useCallback(
     (
       items: (ScannedPixel | ScannedCharger)[],
-      ops: PixelScannerListOperation[]
+      ops: readonly PixelScannerListOperation[]
     ) => {
       // Create new list to trigger a React re-render
       const retItems = [...items];

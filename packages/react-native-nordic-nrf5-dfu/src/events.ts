@@ -100,10 +100,10 @@ export type DfuProgressEvent = Readonly<{
  * is the event name and the property type the event data type.
  * @category Pixels
  */
-export type DfuEventMap = {
+export type DfuEventMap = Readonly<{
   state: DfuStateEvent;
   progress: DfuProgressEvent;
-};
+}>;
 
 // Native event emitter
 const dfuEventEmitter = new NativeEventEmitter(DfuModule);

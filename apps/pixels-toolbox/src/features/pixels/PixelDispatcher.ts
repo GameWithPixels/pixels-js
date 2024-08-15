@@ -99,7 +99,7 @@ export type DfuAction = "none" | "upgrade" | "downgrade";
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  */
-export interface PixelDispatcherEventMap {
+export type PixelDispatcherEventMap = Readonly<{
   action: keyof PixelDispatcherActionMap;
   error: Error;
   profileUploadProgress: number | undefined;
@@ -111,7 +111,7 @@ export interface PixelDispatcherEventMap {
   dfuState: DfuState;
   dfuProgress: number;
   telemetry: Readonly<TelemetryData>;
-}
+}>;
 
 /**
  * The mutable properties of {@link PixelDispatcher}.
@@ -336,9 +336,6 @@ export class PixelDispatcher
       1e9 * Math.random()
     )}`;
     this._messagesLogFilePath = `${RNFS.TemporaryDirectoryPath}/${filename}.json`;
-    console.log(
-      `[${this.name}] Logging messages in: ${this._messagesLogFilePath}`
-    );
     RNFS.appendFile(this._messagesLogFilePath, "[\n").catch((e) =>
       console.error(`PixelDispatcher file write error: ${e.message}`)
     );
