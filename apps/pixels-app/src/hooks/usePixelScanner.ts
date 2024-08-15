@@ -7,15 +7,15 @@ import React from "react";
 import { usePixelsCentral } from "./usePixelsCentral";
 
 export function usePixelScanner(): {
-  availablePixels: ScannedPixelNotifier[];
+  availablePixels: readonly ScannedPixelNotifier[];
   startScan: () => void;
   stopScan: () => void;
   scanError: Error | undefined;
 } {
   const central = usePixelsCentral();
-  const [availablePixels, setAvailablePixels] = React.useState(
-    central.availablePixels
-  );
+  const [availablePixels, setAvailablePixels] = React.useState<
+    readonly ScannedPixelNotifier[]
+  >(central.availablePixels);
   const [scanError, setScanError] = React.useState<Error>();
   const needStopRef = React.useRef(false);
   React.useEffect(() => {

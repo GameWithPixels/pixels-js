@@ -130,7 +130,7 @@ export type DataTransferProgress = Readonly<{
  * Call {@link Pixel.addEventListener} to subscribe to an event.
  * @category Pixels
  */
-export interface PixelEventMap {
+export type PixelEventMap = Readonly<{
   /** Message received notification. */
   messageReceived: MessageOrType;
   /** Message send notification. */
@@ -159,19 +159,19 @@ export interface PixelEventMap {
         type: "progress";
       } & DataTransferProgress)
   >;
-}
+}>;
 
 /**
  * The mutable properties of {@link Pixel} not inherited from parent
  * class {@link PixelConnect}.
  * @category Pixels
  */
-export interface PixelOwnMutableProps {
+export type PixelOwnMutableProps = {
   /** On-die profile hash value. */
   profileHash: number;
   /** Ongoing data transfer progress (such as programming a profile). */
   transferProgress: DataTransferProgress | undefined;
-}
+};
 
 /**
  * The mutable properties of {@link Pixel}.

@@ -40,16 +40,16 @@ export type PixelScannerStatusEvent = Readonly<{
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  */
-export interface PixelScannerEventMap {
+export type PixelScannerEventMap = Readonly<{
   // Properties
   isReady: boolean;
   status: ScanStatus;
-  scannedPixels: ScannedPixel[];
-  scannedChargers: ScannedCharger[];
+  scannedPixels: readonly ScannedPixel[];
+  scannedChargers: readonly ScannedCharger[];
   // Events
   scanStatus: PixelScannerStatusEvent;
-  scanListOperations: Readonly<{ ops: PixelScannerListOperation[] }>;
-}
+  scanListOperations: Readonly<{ ops: readonly PixelScannerListOperation[] }>;
+}>;
 
 /**
  * Type for a callback filtering {@link ScannedPixel}, used by {@link PixelScanner}.

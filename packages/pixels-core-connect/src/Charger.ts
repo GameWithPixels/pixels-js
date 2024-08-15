@@ -51,7 +51,7 @@ import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
  * Call {@link Charger.addEventListener} to subscribe to an event.
  * @category Pixels
  */
-export interface ChargerEventMap {
+export type ChargerEventMap = Readonly<{
   /** Message received notification. */
   messageReceived: ChargerMessageOrType;
   /** Message send notification. */
@@ -61,14 +61,14 @@ export interface ChargerEventMap {
     level: number; // Percentage
     isCharging: boolean;
   }>;
-}
+}>;
 
 /**
  * The mutable properties of {@link Charger} not inherited from parent
  * class {@link PixelConnect}.
  * @category Pixels
  */
-export interface ChargerOwnMutableProps {}
+export type ChargerOwnMutableProps = object;
 
 /**
  * The mutable properties of {@link Charger}.

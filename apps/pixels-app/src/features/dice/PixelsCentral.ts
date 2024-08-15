@@ -24,12 +24,12 @@ import { PixelOperationParams, PixelScheduler } from "./PixelScheduler";
 import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { logError } from "~/features/utils";
 
-export interface PixelsCentralEventMap {
+export type PixelsCentralEventMap = Readonly<{
   // Props
   isReady: boolean;
   scanStatus: ScanStatus;
-  availablePixels: ScannedPixelNotifier[];
-  pixels: Pixel[];
+  availablePixels: readonly ScannedPixelNotifier[];
+  pixels: readonly Pixel[];
   pixelInDFU: Pixel | undefined;
   // Events
   onScanError: { error: Error };
@@ -38,7 +38,7 @@ export interface PixelsCentralEventMap {
   pixelDfuState: { pixel: Pixel; state: DfuState; error?: Error };
   pixelDfuProgress: { pixel: Pixel; progress: number };
   pixelDfuError: { pixel: Pixel; error: Error };
-}
+}>;
 
 // Watched Pixels are added to the "pixels" list whenever they are found (= scanned)
 export class PixelsCentral {

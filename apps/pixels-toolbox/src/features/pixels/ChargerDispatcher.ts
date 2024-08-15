@@ -52,7 +52,7 @@ export type DfuAction = "none" | "upgrade" | "downgrade";
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  */
-export interface ChargerDispatcherEventMap {
+export type ChargerDispatcherEventMap = Readonly<{
   action: keyof ChargerDispatcherActionMap;
   error: Error;
   status: PixelStatus;
@@ -62,7 +62,7 @@ export interface ChargerDispatcherEventMap {
   hasQueuedDFU: boolean;
   dfuState: DfuState;
   dfuProgress: number;
-}
+}>;
 
 /**
  * The mutable properties of {@link ChargerDispatcher}.
@@ -266,9 +266,6 @@ export class ChargerDispatcher
       1e9 * Math.random()
     )}`;
     this._messagesLogFilePath = `${RNFS.TemporaryDirectoryPath}/${filename}.json`;
-    console.log(
-      `[${this.name}] Logging messages in: ${this._messagesLogFilePath}`
-    );
     RNFS.appendFile(this._messagesLogFilePath, "[\n").catch((e) =>
       console.error(`ChargerDispatcher file write error: ${e.message}`)
     );

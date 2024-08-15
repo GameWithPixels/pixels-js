@@ -36,7 +36,7 @@ export function useScannedPixelNotifiers(
   const mapItems = React.useCallback(
     (
       items: (ScannedPixelNotifier | ScannedChargerNotifier)[],
-      ops: PixelScannerListOperation[]
+      ops: readonly PixelScannerListOperation[]
     ) => {
       // We only want to create a React re-render when items are added
       // or removed but not when they are modified

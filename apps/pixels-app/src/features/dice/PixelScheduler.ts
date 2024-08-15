@@ -38,7 +38,7 @@ export type PixelOperationParams = Readonly<
     }
 >;
 
-export interface PixelSchedulerEventMap {
+export type PixelSchedulerEventMap = Readonly<{
   // Properties
   currentOperationChanged: Readonly<PixelOperationParams> | undefined;
   // Events
@@ -57,7 +57,7 @@ export interface PixelSchedulerEventMap {
         }
     >;
   };
-}
+}>;
 
 type ConnectParams = Omit<
   Extract<PixelOperationParams, { type: "connect" }>,

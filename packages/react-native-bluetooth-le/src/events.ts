@@ -43,7 +43,7 @@ export type BleConnectionEvent = Readonly<{
 export type BleCharacteristicValueChangedEvent = Readonly<{
   device: Device;
   characteristic: Characteristic;
-  data: number[];
+  data: readonly number[];
 }>;
 
 /**
@@ -52,11 +52,11 @@ export type BleCharacteristicValueChangedEvent = Readonly<{
  * is the event name and the property type the event data type.
  * @category Pixels
  */
-export interface BleEventMap {
+export type BleEventMap = Readonly<{
   bluetoothState: BleBluetoothStateEvent;
   scanResult: BleScanResultEvent;
   connectionEvent: BleConnectionEvent;
   characteristicValueChanged: BleCharacteristicValueChangedEvent;
-}
+}>;
 
 export type BleEvents = keyof BleEventMap;
