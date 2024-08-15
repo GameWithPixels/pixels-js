@@ -1,15 +1,28 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
-  BleScanner,
+  Central,
   isBootloaderName,
   ScannedPeripheral,
+  ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { useErrorBoundary } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
-import { FlatList, Pressable, RefreshControl, StyleSheet } from "react-native";
-import { Button, Card, Text, useTheme } from "react-native-paper";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native";
+import {
+  Button,
+  Card,
+  Text as PaperText,
+  TextProps,
+  useTheme,
+} from "react-native-paper";
 
 import { AppStyles } from "~/AppStyles";
 import { useAppSelector } from "~/app/hooks";
@@ -37,6 +50,16 @@ function PeripheralInfo({ peripheral }: { peripheral: ScannedPeripheral }) {
         <Text>RSSI: {peripheral.advertisementData.rssi}</Text>
       </Card.Content>
     </Card>
+  );
+}
+
+function Text({ style, ...props }: Omit<TextProps<never>, "variant">) {
+  return (
+    <PaperText
+      variant="bodyLarge"
+      style={[{ textAlign: "center" }, style]}
+      {...props}
+    />
   );
 }
 
@@ -89,27 +112,47 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   }, [dfuState]);
 
   // Scan list
+  const [scanStatus, setScanStatus] = React.useState(Central.getScanStatus());
   const [scannedPeripherals, setScannedPeripherals] = React.useState<
     ScannedPeripheral[]
   >([]);
   const pendingScans = React.useRef<ScannedPeripheral[]>([]);
   // Queue scan events and process them in batch
+  const focusedRef = React.useRef(false);
+  const scanCountRef = React.useRef(0);
+  scanCountRef.current = scannedPeripherals.length;
   useFocusEffect(
     React.useCallback(() => {
+      focusedRef.current = true;
+      const onStatus = ({ status }: { status: ScanStatus }) =>
+        setScanStatus(status);
+      Central.addEventListener("scanStatus", onStatus);
       if (!dfuTarget) {
-        BleScanner.start("", (sp: ScannedPeripheral) => {
-          if (sp.name.length) {
-            const arr = pendingScans.current;
-            const i = arr.findIndex((item) => item.systemId === sp.systemId);
-            if (i < 0) {
-              arr.push(sp);
-            } else {
-              arr[i] = sp;
-            }
+        const task = async () => {
+          await Central.stopScan();
+          if (focusedRef.current) {
+            await Central.startScan("", (ev) => {
+              if (ev.type === "peripheral" && ev.peripheral.name.length) {
+                const arr = pendingScans.current;
+                const i = arr.findIndex(
+                  (item) => item.systemId === ev.peripheral.systemId
+                );
+                if (i < 0) {
+                  arr.push(ev.peripheral);
+                } else {
+                  arr[i] = ev.peripheral;
+                }
+              }
+            });
           }
-        }).catch(showBoundary);
+        };
+        task().catch(showBoundary);
         return () => {
-          BleScanner.stop().catch(showBoundary);
+          focusedRef.current = false;
+          Central.removeEventListener("scanStatus", onStatus);
+          pendingScans.current.length = 0;
+          setScannedPeripherals([]);
+          Central.stopScan().catch(showBoundary);
         };
       }
     }, [dfuTarget, showBoundary])
@@ -144,6 +187,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   }, []);
   React.useEffect(() => {
     if (!dfuTarget) {
+      pendingScans.current.length = 0;
       setScannedPeripherals([]);
     }
   }, [dfuTarget]);
@@ -198,14 +242,11 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   );
 
   return (
-    <BaseVStack flex={1}>
+    <BaseVStack flex={1} paddingTop={10}>
       {dfuLastError && !errorCleared ? (
         // Got an error, display it until cleared
         <BaseVStack alignItems="center" justifyContent="center" gap={10}>
-          <Text
-            variant="bodyLarge"
-            style={{ color: colors.error }}
-          >{`${dfuLastError}`}</Text>
+          <Text style={{ color: colors.error }}>{`${dfuLastError}`}</Text>
           <Button
             mode="contained-tonal"
             style={styles.buttonOk}
@@ -216,8 +257,8 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         </BaseVStack>
       ) : selection ? (
         // Confirm selection
-        <BaseVStack gap={10}>
-          <Text>{`Proceed with updating firmware on ${selection.name}?`}</Text>
+        <BaseVStack gap={20}>
+          <Text>{`Proceed with updating ${selection.name} with "${bundleLabel}"?`}</Text>
           <BaseHStack alignSelf="center" gap={10}>
             <Button
               mode="contained-tonal"
@@ -239,9 +280,12 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
       ) : dfuState && !isDfuDone(dfuState) ? (
         // DFU
         <BaseVStack gap={10} alignItems="center" justifyContent="center">
-          <Text variant="bodyLarge">Selected Peripheral:</Text>
+          <Text>Selected Peripheral:</Text>
           {dfuTarget && <PeripheralInfo peripheral={dfuTarget} />}
-          <Text variant="bodyLarge">Performing Firmware Update:</Text>
+          <View style={{ height: 10 }} />
+          <Text>Selected Firmware:</Text>
+          {bundleLabel && <Text>{bundleLabel}</Text>}
+          <View style={{ height: 10 }} />
           {dfuState === "uploading" ? (
             <BaseBox w="100%" p={2}>
               <ProgressBar percent={dfuProgress} />
@@ -262,18 +306,30 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
             {bundleLabel ?? t("tapToSelectFirmware")}
           </Button>
           {bundleLabel && (
-            <BaseVStack gap={10}>
-              <Text style={AppStyles.italic}>
-                Tap on a peripheral to attempt a Pixel firmware update.
-              </Text>
-              <Text variant="bodyLarge">Bluetooth Scanned Peripherals:</Text>
-              <FlatList
-                style={AppStyles.fullWidth}
-                contentContainerStyle={AppStyles.listContentContainer}
-                data={scannedPeripherals}
-                renderItem={renderItem}
-                refreshControl={refreshControl}
-              />
+            <BaseVStack gap={10} flex={1} flexGrow={1}>
+              {scannedPeripherals.length ? (
+                <>
+                  <Text style={AppStyles.italic}>
+                    Select peripheral to update:
+                  </Text>
+                  <FlatList
+                    style={AppStyles.fullWidth}
+                    contentContainerStyle={[
+                      AppStyles.listContentContainer,
+                      { paddingBottom: 10 },
+                    ]}
+                    data={scannedPeripherals}
+                    renderItem={renderItem}
+                    refreshControl={refreshControl}
+                  />
+                </>
+              ) : (
+                <Text style={AppStyles.textCentered}>
+                  {scanStatus === "scanning"
+                    ? "No peripheral found so far..."
+                    : `Not scanning!`}
+                </Text>
+              )}
             </BaseVStack>
           )}
         </>
