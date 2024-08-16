@@ -10,7 +10,6 @@ import {
   ChargerMessages,
   getCharger,
   Pixel,
-  PixelInfoNotifier,
   PixelStatus,
   ScannedCharger,
   ScannedChargerNotifier,
@@ -296,29 +295,37 @@ export class ChargerDispatcher
     );
     // Forward scanned pixel property events
     function copyProp<T, Key extends keyof T>(src: T, dst: T, key: Key) {
-      dst[key] = src[key];
+      if (dst[key] !== src[key]) {
+        dst[key] = src[key];
+        return true;
+      }
+      return false;
     }
     for (const prop of ScannedChargerNotifier.ExtendedMutablePropsList) {
       scannedCharger.addPropertyListener(prop, () => {
-        copyProp(scannedCharger, this._info, prop);
-        this.emitPropertyEvent(prop);
-        if (prop === "timestamp") {
-          this.emitPropertyEvent("lastScanUpdate");
-          this._updateLastActivity();
-        } else if (prop === "firmwareDate") {
-          this._updateIsDFUAvailable();
+        if (copyProp(scannedCharger, this._info, prop)) {
+          this.emitPropertyEvent(prop);
+          if (prop === "timestamp") {
+            this.emitPropertyEvent("lastScanUpdate");
+            this._updateLastActivity();
+          } else if (prop === "firmwareDate") {
+            this._updateIsDFUAvailable();
+          }
         }
       });
     }
     // Forward charger instance property events
     for (const prop of ChargerDispatcher.MutablePropsList) {
       this._charger.addPropertyListener(prop, () => {
-        copyProp(
-          this._charger as Omit<ScannedCharger, "address" | "timestamp">,
-          this._info,
-          prop
-        );
-        this.emitPropertyEvent(prop);
+        if (
+          copyProp(
+            this._charger as Omit<ScannedCharger, "address" | "timestamp">,
+            this._info,
+            prop
+          )
+        ) {
+          this.emitPropertyEvent(prop);
+        }
       });
     }
     // Forward and monitor status
@@ -379,11 +386,6 @@ export class ChargerDispatcher
       default:
         assertNever(action, `Unknown action ${action}`);
     }
-  }
-
-  asNotifier(): PixelInfoNotifier {
-    // TODO see if there is a better to do this type casting
-    return this as PixelInfoNotifier;
   }
 
   async exportMessages(uri: string): Promise<void> {

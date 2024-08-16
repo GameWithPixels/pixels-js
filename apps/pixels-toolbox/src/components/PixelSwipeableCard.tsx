@@ -188,7 +188,7 @@ function PixelCard({
   const { colors } = useTheme();
   return (
     <>
-      <PixelInfoCard pixelInfo={pixelDispatcher.asNotifier()} {...props}>
+      <PixelInfoCard pixelInfo={pixelDispatcher} {...props}>
         <BaseVStack gap={3} alignItems="center" width="100%">
           {/* Show either DFU progress, profile update progress, connect state or advertising state */}
           {dfuQueued ? (
