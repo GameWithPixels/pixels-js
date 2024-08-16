@@ -363,25 +363,31 @@ export class PixelDispatcher
     );
     // Forward scanned pixel property events
     function copyProp<T, Key extends keyof T>(src: T, dst: T, key: Key) {
-      dst[key] = src[key];
+      if (dst[key] !== src[key]) {
+        dst[key] = src[key];
+        return true;
+      }
+      return false;
     }
     for (const prop of ScannedPixelNotifier.ExtendedMutablePropsList) {
       scannedPixel.addPropertyListener(prop, () => {
-        copyProp(scannedPixel, this._info, prop);
-        this.emitPropertyEvent(prop);
-        if (prop === "timestamp") {
-          this.emitPropertyEvent("lastScanUpdate");
-          this._updateLastActivity();
-        } else if (prop === "firmwareDate") {
-          this._updateIsDFUAvailable();
+        if (copyProp(scannedPixel, this._info, prop)) {
+          this.emitPropertyEvent(prop);
+          if (prop === "timestamp") {
+            this.emitPropertyEvent("lastScanUpdate");
+            this._updateLastActivity();
+          } else if (prop === "firmwareDate") {
+            this._updateIsDFUAvailable();
+          }
         }
       });
     }
     // Forward pixel instance property events
     for (const prop of PixelInfoNotifier.MutablePropsList) {
       this._pixel.addPropertyListener(prop, () => {
-        copyProp(this._pixel as PixelInfo, this._info, prop);
-        this.emitPropertyEvent(prop);
+        if (copyProp(this._pixel as PixelInfo, this._info, prop)) {
+          this.emitPropertyEvent(prop);
+        }
       });
     }
     // Forward and monitor status
@@ -538,11 +544,6 @@ export class PixelDispatcher
       default:
         assertNever(action, `Unknown action ${action}`);
     }
-  }
-
-  asNotifier(): PixelInfoNotifier {
-    // TODO see if there is a better to do this type casting
-    return this as unknown as PixelInfoNotifier;
   }
 
   async exportMessages(uri: string): Promise<void> {
