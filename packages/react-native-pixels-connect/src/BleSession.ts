@@ -30,25 +30,12 @@ export default class BleSession extends PixelSession {
     super(params);
     this._name = params.name;
     this._centralConnStatusCb = (ev: PeripheralConnectionEvent) => {
+      this._name = ev.peripheral.name;
       this._notifyConnectionEvent(ev.connectionStatus);
     };
   }
 
   async connect(): Promise<void> {
-    try {
-      // Update name
-      const name = await Central.getPeripheralName(this.systemId);
-      if (name) {
-        // We may get null if Bluetooth is off
-        this._name = name;
-      }
-    } catch (error) {
-      // Will fail if peripheral was released
-      console.log(
-        `Error getting Pixel name (which was ${this._name}): ${error}`
-      );
-    }
-
     // And connect
     await Central.connectPeripheral(this.systemId, {
       connectionStatusCallback: this._centralConnStatusCb,
