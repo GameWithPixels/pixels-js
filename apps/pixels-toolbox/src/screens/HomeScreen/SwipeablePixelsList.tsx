@@ -19,7 +19,6 @@ import ChargerDispatcher from "~/features/pixels/ChargerDispatcher";
 import PixelDispatcher, {
   PixelDispatcherActionMap,
 } from "~/features/pixels/PixelDispatcher";
-import PixelsDispatcher from "~/features/pixels/PixelsDispatcher";
 import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotifiers";
 
 interface SwipeablePixelsListProps
@@ -77,9 +76,6 @@ export const SwipeablePixelsList = React.memo(function ({
       t("connect"),
       t("disconnect"),
       t("turnOff"),
-      t("videoAnim1"),
-      t("videoAnim2"),
-      t("videoAnim3"),
       t("rainbowAllFaces"),
       t("fire"),
       t("noise"),
@@ -96,7 +92,6 @@ export const SwipeablePixelsList = React.memo(function ({
         cancelButtonIndex: options.length - 1,
       },
       (index?: number) => {
-        const pixels = dispatchers.filter((p) => p.type === "pixel");
         switch (index) {
           case 0:
             dispatchAll("connect");
@@ -108,45 +103,27 @@ export const SwipeablePixelsList = React.memo(function ({
             dispatchAll("turnOff");
             break;
           case 3:
-            {
-              const pd = new PixelsDispatcher();
-              pd.playSetAnimations(pixels);
-            }
-            break;
-          case 4:
-            {
-              const pd = new PixelsDispatcher();
-              pd.playSetAnimations2(pixels);
-            }
-            break;
-          case 5:
-            {
-              const pd = new PixelsDispatcher();
-              pd.playSetAnimations3(pixels);
-            }
-            break;
-          case 6:
             dispatchAll("playAnimation", PrebuildAnimations.rainbow);
             break;
-          case 7:
+          case 4:
             dispatchAll("playAnimation", PrebuildAnimations.cycleFire);
             break;
-          case 8:
+          case 5:
             dispatchAll("playAnimation", PrebuildAnimations.noise);
             break;
-          case 9:
+          case 6:
             dispatchAll("playProfileAnimation", 0);
             break;
-          case 10:
+          case 7:
             dispatchAll("uploadProfile");
             break;
-          case 11:
+          case 8:
             dispatchAll("queueDFU");
             break;
         }
       }
     );
-  }, [dispatchAll, dispatchers, showActionSheetWithOptions, t]);
+  }, [dispatchAll, showActionSheetWithOptions, t]);
 
   // FlatList item rendering
   const renderItem = React.useCallback(
