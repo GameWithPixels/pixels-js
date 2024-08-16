@@ -10,15 +10,13 @@ import {
   ConnectionStatus,
   Device,
 } from "./BluetoothLE";
-import {
-  PeripheralInfo,
-  CentralPeripheralsMap as peripheralsMap,
-} from "./CentralPeripheralsMap";
 import { Constants } from "./Constants";
+import { PeripheralInfo } from "./PeripheralInfo";
 import * as Errors from "./errors";
 import { BleEventMap, BluetoothState, ConnectionEventReason } from "./events";
 import { getNativeErrorCode } from "./getNativeErrorCode";
 import { requestPermissions } from "./requestPermissions";
+import { PeripheralsMap } from "./static";
 
 function toArray(strList?: string): string[] {
   return strList?.split(",") ?? [];
@@ -120,7 +118,7 @@ function _getSystemId(peripheral: PeripheralOrSystemId): string {
 }
 
 function _getPeripheralInfo(peripheral: PeripheralOrSystemId): PeripheralInfo {
-  const pInf = peripheralsMap.get(_getSystemId(peripheral));
+  const pInf = PeripheralsMap.get(_getSystemId(peripheral));
   if (!pInf) {
     throw new Errors.UnknownPeripheralError(_getSystemId(peripheral));
   }
@@ -202,6 +200,29 @@ function _updateScanStatus(
   }
 }
 
+function _notifyConnectionStatus(
+  pInf: PeripheralInfo,
+  connectionStatus: ConnectionStatus,
+  reason: ConnectionEventReason = "success"
+): void {
+  const ev = {
+    peripheral: pInf.scannedPeripheral,
+    connectionStatus,
+    reason,
+  } as const;
+  const name = pInf.scannedPeripheral.name;
+  for (const cb of pInf.connStatusCallbacks) {
+    try {
+      cb(ev);
+    } catch (error) {
+      const e = errToStr(error);
+      console.error(
+        `[BLE ${name}] Uncaught error in Connection Status event listener: ${e}`
+      );
+    }
+  }
+}
+
 export const Central = {
   // May be called multiple times
   initialize(): void {
@@ -220,11 +241,12 @@ export const Central = {
         "connectionEvent",
         ({ device, connectionStatus, reason }) => {
           // Forward event
-          const pInf = peripheralsMap.get(device.systemId);
+          const pInf = PeripheralsMap.get(device.systemId);
+          const name = device.name;
           if (pInf) {
             if (reason !== "success") {
               console.log(
-                `[BLE ${device.name}] Got connection status ${connectionStatus}` +
+                `[BLE ${name}] Got connection status ${connectionStatus}` +
                   ` with reason: ${reason}`
               );
             }
@@ -236,7 +258,7 @@ export const Central = {
               case "disconnected":
                 if (pInf.state !== "disconnecting") {
                   console.log(
-                    `[BLE ${pInf.scannedPeripheral.name}] Unexpected disconnection, last known state is ${pInf.state}`
+                    `[BLE ${name}] Unexpected disconnection, last known state is ${pInf.state}`
                   );
                 }
                 pInf.state = connectionStatus;
@@ -251,25 +273,11 @@ export const Central = {
             }
             if (connectionStatus !== "ready") {
               // The ready status is notified once the MTU has been changed
-              const ev = {
-                peripheral: pInf.scannedPeripheral,
-                connectionStatus,
-                reason: reason ?? "success",
-              } as const;
-              for (const cb of pInf.connStatusCallbacks) {
-                try {
-                  cb(ev);
-                } catch (error) {
-                  const e = errToStr(error);
-                  console.error(
-                    `[BLE ${device.name}] Uncaught error in Connection Status event listener: ${e}`
-                  );
-                }
-              }
+              _notifyConnectionStatus(pInf, connectionStatus, reason);
             }
           } else {
             console.warn(
-              `[BLE ${device.name}] Got connection status ${connectionStatus}` +
+              `[BLE ${name}] Got connection status ${connectionStatus}` +
                 " for unknown scanned peripheral"
             );
           }
@@ -282,7 +290,8 @@ export const Central = {
         ({ device, characteristic, data }) => {
           try {
             // Forward event
-            const pInf = peripheralsMap.get(device.systemId);
+            const pInf = PeripheralsMap.get(device.systemId);
+            const name = device.name;
             if (pInf) {
               const onValueChanged = pInf.valueChangedCallbacks.get(
                 toString(
@@ -300,13 +309,13 @@ export const Central = {
               });
             } else {
               console.warn(
-                `[BLE ${device.name}] Got characteristic value changed for unknown scanned peripheral`
+                `[BLE ${name}] Got characteristic value changed for unknown scanned peripheral`
               );
             }
           } catch (error) {
             const e = errToStr(error);
             console.error(
-              `[BLE ${device.name}] Uncaught error in Characteristic Value Changed event listener: ${e}`
+              `[BLE ${name}] Uncaught error in Characteristic Value Changed event listener: ${e}`
             );
           }
         }
@@ -325,7 +334,7 @@ export const Central = {
     // Keep Bluetooth state unchanged
     _updateScanStatus("stopped"); // This will unsubscribes from native scan result
     BluetoothLE.stopScan().catch(() => {}); // Ignore any error
-    peripheralsMap.clear();
+    PeripheralsMap.clear();
     console.log("[BLE] Central has shutdown");
     // TODO _bleInit = false; BluetoothLE.bleShutdown();
   },
@@ -461,8 +470,8 @@ export const Central = {
           ...ev.device,
           advertisementData: ev.advertisementData,
         };
-        const name = ev.device.name ?? "<unknown>";
-        const pInf = peripheralsMap.get(ev.device.systemId);
+        const name = ev.device.name;
+        const pInf = PeripheralsMap.get(ev.device.systemId);
         const requiredServices = servicesArray
           .filter((s) => ev.advertisementData.services?.includes(s))
           ?.join(",");
@@ -476,7 +485,7 @@ export const Central = {
           pInf.requiredServices = requiredServices;
           // Note: don't change state as the peripheral might be in the process of being connected
         } else {
-          peripheralsMap.set(ev.device.systemId, {
+          PeripheralsMap.set(ev.device.systemId, {
             scannedPeripheral: peripheral,
             state: "disconnected",
             requiredServices,
@@ -583,7 +592,6 @@ export const Central = {
       }, timeoutMs);
 
     try {
-      // TODO handle case when another connection request for the same device is already under way
       const sysId = _getSystemId(peripheral);
       if (!(await BluetoothLE.createPeripheral(sysId))) {
         throw new Errors.ConnectError(name, "createFailed");
@@ -623,8 +631,8 @@ export const Central = {
         console.log(`[BLE ${name}] MTU set to ${mtu}`);
 
         // Continue if there wasn't any state change since we got connected
-        // Note: always notify the ready state so a new status listener will
-        //       get the notification if even the peripheral was already connected.
+        // Note: always notify the ready state so a new status listener gets
+        //       the notification even if it was already in the ready state
         if (pInf.state === "connecting" || pInf.state === "ready") {
           // Log services and characteristics
           // const services = await BluetoothLE.getDiscoveredServices(sysId);
@@ -664,13 +672,7 @@ export const Central = {
 
           // And finally set state to "ready"
           pInf.state = "ready";
-          for (const cb of pInf.connStatusCallbacks) {
-            cb({
-              connectionStatus: "ready",
-              peripheral: pInf.scannedPeripheral,
-              reason: "success",
-            });
-          }
+          _notifyConnectionStatus(pInf, "ready");
         } else {
           throw new Errors.ConnectError(name, "disconnected");
         }
@@ -710,19 +712,22 @@ export const Central = {
 
   async disconnectPeripheral(peripheral: PeripheralOrSystemId): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
+    const name = pInf.scannedPeripheral.name;
     console.log(
-      `[BLE ${pInf.scannedPeripheral.name}] Disconnecting, last known state is ${pInf.state}`
+      `[BLE ${name}] Disconnecting, last known state is ${pInf.state}`
     );
     try {
       await BluetoothLE.disconnectPeripheral(pInf.scannedPeripheral.systemId);
     } catch (error: any) {
-      // TODO getting an exception from Android when disconnecting while already disconnected
+      // Getting an exception from Android when disconnecting while already disconnected
       if (error.message !== "Peripheral not in required state to disconnect") {
         throw error;
       }
-      console.warn(
-        `[BLE ${pInf.scannedPeripheral.name}] Got exception when disconnecting while in state ${pInf.state}`
-      );
+      if (pInf.state !== "disconnecting" && pInf.state !== "disconnected") {
+        console.warn(
+          `[BLE ${name}] Got exception when disconnecting while in state ${pInf.state}`
+        );
+      }
     } finally {
       // Always remove callback and release peripheral
       pInf.connStatusCallbacks.length = 0;
