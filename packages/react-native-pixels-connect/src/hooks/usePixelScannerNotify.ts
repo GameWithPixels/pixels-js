@@ -35,6 +35,14 @@ export interface PixelScannerOptions {
    * @default true.
    **/
   autoStart?: boolean;
+
+  /**
+   * The duration in milliseconds for which a Scanned Pixel should
+   * be considered available since the last received advertisement.
+   * A value of 0 keeps the dice forever.
+   * @default 5000 ms.
+   **/
+  keepAliveDuration?: number;
 }
 
 /**
@@ -62,10 +70,7 @@ export function usePixelScannerNotify<T>(
   const [status, setStatus] = React.useState<PixelScannerStatus>("stopped");
   const [items, setItems] = React.useState<T[]>([]);
   const itemsRef = React.useRef(items); // Keep track of items list outside of a state
-  const scanner = React.useMemo(() => {
-    const scanner = new PixelScanner();
-    return scanner;
-  }, []);
+  const scanner = React.useMemo(() => new PixelScanner(), []);
 
   // Clean-up on umount so the list if not kept after a Fast Refresh
   React.useEffect(() => {
@@ -90,11 +95,13 @@ export function usePixelScannerNotify<T>(
 
   // Options default values
   const minNotifyInterval = opt?.minUpdateInterval ?? 200;
+  const keepAliveDuration = opt?.keepAliveDuration ?? 5000;
   const scanFilter = opt?.scanFilter;
   React.useEffect(() => {
     scanner.minNotifyInterval = minNotifyInterval;
     scanner.scanFilter = scanFilter;
-  }, [minNotifyInterval, scanFilter, scanner]);
+    scanner.keepAliveDuration = keepAliveDuration;
+  }, [keepAliveDuration, minNotifyInterval, scanFilter, scanner]);
 
   // The returned dispatcher (stable)
   const dispatch = React.useCallback(

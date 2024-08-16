@@ -34,7 +34,7 @@ export const SwipeablePixelsList = React.memo(function ({
 }: SwipeablePixelsListProps & BaseBoxProps) {
   // Scanning
   const [scannedDevices, scannerDispatch, scanStatus] =
-    useFocusScannedPixelNotifiers({ minUpdateInterval });
+    useFocusScannedPixelNotifiers({ minUpdateInterval, keepAliveDuration: 0 });
 
   // Build our PixelDispatcher instances
   const lastDispatchersList = React.useRef<
