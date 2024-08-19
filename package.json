@@ -60,7 +60,7 @@
     "eslint": "^8.57.0",
     "eslint-config-universe": "^12.1.0",
     "eslint-plugin-jest": "^28.5.0",
-    "expo": "~51.0.26",
+    "expo": "~51.0.28",
     "find-yarn-workspace-root": "^2.0.0",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
