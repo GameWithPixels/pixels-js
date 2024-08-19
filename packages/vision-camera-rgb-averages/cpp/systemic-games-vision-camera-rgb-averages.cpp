@@ -1,11 +1,12 @@
 #include "systemic-games-vision-camera-rgb-averages.h"
 #include <algorithm>
 #include <chrono>
+#include <jsi/jsi.h>
 #ifdef ANDROID
 #include "../../../node_modules/react-native-vision-camera/android/src/main/cpp/frameprocessors/FrameHostObject.h"
 using namespace vision;
 #else
-#include "../../../node_modules/react-native-vision-camera/ios/FrameProcessors/FrameHostObject.h"
+// #include "../../../node_modules/react-native-vision-camera/ios/FrameProcessors/FrameHostObject.h"
 #endif
 
 namespace systemicgames_visioncamerargbaverages {
@@ -17,7 +18,9 @@ namespace systemicgames_visioncamerargbaverages {
                             const jsi::Value *args,
                             size_t count) -> jsi::Value
         {
-#if __ANDROID_API__ >= 26
+#ifndef ANDROID
+            throw jsi::JSError(runtime, "RgbAverages only available on Android.");
+#elif __ANDROID_API__ >= 26
 			if (!count) {
 				throw jsi::JSError(runtime, "No arguments provided!");
 			}
