@@ -40,6 +40,7 @@
     "@react-navigation/native-stack": "^6.11.0",
     "@reduxjs/toolkit": "~1.9.5",
     "@sentry/react-native": "~5.30.0",
+    "@shopify/react-native-skia": "1.2.3",
     "@systemic-games/pixels-three": "*",
     "@systemic-games/react-native-bluetooth-le": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
