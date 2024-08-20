@@ -28,7 +28,7 @@ export function usePixelDfuState(pixelId?: number): {
         }
       }
     };
-    central.addEventListener("pixelDfuState", onState);
+    central.addListener("pixelDfuState", onState);
     const onProgress = ({
       pixel,
       progress,
@@ -37,7 +37,7 @@ export function usePixelDfuState(pixelId?: number): {
         setProgress(progress);
       }
     };
-    central.addEventListener("pixelDfuProgress", onProgress);
+    central.addListener("pixelDfuProgress", onProgress);
     const onError = ({
       pixel,
       error,
@@ -46,11 +46,11 @@ export function usePixelDfuState(pixelId?: number): {
         setError(error);
       }
     };
-    central.addEventListener("pixelDfuError", onError);
+    central.addListener("pixelDfuError", onError);
     return () => {
-      central.removeEventListener("pixelDfuState", onState);
-      central.removeEventListener("pixelDfuProgress", onProgress);
-      central.removeEventListener("pixelDfuError", onError);
+      central.removeListener("pixelDfuState", onState);
+      central.removeListener("pixelDfuProgress", onProgress);
+      central.removeListener("pixelDfuError", onError);
     };
   }, [central, pixelId]);
   return { state, progress, error };

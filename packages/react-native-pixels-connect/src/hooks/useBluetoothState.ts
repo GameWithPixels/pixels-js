@@ -10,9 +10,9 @@ export function useBluetoothState(): BluetoothState {
     setState(Central.getBluetoothState());
     const onBluetoothState = ({ state }: { state: BluetoothState }) =>
       setState(state);
-    Central.addEventListener("bluetoothState", onBluetoothState);
+    Central.addListener("bluetoothState", onBluetoothState);
     return () => {
-      Central.removeEventListener("bluetoothState", onBluetoothState);
+      Central.removeListener("bluetoothState", onBluetoothState);
     };
   }, []);
   return state;

@@ -211,9 +211,9 @@ function TelemetryModal({
         const values = getValues(data);
         chartRef.current?.push(values.x, values.yValues);
       };
-      pd.addEventListener("telemetry", listener);
+      pd.addListener("telemetry", listener);
       return () => {
-        pd.removeEventListener("telemetry", listener);
+        pd.removeListener("telemetry", listener);
       };
     }
   }, [getValues, pd, props.visible]);
@@ -782,11 +782,11 @@ export function PixelDetails({
   // Profile upload
   const [uploadProgress, setUploadProgress] = React.useState<number>();
   React.useEffect(() => {
-    pd.addEventListener("error", setLastError);
-    pd.addEventListener("profileUploadProgress", setUploadProgress);
+    pd.addListener("error", setLastError);
+    pd.addListener("profileUploadProgress", setUploadProgress);
     return () => {
-      pd.removeEventListener("error", setLastError);
-      pd.removeEventListener("profileUploadProgress", setUploadProgress);
+      pd.removeListener("error", setLastError);
+      pd.removeListener("profileUploadProgress", setUploadProgress);
     };
   }, [pd]);
 

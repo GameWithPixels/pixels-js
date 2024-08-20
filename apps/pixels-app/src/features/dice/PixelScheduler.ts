@@ -181,7 +181,7 @@ export class PixelScheduler {
    * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
    */
-  addEventListener<K extends keyof PixelSchedulerEventMap>(
+  addListener<K extends keyof PixelSchedulerEventMap>(
     type: K,
     listener: EventReceiver<PixelSchedulerEventMap[K]>
   ): void {
@@ -196,7 +196,7 @@ export class PixelScheduler {
    * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
    */
-  removeEventListener<K extends keyof PixelSchedulerEventMap>(
+  removeListener<K extends keyof PixelSchedulerEventMap>(
     type: K,
     listener: EventReceiver<PixelSchedulerEventMap[K]>
   ): void {

@@ -343,14 +343,14 @@ export class ChargerDispatcher
     this._updateLastActivity();
   }
 
-  addEventListener<K extends keyof ChargerDispatcherEventMap>(
+  addListener<K extends keyof ChargerDispatcherEventMap>(
     type: K,
     listener: EventReceiver<ChargerDispatcherEventMap[K]>
   ): void {
     this._evEmitter.addListener(type, listener);
   }
 
-  removeEventListener<K extends keyof ChargerDispatcherEventMap>(
+  removeListener<K extends keyof ChargerDispatcherEventMap>(
     type: K,
     listener: EventReceiver<ChargerDispatcherEventMap[K]>
   ): void {

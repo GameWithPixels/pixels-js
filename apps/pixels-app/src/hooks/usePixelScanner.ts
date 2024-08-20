@@ -19,16 +19,16 @@ export function usePixelScanner(): {
   const [scanError, setScanError] = React.useState<Error>();
   const needStopRef = React.useRef(false);
   React.useEffect(() => {
-    central.addEventListener("availablePixels", setAvailablePixels);
+    central.addListener("availablePixels", setAvailablePixels);
     const onScanError = ({ error }: { error: Error }) => setScanError(error);
-    central.addEventListener("onScanError", onScanError);
+    central.addListener("onScanError", onScanError);
     const onScanStatus = (status: ScanStatus) =>
       status === "scanning" && setScanError(undefined);
-    central.addEventListener("scanStatus", onScanStatus);
+    central.addListener("scanStatus", onScanStatus);
     return () => {
-      central.removeEventListener("availablePixels", setAvailablePixels);
-      central.removeEventListener("onScanError", onScanError);
-      central.removeEventListener("scanStatus", onScanStatus);
+      central.removeListener("availablePixels", setAvailablePixels);
+      central.removeListener("onScanError", onScanError);
+      central.removeListener("scanStatus", onScanStatus);
       if (needStopRef.current) {
         needStopRef.current = false;
         central.stopScan();
@@ -57,9 +57,9 @@ export function usePixelScannerStatus(): ScanStatus {
   const [scanStatus, setScanStatus] = React.useState(central.scanStatus);
   React.useEffect(() => {
     setScanStatus(central.scanStatus);
-    central.addEventListener("scanStatus", setScanStatus);
+    central.addListener("scanStatus", setScanStatus);
     return () => {
-      central.removeEventListener("scanStatus", setScanStatus);
+      central.removeListener("scanStatus", setScanStatus);
     };
   }, [central]);
   return scanStatus;

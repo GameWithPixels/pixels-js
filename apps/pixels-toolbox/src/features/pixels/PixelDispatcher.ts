@@ -411,14 +411,14 @@ export class PixelDispatcher
     this._updateLastActivity();
   }
 
-  addEventListener<K extends keyof PixelDispatcherEventMap>(
+  addListener<K extends keyof PixelDispatcherEventMap>(
     type: K,
     listener: EventReceiver<PixelDispatcherEventMap[K]>
   ): void {
     this._evEmitter.addListener(type, listener);
   }
 
-  removeEventListener<K extends keyof PixelDispatcherEventMap>(
+  removeListener<K extends keyof PixelDispatcherEventMap>(
     type: K,
     listener: EventReceiver<PixelDispatcherEventMap[K]>
   ): void {

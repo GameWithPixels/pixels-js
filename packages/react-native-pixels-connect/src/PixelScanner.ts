@@ -196,7 +196,7 @@ export class PixelScanner {
    * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
    */
-  addEventListener<T extends keyof PixelScannerEventMap>(
+  addListener<T extends keyof PixelScannerEventMap>(
     type: T,
     listener: (ev: PixelScannerEventMap[T]) => void
   ): void {
@@ -207,7 +207,7 @@ export class PixelScanner {
     ) {
       this._onBluetoothState = ({ state }: { state: BluetoothState }) =>
         this._emitEvent("isReady", state === "ready");
-      Central.addEventListener("bluetoothState", this._onBluetoothState);
+      Central.addListener("bluetoothState", this._onBluetoothState);
     }
     this._evEmitter.addListener(type, listener);
   }
@@ -220,7 +220,7 @@ export class PixelScanner {
    * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
    */
-  removeEventListener<T extends keyof PixelScannerEventMap>(
+  removeListener<T extends keyof PixelScannerEventMap>(
     type: T,
     listener: (ev: PixelScannerEventMap[T]) => void
   ): void {
@@ -230,7 +230,7 @@ export class PixelScanner {
       this._onBluetoothState &&
       this._evEmitter.listenerCount(type) <= 0
     ) {
-      Central.removeEventListener("bluetoothState", this._onBluetoothState);
+      Central.removeListener("bluetoothState", this._onBluetoothState);
       this._onBluetoothState = undefined;
     }
   }

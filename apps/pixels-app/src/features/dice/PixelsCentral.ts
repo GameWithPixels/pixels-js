@@ -110,7 +110,7 @@ export class PixelsCentral {
    * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
    */
-  addEventListener<K extends keyof PixelsCentralEventMap>(
+  addListener<K extends keyof PixelsCentralEventMap>(
     type: K,
     listener: EventReceiver<PixelsCentralEventMap[K]>
   ): void {
@@ -137,7 +137,7 @@ export class PixelsCentral {
         }
         this._emitEvent("isReady", isReady);
       };
-      this._scanner.addEventListener("isReady", this._onScannerReady);
+      this._scanner.addListener("isReady", this._onScannerReady);
     } else if (
       type === "scanStatus" &&
       this._evEmitter.listenerCount(type) === 0 &&
@@ -145,7 +145,7 @@ export class PixelsCentral {
     ) {
       this._onScanStatus = (status: ScanStatus) =>
         this._emitEvent("scanStatus", status);
-      this._scanner.addEventListener("status", this._onScanStatus);
+      this._scanner.addListener("status", this._onScanStatus);
     }
     this._evEmitter.addListener(type, listener);
   }
@@ -158,7 +158,7 @@ export class PixelsCentral {
    * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
    */
-  removeEventListener<K extends keyof PixelsCentralEventMap>(
+  removeListener<K extends keyof PixelsCentralEventMap>(
     type: K,
     listener: EventReceiver<PixelsCentralEventMap[K]>
   ): void {
@@ -168,14 +168,14 @@ export class PixelsCentral {
       this._onScannerReady &&
       this._evEmitter.listenerCount(type) <= 0
     ) {
-      this._scanner.removeEventListener("isReady", this._onScannerReady);
+      this._scanner.removeListener("isReady", this._onScannerReady);
       this._onScannerReady = undefined;
     } else if (
       type === "scanStatus" &&
       this._onScanStatus &&
       this._evEmitter.listenerCount(type) <= 0
     ) {
-      this._scanner.removeEventListener("status", this._onScanStatus);
+      this._scanner.removeListener("status", this._onScanStatus);
       this._onScanStatus = undefined;
     }
   }
@@ -419,8 +419,8 @@ export class PixelsCentral {
     };
     const onScanOps = (ev: PixelScannerEventMap["scanListOperations"]) =>
       this._scanListListener(ev);
-    this._scanner.addEventListener("scanStatus", onStatus);
-    this._scanner.addEventListener("scanListOperations", onScanOps);
+    this._scanner.addListener("scanStatus", onStatus);
+    this._scanner.addListener("scanListOperations", onScanOps);
     // Setup cleanup function
     this._scannerUnhook?.();
     this._scannerUnhook = () => {
@@ -431,8 +431,8 @@ export class PixelsCentral {
       }
       this._scanTimeoutIds.length = 0;
       this._connectFromScan.clear();
-      this._scanner.removeEventListener("scanStatus", onStatus);
-      this._scanner.removeEventListener("scanListOperations", onScanOps);
+      this._scanner.removeListener("scanStatus", onStatus);
+      this._scanner.removeListener("scanListOperations", onScanOps);
       // Clear scan list
       if (this._scannedPixels.length) {
         this._scannedPixels.length = 0;

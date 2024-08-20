@@ -13,9 +13,9 @@ export function useWatchedPixels(): Readonly<Pixel[]> {
   React.useEffect(() => {
     const onPixels = (pixels: PixelsCentralEventMap["pixels"]) =>
       setPixels(pixels.map((p) => central.getPixel(p.pixelId)!));
-    central.addEventListener("pixels", onPixels);
+    central.addListener("pixels", onPixels);
     return () => {
-      central.removeEventListener("pixels", onPixels);
+      central.removeListener("pixels", onPixels);
     };
   }, [central]);
   return pixels;
