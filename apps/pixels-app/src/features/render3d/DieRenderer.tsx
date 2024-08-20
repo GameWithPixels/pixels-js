@@ -59,6 +59,8 @@ class SceneRenderer {
   private _animUpdate?: UpdateCallback;
   private _dispose?: () => void;
 
+  private static _warnOnce = false;
+
   get speed(): number {
     return this._speed;
   }
@@ -88,6 +90,23 @@ class SceneRenderer {
 
   setup(gl: ExpoWebGLRenderingContext, pedestalStyle?: PedestalStyle): void {
     try {
+      // Removes (but does not fix) the warning EXGL: gl.pixelStorei() doesn't support this parameter yet!
+      const pixelStorei = gl.pixelStorei.bind(gl);
+      gl.pixelStorei = function (...args) {
+        const [parameter] = args;
+        switch (parameter) {
+          case gl.UNPACK_FLIP_Y_WEBGL:
+            return pixelStorei(...args);
+          default:
+            if (!SceneRenderer._warnOnce) {
+              SceneRenderer._warnOnce = true;
+              console.warn(
+                "EXGL: gl.pixelStorei() doesn't support this parameter yet!"
+              );
+            }
+        }
+      };
+
       // Dispose resources from previous setup
       this._dispose?.();
 
