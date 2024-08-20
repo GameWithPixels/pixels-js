@@ -15,10 +15,10 @@ export function usePixelsCentralOnReady(
 ): void {
   const central = usePixelsCentral();
   React.useEffect(() => {
-    central.addEventListener("isReady", onReadyCallback);
+    central.addListener("isReady", onReadyCallback);
     onReadyCallback(central.isReady);
     return () => {
-      central.removeEventListener("isReady", onReadyCallback);
+      central.removeListener("isReady", onReadyCallback);
     };
   }, [central, onReadyCallback]);
 }

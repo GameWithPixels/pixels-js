@@ -32,9 +32,9 @@ export function useIsTransferring({
       }
     };
     const scheduler = central.getScheduler(pixelId);
-    scheduler.addEventListener("onOperation", onOperation);
+    scheduler.addListener("onOperation", onOperation);
     setIsTransferring(scheduler.currentOperation?.type === "programProfile");
-    return scheduler.removeEventListener("onOperation", onOperation);
+    return scheduler.removeListener("onOperation", onOperation);
   }, [central, pixelId]);
   return transferring;
 }

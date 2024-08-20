@@ -352,14 +352,14 @@ export const Central = {
     return _scanStatus;
   },
 
-  addEventListener<T extends keyof CentralEventMap>(
+  addListener<T extends keyof CentralEventMap>(
     type: T,
     listener: (ev: CentralEventMap[T]) => void
   ): void {
     _evEmitter.addListener(type, listener);
   },
 
-  removeEventListener<T extends keyof CentralEventMap>(
+  removeListener<T extends keyof CentralEventMap>(
     type: T,
     listener: (ev: CentralEventMap[T]) => void
   ): void {

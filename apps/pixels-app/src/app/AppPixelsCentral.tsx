@@ -180,7 +180,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           }
         }
       };
-      scheduler.addEventListener("onOperation", onPixelOp);
+      scheduler.addListener("onOperation", onPixelOp);
 
       // Profile
       const onProfileHash = ({
@@ -232,10 +232,10 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         pixel.removePropertyListener("profileHash", onProfileHash);
         pixel.removeEventListener("roll", onRoll);
         pixel.removeEventListener("remoteAction", onRemoteAction);
-        scheduler.removeEventListener("onOperation", onPixelOp);
+        scheduler.removeListener("onOperation", onPixelOp);
       });
     };
-    central.addEventListener("onPixelFound", onPixelFound);
+    central.addListener("onPixelFound", onPixelFound);
 
     // Unhook from Pixel events
     const onPixelRemoved = ({
@@ -244,14 +244,14 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       disposers.get(pixel.pixelId)?.();
       disposers.delete(pixel.pixelId);
     };
-    central.addEventListener("onPixelRemoved", onPixelRemoved);
+    central.addListener("onPixelRemoved", onPixelRemoved);
 
     return () => {
       for (const dispose of disposers.values()) {
         dispose();
       }
-      central.removeEventListener("onPixelFound", onPixelFound);
-      central.removeEventListener("onPixelRemoved", onPixelRemoved);
+      central.removeListener("onPixelFound", onPixelFound);
+      central.removeListener("onPixelRemoved", onPixelRemoved);
       central.stopScan();
       central.unwatchAll();
     };

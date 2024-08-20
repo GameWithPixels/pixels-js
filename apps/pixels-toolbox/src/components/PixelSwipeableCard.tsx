@@ -122,7 +122,7 @@ function PixelCard({
 
   // Subscribe to events for which we store the resulting state
   React.useEffect(() => {
-    const add = pixelDispatcher.addEventListener.bind(pixelDispatcher);
+    const add = pixelDispatcher.addListener.bind(pixelDispatcher);
     add("error", setLastError);
     const setLastActivity = (ms: number) =>
       setLastActivitySec(Math.floor(ms / 1000));
@@ -145,7 +145,7 @@ function PixelCard({
     };
     pixelDispatcher.pixel.addEventListener("userMessage", notifyUserListener);
     return () => {
-      const remove = pixelDispatcher.removeEventListener.bind(pixelDispatcher);
+      const remove = pixelDispatcher.removeListener.bind(pixelDispatcher);
       remove("error", setLastError);
       remove("durationSinceLastActivity", setLastActivity);
       remove("profileUploadProgress", setProfileUpload);
@@ -339,13 +339,13 @@ export function PixelSwipeableCard({
     pixelDispatcher.hasActiveDFU
   );
   React.useEffect(() => {
-    pixelDispatcher.addEventListener("hasAvailableDFU", setDfuAvailable);
-    pixelDispatcher.addEventListener("hasActiveDFU", setDfuActive);
-    pixelDispatcher.addEventListener("hasQueuedDFU", setDfuQueued);
+    pixelDispatcher.addListener("hasAvailableDFU", setDfuAvailable);
+    pixelDispatcher.addListener("hasActiveDFU", setDfuActive);
+    pixelDispatcher.addListener("hasQueuedDFU", setDfuQueued);
     return () => {
-      pixelDispatcher.removeEventListener("hasAvailableDFU", setDfuAvailable);
-      pixelDispatcher.removeEventListener("hasActiveDFU", setDfuActive);
-      pixelDispatcher.removeEventListener("hasQueuedDFU", setDfuQueued);
+      pixelDispatcher.removeListener("hasAvailableDFU", setDfuAvailable);
+      pixelDispatcher.removeListener("hasActiveDFU", setDfuActive);
+      pixelDispatcher.removeListener("hasQueuedDFU", setDfuQueued);
     };
   }, [pixelDispatcher]);
 

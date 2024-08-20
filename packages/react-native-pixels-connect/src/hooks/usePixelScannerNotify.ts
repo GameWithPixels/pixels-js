@@ -82,7 +82,7 @@ export function usePixelScannerNotify<T>(
 
   // Hook updateItems to scan events
   React.useEffect(() => {
-    scanner.addEventListener("scanListOperations", ({ ops }) => {
+    scanner.addListener("scanListOperations", ({ ops }) => {
       // Note: we don't do setItems(items => updateItems(items, ...))
       // because that would run updateItems() callback while rendering the component
       // hosting this hook, and thus preventing the callback from modifying other

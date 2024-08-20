@@ -11,9 +11,9 @@ export function useIsDieUpdatingFirmware(pixelId: number) {
     const onPixelInDFU = () =>
       setUpdating(central.pixelInDFU?.pixelId === pixelId);
     onPixelInDFU();
-    central.addEventListener("pixelInDFU", onPixelInDFU);
+    central.addListener("pixelInDFU", onPixelInDFU);
     return () => {
-      central.removeEventListener("pixelInDFU", onPixelInDFU);
+      central.removeListener("pixelInDFU", onPixelInDFU);
     };
   }, [central, pixelId]);
   return updating;
@@ -25,9 +25,9 @@ export function useIsAppUpdatingFirmware(): boolean {
   React.useEffect(() => {
     const onPixelInDFU = () => setUpdating(!!central.pixelInDFU);
     onPixelInDFU();
-    central.addEventListener("pixelInDFU", onPixelInDFU);
+    central.addListener("pixelInDFU", onPixelInDFU);
     return () => {
-      central.removeEventListener("pixelInDFU", onPixelInDFU);
+      central.removeListener("pixelInDFU", onPixelInDFU);
     };
   }, [central]);
   return updating;

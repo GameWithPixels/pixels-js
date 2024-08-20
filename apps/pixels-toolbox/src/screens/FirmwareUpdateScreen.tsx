@@ -126,7 +126,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
       focusedRef.current = true;
       const onStatus = ({ status }: { status: ScanStatus }) =>
         setScanStatus(status);
-      Central.addEventListener("scanStatus", onStatus);
+      Central.addListener("scanStatus", onStatus);
       if (!dfuTarget) {
         const task = async () => {
           await Central.stopScan();
@@ -149,7 +149,7 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         task().catch(showBoundary);
         return () => {
           focusedRef.current = false;
-          Central.removeEventListener("scanStatus", onStatus);
+          Central.removeListener("scanStatus", onStatus);
           pendingScans.current.length = 0;
           setScannedPeripherals([]);
           Central.stopScan().catch(showBoundary);
