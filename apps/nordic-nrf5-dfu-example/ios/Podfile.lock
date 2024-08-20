@@ -333,7 +333,7 @@ PODS:
     - glog
   - react-native-bluetooth-le (1.2.0):
     - React-Core
-  - react-native-document-picker (9.0.1):
+  - react-native-document-picker (9.3.0):
     - React-Core
   - react-native-nordic-nrf5-dfu (1.2.0):
     - iOSDFULibrary (~> 4.13.0)
