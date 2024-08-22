@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { StyleProp, ViewStyle } from "react-native";
 import {
@@ -7,6 +6,7 @@ import {
   useTheme,
 } from "react-native-paper";
 
+import { RotatingGradient } from "./RotatingGradient";
 import { getBorderColor, makeTransparent } from "./colors";
 
 import { getBorderRadius } from "~/features/getBorderRadius";
@@ -92,9 +92,7 @@ export function TouchableCard({
       : "transparent"
   );
   return (
-    <LinearGradient
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
+    <RotatingGradient
       colors={[
         makeTransparent(colors.primary, gradientAlpha),
         makeTransparent(colors.tertiary, gradientAlpha),
@@ -124,6 +122,6 @@ export function TouchableCard({
       >
         <>{children}</>
       </AnimatedTouchableRipple>
-    </LinearGradient>
+    </RotatingGradient>
   );
 }
