@@ -7,7 +7,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { View } from "react-native";
+import { View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Animated, {
   Easing,
@@ -16,7 +16,6 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { ViewProps } from "react-native-svg/lib/typescript/fabric/utils";
 
 import { FirmwareUpdateBadge } from "./FirmwareUpdateBadge";
 import { PairedDieRendererWithRoll } from "./PairedDieRendererWithRoll";
@@ -24,6 +23,7 @@ import { PixelBattery } from "./PixelBattery";
 import { PixelConnectionStatus } from "./PixelConnectionStatus";
 import { PixelRssi } from "./PixelRssi";
 import { PixelTransferProgressBar } from "./PixelTransferProgressBar";
+import { RotatingGradient } from "./RotatingGradient";
 import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { GradientButton } from "./buttons";
 import { DieWireframe } from "./icons";
@@ -384,12 +384,9 @@ export function EmptyDiceBagCard({ onPress }: { onPress: () => void }) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
   return (
-    <LinearGradient
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
+    <RotatingGradient
       colors={[colors.primary, colors.tertiary]}
       style={{
-        overflow: "hidden",
         width: "80%",
         marginTop: 20,
         alignSelf: "center",
@@ -418,7 +415,7 @@ export function EmptyDiceBagCard({ onPress }: { onPress: () => void }) {
         </Text>
         <GradientButton onPress={onPress}>Add Die</GradientButton>
       </View>
-    </LinearGradient>
+    </RotatingGradient>
   );
 }
 
