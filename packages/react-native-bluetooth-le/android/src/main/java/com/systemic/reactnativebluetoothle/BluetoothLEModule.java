@@ -364,12 +364,11 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void connectPeripheral(String deviceSystemId,
                                   String requiredServicesUuids,
-                                  boolean autoReconnect,
                                   @NonNull Promise promise) {
         runRequest(deviceSystemId,
             "connect",
             promise,
-            (peripheral, callback) -> peripheral.connect(requiredServicesUuids, autoReconnect, callback));
+            (peripheral, callback) -> peripheral.connect(requiredServicesUuids, callback));
     }
 
     @ReactMethod
