@@ -376,7 +376,7 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
                 )}, ${DiceUtils.faceFromIndex(
                   telemetry.faceIndex,
                   pixel.dieType
-                )} (index: ${telemetry.faceIndex})`
+                )} (${"index"}: ${telemetry.faceIndex})`
               : "unknown"}
           </TextEntry>
           <TextEntry title={t("accelerometer")}>{acc}</TextEntry>

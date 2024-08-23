@@ -81,6 +81,19 @@ i18n
           whiteAurora: "White Aurora",
           clear: "Clear",
           custom: "Custom",
+          // Battery Controller State
+          empty: "Empty",
+          transitionOn: "Transition On",
+          transitionOff: "Transition Off",
+          chargingLow: "Charging Low",
+          cooldown: "Cooldown",
+          trickle: "Trickle",
+          lowTemp: "Low Temperature",
+          highTemp: "High Temperature",
+          // Battery Controller Mode
+          default: "Default",
+          forceDisableCharging: " ",
+          forceEnableCharging: "Force Enable Charging",
 
           // Pixels Scan List
           noPixelsFound: "No Pixels found so far...",
@@ -115,9 +128,6 @@ i18n
           internalChargerState: "MCP73832 Charger State",
           chargerOn: "Charger On",
           chargerOff: "Charger Off",
-          default: "Default",
-          forceDisableCharging: "Force Disable Charging",
-          forceEnableCharging: "Force Enable Charging",
           setChargerMode: "Set Charger Mode",
           rssi: "RSSI",
           temperature: "Temperature",
@@ -160,6 +170,7 @@ i18n
           setDieType: "Set Die Type",
           setDieColorway: "Set Colorway",
           charger: "Charger",
+          index: "index",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -365,6 +376,19 @@ i18n
           whiteAurora: "白极光色",
           clear: "透明色",
           custom: "定制色",
+          // Battery Controller State
+          // empty: "Empty",
+          // transitionOn: "Transition On",
+          // transitionOff: "Transition Off",
+          // chargingLow: "Charging Low",
+          // cooldown: "Cooldown",
+          // trickle: "Trickle",
+          // lowTemp: "Low Temperature",
+          // highTemp: "High Temperature",
+          // Battery Controller Mode
+          default: "默认",
+          forceDisableCharging: "强制禁用充电",
+          forceEnableCharging: "强制启用充电",
 
           // Pixels Scan List
           noPixelsFound: "没有发现骰子",
@@ -395,6 +419,7 @@ i18n
           battery: "电池",
           chargingState: "电池状态",
           batteryControllerState: "电池充电放电状态",
+          batteryControllerMode: "电池控制模式",
           internalChargerState: "MCP73832充电器状态",
           chargerOn: "打开充电器",
           chargerOff: "关闭充电器",
@@ -422,6 +447,7 @@ i18n
           sendingAsPrintStatus: "发送标贴到打印机",
           doneAsPrintStatus: "打印成功",
           charger: "充电器",
+          index: "指数",
 
           // Home Screen
           pixelsScanner: "骰子扫描器",
