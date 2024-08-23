@@ -57,37 +57,40 @@ export class BluetoothUnavailableError extends ScanStartFailed {
 
 export class UnknownPeripheralError extends BluetoothLEError {
   constructor(systemId: string) {
-    super(`No peripheral found with system id ${systemId}`);
+    super(`No known peripheral with system id ${systemId}`);
     this.name = "UnknownPeripheralError";
   }
 }
 
 export type ConnectErrorType =
   | "createFailed"
-  | "inUse"
   | "disconnected"
   | "timeout"
-  | "bluetoothUnavailable";
+  | "bluetoothUnavailable"
+  | "cancelled"
+  | "error";
 
 function getErrorMessage(name: string, type: ConnectErrorType): string {
   switch (type) {
     case "createFailed":
       return `Failed to create native peripheral for ${name}`;
-    case "inUse":
-      return `Peripheral ${name} was already assigned a connection status callback, call disconnect first before assigning a new callback`;
     case "disconnected":
       return `Got disconnected while connecting to peripheral ${name}`;
     case "timeout":
       return `Connection timeout for peripheral ${name}`;
     case "bluetoothUnavailable":
       return `Bluetooth unavailable while connecting to peripheral ${name}`;
+    case "cancelled":
+      return `Connection cancelled for peripheral ${name}`;
+    case "error":
+      return `Connection errored for peripheral ${name}`;
   }
 }
 
 export class ConnectError extends BluetoothLEError {
   readonly type: ConnectErrorType;
-  constructor(name: string, type: ConnectError["type"]) {
-    super(getErrorMessage(name, type));
+  constructor(name: string, type: ConnectError["type"], code?: string) {
+    super(getErrorMessage(name, type) + (code ? ` (${code})` : ""));
     this.name = "ConnectError";
     this.type = type;
   }

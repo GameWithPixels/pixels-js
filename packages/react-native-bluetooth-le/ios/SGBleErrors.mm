@@ -6,13 +6,9 @@ NSError *SGBleOutOfMemoryError = [NSError errorWithDomain:SGBleErrorDomain
                                                      code:SGBleErrorOutOfMemory
                                                  userInfo:@{ NSLocalizedDescriptionKey: @"Out of memory" }];
 
-NSError *SGBleNotImplementedError = [NSError errorWithDomain:SGBleErrorDomain
-                                                        code:SGBleErrorNotImplemented
-                                                    userInfo:@{ NSLocalizedDescriptionKey: @"Call not implemented" }];
-
-NSError *SGBleInvalidParameterError = [NSError errorWithDomain:SGBleErrorDomain
-                                                          code:SGBleErrorInvalidParameter
-                                                      userInfo:@{ NSLocalizedDescriptionKey: @"Invalid parameter" }];
+NSError *SGBleInvalidArgumentError = [NSError errorWithDomain:SGBleErrorDomain
+                                                         code:SGBleErrorInvalidParameter
+                                                     userInfo:@{ NSLocalizedDescriptionKey: @"Invalid argument" }];
 
 NSError *SGBleBluetoothStateError = [NSError errorWithDomain:SGBleErrorDomain
                                                         code:SGBleErrorBluetoothState

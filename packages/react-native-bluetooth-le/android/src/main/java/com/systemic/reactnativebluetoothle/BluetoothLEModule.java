@@ -37,10 +37,10 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
 
     private final static String TAG = "SystemicGames";
 
-    private final static String INTERNAL_ERROR = "INTERNAL_ERROR";
-    private final static String INVALID_ARGUMENT = "INVALID_ARGUMENT";
-    private final static String INVALID_REQUEST = "INVALID_REQUEST";
-    private final static String UNKNOWN_PERIPHERAL = "UNKNOWN_PERIPHERAL";
+    private final static String INTERNAL_ERROR = "ERROR_INTERNAL_ERROR";
+    private final static String INVALID_ARGUMENT = "ERROR_INVALID_PARAMETER";
+    private final static String INVALID_REQUEST = "ERROR_INVALID_REQUEST";
+    private final static String UNKNOWN_PERIPHERAL = "ERROR_UNKNOWN_PERIPHERAL";
 
     final HashMap<Long, BluetoothDevice> _devices = new HashMap<>(16);
     final HashMap<Long, Peripheral> _peripherals = new HashMap<>(16);

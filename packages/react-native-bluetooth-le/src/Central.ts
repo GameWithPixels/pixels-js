@@ -702,7 +702,21 @@ export const Central = {
       console.log(
         `[BLE ${name}] Error connecting to peripheral: ${errToStr(error)}`
       );
-      throw error;
+      const code = getNativeErrorCode(error);
+      switch (code) {
+        case "ERROR_DEVICE_DISCONNECTED":
+          throw new Errors.ConnectError(name, "disconnected");
+        case "ERROR_TIMEOUT":
+          throw new Errors.ConnectError(name, "timeout");
+        case "ERROR_CANCELLED":
+          throw new Errors.ConnectError(name, "cancelled");
+        case "ERROR_BLUETOOTH_DISABLED":
+          throw new Errors.ConnectError(name, "bluetoothUnavailable");
+        case "ERROR_UNKNOWN_PERIPHERAL":
+          throw new Errors.UnknownPeripheralError(_getSystemId(peripheral));
+        default:
+          throw code ? new Errors.ConnectError(name, "error", code) : error;
+      }
     } finally {
       if (timeoutId) {
         clearTimeout(timeoutId);
