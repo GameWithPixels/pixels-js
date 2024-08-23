@@ -46,16 +46,10 @@ extern NSErrorDomain SGBleErrorDomain;
 extern NSError *SGBleOutOfMemoryError;
 
 /**
- * @brief Call not implemented.
- * @ingroup Apple_Objective-C
- */
-extern NSError *SGBleNotImplementedError;
-
-/**
  * @brief Peripheral request was given one or more invalid parameters.
  * @ingroup Apple_Objective-C
  */
-extern NSError *SGBleInvalidParameterError;
+extern NSError *SGBleInvalidArgumentError;
 
 /**
  * @brief Bluetooth not in proper state to execute request.

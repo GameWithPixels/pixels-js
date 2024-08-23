@@ -11,8 +11,44 @@ static NSString *characteristicValueChangedEventName = @"characteristicValueChan
 
 inline void rejectWithError(NSError *error, RCTPromiseRejectBlock reject)
 {
-    // TODO error code
-    reject(@"ERROR", error.localizedDescription, error);
+    NSString *errorCode;
+    if (error == SGBleOutOfMemoryError)
+    {
+        errorCode = @"ERROR_OUT_OF_MEMORY";
+    }
+    else if (error == SGBleInvalidArgumentError)
+    {
+        errorCode = @"ERROR_INVALID_ARGUMENT";
+    }
+    else if (error == SGBleBluetoothStateError)
+    {
+        errorCode = @"ERROR_BLUETOOTH_DISABLED";
+    }
+    else if (error == SGBleRequestCanceledError)
+    {
+        errorCode = @"ERROR_CANCELLED";
+    }
+    else if (error == SGBleDisconnectedError)
+    {
+        errorCode = @"ERROR_DEVICE_DISCONNECTED";
+    }
+    else if (error == SGBleUnknownPeripheralError)
+    {
+        errorCode = @"ERROR_UNKNOWN_PERIPHERAL";
+    }
+    else
+    {
+        errorCode = @"ERROR";
+    }
+
+    if (error)
+    {
+        reject(errorCode, error.localizedDescription, error);
+    }
+    else
+    {
+        reject(errorCode, @"Unknown error", nil);
+    }
 }
 
 inline NSString *toString(SGBleConnectionEvent connectionEvent)
@@ -164,7 +200,7 @@ RCT_EXPORT_MODULE();
     }
     else if (reject)
     {
-        rejectWithError(SGBleInvalidParameterError, reject);
+        rejectWithError(SGBleInvalidArgumentError, reject);
     }
     return nil;
 }
@@ -181,7 +217,7 @@ RCT_EXPORT_MODULE();
         }
         else if (reject)
         {
-            rejectWithError(SGBleInvalidParameterError, reject);
+            rejectWithError(SGBleInvalidArgumentError, reject);
         }
     }
     return nil;
@@ -201,7 +237,7 @@ RCT_EXPORT_MODULE();
             }
         }
     }
-    rejectWithError(SGBleInvalidParameterError, reject);
+    rejectWithError(SGBleInvalidArgumentError, reject);
     return nil;
 }
 
@@ -229,7 +265,7 @@ RCT_EXPORT_MODULE();
                 }
             }
         }
-        rejectWithError(SGBleInvalidParameterError, reject);
+        rejectWithError(SGBleInvalidArgumentError, reject);
     }
     return nil;
 }
@@ -372,6 +408,7 @@ RCT_EXPORT_METHOD(disconnectPeripheral:(NSString *)deviceSystemId
     SGBlePeripheralQueue *peripheral = [self getSGBlePeripheralQueue:deviceSystemId rejecter:nil]; // Don't reject if invalid id
     if (peripheral)
     {
+        // TODO keep other disconnect operations in queue so they are not reported as cancelled
         [peripheral cancelAll];
         [peripheral queueDisconnect:^(NSError *error) {
             if (error)
@@ -560,7 +597,7 @@ RCT_EXPORT_METHOD(writeCharacteristic:(NSString *)deviceSystemId
     }
     else
     {
-        rejectWithError(SGBleInvalidParameterError, reject);
+        rejectWithError(SGBleInvalidArgumentError, reject);
     }
 }
 

@@ -223,7 +223,7 @@
         if (!characteristic || !valueReadHandler)
         {
             NSLog(@">> ReadValueForCharacteristic -> invalid parameter");
-            return SGBleInvalidParameterError;
+            return SGBleInvalidArgumentError;
         }
         
         NSLog(@">> ReadValueForCharacteristic");
@@ -248,7 +248,7 @@
         if (!characteristic || !data)
         {
             NSLog(@">> WriteValue -> invalid parameters");
-            return SGBleInvalidParameterError;
+            return SGBleInvalidArgumentError;
         }
         
         NSLog(@">> WriteValue");
@@ -276,7 +276,7 @@
         if (!characteristic || !valueChangedHandler)
         {
             NSLog(@">> SetNotifyValueForCharacteristic -> invalid parameters");
-            return SGBleInvalidParameterError;
+            return SGBleInvalidArgumentError;
         }
         
         NSLog(@">> SetNotifyValueForCharacteristic");
@@ -314,7 +314,7 @@
             NSLog(@">> Queue canceled while running request of type %@", [SGBleRequest requestTypeToString:requestType]);
             [self qReportRequestResult:SGBleRequestCanceledError forRequestType:requestType];
         
-            // If were trying to connect, cancel connection immediately
+            // If we were trying to connect, cancel connection immediately
             if (requestType == SGBleRequestTypeConnect)
             {
                 NSLog(@">> Queue canceled while connecting => cancelling connection");
@@ -394,7 +394,7 @@
             || ((request.type == SGBleRequestTypeDisconnect) && disconnectState))
         {
             // Connect or disconnect requests return immediately a success if peripheral already
-            // in desired state or transitionning to it
+            // in desired state or transitioning to it
             [self qReportRequestResult:nil forRequestType:request.type];
         }
         else
