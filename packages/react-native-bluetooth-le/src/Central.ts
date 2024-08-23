@@ -604,11 +604,7 @@ export const Central = {
         await delay(300);
 
         // Connect to peripheral
-        await BluetoothLE.connectPeripheral(
-          sysId,
-          pInf.requiredServices,
-          false
-        );
+        await BluetoothLE.connectPeripheral(sysId, pInf.requiredServices);
 
         // Set MTU
         console.log(`[BLE ${name}] Connected, updating MTU`);

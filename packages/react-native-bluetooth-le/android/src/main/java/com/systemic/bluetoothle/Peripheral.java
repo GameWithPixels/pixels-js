@@ -294,11 +294,9 @@ public final class Peripheral
      *
      * @param requiredServicesUuids Comma separated list of services UUIDs that the peripheral
      *                              should support, may be null or empty.
-     * @param autoReconnect Whether to automatically reconnect after an unexpected disconnection
-     *                      (i.e. not requested by a call to disconnect()).
      * @param requestCallback The callback for notifying of the request result.
      */
-    public void connect(final String requiredServicesUuids, final boolean autoReconnect, final RequestCallback requestCallback)
+    public void connect(final String requiredServicesUuids, final RequestCallback requestCallback)
     {
         Log.v(TAG, "==> connect");
 
@@ -332,7 +330,7 @@ public final class Peripheral
 
         // Connect
         _client.connect(_device)
-            .useAutoConnect(autoReconnect)
+            // .useAutoConnect(autoReconnect)
             .timeout(0) // Actually it times out after 30s
             .done(requestCallback).fail(requestCallback).invalid(requestCallback)
             .enqueue();

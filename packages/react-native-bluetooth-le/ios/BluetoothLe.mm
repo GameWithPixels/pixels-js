@@ -383,7 +383,6 @@ RCT_EXPORT_METHOD(releasePeripheral:(NSString *)deviceSystemId
 
 RCT_EXPORT_METHOD(connectPeripheral:(NSString *)deviceSystemId
                   requiredServicesUuids: (NSString *)requiredServicesUuids
-                  autoReconnect: (BOOL)autoReconnect
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
