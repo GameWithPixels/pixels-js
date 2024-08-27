@@ -456,7 +456,6 @@ export class Pixel
 
     // Unmount function
     this._disposeFunc = () => {
-      session.setConnectionEventListener(undefined);
       this.removePropertyListener("status", statusListener);
       this.removeMessageListener("rssi", rssiListener);
       this.removeMessageListener("batteryLevel", batteryLevelListener);
@@ -471,11 +470,7 @@ export class Pixel
     };
   }
 
-  /**
-   * /!\ Internal, don't call this function ;)
-   */
-  private _dispose() {
-    // TODO unused at the moment!
+  protected _internalDispose(): void {
     // Unhook from events
     this._disposeFunc();
   }

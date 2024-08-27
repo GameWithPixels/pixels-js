@@ -148,6 +148,13 @@ export abstract class PixelConnect<
       }
     });
   }
+  /**
+   * /!\ Internal, don't call this function ;)
+   */
+  private _dispose() {
+    this._internalDispose();
+    this._session.dispose();
+  }
 
   /**
    * Registers a listener function that will be called on receiving
@@ -174,6 +181,7 @@ export abstract class PixelConnect<
     this._msgEvEmitter.removeListener(`${msgType}Message`, listener);
   }
 
+  protected abstract _internalDispose(): void;
   protected abstract _internalSetup(): Promise<void>;
   protected abstract _internalDeserializeMessage(
     dataView: DataView
