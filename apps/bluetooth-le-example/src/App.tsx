@@ -3,6 +3,8 @@ import {
   ConnectionStatus,
   PeripheralConnectionEvent,
   ScannedPeripheral,
+  ScannedPeripheralEvent,
+  ScanStatusEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import * as React from "react";
 import {
@@ -128,40 +130,15 @@ export default function App() {
     )?.connectionStatus ?? "disconnected";
 
   // Scan function
-  const scan = React.useCallback(
-    (onlyPixels: boolean) => {
-      // Clear any pending error
-      setLastError(undefined);
-      // Start scanning
-      const services = onlyPixels ? [pixelServiceUuid] : [];
-      Central.startScan(services, (ev) => {
-        if (ev.type === "peripheral") {
-          // Only show connectable peripherals with a name
-          if (
-            ev.peripheral.name.length &&
-            ev.peripheral.advertisementData.isConnectable
-          ) {
-            updatePeripherals(ev.peripheral);
-            // When a connected peripheral is reset, there is a delay before we are notified
-            // of a disconnection. However the peripheral might quickly restart and be scanned
-            // before this delay elapses, so we reset its last know connection status by removing
-            // it from the list.
-            setConnectionStatuses((statuses) =>
-              statuses.filter(
-                (s) => s.peripheral.systemId !== ev.peripheral.systemId
-              )
-            );
-          }
-        } else {
-          console.log(`Scan status ${ev.scanStatus}`);
-          setIsScanning(ev.scanStatus === "scanning");
-        }
-      }).catch((e) => {
-        setLastError(e);
-      });
-    },
-    [updatePeripherals]
-  ); // Stable identity
+  const scan = React.useCallback((onlyPixels: boolean) => {
+    // Clear any pending error
+    setLastError(undefined);
+    // Start scanning
+    const services = onlyPixels ? [pixelServiceUuid] : [];
+    Central.startScan(services).catch((e) => {
+      setLastError(e);
+    });
+  }, []);
 
   // Update scan when "onlyPixels" changes
   const changeOnlyPixels = (onlyPixels: boolean) => {
@@ -183,27 +160,26 @@ export default function App() {
   React.useEffect(() => {
     // Clear any pending error
     setLastError(undefined);
-    // Initialize Central
-    Central.initialize();
-    // Reset scanning state
-    setIsScanning(Central.getScanStatus() === "scanning");
-    return () => {
-      // Stop Central
-      Central.shutdown();
+    // Set up Central event listeners
+    const onScanStatus = ({ status }: ScanStatusEvent) => {
+      console.log(`Scan status ${status}`);
+      setIsScanning(status === "scanning");
     };
-  }, []);
-
-  // Autostart scanning
-  React.useEffect(() => {
-    if (autoStart) {
-      setAutoStart(false);
-      scan(onlyPixels);
-    }
-  }, [autoStart, onlyPixels, scan]);
-
-  // Peripheral connection status changed callback
-  const connectionStatusCallback = React.useCallback(
-    (ev: PeripheralConnectionEvent) => {
+    const onScannedPeripheral = ({ peripheral: p }: ScannedPeripheralEvent) => {
+      // Only show connectable peripherals with a name
+      if (p.name.length && p.advertisementData.isConnectable) {
+        updatePeripherals(p);
+        // When a connected peripheral is reset, there is a delay before we are notified
+        // of a disconnection. However the peripheral might quickly restart and be scanned
+        // before this delay elapses, so we reset its last know connection status by removing
+        // it from the list.
+        setConnectionStatuses((statuses) =>
+          statuses.filter((s) => s.peripheral.systemId !== p.systemId)
+        );
+      }
+    };
+    // Peripheral connection status changed callback
+    const onConnection = (ev: PeripheralConnectionEvent) => {
       console.log(
         `Peripheral ${ev.peripheral.name} connection status changed to ${ev.connectionStatus}`
       );
@@ -241,9 +217,31 @@ export default function App() {
         // And append this new status
         return [...filtered, ev];
       });
-    },
-    [updatePeripherals]
-  );
+    };
+    Central.addListener("scanStatus", onScanStatus);
+    Central.addListener("scannedPeripheral", onScannedPeripheral);
+    Central.addListener("peripheralConnectionStatus", onConnection);
+    // Initialize Central
+    Central.initialize();
+    // Reset scanning state
+    setIsScanning(Central.getScanStatus() === "scanning");
+    return () => {
+      // Remove event listeners
+      Central.removeListener("scanStatus", onScanStatus);
+      Central.removeListener("scannedPeripheral", onScannedPeripheral);
+      Central.removeListener("peripheralConnectionStatus", onConnection);
+      // Stop Central
+      Central.shutdown();
+    };
+  }, [updatePeripherals]); // Stable identity
+
+  // Autostart scanning
+  React.useEffect(() => {
+    if (autoStart) {
+      setAutoStart(false);
+      scan(onlyPixels);
+    }
+  }, [autoStart, onlyPixels, scan]);
 
   return (
     <SafeAreaView style={[styles.containerMain, backgroundStyle]}>
@@ -310,9 +308,7 @@ export default function App() {
                     onPress={() => {
                       setLastError(undefined);
                       (isDisco
-                        ? Central.connectPeripheral(p, {
-                            connectionStatusCallback,
-                          })
+                        ? Central.connectPeripheral(p)
                         : Central.disconnectPeripheral(p)
                       ).catch(setLastError);
                     }}

@@ -480,10 +480,7 @@ export function ScanAndUpdateFirmware({
           await repeatConnect(
             abortSignal,
             t,
-            (timeout) =>
-              Central.connectPeripheral(sysId, {
-                timeout,
-              }),
+            (timeout) => Central.connectPeripheral(sysId, timeout),
             () => Central.disconnectPeripheral(sysId)
           );
         },

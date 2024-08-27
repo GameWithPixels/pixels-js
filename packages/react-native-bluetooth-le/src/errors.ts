@@ -24,7 +24,7 @@ export abstract class ScanError extends BluetoothLEError {
 
 export class ScanAlreadyInProgressError extends ScanError {
   constructor() {
-    super("Scan already in progress");
+    super("Scan already in progress or starting");
     this.name = "ScanAlreadyInProgressError";
   }
 }

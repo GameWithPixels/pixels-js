@@ -1,6 +1,6 @@
 import {
   createTypedEventEmitter,
-  delay,
+  TypedEventEmitter,
 } from "@systemic-games/pixels-core-utils";
 import { NativeEventEmitter, EmitterSubscription } from "react-native";
 
@@ -11,19 +11,22 @@ import {
   Device,
 } from "./BluetoothLE";
 import { Constants } from "./Constants";
-import { PeripheralInfo } from "./PeripheralInfo";
 import * as Errors from "./errors";
 import { BleEventMap, BluetoothState, ConnectionEventReason } from "./events";
 import { getNativeErrorCode } from "./getNativeErrorCode";
 import { requestPermissions } from "./requestPermissions";
-import { PeripheralsMap } from "./static";
 
 function toArray(strList?: string): string[] {
   return strList?.split(",") ?? [];
 }
 
-function toString(...values: (string | number)[]): string {
-  return values.join(",");
+function getCharacteristicKey(
+  serviceUuid: string,
+  characteristicUuid: string,
+  instanceIndex: number
+): "valueChanged" {
+  // We force the key to be of type "valueChanged" to simplify typing
+  return `${serviceUuid}:${characteristicUuid}:${instanceIndex}` as "valueChanged";
 }
 
 function errToStr(error: unknown): string {
@@ -45,28 +48,39 @@ export type BluetoothStateEvent = Readonly<{
 
 export type ScanStatus = "stopped" | "starting" | "scanning";
 
+export type ScanStopReason =
+  | Exclude<BluetoothState, "ready">
+  | "failedToStart"
+  | "success"; // Scan was stopped by a call to stopScan() or shutdown()
+
+export type ScanStatusEvent = Readonly<{
+  status: ScanStatus;
+  stopReason?: ScanStopReason;
+  context?: unknown;
+}>;
+
 // A scanned peripheral is BLE device and its advertisement data
 export type ScannedPeripheral = Device &
   Readonly<{
     advertisementData: AdvertisementData;
   }>;
 
-export type ScanStopReason =
-  | Exclude<BluetoothState, "ready">
-  | "failedToStart"
-  | "success"; // Scan was stopped by a call to stopScan() or shutdown()
+export type ScannedPeripheralEvent = Readonly<{
+  peripheral: ScannedPeripheral;
+  context?: unknown;
+}>;
 
-export type ScanEvent = Readonly<
-  | {
-      type: "peripheral";
-      peripheral: ScannedPeripheral;
-    }
-  | {
-      type: "status";
-      scanStatus: ScanStatus;
-      stopReason?: ScanStopReason;
-    }
->;
+/**
+ * Event map for {@link Central} class.
+ * This is the list of supported events where the property name
+ * is the event name and the property type the event data type.
+ */
+export type CentralEventMap = Readonly<{
+  bluetoothState: { readonly state: BluetoothState };
+  scanStatus: ScanStatusEvent;
+  scannedPeripheral: ScannedPeripheralEvent;
+  peripheralConnectionStatus: PeripheralConnectionEvent;
+}>;
 
 export type PeripheralConnectionEvent = Readonly<{
   peripheral: ScannedPeripheral;
@@ -84,15 +98,18 @@ export type PeripheralCharacteristicValueChangedEvent = Readonly<{
 
 export type PeripheralOrSystemId = ScannedPeripheral | string;
 
-/**
- * Event map for {@link Central} class.
- * This is the list of supported events where the property name
- * is the event name and the property type the event data type.
- */
-export type CentralEventMap = Readonly<{
-  bluetoothState: { state: BluetoothState };
-  scanStatus: { status: ScanStatus };
+type PeripheralEventMap = Readonly<{
+  connectionStatus: PeripheralConnectionEvent;
+  valueChanged: PeripheralCharacteristicValueChangedEvent;
 }>;
+
+// Internal data about a peripheral
+interface PeripheralInfo {
+  scannedPeripheral: ScannedPeripheral;
+  state: "disconnected" | "connecting" | "ready" | "disconnecting";
+  requiredServices: string; // Comma separated list of required services
+  evEmitter: TypedEventEmitter<PeripheralEventMap>;
+}
 
 // Our native event emitter and subscriptions
 let _nativeEmitter: NativeEventEmitter | undefined;
@@ -103,6 +120,7 @@ let _scanResultSubs: EmitterSubscription | undefined;
 
 // Our event emitter
 const _evEmitter = createTypedEventEmitter<CentralEventMap>();
+_evEmitter.setMaxListeners(100); // We expect a lot of listeners
 
 // Bluetooth state
 let _bluetoothState: BluetoothState = "unknown";
@@ -110,15 +128,18 @@ let _bluetoothState: BluetoothState = "unknown";
 // Scan status
 let _scanStatus: ScanStatus = "stopped";
 
-// Scan callback
-let _scanCallback: ((ev: ScanEvent) => void) | undefined;
+// Scan token to uniquely identify the current scan
+let _scanToken: { context?: unknown } | undefined;
+
+// Our list of discovered peripherals
+const _peripherals = new Map<string, PeripheralInfo>();
 
 function _getSystemId(peripheral: PeripheralOrSystemId): string {
   return typeof peripheral === "string" ? peripheral : peripheral.systemId;
 }
 
 function _getPeripheralInfo(peripheral: PeripheralOrSystemId): PeripheralInfo {
-  const pInf = PeripheralsMap.get(_getSystemId(peripheral));
+  const pInf = _peripherals.get(_getSystemId(peripheral));
   if (!pInf) {
     throw new Errors.UnknownPeripheralError(_getSystemId(peripheral));
   }
@@ -135,68 +156,72 @@ function _addNativeListener<T extends keyof BleEventMap>(
   return _nativeEmitter.addListener(type, listener);
 }
 
+function _emitEvent(
+  type: keyof CentralEventMap,
+  ev: CentralEventMap[keyof CentralEventMap]
+): void {
+  try {
+    _evEmitter.emit(type, ev);
+  } catch (e) {
+    console.error(
+      `[BLE] Uncaught error in "${type}" event listener: ${errToStr(e)}`
+    );
+  }
+}
+
+function _emitPeripheralEvent(
+  pInf: PeripheralInfo,
+  type: keyof PeripheralEventMap,
+  ev: PeripheralEventMap[keyof PeripheralEventMap]
+): void {
+  const name = pInf.scannedPeripheral.name;
+  try {
+    pInf.evEmitter.emit(type, ev);
+  } catch (e) {
+    console.error(
+      `[BLE ${name}] Uncaught error in "${type}" event listener: ${errToStr(e)}`
+    );
+  }
+}
+
 function _updateBluetoothState(state: BluetoothState): void {
   if (_bluetoothState !== state) {
     console.log(
       `[BLE] Bluetooth state changed from ${_bluetoothState} to ${state}`
     );
     _bluetoothState = state;
-    try {
-      _evEmitter.emit("bluetoothState", { state });
-    } catch (error) {
-      const e = errToStr(error);
-      console.error(
-        `[BLE] Uncaught error in "bluetoothState" event listener: ${e}`
-      );
-    }
+    _emitEvent("bluetoothState", { state });
   }
   if (state !== "ready") {
     _updateScanStatus("stopped", state);
   }
 }
 
-function _updateScanStatus(
-  scanStatus: ScanStatus,
-  reason?: ScanStopReason
-): void {
-  console.log(
-    `[BLE] Scan status changed from ${_scanStatus} to ${scanStatus}${
-      reason ? ` with reason: ${reason}` : ""
-    }`
-  );
+function _updateScanStatus(status: ScanStatus, reason?: ScanStopReason): void {
+  const context = _scanToken?.context;
 
-  const callback = _scanCallback;
-  const statusChanged = _scanStatus !== scanStatus;
-  _scanStatus = scanStatus;
-
-  // Remove native listener and callback if scan is not running
-  if (scanStatus === "stopped") {
-    _scanCallback = undefined;
+  // Clear token and remove callback if scan is not running
+  if (status === "stopped") {
+    _scanToken = undefined;
     _scanResultSubs?.remove();
     _scanResultSubs = undefined;
-  } else if (!_scanCallback) {
-    // This should never happen
-    console.warn("[BLE] No scan callback for scan status change!");
   }
 
-  // Notify
-  if (statusChanged) {
-    try {
-      _evEmitter.emit("scanStatus", { status: scanStatus });
-    } catch (e) {
-      console.error(
-        `[BLE] Uncaught error in "scanStatus" event listener: ${errToStr(e)}`
-      );
-    }
-    const stopReason =
-      scanStatus !== "stopped" ? undefined : reason ?? "success";
-    try {
-      callback?.({ type: "status", scanStatus, stopReason });
-    } catch (e) {
-      console.error(
-        `[BLE] Uncaught error in startScan callback for status: ${errToStr(e)}`
-      );
-    }
+  // Update and notify
+  if (_scanStatus !== status) {
+    console.log(
+      `[BLE] Scan status changed from ${_scanStatus} to ${status}${
+        reason ? ` with reason: ${reason}` : ""
+      }`
+    );
+
+    _scanStatus = status;
+    const stopReason = status !== "stopped" ? undefined : reason ?? "success";
+    _emitEvent("scanStatus", {
+      status,
+      stopReason,
+      context,
+    });
   }
 }
 
@@ -210,17 +235,8 @@ function _notifyConnectionStatus(
     connectionStatus,
     reason,
   } as const;
-  const name = pInf.scannedPeripheral.name;
-  for (const cb of pInf.connStatusCallbacks) {
-    try {
-      cb(ev);
-    } catch (error) {
-      const e = errToStr(error);
-      console.error(
-        `[BLE ${name}] Uncaught error in Connection Status event listener: ${e}`
-      );
-    }
-  }
+  _emitEvent("peripheralConnectionStatus", ev);
+  _emitPeripheralEvent(pInf, "connectionStatus", ev);
 }
 
 export const Central = {
@@ -241,7 +257,7 @@ export const Central = {
         "connectionEvent",
         ({ device, connectionStatus, reason }) => {
           // Forward event
-          const pInf = PeripheralsMap.get(device.systemId);
+          const pInf = _peripherals.get(device.systemId);
           const name = device.name;
           if (pInf) {
             if (reason !== "success") {
@@ -290,23 +306,24 @@ export const Central = {
         ({ device, characteristic, data }) => {
           try {
             // Forward event
-            const pInf = PeripheralsMap.get(device.systemId);
+            const pInf = _peripherals.get(device.systemId);
             const name = device.name;
             if (pInf) {
-              const onValueChanged = pInf.valueChangedCallbacks.get(
-                toString(
+              _emitPeripheralEvent(
+                pInf,
+                getCharacteristicKey(
                   characteristic.serviceUuid,
                   characteristic.uuid,
                   characteristic.instanceIndex
-                )
+                ),
+                {
+                  peripheral: pInf.scannedPeripheral,
+                  service: characteristic.serviceUuid,
+                  characteristic: characteristic.uuid,
+                  characteristicIndex: characteristic.instanceIndex,
+                  value: data,
+                }
               );
-              onValueChanged?.({
-                peripheral: pInf.scannedPeripheral,
-                service: characteristic.serviceUuid,
-                characteristic: characteristic.uuid,
-                characteristicIndex: characteristic.instanceIndex,
-                value: data,
-              });
             } else {
               console.warn(
                 `[BLE ${name}] Got characteristic value changed for unknown scanned peripheral`
@@ -334,7 +351,7 @@ export const Central = {
     // Keep Bluetooth state unchanged
     _updateScanStatus("stopped"); // This will unsubscribes from native scan result
     BluetoothLE.stopScan().catch(() => {}); // Ignore any error
-    PeripheralsMap.clear();
+    _peripherals.clear();
     console.log("[BLE] Central has shutdown");
     // TODO _bleInit = false; BluetoothLE.bleShutdown();
   },
@@ -366,6 +383,26 @@ export const Central = {
     _evEmitter.removeListener(type, listener);
   },
 
+  addPeripheralConnectionListener(
+    peripheral: PeripheralOrSystemId,
+    listener: (ev: PeripheralConnectionEvent) => void
+  ): void {
+    const pInf = _getPeripheralInfo(peripheral);
+    if (pInf) {
+      pInf.evEmitter.addListener("connectionStatus", listener);
+    }
+  },
+
+  removePeripheralConnectionListener(
+    peripheral: PeripheralOrSystemId,
+    listener: (ev: PeripheralConnectionEvent) => void
+  ): void {
+    const pInf = _getPeripheralInfo(peripheral);
+    if (pInf) {
+      pInf.evEmitter.removeListener("connectionStatus", listener);
+    }
+  },
+
   // Only one scan can be active at a time, and it must be stopped
   // before starting a new one.
   // ScanStartFailed error is thrown if the scan failed to start
@@ -376,30 +413,24 @@ export const Central = {
   // Devices supporting at least one of the services will be reported.
   async startScan(
     services: string | readonly string[],
-    scanCallback: (ev: ScanEvent) => void
+    context?: unknown
   ): Promise<void> {
     if (!_nativeEmitter) {
       throw new Errors.CentralNotInitializedError();
     }
 
     // Only one scan at a time
-    if (_scanCallback) {
+    if (_scanStatus !== "stopped") {
       throw new Errors.ScanAlreadyInProgressError();
     }
 
-    // We rely on the uniqueness of the value of scanCallback to know
-    // if this scan is still the current one.
-    // We can't just check if _scanCallback being undefined or not as
-    // calls to _updateBluetoothState() / _updateScanStatus() will raise
-    // scanStatus and/or bluetoothState events which may run client code
-    // that call startScan() and set _scanCallback again (potentially
-    // passing the same callback).
-    const originalScanCallback = scanCallback;
-    scanCallback = (ev: ScanEvent) => originalScanCallback(ev);
+    // Generate token to uniquely identify this scan
+    const token = { context };
+    _scanToken = token;
 
     // Throw if this scan was stopped
     const checkActive = () => {
-      if (_scanCallback !== scanCallback) {
+      if (token !== _scanToken) {
         throw _bluetoothState === "ready"
           ? // In rare edge case where several Bluetooth state changes occurred
             // before we had chance to run this code or if the scan failed to start
@@ -412,7 +443,6 @@ export const Central = {
     };
 
     // Notify scan is starting
-    _scanCallback = scanCallback;
     _updateScanStatus("starting");
 
     // TODO move this to Android native implementation of bleInitialize()
@@ -434,15 +464,14 @@ export const Central = {
           subs?.remove();
           resolve();
         });
-        // This call will update the Bluetooth state which cancel the scan
-        // if Bluetooth is not ready
+        // This call will update the Bluetooth state which cancels the scan
+        // if Bluetooth is not ready.
+        // The Bluetooth state is left to "unknown" so we get an error
         BluetoothLE.bleInitialize().catch(reject);
       });
-    } else if (_bluetoothState !== "ready") {
+    } else if (_bluetoothState !== "ready" && token === _scanToken) {
       // Update scan status if Bluetooth is not ready
-      if (_scanCallback === scanCallback) {
-        _updateScanStatus("stopped", _bluetoothState);
-      }
+      _updateScanStatus("stopped", _bluetoothState);
     }
 
     // Make sure we are still the active scan
@@ -471,7 +500,7 @@ export const Central = {
           advertisementData: ev.advertisementData,
         };
         const name = ev.device.name;
-        const pInf = PeripheralsMap.get(ev.device.systemId);
+        const pInf = _peripherals.get(ev.device.systemId);
         const requiredServices = servicesArray
           .filter((s) => ev.advertisementData.services?.includes(s))
           ?.join(",");
@@ -485,20 +514,14 @@ export const Central = {
           pInf.requiredServices = requiredServices;
           // Note: don't change state as the peripheral might be in the process of being connected
         } else {
-          PeripheralsMap.set(ev.device.systemId, {
+          _peripherals.set(ev.device.systemId, {
             scannedPeripheral: peripheral,
             state: "disconnected",
             requiredServices,
-            connStatusCallbacks: [],
-            valueChangedCallbacks: new Map(),
+            evEmitter: createTypedEventEmitter(),
           });
         }
-        try {
-          _scanCallback?.({ type: "peripheral", peripheral });
-        } catch (error) {
-          const e = errToStr(error);
-          console.error(`[BLE ${name}] Uncaught error in Scan callback: ${e}`);
-        }
+        _emitEvent("scannedPeripheral", { peripheral, context });
       }
     });
 
@@ -506,28 +529,25 @@ export const Central = {
     try {
       await BluetoothLE.startScan(servicesStr);
     } catch (e) {
-      // Failed to start scan, Android only
+      // Failed to start scan
       const message = (e as Error)?.message;
       console.log(`[BLE] Error starting scan: ${message ?? String(e)}`);
-      // Update Bluetooth state it we are still the active scan
-      if (_scanCallback === scanCallback) {
-        // iOS error thrown by the native code
-        const notPoweredOn = message === "Bluetooth not in powered on state";
-        // Check what error we got from Android, they are not documented...
-        const unavailable =
-          message === "BT le scanner not available" ||
-          message === "BT Adapter is not turned ON";
-        const unauthorized = message.startsWith("Need android.permission");
-        // Infer state from error
-        const bleState: BluetoothState = notPoweredOn
-          ? _bluetoothState // State is already updated on iOS
-          : unavailable
-            ? "off"
-            : unauthorized
-              ? "unauthorized"
-              : "resetting"; // Fallback state, we don't really know whats going on
-        _updateBluetoothState(bleState);
-      }
+      // iOS error thrown by the native code
+      const notPoweredOn = message === "Bluetooth not in powered on state";
+      // Check what error we got from Android, they are not documented...
+      const unavailable =
+        message === "BT le scanner not available" ||
+        message === "BT Adapter is not turned ON";
+      const unauthorized = message.startsWith("Need android.permission");
+      // Infer state from error
+      const bleState: BluetoothState = notPoweredOn
+        ? _bluetoothState // State is already updated on iOS
+        : unavailable
+          ? "off"
+          : unauthorized
+            ? "unauthorized"
+            : "resetting"; // Fallback state, we don't really know whats going on
+      _updateBluetoothState(bleState);
     }
 
     // Make sure we are still the active scan
@@ -553,17 +573,13 @@ export const Central = {
     await BluetoothLE.stopScan();
   },
 
+  // Not by default Android times out at 30s
   async connectPeripheral(
     peripheral: PeripheralOrSystemId,
-    opt?: {
-      connectionStatusCallback?: (ev: PeripheralConnectionEvent) => void;
-      timeout?: number; // In ms
-    }
+    timeoutMs = 0 // In ms
   ): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     const name = pInf.scannedPeripheral.name;
-    const callback = opt?.connectionStatusCallback;
-    const timeoutMs = opt?.timeout ?? 0;
 
     console.log(
       `[BLE ${name}] Connecting with ` +
@@ -571,40 +587,35 @@ export const Central = {
         ` last known state is ${pInf.state}`
     );
 
-    // Store connection status callback if one was given (otherwise keep the existing one)
-    if (callback && !pInf.connStatusCallbacks.includes(callback)) {
-      pInf.connStatusCallbacks.push(callback);
-    }
-
-    // Timeout
-    let hasTimedOut = false;
-    const timeoutId =
-      timeoutMs > 0 &&
-      setTimeout(() => {
-        // Disconnect on timeout
-        console.log(`[BLE ${name}] Connection timed-out after ${timeoutMs}ms`);
-        hasTimedOut = true;
-        Central.disconnectPeripheral(peripheral).catch((e) =>
-          console.warn(
-            `[BLE ${name}] Failed to disconnect on connection timeout: ${e}`
-          )
-        );
-      }, timeoutMs);
-
     try {
       const sysId = _getSystemId(peripheral);
       if (!(await BluetoothLE.createPeripheral(sysId))) {
         throw new Errors.ConnectError(name, "createFailed");
       }
 
-      try {
-        // TODO Temp fix: connecting immediately after a disconnect causes issues
-        // on Android: the device is never actually disconnected, but the MTU
-        // is reset to 23 as far as the native code is concerned.
-        await delay(300);
+      // TODO timeout should be handled by the native code, so we get the correct reason on the disconnection event
+      let hasTimedOut = false;
+      const timeoutId =
+        timeoutMs > 0 &&
+        setTimeout(() => {
+          // Disconnect on timeout
+          console.log(
+            `[BLE ${name}] Connection timed-out after ${timeoutMs}ms`
+          );
+          hasTimedOut = true;
+          Central.disconnectPeripheral(peripheral).catch((e) =>
+            console.warn(
+              `[BLE ${name}] Failed to disconnect on connection timeout: ${e}`
+            )
+          );
+        }, timeoutMs);
 
+      try {
         // Connect to peripheral
         await BluetoothLE.connectPeripheral(sysId, pInf.requiredServices);
+
+        // Stop connection timeout, assumes setting MTU will be quick
+        timeoutId && clearTimeout(timeoutId);
 
         // Set MTU
         console.log(`[BLE ${name}] Connected, updating MTU`);
@@ -673,6 +684,9 @@ export const Central = {
           throw new Errors.ConnectError(name, "disconnected");
         }
       } catch (error) {
+        // Stop connection timeout
+        timeoutId && clearTimeout(timeoutId);
+
         // Check if error was (likely) caused by the connection timeout
         if (hasTimedOut) {
           throw new Errors.ConnectError(name, "timeout");
@@ -713,10 +727,6 @@ export const Central = {
         default:
           throw code ? new Errors.ConnectError(name, "error", code) : error;
       }
-    } finally {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     }
   },
 
@@ -738,11 +748,12 @@ export const Central = {
           `[BLE ${name}] Got exception when disconnecting while in state ${pInf.state}`
         );
       }
-    } finally {
-      // Always remove callback and release peripheral
-      pInf.connStatusCallbacks.length = 0;
-      await BluetoothLE.releasePeripheral(pInf.scannedPeripheral.systemId);
     }
+  },
+
+  async releasePeripheral(peripheral: PeripheralOrSystemId): Promise<void> {
+    const pInf = _getPeripheralInfo(peripheral);
+    await BluetoothLE.releasePeripheral(pInf.scannedPeripheral.systemId);
   },
 
   async getPeripheralName(peripheral: PeripheralOrSystemId): Promise<string> {
@@ -834,7 +845,6 @@ export const Central = {
     );
   },
 
-  // Replaces a previous subscription to same characteristic
   async subscribeCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
@@ -852,35 +862,36 @@ export const Central = {
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    const key = toString(
+    const key = getCharacteristicKey(
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    pInf.valueChangedCallbacks.set(key, onValueChanged);
+    pInf.evEmitter.addListener(key, onValueChanged);
   },
 
   async unsubscribeCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
+    onValueChanged: (ev: PeripheralCharacteristicValueChangedEvent) => void,
     options?: {
       instanceIndex?: number;
       timeoutMs?: number; // TODO unused => Constants.defaultRequestTimeout
     }
   ): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
+    const key = getCharacteristicKey(
+      serviceUuid,
+      characteristicUuid,
+      options?.instanceIndex ?? 0
+    );
+    pInf.evEmitter.removeListener(key, onValueChanged);
     await BluetoothLE.unsubscribeCharacteristic(
       _getSystemId(peripheral),
       serviceUuid,
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    const key = toString(
-      serviceUuid,
-      characteristicUuid,
-      options?.instanceIndex ?? 0
-    );
-    pInf.valueChangedCallbacks.delete(key);
   },
 } as const;
