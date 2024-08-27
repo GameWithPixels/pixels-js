@@ -272,9 +272,10 @@ export const Central = {
                 pInf.state = connectionStatus;
                 break;
               case "disconnected":
-                if (pInf.state !== "disconnecting") {
+                // Warn of disconnection without getting a "disconnecting" first
+                if (pInf.state === "ready") {
                   console.log(
-                    `[BLE ${name}] Unexpected disconnection, last known state is ${pInf.state}`
+                    `[BLE ${name}] Unexpected immediate disconnection, last known state is ${pInf.state}`
                   );
                 }
                 pInf.state = connectionStatus;
@@ -603,11 +604,14 @@ export const Central = {
             `[BLE ${name}] Connection timed-out after ${timeoutMs}ms`
           );
           hasTimedOut = true;
-          Central.disconnectPeripheral(peripheral).catch((e) =>
-            console.warn(
-              `[BLE ${name}] Failed to disconnect on connection timeout: ${e}`
-            )
-          );
+          Central.disconnectPeripheral(peripheral).catch((e) => {
+            // Ignore error if we are disconnected as requested
+            if (pInf.state !== "disconnected") {
+              console.warn(
+                `[BLE ${name}] Failed to disconnect on connection timeout: ${e}`
+              );
+            }
+          });
         }, timeoutMs);
 
       try {
@@ -739,10 +743,16 @@ export const Central = {
     try {
       await BluetoothLE.disconnectPeripheral(pInf.scannedPeripheral.systemId);
     } catch (error: any) {
-      // Getting an exception from Android when disconnecting while already disconnected
-      if (error.message !== "Peripheral not in required state to disconnect") {
+      // Getting an exception from native code:
+      // - on Android when disconnecting while already disconnected
+      // - on iOS when having multiple disconnects in a row (the last one cancels the previous)
+      if (
+        error.message !== "Peripheral not in required state to disconnect" &&
+        error.message !== "Request canceled"
+      ) {
         throw error;
       }
+      // Those errors should only happen when we are already disconnecting/disconnected
       if (pInf.state !== "disconnecting" && pInf.state !== "disconnected") {
         console.warn(
           `[BLE ${name}] Got exception when disconnecting while in state ${pInf.state}`
