@@ -75,7 +75,7 @@ export class PixelConnectTimeoutError extends PixelConnectError {
  */
 export class PixelConnectCancelledError extends PixelConnectError {
   constructor(pixel: PixelType) {
-    super(pixel, `Connection cancelled (current state is ${pixel.status})`);
+    super(pixel, `Connection cancelled (status was ${pixel.status})`);
     this.name = "PixelConnectCancelledError";
   }
 }

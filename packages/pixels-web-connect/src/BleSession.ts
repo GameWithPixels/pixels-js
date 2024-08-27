@@ -51,12 +51,16 @@ export class BleSessionError extends Error {
  * using Web Bluetooth.
  */
 export default class BleSession extends PixelSession {
-  private _name: string | undefined;
   private _device: BluetoothDevice;
   private _notify?: BluetoothRemoteGATTCharacteristic;
   private _write?: BluetoothRemoteGATTCharacteristic;
+  private _disposeFunc: () => void;
 
-  constructor(params: { systemId: string; uuids: PixelsConnectUuids }) {
+  constructor(params: {
+    systemId: string;
+    name?: string;
+    uuids: PixelsConnectUuids;
+  }) {
     super(params);
     const device = PixelsDevices.getKnownDevice(params.systemId);
     if (!device) {
@@ -65,21 +69,11 @@ export default class BleSession extends PixelSession {
       );
     }
     this._device = device;
-    this._name = this._device.name;
-  }
-
-  get pixelName(): string | undefined {
-    return this._name;
-  }
-
-  async connect(): Promise<void> {
-    // Update name
-    this._name = this._device.name;
+    const name = device.name;
+    name && this._setName(name);
 
     // Subscribe to disconnect event
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const mySession = this;
-    this._device.addEventListener("gattserverdisconnected", (/*ev: Event*/) => {
+    const onConnection = (/*ev: Event*/) => {
       // let reason: ConnectionEventReason = ConnectionEventReasonValues.Success;
       // if (this._connected) {
       //   // Disconnect not called by user code
@@ -89,8 +83,23 @@ export default class BleSession extends PixelSession {
       // }
 
       // Notify disconnection
-      mySession._notifyConnectionEvent("disconnected");
-    });
+      this._notifyConnectionEvent("disconnected");
+    };
+    device.addEventListener("gattserverdisconnected", onConnection);
+    this._disposeFunc = () => {
+      this.setConnectionEventListener(undefined);
+      device.addEventListener("gattserverdisconnected", onConnection);
+    };
+  }
+
+  dispose(): void {
+    this._disposeFunc();
+  }
+
+  async connect(): Promise<void> {
+    // Update name
+    const name = this._device.name;
+    name && this._setName(name);
 
     const server = this._device.gatt;
     if (!server) {
@@ -120,7 +129,7 @@ export default class BleSession extends PixelSession {
           }
         }
         if (lastError) {
-          mySession._notifyConnectionEvent("disconnected");
+          this._notifyConnectionEvent("disconnected");
           throw lastError;
         }
       }

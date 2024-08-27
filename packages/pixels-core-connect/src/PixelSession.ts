@@ -32,16 +32,22 @@ export abstract class PixelSession {
   protected _connStatusCb?: (ev: PixelSessionConnectionEvent) => void;
   private _lastConnStatus: PixelSessionConnectionStatus;
   protected readonly _bleUuids: PixelsConnectUuids;
+  private _name: string | undefined;
 
   /**
    * Instantiates a session with a Pixel.
    * No attempt is made to connect to the die at this point.
    * @param systemId The peripheral system id (as assigned by the OS).
    */
-  constructor(params: { systemId: string; uuids: PixelsConnectUuids }) {
+  constructor(params: {
+    systemId: string;
+    name?: string;
+    uuids: PixelsConnectUuids;
+  }) {
     this._systemId = params.systemId;
-    this._lastConnStatus = "disconnected";
+    this._lastConnStatus = "disconnected"; // TODO get status from peripheral
     this._bleUuids = { ...params.uuids };
+    this._name = params.name;
   }
 
   /** Gets the peripheral system id (as assigned by the OS). */
@@ -53,7 +59,9 @@ export abstract class PixelSession {
    * Gets the Pixel name.
    * @remarks It may be undefined until connected.
    */
-  abstract get pixelName(): string | undefined;
+  get pixelName(): string | undefined {
+    return this._name;
+  }
 
   /** Gets the last known connection status. */
   get lastConnectionStatus(): PixelSessionConnectionStatus {
@@ -69,6 +77,9 @@ export abstract class PixelSession {
   ) {
     this._connStatusCb = connectionStatusListener;
   }
+
+  /** Release resources used by the session object. */
+  abstract dispose(): void;
 
   /** Connects to the Pixel. */
   abstract connect(): Promise<void>;
@@ -106,5 +117,9 @@ export abstract class PixelSession {
         connectionStatus,
       });
     }
+  }
+
+  protected _setName(name: string): void {
+    this._name = name;
   }
 }

@@ -13,11 +13,7 @@ import {
  * using Web Bluetooth.
  */
 export default class BleSession extends PixelSession {
-  private _name: string | undefined;
-
-  get pixelName(): string | undefined {
-    return this._name;
-  }
+  private _disposeFunc: () => void;
 
   constructor(params: {
     systemId: string;
@@ -25,12 +21,19 @@ export default class BleSession extends PixelSession {
     uuids: PixelsConnectUuids;
   }) {
     super(params);
-    this._name = params.name;
     const onConnection = (ev: PeripheralConnectionEvent) => {
-      this._name = ev.peripheral.name;
+      this._setName(ev.peripheral.name);
       this._notifyConnectionEvent(ev.connectionStatus);
     };
     Central.addPeripheralConnectionListener(this.systemId, onConnection);
+    this._disposeFunc = () => {
+      this.setConnectionEventListener(undefined);
+      Central.removePeripheralConnectionListener(this.systemId, onConnection);
+    };
+  }
+
+  dispose(): void {
+    this._disposeFunc();
   }
 
   async connect(): Promise<void> {
