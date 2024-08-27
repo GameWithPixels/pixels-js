@@ -14,9 +14,6 @@ import {
  */
 export default class BleSession extends PixelSession {
   private _name: string | undefined;
-  private readonly _centralConnStatusCb: (
-    ev: PeripheralConnectionEvent
-  ) => void;
 
   get pixelName(): string | undefined {
     return this._name;
@@ -29,17 +26,16 @@ export default class BleSession extends PixelSession {
   }) {
     super(params);
     this._name = params.name;
-    this._centralConnStatusCb = (ev: PeripheralConnectionEvent) => {
+    const onConnection = (ev: PeripheralConnectionEvent) => {
       this._name = ev.peripheral.name;
       this._notifyConnectionEvent(ev.connectionStatus);
     };
+    Central.addPeripheralConnectionListener(this.systemId, onConnection);
   }
 
   async connect(): Promise<void> {
     // And connect
-    await Central.connectPeripheral(this.systemId, {
-      connectionStatusCallback: this._centralConnStatusCb,
-    });
+    await Central.connectPeripheral(this.systemId);
   }
 
   async disconnect(): Promise<void> {
@@ -47,9 +43,7 @@ export default class BleSession extends PixelSession {
   }
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {
-    const internalListener = (
-      ev: PeripheralCharacteristicValueChangedEvent
-    ) => {
+    const onValueChange = (ev: PeripheralCharacteristicValueChangedEvent) => {
       if (ev.value?.length) {
         listener(new DataView(new Uint8Array(ev.value).buffer));
       }
@@ -59,14 +53,15 @@ export default class BleSession extends PixelSession {
       this.systemId,
       this._bleUuids.service,
       this._bleUuids.notifyCharacteristic,
-      internalListener
+      onValueChange
     );
 
     return () => {
       Central.unsubscribeCharacteristic(
         this.systemId,
         this._bleUuids.service,
-        this._bleUuids.notifyCharacteristic
+        this._bleUuids.notifyCharacteristic,
+        onValueChange
       ).catch(() => {});
       // TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
     };

@@ -1,6 +1,8 @@
 import {
   Central,
   ScannedPeripheral,
+  ScannedPeripheralEvent,
+  ScanStatusEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import {
   DfuError,
@@ -80,15 +82,33 @@ export default function App() {
   React.useEffect(() => {
     // Clear any pending error
     setLastError(undefined);
+    // Set up Central event listeners
+    const onScanStatus = ({ status }: ScanStatusEvent) => {
+      console.log(`Scan status ${status}`);
+      if (status !== "stopped") {
+        setIsScanning(false);
+      }
+    };
+    const onScannedPeripheral = ({ peripheral: p }: ScannedPeripheralEvent) => {
+      // Only show connectable peripherals with a name
+      if (p.name.length && p.advertisementData.isConnectable) {
+        updatePeripherals(p);
+      }
+    };
+    Central.addListener("scanStatus", onScanStatus);
+    Central.addListener("scannedPeripheral", onScannedPeripheral);
     // Initialize Central
     Central.initialize();
     // Start scanning immediately
     setIsScanning(true);
     return () => {
+      // Remove event listeners
+      Central.removeListener("scanStatus", onScanStatus);
+      Central.removeListener("scannedPeripheral", onScannedPeripheral);
       // Stop Central
       Central.shutdown();
     };
-  }, []);
+  }, [updatePeripherals]); // Stable identity
 
   // Start/stop scanning
   React.useEffect(() => {
@@ -105,19 +125,7 @@ export default function App() {
       setLastError(undefined);
       // Start scanning
       const services = onlyPixels ? [pixelServiceUuid] : [];
-      Central.startScan(services, (ev) => {
-        if (ev.type === "peripheral") {
-          // Only show connectable peripherals with a name
-          if (
-            ev.peripheral.name.length &&
-            ev.peripheral.advertisementData.isConnectable
-          ) {
-            updatePeripherals(ev.peripheral);
-          }
-        } else if (ev.scanStatus !== "stopped") {
-          setIsScanning(false);
-        }
-      }).catch((error) => {
+      Central.startScan(services).catch((error) => {
         setIsScanning(false);
         setLastError(error);
       });

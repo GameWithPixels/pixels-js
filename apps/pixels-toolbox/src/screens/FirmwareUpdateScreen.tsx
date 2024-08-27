@@ -124,32 +124,37 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
   useFocusEffect(
     React.useCallback(() => {
       focusedRef.current = true;
-      const onStatus = ({ status }: { status: ScanStatus }) =>
-        setScanStatus(status);
-      Central.addListener("scanStatus", onStatus);
       if (!dfuTarget) {
+        const onStatus = ({ status }: { status: ScanStatus }) =>
+          setScanStatus(status);
+        Central.addListener("scanStatus", onStatus);
+        const onPeripheral = ({
+          peripheral: sp,
+        }: {
+          peripheral: ScannedPeripheral;
+        }) => {
+          if (sp.name.length) {
+            const arr = pendingScans.current;
+            const i = arr.findIndex((item) => item.systemId === sp.systemId);
+            if (i < 0) {
+              arr.push(sp);
+            } else {
+              arr[i] = sp;
+            }
+          }
+        };
+        Central.addListener("scannedPeripheral", onPeripheral);
         const task = async () => {
           await Central.stopScan();
           if (focusedRef.current) {
-            await Central.startScan("", (ev) => {
-              if (ev.type === "peripheral" && ev.peripheral.name.length) {
-                const arr = pendingScans.current;
-                const i = arr.findIndex(
-                  (item) => item.systemId === ev.peripheral.systemId
-                );
-                if (i < 0) {
-                  arr.push(ev.peripheral);
-                } else {
-                  arr[i] = ev.peripheral;
-                }
-              }
-            });
+            await Central.startScan("");
           }
         };
         task().catch(showBoundary);
         return () => {
           focusedRef.current = false;
           Central.removeListener("scanStatus", onStatus);
+          Central.removeListener("scannedPeripheral", onPeripheral);
           pendingScans.current.length = 0;
           setScannedPeripherals([]);
           Central.stopScan().catch(showBoundary);

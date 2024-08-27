@@ -6,8 +6,9 @@ import {
 import {
   BluetoothState,
   Central,
-  ScanEvent,
+  ScannedPeripheralEvent,
   ScanStatus,
+  ScanStatusEvent,
   ScanStopReason,
 } from "@systemic-games/react-native-bluetooth-le";
 
@@ -97,6 +98,8 @@ export class PixelScanner {
   private _lastUpdateMs = 0;
   private readonly _touched = new Set<number | "pixel" | "charger">();
   private _onBluetoothState?: (ev: { state: BluetoothState }) => void;
+  private readonly _onScannedCb = this._onScannedPeripheral.bind(this);
+  private readonly _onStatusCb = this._onScanStatus.bind(this);
 
   /**
    * Whether a scan may be started.
@@ -253,6 +256,8 @@ export class PixelScanner {
       this._notify(Date.now());
       // Start scanning
       if (this._status === "stopped" && !this._startPromise) {
+        Central.addListener("scannedPeripheral", this._onScannedCb);
+        Central.addListener("scanStatus", this._onStatusCb);
         this._startPromise = (async () => {
           try {
             await Central.startScan(
@@ -260,7 +265,7 @@ export class PixelScanner {
                 PixelsBluetoothIds.pixel.service,
                 PixelsBluetoothIds.charger.service,
               ],
-              this._processScanEvents.bind(this)
+              this
             );
           } finally {
             this._startPromise = undefined;
@@ -310,29 +315,38 @@ export class PixelScanner {
     }
   }
 
-  private _processScanEvents(ev: ScanEvent): void {
-    if (ev.type === "peripheral") {
-      const services = ev.peripheral.advertisementData.services;
-      if (services?.includes(PixelsBluetoothIds.pixel.service)) {
-        const pixel = getScannedPixel(ev.peripheral);
-        if (pixel) {
-          this._processItem(pixel);
-        }
-      } else if (services?.includes(PixelsBluetoothIds.charger.service)) {
-        const charger = getScannedCharger(ev.peripheral);
-        if (charger) {
-          this._processItem(charger);
-        }
+  private _onScannedPeripheral({
+    peripheral,
+    context,
+  }: ScannedPeripheralEvent): void {
+    // Ignore events from a scan that was not started by this instance
+    if (context !== this) {
+      return;
+    }
+    const services = peripheral.advertisementData.services;
+    if (services?.includes(PixelsBluetoothIds.pixel.service)) {
+      const pixel = getScannedPixel(peripheral);
+      if (pixel) {
+        this._processItem(pixel);
       }
-    } else {
-      this._processScanStatus(ev);
+    } else if (services?.includes(PixelsBluetoothIds.charger.service)) {
+      const charger = getScannedCharger(peripheral);
+      if (charger) {
+        this._processItem(charger);
+      }
     }
   }
 
-  private _processScanStatus({
-    scanStatus: status,
+  private _onScanStatus({
+    status,
     stopReason,
-  }: Extract<ScanEvent, { type: "status" }>): void {
+    context,
+  }: ScanStatusEvent): void {
+    // Ignore events from a scan that was not started by this instance
+    if (context !== this) {
+      return;
+    }
+
     // Clear timeouts (keep scan timeout if auto-resume is active)
     this._clearTimeouts();
 
@@ -374,6 +388,10 @@ export class PixelScanner {
     this._emitEvent("scanStatus", { status, stopReason });
     if (changed) {
       this._emitEvent("status", status);
+    }
+    if (status === "stopped") {
+      Central.removeListener("scannedPeripheral", this._onScannedCb);
+      Central.removeListener("scanStatus", this._onStatusCb);
     }
   }
 
