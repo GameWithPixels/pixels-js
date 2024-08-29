@@ -19,7 +19,7 @@ import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
-import { GradientButton } from "~/components/buttons";
+import { GradientButton, OutlineButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { pairDie } from "~/features/dice";
 import {
@@ -159,6 +159,13 @@ function SelectScannedPixels({
           </AnimatedText>
         )}
       </BottomSheetScrollView>
+      <OutlineButton
+        disabled={!scannedPixels.length}
+        sentry-label="select-all"
+        onPress={() => setSelection([...scannedPixels])}
+      >
+        Select All
+      </OutlineButton>
       <GradientButton
         disabled={!selection.length}
         sentry-label="pair-dice"
