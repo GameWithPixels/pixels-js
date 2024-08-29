@@ -2,6 +2,7 @@ import {
   Pixel,
   PixelInfoNotifier,
   usePixelInfoProp,
+  usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
@@ -16,18 +17,19 @@ export function PixelRssi({
   size: number;
   disabled?: boolean;
 }) {
+  const status = usePixelStatus(pixel instanceof Pixel ? pixel : undefined);
   React.useEffect(() => {
-    if (pixel instanceof Pixel) {
+    if (status === "ready" && pixel instanceof Pixel) {
       pixel
         .reportRssi(true, 5000)
-        .catch((e) => console.log(`Error to enable RSSI reporting: ${e}`));
+        .catch((e) =>
+          console.log(`PixelRssi: Error enabling RSSI reporting: ${e}`)
+        );
       return () => {
-        pixel
-          .reportRssi(false)
-          .catch((e) => console.log(`Error to disable RSSI reporting: ${e}`));
+        pixel.reportRssi(false).catch(() => {}); // Ignore errors
       };
     }
-  }, [pixel]);
+  }, [pixel, status]);
 
   const rssi = usePixelInfoProp(pixel, "rssi");
   return <RssiIcon value={rssi} size={size} disabled={!pixel || disabled} />;
