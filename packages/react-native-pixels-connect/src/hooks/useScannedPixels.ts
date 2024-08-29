@@ -38,7 +38,7 @@ export function useScannedPixels(
       const retItems = [...items];
       // Apply updates
       for (const op of ops) {
-        const t = op.type;
+        const t = op.status;
         switch (t) {
           case "scanned": {
             const index = retItems.findIndex(
@@ -51,8 +51,10 @@ export function useScannedPixels(
             }
             break;
           }
-          case "removed": {
-            const index = retItems.findIndex((sp) => sp.pixelId === op.pixelId);
+          case "lost": {
+            const index = retItems.findIndex(
+              (sp) => sp.pixelId === op.item.pixelId
+            );
             retItems.splice(index, 1);
             break;
           }

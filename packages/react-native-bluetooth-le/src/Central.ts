@@ -1,5 +1,6 @@
 import {
   createTypedEventEmitter,
+  EventReceiver,
   TypedEventEmitter,
 } from "@systemic-games/pixels-core-utils";
 import { NativeEventEmitter, EmitterSubscription } from "react-native";
@@ -77,18 +78,23 @@ export type ScannedPeripheralEvent = Readonly<{
  */
 export type CentralEventMap = Readonly<{
   bluetoothState: { readonly state: BluetoothState };
-  scanStatus: ScanStatusEvent;
-  scannedPeripheral: ScannedPeripheralEvent;
-  peripheralConnectionStatus: PeripheralConnectionEvent;
+  scanStatus: Readonly<{
+    status: ScanStatus;
+    stopReason?: ScanStopReason;
+    context?: unknown;
+  }>;
+  scannedPeripheral: Readonly<{
+    peripheral: ScannedPeripheral;
+    context?: unknown;
+  }>;
+  peripheralConnectionStatus: Readonly<{
+    peripheral: ScannedPeripheral;
+    connectionStatus: ConnectionStatus;
+    reason: ConnectionEventReason;
+  }>;
 }>;
 
-export type PeripheralConnectionEvent = Readonly<{
-  peripheral: ScannedPeripheral;
-  connectionStatus: ConnectionStatus;
-  reason: ConnectionEventReason;
-}>;
-
-export type PeripheralCharacteristicValueChangedEvent = Readonly<{
+export type CharacteristicValueChangedEvent = Readonly<{
   peripheral: ScannedPeripheral;
   service: string;
   characteristic: string;
@@ -99,8 +105,8 @@ export type PeripheralCharacteristicValueChangedEvent = Readonly<{
 export type PeripheralOrSystemId = ScannedPeripheral | string;
 
 type PeripheralEventMap = Readonly<{
-  connectionStatus: PeripheralConnectionEvent;
-  valueChanged: PeripheralCharacteristicValueChangedEvent;
+  connectionStatus: CentralEventMap["peripheralConnectionStatus"];
+  valueChanged: CharacteristicValueChangedEvent;
 }>;
 
 // Internal data about a peripheral
@@ -370,9 +376,9 @@ export const Central = {
     return _scanStatus;
   },
 
-  addListener<T extends keyof CentralEventMap>(
-    type: T,
-    listener: (ev: CentralEventMap[T]) => void
+  addListener<K extends keyof CentralEventMap>(
+    type: K,
+    listener: EventReceiver<CentralEventMap[K]>
   ): void {
     _evEmitter.addListener(type, listener);
   },
@@ -386,7 +392,7 @@ export const Central = {
 
   addPeripheralConnectionListener(
     peripheral: PeripheralOrSystemId,
-    listener: (ev: PeripheralConnectionEvent) => void
+    listener: (ev: CentralEventMap["peripheralConnectionStatus"]) => void
   ): void {
     const pInf = _getPeripheralInfo(peripheral);
     if (pInf) {
@@ -396,7 +402,7 @@ export const Central = {
 
   removePeripheralConnectionListener(
     peripheral: PeripheralOrSystemId,
-    listener: (ev: PeripheralConnectionEvent) => void
+    listener: (ev: CentralEventMap["peripheralConnectionStatus"]) => void
   ): void {
     const pInf = _getPeripheralInfo(peripheral);
     if (pInf) {
@@ -859,7 +865,7 @@ export const Central = {
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
-    onValueChanged: (ev: PeripheralCharacteristicValueChangedEvent) => void,
+    onValueChanged: (ev: CharacteristicValueChangedEvent) => void,
     options?: {
       instanceIndex?: number;
       timeoutMs?: number; // TODO unused => Constants.defaultRequestTimeout
@@ -884,7 +890,7 @@ export const Central = {
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
-    onValueChanged: (ev: PeripheralCharacteristicValueChangedEvent) => void,
+    onValueChanged: (ev: CharacteristicValueChangedEvent) => void,
     options?: {
       instanceIndex?: number;
       timeoutMs?: number; // TODO unused => Constants.defaultRequestTimeout

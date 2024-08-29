@@ -1,10 +1,8 @@
 import {
   Central,
+  CentralEventMap,
   ConnectionStatus,
-  PeripheralConnectionEvent,
   ScannedPeripheral,
-  ScannedPeripheralEvent,
-  ScanStatusEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import * as React from "react";
 import {
@@ -98,7 +96,7 @@ export default function App() {
   >([]);
   // List of last know connection status for the peripherals
   const [connectionStatuses, setConnectionStatuses] = React.useState<
-    PeripheralConnectionEvent[]
+    CentralEventMap["peripheralConnectionStatus"][]
   >([]);
 
   // Update list of peripheral with the given data
@@ -161,11 +159,13 @@ export default function App() {
     // Clear any pending error
     setLastError(undefined);
     // Set up Central event listeners
-    const onScanStatus = ({ status }: ScanStatusEvent) => {
+    const onScanStatus = ({ status }: CentralEventMap["scanStatus"]) => {
       console.log(`Scan status ${status}`);
       setIsScanning(status === "scanning");
     };
-    const onScannedPeripheral = ({ peripheral: p }: ScannedPeripheralEvent) => {
+    const onScannedPeripheral = ({
+      peripheral: p,
+    }: CentralEventMap["scannedPeripheral"]) => {
       // Only show connectable peripherals with a name
       if (p.name.length && p.advertisementData.isConnectable) {
         updatePeripherals(p);
@@ -179,7 +179,9 @@ export default function App() {
       }
     };
     // Peripheral connection status changed callback
-    const onConnection = (ev: PeripheralConnectionEvent) => {
+    const onConnection = (
+      ev: CentralEventMap["peripheralConnectionStatus"]
+    ) => {
       console.log(
         `Peripheral ${ev.peripheral.name} connection status changed to ${ev.connectionStatus}`
       );

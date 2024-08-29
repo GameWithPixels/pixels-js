@@ -13,7 +13,6 @@ import {
   Pixel,
   PixelScanner,
   PixelScannerEventMap,
-  PixelScannerStatusEvent,
   ScannedPixelNotifier,
   ScanStartFailed,
   ScanStatus,
@@ -232,7 +231,7 @@ export class PixelsCentral {
     if (!this._watched.has(pixelId)) {
       console.log(`[PixelsCentral] Watching Pixel ${unsigned32ToHex(pixelId)}`);
       this._scanListListener({
-        ops: [{ type: "removed", pixelId }],
+        ops: [{ status: "lost", item: { type: "pixel", pixelId } }],
       });
       this._watched.set(pixelId, "watched");
       this._autoConnect(pixelId);
@@ -392,7 +391,10 @@ export class PixelsCentral {
   private _setupScanner() {
     console.log("[PixelsCentral] Hooking to scanner events");
     // Hook up to scanner events
-    const onStatus = ({ status, stopReason }: PixelScannerStatusEvent) => {
+    const onStatus = ({
+      status,
+      stopReason,
+    }: PixelScannerEventMap["onStatusChange"]) => {
       if (status === "stopped") {
         // Unhook event listeners when scanner is stopped
         if (!this._scannerUnhook) {
@@ -417,10 +419,10 @@ export class PixelsCentral {
         }
       }
     };
-    const onScanOps = (ev: PixelScannerEventMap["scanListOperations"]) =>
+    const onScanOps = (ev: PixelScannerEventMap["onScanListChange"]) =>
       this._scanListListener(ev);
-    this._scanner.addListener("scanStatus", onStatus);
-    this._scanner.addListener("scanListOperations", onScanOps);
+    this._scanner.addListener("onStatusChange", onStatus);
+    this._scanner.addListener("onScanListChange", onScanOps);
     // Setup cleanup function
     this._scannerUnhook?.();
     this._scannerUnhook = () => {
@@ -431,8 +433,8 @@ export class PixelsCentral {
       }
       this._scanTimeoutIds.length = 0;
       this._connectFromScan.clear();
-      this._scanner.removeListener("scanStatus", onStatus);
-      this._scanner.removeListener("scanListOperations", onScanOps);
+      this._scanner.removeListener("onStatusChange", onStatus);
+      this._scanner.removeListener("onScanListChange", onScanOps);
       // Clear scan list
       if (this._scannedPixels.length) {
         this._scannedPixels.length = 0;
@@ -479,10 +481,10 @@ export class PixelsCentral {
 
   private _scanListListener({
     ops,
-  }: PixelScannerEventMap["scanListOperations"]): void {
+  }: PixelScannerEventMap["onScanListChange"]): void {
     const availableCount = this.availablePixels.length;
     for (const op of ops) {
-      const t = op.type;
+      const t = op.status;
       switch (t) {
         case "scanned": {
           if (op.item.type === "pixel") {
@@ -500,9 +502,9 @@ export class PixelsCentral {
           }
           break;
         }
-        case "removed": {
+        case "lost": {
           const index = this._scannedPixels.findIndex(
-            (sp) => sp.pixelId === op.pixelId
+            (sp) => sp.pixelId === op.item.pixelId
           );
           if (index >= 0) {
             this._scannedPixels.splice(index, 1);
