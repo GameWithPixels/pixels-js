@@ -43,7 +43,7 @@ export function useScannedPixelNotifiers(
       let retItems = items;
       // Apply updates
       for (const op of ops) {
-        const t = op.type;
+        const t = op.status;
         switch (t) {
           case "scanned": {
             // The same instance will always be returned for a given Pixel id
@@ -62,8 +62,10 @@ export function useScannedPixelNotifiers(
             }
             break;
           }
-          case "removed": {
-            const index = retItems.findIndex((sp) => sp.pixelId === op.pixelId);
+          case "lost": {
+            const index = retItems.findIndex(
+              (sp) => sp.pixelId === op.item.pixelId
+            );
             if (index >= 0) {
               if (retItems === items) {
                 retItems = [...items];

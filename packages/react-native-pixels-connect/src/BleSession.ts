@@ -4,8 +4,8 @@ import {
 } from "@systemic-games/pixels-core-connect";
 import {
   Central,
-  PeripheralCharacteristicValueChangedEvent,
-  PeripheralConnectionEvent,
+  CentralEventMap,
+  CharacteristicValueChangedEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 
 /**
@@ -21,7 +21,9 @@ export default class BleSession extends PixelSession {
     uuids: PixelsConnectUuids;
   }) {
     super(params);
-    const onConnection = (ev: PeripheralConnectionEvent) => {
+    const onConnection = (
+      ev: CentralEventMap["peripheralConnectionStatus"]
+    ) => {
       this._setName(ev.peripheral.name);
       this._notifyConnectionEvent(ev.connectionStatus);
     };
@@ -49,7 +51,7 @@ export default class BleSession extends PixelSession {
   }
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {
-    const onValueChange = (ev: PeripheralCharacteristicValueChangedEvent) => {
+    const onValueChange = (ev: CharacteristicValueChangedEvent) => {
       if (ev.value?.length) {
         listener(new DataView(new Uint8Array(ev.value).buffer));
       }

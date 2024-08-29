@@ -1,6 +1,7 @@
 import { PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
 import {
   createTypedEventEmitter,
+  EventReceiver,
   SequentialPromiseQueue,
 } from "@systemic-games/pixels-core-utils";
 import {
@@ -22,19 +23,17 @@ import { getScannedPixel } from "./getScannedPixel";
  */
 export type PixelScannerListOperation = Readonly<
   | {
-      type: "scanned";
+      status: "scanned";
       item: ScannedPixel | ScannedCharger;
     }
-  | { type: "removed"; pixelId: number }
+  | {
+      status: "lost";
+      item: Readonly<{
+        type: (ScannedPixel | ScannedCharger)["type"];
+        pixelId: number;
+      }>;
+    }
 >;
-
-/**
- * Event data for the "scanStatus" event of {@link PixelScannerEventMap}.
- */
-export type PixelScannerStatusEvent = Readonly<{
-  status: ScanStatus;
-  stopReason?: ScanStopReason;
-}>;
 
 /**
  * Event map for {@link PixelScanner} class.
@@ -48,8 +47,11 @@ export type PixelScannerEventMap = Readonly<{
   scannedPixels: readonly ScannedPixel[];
   scannedChargers: readonly ScannedCharger[];
   // Events
-  scanStatus: PixelScannerStatusEvent;
-  scanListOperations: Readonly<{ ops: readonly PixelScannerListOperation[] }>;
+  onStatusChange: Readonly<{
+    status: ScanStatus;
+    stopReason?: ScanStopReason;
+  }>;
+  onScanListChange: Readonly<{ ops: readonly PixelScannerListOperation[] }>;
 }>;
 
 /**
@@ -96,7 +98,10 @@ export class PixelScanner {
   private _keepAliveDuration = 5000;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdateMs = 0;
-  private readonly _touched = new Set<number | "pixel" | "charger">();
+  private readonly _touched = new Map<
+    number,
+    (ScannedPixel | ScannedCharger)["type"]
+  >();
   private _onBluetoothState?: (ev: { state: BluetoothState }) => void;
   private readonly _onScannedCb = this._onScannedPeripheral.bind(this);
   private readonly _onStatusCb = this._onScanStatus.bind(this);
@@ -145,7 +150,7 @@ export class PixelScanner {
   }
 
   /**
-   * The minimum time interval in milliseconds between two "scanListOperations"
+   * The minimum time interval in milliseconds between two "onScanListChange"
    * notifications.
    * (calls to {@link PixelScanner.scanListener}).
    * A value of 0 will generate a notification on every scan event.
@@ -199,9 +204,9 @@ export class PixelScanner {
    * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
    */
-  addListener<T extends keyof PixelScannerEventMap>(
-    type: T,
-    listener: (ev: PixelScannerEventMap[T]) => void
+  addListener<K extends keyof PixelScannerEventMap>(
+    type: K,
+    listener: EventReceiver<PixelScannerEventMap[K]>
   ): void {
     if (
       type === "isReady" &&
@@ -373,8 +378,7 @@ export class PixelScanner {
         ) {
           // Clear all Pixels & Chargers if Bluetooth has become unavailable
           for (const { type, pixelId } of this._devices) {
-            this._touched.add(type);
-            this._touched.add(pixelId);
+            this._touched.set(pixelId, type);
           }
           this._devices.length = 0;
         }
@@ -385,7 +389,7 @@ export class PixelScanner {
     // Update status
     const changed = this._status !== status;
     this._status = status;
-    this._emitEvent("scanStatus", { status, stopReason });
+    this._emitEvent("onStatusChange", { status, stopReason });
     if (changed) {
       this._emitEvent("status", status);
     }
@@ -409,8 +413,7 @@ export class PixelScanner {
         this._devices[index] = sp;
       }
       // Store the operation for later notification
-      this._touched.add(sp.pixelId);
-      this._touched.add("pixel");
+      this._touched.set(sp.pixelId, sp.type);
       this._scheduleNotify();
       // Start pruning if needed
       if (this._keepAliveDuration > 0 && !this._pruneTimeoutId) {
@@ -427,7 +430,6 @@ export class PixelScanner {
     if (now >= nextUpdate) {
       // Yes, notify immediately
       this._notify(now);
-    } else if (!this._notifyTimeoutId) {
       // Otherwise schedule the notification for later if not already done
       this._notifyTimeoutId = setTimeout(
         () => this._notify(nextUpdate),
@@ -443,28 +445,24 @@ export class PixelScanner {
     }
     this._lastUpdateMs = now;
     if (this._touched.size) {
-      let hasPixel = false;
-      let hasCharger = false;
       const ops: PixelScannerListOperation[] = [];
-      for (const pixelId of this._touched) {
-        if (pixelId === "pixel") {
-          hasPixel = true;
-        } else if (pixelId === "charger") {
-          hasCharger = true;
-        } else {
-          const item = this._devices.find((sp) => sp.pixelId === pixelId);
-          ops.push(
-            item ? { type: "scanned", item } : { type: "removed", pixelId }
-          );
-        }
+      for (const [pixelId, type] of this._touched) {
+        const item = this._devices.find(
+          (sp) => sp.pixelId === pixelId && sp.type === type
+        );
+        ops.push(
+          item
+            ? { status: "scanned", item }
+            : { status: "lost", item: { pixelId, type } }
+        );
       }
       this._touched.clear();
       if (ops.length) {
-        this._emitEvent("scanListOperations", { ops });
-        if (hasPixel) {
+        this._emitEvent("onScanListChange", { ops });
+        if (ops.find((op) => op.item.type === "pixel")) {
           this._emitEvent("scannedPixels", this.scannedPixels);
         }
-        if (hasCharger) {
+        if (ops.find((op) => op.item.type === "charger")) {
           this._emitEvent("scannedChargers", this.scannedChargers);
         }
       }
@@ -487,7 +485,7 @@ export class PixelScanner {
         for (const sp of expired.reverse()) {
           const index = this._devices.indexOf(sp);
           this._devices.splice(index, 1);
-          this._touched.add(sp.pixelId);
+          this._touched.set(sp.pixelId, sp.type);
         }
         this._scheduleNotify();
       }
