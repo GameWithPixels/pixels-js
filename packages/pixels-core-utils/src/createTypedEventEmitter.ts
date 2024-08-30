@@ -51,6 +51,13 @@ export interface TypedEventEmitter<T extends EventMap> {
   listenerCount<K extends EventKey<T>>(type: K): number;
 
   /**
+   * Removes all listeners, or those of the specified event type.
+   * @param type A case-sensitive string representing the event type.
+   * @returns A reference to the `EventEmitter`.
+   */
+  removeAllListeners(type?: string | number): this;
+
+  /**
    * By default `EventEmitter`s will print a warning if more than 10
    * listeners are added for a particular event.
    * Use this function to modify the default threshold.
