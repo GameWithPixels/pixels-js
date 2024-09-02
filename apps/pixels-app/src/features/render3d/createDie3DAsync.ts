@@ -15,6 +15,14 @@ import { ensureAssetReadableAsync } from "./ensureAssetReadableAsync";
 
 import Die3D from "~/pixels-three/Die3D";
 
+function log(funcName: string, msg: string): void {
+  __DEV__ && console.log(`${funcName}(): ${msg}`);
+}
+
+function warn(funcName: string, msg: string): void {
+  __DEV__ && console.warn(`${funcName}(): ${msg}`);
+}
+
 function getGlbAsset(dieType: PixelDieType): number {
   switch (dieType) {
     default:
@@ -93,10 +101,9 @@ async function loadTextureAsync(
         const obj = await loadAsync(
           await ensureAssetReadableAsync(virtualAssetModule, textureName)
         );
-        console.log(
-          `loadMaterialAsync(): Texture for ${textureName} loaded in ${
-            Date.now() - start
-          }ms`
+        log(
+          "loadTextureAsync",
+          `Texture for ${textureName} loaded in ${Date.now() - start}ms`
         );
         if (!obj) {
           throw new CreateDie3DError(
@@ -290,10 +297,9 @@ async function loadMaterialAsync(
         break;
     }
 
-    console.log(
-      `loadMaterialAsync(): Material for ${colorway} loaded in ${
-        Date.now() - start
-      }ms`
+    log(
+      "loadMaterialAsync",
+      `Material for ${colorway} loaded in ${Date.now() - start}ms`
     );
 
     return material;
@@ -350,8 +356,12 @@ async function loadAssetsAsync(
   dieType: PixelDieType,
   colorway: PixelColorway
 ): Promise<Die3DAssets> {
+  if (dieType === "unknown") {
+    warn("loadAssetsAsync", `Unknown dieType, defaulting to D20`);
+    dieType = "d20";
+  }
   if (colorway === "unknown") {
-    console.warn(`loadAssetsAsync(): Unknown colorway for ${dieType}`);
+    warn("loadAssetsAsync", `Unknown colorway for ${dieType}`);
     colorway = "onyxBlack";
   }
 
@@ -436,8 +446,9 @@ async function loadAssetsAsync(
       .split("led")[0];
     const indexFromName = indexAsString?.length ? Number(indexAsString) : NaN;
     if (isNaN(indexFromName)) {
-      console.log(
-        `loadAssetsAsync(): Face index not found in ${faceMesh.name}, using node index ${i}`
+      log(
+        "loadAssetsAsync",
+        `Face index not found in ${faceMesh.name}, using node index ${i}`
       );
     }
     const index = isNaN(indexFromName)
@@ -468,8 +479,9 @@ async function loadAssetsAsync(
   aabb.setFromObject(root);
   const size = aabb.getSize(new THREE.Vector3());
 
-  console.log(
-    `loadAssetsAsync(): Assets for ${dieType} loaded in ${Date.now() - start}ms`
+  log(
+    "loadAssetsAsync",
+    `Assets for ${dieType} loaded in ${Date.now() - start}ms`
   );
 
   return { root, faceNames, size, lights };
