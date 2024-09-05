@@ -1,5 +1,6 @@
 import {
   createTypedEventEmitter,
+  delay,
   EventReceiver,
   TypedEventEmitter,
 } from "@systemic-games/pixels-core-utils";
@@ -269,9 +270,10 @@ export const Central = {
             if (reason !== "success") {
               console.log(
                 `[BLE ${name}] Got connection status ${connectionStatus}` +
-                  ` with reason: ${reason}`
+                  ` with reason ${reason} (last known state is ${pInf.state})`
               );
             }
+            const prevState = pInf.state;
             switch (connectionStatus) {
               case "connecting":
               case "disconnecting":
@@ -281,7 +283,7 @@ export const Central = {
                 // Warn of disconnection without getting a "disconnecting" first
                 if (pInf.state === "ready") {
                   console.log(
-                    `[BLE ${name}] Unexpected immediate disconnection, last known state is ${pInf.state}`
+                    `[BLE ${name}] Unexpected immediate disconnection`
                   );
                 }
                 pInf.state = connectionStatus;
@@ -291,11 +293,11 @@ export const Central = {
                 break;
               case "connected":
               case "ready":
+                // The ready status is notified once the MTU has been set
                 pInf.state = "connecting";
                 break;
             }
-            if (connectionStatus !== "ready") {
-              // The ready status is notified once the MTU has been changed
+            if (prevState !== pInf.state) {
               _notifyConnectionStatus(pInf, connectionStatus, reason);
             }
           } else {
@@ -594,134 +596,114 @@ export const Central = {
         ` last known state is ${pInf.state}`
     );
 
+    // Update connection status if not already connecting/connected
+    if (pInf.state === "disconnected") {
+      pInf.state = "connecting";
+      _notifyConnectionStatus(pInf, "connecting");
+    }
+
     try {
+      // Create peripheral
+      // TODO move this into the native implementation of connectPeripheral
       const sysId = _getSystemId(peripheral);
       if (!(await BluetoothLE.createPeripheral(sysId))) {
+        // Update connection status if we were still in connecting state
+        // TODO another connection request might have been made in the meantime
+        //      in which case we shouldn't change the status
+        if (pInf.state === "connecting") {
+          pInf.state = "disconnected";
+          _notifyConnectionStatus(pInf, "disconnected");
+        }
         throw new Errors.ConnectError(name, "createFailed");
       }
 
-      // TODO timeout should be handled by the native code, so we get the correct reason on the disconnection event
-      let hasTimedOut = false;
-      const timeoutId =
-        timeoutMs > 0 &&
-        setTimeout(() => {
-          // Disconnect on timeout
-          console.log(
-            `[BLE ${name}] Connection timed-out after ${timeoutMs}ms`
-          );
-          hasTimedOut = true;
-          Central.disconnectPeripheral(peripheral).catch((e) => {
-            // Ignore error if we are disconnected as requested
-            if (pInf.state !== "disconnected") {
-              console.warn(
-                `[BLE ${name}] Failed to disconnect on connection timeout: ${e}`
-              );
-            }
-          });
-        }, timeoutMs);
+      // Connect to peripheral
+      await BluetoothLE.connectPeripheral(
+        sysId,
+        pInf.requiredServices,
+        timeoutMs
+      );
 
+      // Set MTU
+      console.log(`[BLE ${name}] Connected, updating MTU`);
       try {
-        // Connect to peripheral
-        await BluetoothLE.connectPeripheral(sysId, pInf.requiredServices);
-
-        // Stop connection timeout, assumes setting MTU will be quick
-        timeoutId && clearTimeout(timeoutId);
-
-        // Set MTU
-        console.log(`[BLE ${name}] Connected, updating MTU`);
-        let mtu = 0;
-        try {
-          mtu = await BluetoothLE.requestPeripheralMtu(sysId, Constants.maxMtu);
-        } catch (error) {
-          if (getNativeErrorCode(error) === "ERROR_GATT_INVALID_PDU") {
-            // MTU has already been set in this session
-            try {
-              mtu = await BluetoothLE.getPeripheralMtu(sysId);
-            } catch {}
-          } else {
-            console.log(
-              `[BLE ${name}] Updating MTU failed (current value is ${mtu})`
-            );
-            throw error;
-          }
-        }
+        const mtu = await BluetoothLE.requestPeripheralMtu(
+          sysId,
+          Constants.maxMtu
+        );
         console.log(`[BLE ${name}] MTU set to ${mtu}`);
-
-        // Continue if there wasn't any state change since we got connected
-        // Note: always notify the ready state so a new status listener gets
-        //       the notification even if it was already in the ready state
-        if (pInf.state === "connecting" || pInf.state === "ready") {
-          // Log services and characteristics
-          // const services = await BluetoothLE.getDiscoveredServices(sysId);
-          // const logs: string[][] = [];
-          // await Promise.all(
-          //   services.split(",").map(async (serviceUuid) => {
-          //     const log = [` * service ${serviceUuid}:`];
-          //     logs.push(log);
-          //     // Get characteristics for the service
-          //     const characteristics =
-          //       await BluetoothLE.getServiceCharacteristics(sysId, serviceUuid);
-          //     // And get characteristics properties
-          //     await Promise.all(
-          //       characteristics.split(",").map(async (uuid) => {
-          //         const props = await BluetoothLE.getCharacteristicProperties(
-          //           sysId,
-          //           serviceUuid,
-          //           uuid,
-          //           0
-          //         );
-          //         log.push(
-          //           `    - characteristic ${uuid} has properties = ${props}`
-          //         );
-          //       })
-          //     );
-          //   })
-          // );
-          // if (logs.length) {
-          //   console.log(
-          //     `[BLE ${name}] Enumerating services:\n${logs
-          //       .map((l) => l.join("\n"))
-          //       .join("\n")}`
-          //   );
-          // } else {
-          //   console.log(`[BLE ${name}] No service discovered`);
-          // }
-
-          // And finally set state to "ready"
-          pInf.state = "ready";
-          _notifyConnectionStatus(pInf, "ready");
-        } else {
-          throw new Errors.ConnectError(name, "disconnected");
-        }
       } catch (error) {
-        // Stop connection timeout
-        timeoutId && clearTimeout(timeoutId);
-
-        // Check if error was (likely) caused by the connection timeout
-        if (hasTimedOut) {
-          throw new Errors.ConnectError(name, "timeout");
-        } else {
+        // Could not set MTU, try to read the value
+        if (getNativeErrorCode(error) === "ERROR_GATT_INVALID_PDU") {
+          // MTU has already been set in this session
           try {
-            await Central.disconnectPeripheral(peripheral);
-          } catch (error) {
-            console.warn(
-              `[BLE ${name}] Error trying to disconnect after failing to connect: ${errToStr(
-                error
-              )}`
-            );
-          }
-          if (getNativeErrorCode(error) === "ERROR_BLUETOOTH_DISABLED") {
-            throw new Errors.ConnectError(name, "bluetoothUnavailable");
-          } else {
-            throw error;
-          }
+            const mtu = await BluetoothLE.getPeripheralMtu(sysId);
+            console.log(`[BLE ${name}] MTU already set to ${mtu}`);
+          } catch {}
+        } else {
+          console.warn(
+            `[BLE ${name}] Updating MTU failed with ${errToStr(error)}`
+          );
         }
+      }
+
+      // Continue if there wasn't any state change since we got connected
+      // Note: always notify the ready state so a new status listener gets
+      //       the notification even if it was already in the ready state
+      if (pInf.state === "connecting" || pInf.state === "ready") {
+        // Log services and characteristics
+        // const services = await BluetoothLE.getDiscoveredServices(sysId);
+        // const logs: string[][] = [];
+        // await Promise.all(
+        //   services.split(",").map(async (serviceUuid) => {
+        //     const log = [` * service ${serviceUuid}:`];
+        //     logs.push(log);
+        //     // Get characteristics for the service
+        //     const characteristics =
+        //       await BluetoothLE.getServiceCharacteristics(sysId, serviceUuid);
+        //     // And get characteristics properties
+        //     await Promise.all(
+        //       characteristics.split(",").map(async (uuid) => {
+        //         const props = await BluetoothLE.getCharacteristicProperties(
+        //           sysId,
+        //           serviceUuid,
+        //           uuid,
+        //           0
+        //         );
+        //         log.push(
+        //           `    - characteristic ${uuid} has properties = ${props}`
+        //         );
+        //       })
+        //     );
+        //   })
+        // );
+        // if (logs.length) {
+        //   console.log(
+        //     `[BLE ${name}] Enumerating services:\n${logs
+        //       .map((l) => l.join("\n"))
+        //       .join("\n")}`
+        //   );
+        // } else {
+        //   console.log(`[BLE ${name}] No service discovered`);
+        // }
+
+        // And finally set state to "ready"
+        pInf.state = "ready";
+        // We always notify the ready state so a new status listener gets
+        // the notification even if it was already in the ready state
+        _notifyConnectionStatus(pInf, "ready");
+      } else {
+        throw new Errors.ConnectError(name, "disconnected");
       }
     } catch (error) {
       // Log error
       console.log(
         `[BLE ${name}] Error connecting to peripheral: ${errToStr(error)}`
       );
+      // Give a chance to pending native events for being processed
+      // so the connection status is updated before throwing the error
+      await delay(0);
+      // Get error code and throw a more specific error
       const code = getNativeErrorCode(error);
       switch (code) {
         case "ERROR_DEVICE_DISCONNECTED":
