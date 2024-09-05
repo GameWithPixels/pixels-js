@@ -272,7 +272,6 @@
     NSLog(@">> queueSetNotifyValueForCharacteristic");
     
     SGBleRequestExecuteHandler block = ^{
-        // TODO fail if already subscribed
         if (!characteristic || !valueChangedHandler)
         {
             NSLog(@">> SetNotifyValueForCharacteristic -> invalid parameters");
@@ -280,6 +279,7 @@
         }
         
         NSLog(@">> SetNotifyValueForCharacteristic");
+        // Replaces a previously registered callback for the same characteristic.
         [self->_valueChangedHandlers setObject:valueChangedHandler forKey:characteristic];
         [self->_peripheral setNotifyValue:valueChangedHandler != nil forCharacteristic:characteristic];
         return (NSError *)nil;

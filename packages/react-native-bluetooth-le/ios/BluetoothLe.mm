@@ -383,6 +383,7 @@ RCT_EXPORT_METHOD(releasePeripheral:(NSString *)deviceSystemId
 
 RCT_EXPORT_METHOD(connectPeripheral:(NSString *)deviceSystemId
                   requiredServicesUuids: (NSString *)requiredServicesUuids
+                  timeoutMs:(int)timeoutMs // TODO implement timeout
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {

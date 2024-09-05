@@ -188,19 +188,9 @@ export abstract class PixelConnect<
   ): PixelMessage | MessageType;
 
   protected async _internalConnect(timeoutMs = 0): Promise<void> {
-    // Timeout
-    let hasTimedOut = false;
-    const timeoutId =
-      timeoutMs > 0 &&
-      setTimeout(() => {
-        // Disconnect on timeout
-        hasTimedOut = true;
-        this._session.disconnect().catch(() => {});
-      }, timeoutMs);
-
     try {
       // Connect to the peripheral
-      await this._session.connect();
+      await this._session.connect(timeoutMs);
 
       // And prepare our instance for communications with the device
       if (this.status === "connecting") {
@@ -251,8 +241,11 @@ export abstract class PixelConnect<
         throw new PixelConnectCancelledError(this);
       }
     } catch (error) {
-      // Check if the error was caused by the connection timeout
-      if (hasTimedOut) {
+      const message = (error as any)?.message;
+      if (
+        typeof message === "string" &&
+        message.startsWith("Connection timeout")
+      ) {
         throw new PixelConnectTimeoutError(this, timeoutMs);
       } else if (error instanceof PixelConnectError) {
         // Forward other connection errors
@@ -260,10 +253,6 @@ export abstract class PixelConnect<
       } else {
         // Wrap any other type of error in a connection error
         throw new PixelConnectError(this, error);
-      }
-    } finally {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
       }
     }
   }

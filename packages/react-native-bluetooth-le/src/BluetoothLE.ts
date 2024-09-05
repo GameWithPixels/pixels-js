@@ -69,7 +69,8 @@ export interface NativeBluetoothLE extends NativeModule {
   releasePeripheral(deviceSystemId: string): Promise<void>;
   connectPeripheral(
     deviceSystemId: string,
-    requiredServicesUuids: string | undefined
+    requiredServicesUuids: string | undefined,
+    timeoutMs: number
   ): Promise<void>;
   disconnectPeripheral(deviceSystemId: string): Promise<void>;
   getPeripheralConnectionStatus(

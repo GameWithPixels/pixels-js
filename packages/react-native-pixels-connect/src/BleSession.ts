@@ -38,12 +38,10 @@ export default class BleSession extends PixelSession {
     this._disposeFunc();
   }
 
-  async connect(): Promise<void> {
+  // Note: Android will timeout after 30s
+  async connect(timeoutMs: number): Promise<void> {
     // And connect
-    await Central.connectPeripheral(
-      this.systemId,
-      15000 // timeout in ms. Note: Android will always timeout at 30s
-    );
+    await Central.connectPeripheral(this.systemId, timeoutMs);
   }
 
   async disconnect(): Promise<void> {

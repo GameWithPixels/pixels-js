@@ -290,15 +290,14 @@ public final class Peripheral
     /**
      * @brief Queues a request to connect to the peripheral.
      *
-     * This request timeouts after 30 seconds.
-     *
      * @param requiredServicesUuids Comma separated list of services UUIDs that the peripheral
      *                              should support, may be null or empty.
+     * @param timeoutMs The connection timeout in milliseconds (when set to zero, it will timeout after 30s).
      * @param requestCallback The callback for notifying of the request result.
      */
-    public void connect(final String requiredServicesUuids, final RequestCallback requestCallback)
+    public void connect(final String requiredServicesUuids, final int timeoutMs, final RequestCallback requestCallback)
     {
-        Log.v(TAG, "==> connect");
+        Log.v(TAG, "==> connect with timeout " + timeoutMs);
 
         // Convert the comma separated list of UUIDs
         UUID[] requiredServices = null;
@@ -331,7 +330,7 @@ public final class Peripheral
         // Connect
         _client.connect(_device)
             // .useAutoConnect(autoReconnect)
-            .timeout(0) // Actually it times out after 30s
+            .timeout(timeoutMs)
             .done(requestCallback).fail(requestCallback).invalid(requestCallback)
             .enqueue();
     }

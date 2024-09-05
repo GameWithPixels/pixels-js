@@ -82,7 +82,7 @@ export abstract class PixelSession {
   abstract dispose(): void;
 
   /** Connects to the Pixel. */
-  abstract connect(): Promise<void>;
+  abstract connect(timeoutMs: number): Promise<void>;
 
   /** Disconnects from the Pixel. */
   abstract disconnect(): Promise<void>;

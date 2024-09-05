@@ -96,7 +96,7 @@ export default class BleSession extends PixelSession {
     this._disposeFunc();
   }
 
-  async connect(): Promise<void> {
+  async connect(timeoutMs: number): Promise<void> {
     // Update name
     const name = this._device.name;
     name && this._setName(name);
@@ -106,6 +106,17 @@ export default class BleSession extends PixelSession {
       throw new BluetoothError("Gatt server not available");
     }
     if (!server.connected) {
+      // Timeout
+      let hasTimedOut = false;
+      const setupTimeout = () =>
+        timeoutMs > 0 &&
+        setTimeout(() => {
+          // Disconnect on timeout
+          hasTimedOut = true;
+          this.disconnect().catch(() => {});
+        }, timeoutMs);
+      let timeoutId = setupTimeout();
+
       try {
         // Attempt to connect
         this._notifyConnectionEvent("connecting");
@@ -119,7 +130,9 @@ export default class BleSession extends PixelSession {
         ) {
           // Connection possibly failed because device was never scanned
           try {
+            timeoutId && clearTimeout(timeoutId);
             await scanForDevice(this._device);
+            timeoutId = setupTimeout();
             await server.connect();
             lastError = undefined;
           } catch (error) {
@@ -128,10 +141,16 @@ export default class BleSession extends PixelSession {
             }
           }
         }
+        // Check if the error was caused by the connection timeout
+        if (hasTimedOut) {
+          lastError = new Error("Connection timeout");
+        }
         if (lastError) {
           this._notifyConnectionEvent("disconnected");
           throw lastError;
         }
+      } finally {
+        timeoutId && clearTimeout(timeoutId);
       }
 
       // Get Pixel service and characteristics
