@@ -196,6 +196,11 @@ export class PixelScanner {
     }
   }
 
+  constructor() {
+    // Increase the default max listeners to avoid warnings
+    this._evEmitter.setMaxListeners(100);
+  }
+
   /**
    * Registers a listener function that will be called when the specified
    * event is raised.
@@ -257,7 +262,9 @@ export class PixelScanner {
    */
   startAsync(): Promise<void> {
     return PixelScanner._sharedQueue.run(() => {
+      // Remove outdated advertisements
       this._pruneOutdated();
+      // Flush pending operations
       this._notify(Date.now());
       // Start scanning
       if (this._status === "stopped" && !this._startPromise) {
@@ -430,6 +437,7 @@ export class PixelScanner {
     if (now >= nextUpdate) {
       // Yes, notify immediately
       this._notify(now);
+    } else if (!this._notifyTimeoutId) {
       // Otherwise schedule the notification for later if not already done
       this._notifyTimeoutId = setTimeout(
         () => this._notify(nextUpdate),
@@ -443,8 +451,8 @@ export class PixelScanner {
       clearTimeout(this._notifyTimeoutId);
       this._notifyTimeoutId = undefined;
     }
-    this._lastUpdateMs = now;
     if (this._touched.size) {
+      this._lastUpdateMs = now;
       const ops: PixelScannerListOperation[] = [];
       for (const [pixelId, type] of this._touched) {
         const item = this._devices.find(
@@ -457,14 +465,12 @@ export class PixelScanner {
         );
       }
       this._touched.clear();
-      if (ops.length) {
-        this._emitEvent("onScanListChange", { ops });
-        if (ops.find((op) => op.item.type === "pixel")) {
-          this._emitEvent("scannedPixels", this.scannedPixels);
-        }
-        if (ops.find((op) => op.item.type === "charger")) {
-          this._emitEvent("scannedChargers", this.scannedChargers);
-        }
+      this._emitEvent("onScanListChange", { ops });
+      if (ops.find((op) => op.item.type === "pixel")) {
+        this._emitEvent("scannedPixels", this.scannedPixels);
+      }
+      if (ops.find((op) => op.item.type === "charger")) {
+        this._emitEvent("scannedChargers", this.scannedChargers);
       }
     }
   }
