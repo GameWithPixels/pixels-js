@@ -121,7 +121,7 @@ export function getScannedPixel(
         rollState,
         currentFace,
         currentFaceIndex: faceIndex,
-        timestamp: new Date(),
+        timestamp: new Date(advData.timestamp),
       };
       ScannedDevicesRegistry.register(scannedPixel);
       return scannedPixel;
