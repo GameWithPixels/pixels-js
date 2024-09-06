@@ -40,6 +40,7 @@ export type AdvertisementData = Readonly<{
   isConnectable: boolean;
   rssi: number;
   txPowerLevel: number;
+  timestamp: number;
   services?: readonly string[];
   solicitedServices?: readonly string[];
   manufacturersData?: readonly ManufacturerData[];

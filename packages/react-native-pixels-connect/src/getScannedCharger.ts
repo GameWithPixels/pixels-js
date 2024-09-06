@@ -62,7 +62,7 @@ export function getScannedCharger(
         rssi: advData.rssi,
         batteryLevel,
         isCharging,
-        timestamp: new Date(),
+        timestamp: new Date(advData.timestamp),
       };
       ScannedDevicesRegistry.register(scannedCharger);
       return scannedCharger;

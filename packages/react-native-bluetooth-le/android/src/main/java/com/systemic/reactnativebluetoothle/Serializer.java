@@ -127,6 +127,7 @@ public final class Serializer {
         map.putBoolean("isConnectable", scanResult.isConnectable());
         map.putInt("rssi", scanResult.getRssi());
         map.putInt("txPowerLevel", scanResult.getTxPower());
+        map.putDouble("timestamp", System.currentTimeMillis());
 
         ScanRecord scanRecord = scanResult.getScanRecord();
         if (scanRecord != null) {
