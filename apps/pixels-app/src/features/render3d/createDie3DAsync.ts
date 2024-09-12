@@ -453,7 +453,7 @@ async function loadAssetsAsync(
     }
     const index = isNaN(indexFromName)
       ? i
-      : DiceUtils.indexFromFace(indexFromName, dieType, true);
+      : DiceUtils.indexFromFace(indexFromName, dieType);
     if (index < 0 || index >= faceNames.length) {
       throw new CreateDie3DError(
         `Out of bound face index ${index} for face ${faceMesh.name} of ${dieType}/${colorway}`

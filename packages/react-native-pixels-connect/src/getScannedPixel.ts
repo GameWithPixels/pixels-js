@@ -92,7 +92,7 @@ export function getScannedPixel(
       faceIndex = manufReader.readU8();
       batteryLevel = Math.round((manufReader.readU8() / 255) * 100);
 
-      firmwareDate = new Date();
+      firmwareDate = new Date(1656633600000); // 2022-07-01 UTC
     }
 
     if (pixelId) {
@@ -104,7 +104,11 @@ export function getScannedPixel(
         : DiceUtils.estimateDieType(ledCount);
       const rollState =
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
-      const currentFace = DiceUtils.faceFromIndex(faceIndex, dieType);
+      const currentFace = DiceUtils.faceFromIndex(
+        faceIndex,
+        dieType,
+        firmwareDate.getTime()
+      );
       const scannedPixel = {
         type: "pixel" as "pixel",
         systemId,

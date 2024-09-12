@@ -1126,7 +1126,8 @@ export class Pixel
         // Those faces are not valid for a D4, reuse last valid face instead
         faceIndex = DiceUtils.indexFromFace(
           this.currentFace > 0 ? this.currentFace : 1,
-          "d4"
+          "d4",
+          this.firmwareDate.getTime()
         );
         if (state === "onFace") {
           state = "crooked";
@@ -1134,7 +1135,11 @@ export class Pixel
       }
     }
     // Convert face index to face value
-    const face = DiceUtils.faceFromIndex(faceIndex, this.dieType);
+    const face = DiceUtils.faceFromIndex(
+      faceIndex,
+      this.dieType,
+      this.firmwareDate.getTime()
+    );
     return { state, face, faceIndex };
   }
 

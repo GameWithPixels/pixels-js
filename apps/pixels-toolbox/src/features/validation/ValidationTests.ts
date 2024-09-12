@@ -324,7 +324,8 @@ export const ValidationTests = {
                       // Remap face based on the user selected die type
                       const face = DiceUtils.faceFromIndex(
                         pixel.currentFaceIndex,
-                        dieType
+                        dieType,
+                        pixel.firmwareDate.getTime()
                       );
                       console.log(`Validating face up: ${face}`);
                       resolve();
@@ -337,7 +338,8 @@ export const ValidationTests = {
                     // Remap face based on the user selected die type
                     const currentFace = DiceUtils.faceFromIndex(
                       ev.faceIndex,
-                      dieType
+                      dieType,
+                      pixel.firmwareDate.getTime()
                     );
                     if (state === "onFace" && currentFace === face) {
                       // Required face is up, start hold timer
@@ -360,7 +362,11 @@ export const ValidationTests = {
                     pixel.rollState === "onFace" &&
                     face ===
                       // Remap face based on the user selected die type
-                      DiceUtils.faceFromIndex(pixel.currentFaceIndex, dieType)
+                      DiceUtils.faceFromIndex(
+                        pixel.currentFaceIndex,
+                        dieType,
+                        pixel.firmwareDate.getTime()
+                      )
                   ) {
                     // Required face is already up, start hold timer
                     console.log(`Die already on face ${face}`);
