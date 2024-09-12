@@ -375,7 +375,8 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
                     "unknown"
                 )}, ${DiceUtils.faceFromIndex(
                   telemetry.faceIndex,
-                  pixel.dieType
+                  pixel.dieType,
+                  pixel.firmwareDate.getTime()
                 )} (${"index"}: ${telemetry.faceIndex})`
               : "unknown"}
           </TextEntry>
