@@ -196,9 +196,7 @@ function _emitPeripheralEvent(
 
 function _updateBluetoothState(state: BluetoothState): void {
   if (_bluetoothState !== state) {
-    console.log(
-      `[BLE] Bluetooth state changed from ${_bluetoothState} to ${state}`
-    );
+    console.log(`[BLE] Bluetooth state ${state} (was ${_bluetoothState})`);
     _bluetoothState = state;
     _emitEvent("bluetoothState", { state });
   }
@@ -220,9 +218,7 @@ function _updateScanStatus(status: ScanStatus, reason?: ScanStopReason): void {
   // Update and notify
   if (_scanStatus !== status) {
     console.log(
-      `[BLE] Scan status changed from ${_scanStatus} to ${status}${
-        reason ? ` with reason: ${reason}` : ""
-      }`
+      `[BLE] Scan status ${status}${reason ? `, reason ${reason}` : ""} (status was ${_scanStatus})`
     );
 
     _scanStatus = status;
@@ -249,6 +245,46 @@ function _notifyConnectionStatus(
   _emitPeripheralEvent(pInf, "connectionStatus", ev);
 }
 
+async function _logServicesAndCharacteristicsAsync(
+  peripheral: ScannedPeripheral
+): Promise<void> {
+  const { systemId, name } = peripheral;
+  const services = await BluetoothLE.getDiscoveredServices(systemId);
+  const logs: string[][] = [];
+  await Promise.all(
+    services.split(",").map(async (serviceUuid) => {
+      const log = [` * service ${serviceUuid}:`];
+      logs.push(log);
+      // Get characteristics for the service
+      const characteristics = await BluetoothLE.getServiceCharacteristics(
+        systemId,
+        serviceUuid
+      );
+      // And get characteristics properties
+      await Promise.all(
+        characteristics.split(",").map(async (uuid) => {
+          const props = await BluetoothLE.getCharacteristicProperties(
+            systemId,
+            serviceUuid,
+            uuid,
+            0
+          );
+          log.push(`    - characteristic ${uuid} has properties = ${props}`);
+        })
+      );
+    })
+  );
+  if (logs.length) {
+    console.log(
+      `[BLE ${name}] Enumerating services:\n${logs
+        .map((l) => l.join("\n"))
+        .join("\n")}`
+    );
+  } else {
+    console.log(`[BLE ${name}] No service discovered`);
+  }
+}
+
 export const Central = {
   // May be called multiple times
   initialize(): void {
@@ -272,8 +308,8 @@ export const Central = {
           if (pInf) {
             if (reason !== "success") {
               console.log(
-                `[BLE ${name}] Got connection status ${connectionStatus}` +
-                  ` with reason ${reason} (last known state is ${pInf.state})`
+                `[BLE ${name}] Connection state ${connectionStatus} reason ${reason}` +
+                  ` (state was ${pInf.state})`
               );
             }
             const prevState = pInf.state;
@@ -596,9 +632,8 @@ export const Central = {
     const name = pInf.scannedPeripheral.name;
 
     console.log(
-      `[BLE ${name}] Connecting with ` +
-        `${timeoutMs ? `timeout of ${timeoutMs}ms` : "no timeout"},` +
-        ` last known state is ${pInf.state}`
+      `[BLE ${name}] Connecting with ${timeoutMs ? `${timeoutMs}ms timeout` : "no timeout"}` +
+        `, (state was ${pInf.state})`
     );
 
     // Update connection status if not already connecting/connected
@@ -631,6 +666,7 @@ export const Central = {
 
       // Set MTU
       console.log(`[BLE ${name}] Connected, updating MTU`);
+      let mtuError: unknown;
       try {
         const mtu = await BluetoothLE.requestPeripheralMtu(
           sysId,
@@ -643,12 +679,17 @@ export const Central = {
           // MTU has already been set in this session
           try {
             const mtu = await BluetoothLE.getPeripheralMtu(sysId);
-            console.log(`[BLE ${name}] MTU already set to ${mtu}`);
-          } catch {}
+            console.warn(`[BLE ${name}] MTU previously set to ${mtu}`);
+          } catch (e) {
+            mtuError = e;
+          }
         } else {
-          console.warn(
-            `[BLE ${name}] Updating MTU failed with ${errToStr(error)}`
-          );
+          mtuError = error;
+        }
+        if (mtuError) {
+          // Give a chance to pending native events for being processed
+          // so the connection status is updated
+          await delay(0);
         }
       }
 
@@ -657,40 +698,7 @@ export const Central = {
       //       the notification even if it was already in the ready state
       if (pInf.state === "connecting" || pInf.state === "ready") {
         // Log services and characteristics
-        // const services = await BluetoothLE.getDiscoveredServices(sysId);
-        // const logs: string[][] = [];
-        // await Promise.all(
-        //   services.split(",").map(async (serviceUuid) => {
-        //     const log = [` * service ${serviceUuid}:`];
-        //     logs.push(log);
-        //     // Get characteristics for the service
-        //     const characteristics =
-        //       await BluetoothLE.getServiceCharacteristics(sysId, serviceUuid);
-        //     // And get characteristics properties
-        //     await Promise.all(
-        //       characteristics.split(",").map(async (uuid) => {
-        //         const props = await BluetoothLE.getCharacteristicProperties(
-        //           sysId,
-        //           serviceUuid,
-        //           uuid,
-        //           0
-        //         );
-        //         log.push(
-        //           `    - characteristic ${uuid} has properties = ${props}`
-        //         );
-        //       })
-        //     );
-        //   })
-        // );
-        // if (logs.length) {
-        //   console.log(
-        //     `[BLE ${name}] Enumerating services:\n${logs
-        //       .map((l) => l.join("\n"))
-        //       .join("\n")}`
-        //   );
-        // } else {
-        //   console.log(`[BLE ${name}] No service discovered`);
-        // }
+        // await _logServicesAndCharacteristicsAsync(pInf.scannedPeripheral);
 
         // And finally set state to "ready"
         pInf.state = "ready";
@@ -698,13 +706,13 @@ export const Central = {
         // the notification even if it was already in the ready state
         _notifyConnectionStatus(pInf, "ready");
       } else {
-        throw new Errors.ConnectError(name, "disconnected");
+        throw (
+          (mtuError as Error) ?? new Errors.ConnectError(name, "disconnected")
+        );
       }
     } catch (error) {
       // Log error
-      console.log(
-        `[BLE ${name}] Error connecting to peripheral: ${errToStr(error)}`
-      );
+      console.log(`[BLE ${name}] Connection error: ${errToStr(error)}`);
       // Give a chance to pending native events for being processed
       // so the connection status is updated before throwing the error
       await delay(0);
@@ -730,9 +738,7 @@ export const Central = {
   async disconnectPeripheral(peripheral: PeripheralOrSystemId): Promise<void> {
     const pInf = _getPeripheralInfo(peripheral);
     const name = pInf.scannedPeripheral.name;
-    console.log(
-      `[BLE ${name}] Disconnecting, last known state is ${pInf.state}`
-    );
+    console.log(`[BLE ${name}] Disconnecting, state was ${pInf.state}`);
     try {
       await BluetoothLE.disconnectPeripheral(pInf.scannedPeripheral.systemId);
     } catch (error: any) {
