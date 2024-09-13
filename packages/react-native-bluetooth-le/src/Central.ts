@@ -95,7 +95,7 @@ export type CentralEventMap = Readonly<{
   }>;
 }>;
 
-export type CharacteristicValueChangedEvent = Readonly<{
+export type PeripheralCharacteristicValueChangedEvent = Readonly<{
   peripheral: ScannedPeripheral;
   service: string;
   characteristic: string;
@@ -107,7 +107,6 @@ export type PeripheralOrSystemId = ScannedPeripheral | string;
 
 type PeripheralEventMap = Readonly<{
   connectionStatus: CentralEventMap["peripheralConnectionStatus"];
-  valueChanged: CharacteristicValueChangedEvent;
 }>;
 
 // Internal data about a peripheral
@@ -116,6 +115,10 @@ interface PeripheralInfo {
   state: "disconnected" | "connecting" | "ready" | "disconnecting";
   requiredServices: string; // Comma separated list of required services
   evEmitter: TypedEventEmitter<PeripheralEventMap>;
+  valueChangedCallbacks: Map<
+    string,
+    (ev: PeripheralCharacteristicValueChangedEvent) => void
+  >;
 }
 
 // Our native event emitter and subscriptions
@@ -287,6 +290,8 @@ export const Central = {
                   );
                 }
                 pInf.state = connectionStatus;
+                // Clear all now inactive subscriptions callbacks
+                pInf.valueChangedCallbacks.clear();
                 break;
               case "failedToConnect":
                 pInf.state = "disconnected";
@@ -318,21 +323,20 @@ export const Central = {
             const pInf = _peripherals.get(device.systemId);
             const name = device.name;
             if (pInf) {
-              _emitPeripheralEvent(
-                pInf,
+              const onValueChanged = pInf.valueChangedCallbacks.get(
                 getCharacteristicKey(
                   characteristic.serviceUuid,
                   characteristic.uuid,
                   characteristic.instanceIndex
-                ),
-                {
-                  peripheral: pInf.scannedPeripheral,
-                  service: characteristic.serviceUuid,
-                  characteristic: characteristic.uuid,
-                  characteristicIndex: characteristic.instanceIndex,
-                  value: data,
-                }
+                )
               );
+              onValueChanged?.({
+                peripheral: pInf.scannedPeripheral,
+                service: characteristic.serviceUuid,
+                characteristic: characteristic.uuid,
+                characteristicIndex: characteristic.instanceIndex,
+                value: data,
+              });
             } else {
               console.warn(
                 `[BLE ${name}] Got characteristic value changed for unknown scanned peripheral`
@@ -528,6 +532,7 @@ export const Central = {
             state: "disconnected",
             requiredServices,
             evEmitter: createTypedEventEmitter(),
+            valueChangedCallbacks: new Map(),
           });
         }
         _emitEvent("scannedPeripheral", { peripheral, context });
@@ -843,11 +848,14 @@ export const Central = {
     );
   },
 
+  // Notes:
+  // Only one subscription (a new subscription will replace the previous one)
+  // Will be unsubscribed on disconnect
   async subscribeCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
-    onValueChanged: (ev: CharacteristicValueChangedEvent) => void,
+    onValueChanged: (ev: PeripheralCharacteristicValueChangedEvent) => void,
     options?: {
       instanceIndex?: number;
       timeoutMs?: number; // TODO unused => Constants.defaultRequestTimeout
@@ -865,14 +873,13 @@ export const Central = {
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    pInf.evEmitter.addListener(key, onValueChanged);
+    pInf.valueChangedCallbacks.set(key, onValueChanged);
   },
 
   async unsubscribeCharacteristic(
     peripheral: PeripheralOrSystemId,
     serviceUuid: string,
     characteristicUuid: string,
-    onValueChanged: (ev: CharacteristicValueChangedEvent) => void,
     options?: {
       instanceIndex?: number;
       timeoutMs?: number; // TODO unused => Constants.defaultRequestTimeout
@@ -884,7 +891,7 @@ export const Central = {
       characteristicUuid,
       options?.instanceIndex ?? 0
     );
-    pInf.evEmitter.removeListener(key, onValueChanged);
+    pInf.valueChangedCallbacks.delete(key);
     await BluetoothLE.unsubscribeCharacteristic(
       _getSystemId(peripheral),
       serviceUuid,

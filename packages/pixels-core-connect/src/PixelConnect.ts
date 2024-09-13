@@ -1,3 +1,4 @@
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
 import { Constants } from "./Constants";
@@ -16,22 +17,6 @@ import {
   PixelWaitForMessageDisconnectError as WaitMsgDiscoErr,
   PixelWaitForMessageTimeoutError as WaitMsgTimeoutErr,
 } from "./errors";
-
-// Returns a string with the current time with a millisecond precision
-function _getTime(): string {
-  const to2 = (n: number) => n.toString().padStart(2, "0");
-  const to3 = (n: number) => n.toString().padStart(3, "0");
-  const d = new Date();
-  return (
-    to2(d.getHours()) +
-    ":" +
-    to2(d.getMinutes()) +
-    ":" +
-    to2(d.getSeconds()) +
-    "." +
-    to3(d.getMilliseconds())
-  );
-}
 
 /**
  * The different possible connection statuses of a Pixel.
@@ -198,7 +183,7 @@ export abstract class PixelConnect<
         this._updateStatus("identifying");
 
         try {
-          // Subscribe to get messages from die
+          // Subscribe to get messages from die (will unsubscribe on disconnect)
           await this._session.subscribe((dv: DataView) =>
             this._onValueChanged(dv)
           );
@@ -274,12 +259,14 @@ export abstract class PixelConnect<
       const msgOrType = this._internalDeserializeMessage(dataView);
       const msgName = this._serializer.getMessageType(msgOrType);
       if (this._logMessages) {
-        this._log(
-          `Received message ${msgName} (${this._serializer.getMessageTypeValue(msgName)})`
-        );
-        if (typeof msgOrType === "object") {
-          // Log message contents
-          this._log(msgOrType);
+        if (msgName !== "rssi" && msgName !== "batteryLevel") {
+          this._log(
+            `Received message ${msgName} (${this._serializer.getMessageTypeValue(msgName)})`
+          );
+          if (typeof msgOrType === "object") {
+            // Log message contents
+            this._log(msgOrType);
+          }
         }
       }
       // Dispatch specific message event
@@ -413,7 +400,8 @@ export abstract class PixelConnect<
   }
 
   protected _tagLogString(str: string): string {
-    return `[${_getTime()} - ${this.name}] ${str}`;
+    const id = unsigned32ToHex(this.pixelId);
+    return `[${this.name} (${id})] ${str}`;
   }
 
   // Log the given message prepended with a timestamp and the Pixel name
