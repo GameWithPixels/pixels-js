@@ -52,6 +52,21 @@ import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
 
+if (__DEV__) {
+  // https://gist.github.com/mikelehen/5398652
+  const timeStart = new Date().getTime();
+  console.log = (function () {
+    const console_log = console.log;
+    return function (...args): void {
+      const delta = Date.now() - timeStart;
+      const secs = Math.floor(delta / 1000);
+      const ms = delta % 1000;
+      const timestamp = `${secs.toString().padStart(3, "0")}.${ms.toString().padStart(3, "0")}:`;
+      console_log.apply(console, [timestamp, ...args]);
+    };
+  })();
+}
+
 LogBox.ignoreLogs([
   "THREE.WebGLProgram: Program Info Log:",
   "Sentry Logger [warn]:",
