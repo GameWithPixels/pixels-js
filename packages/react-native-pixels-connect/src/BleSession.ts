@@ -5,7 +5,6 @@ import {
 import {
   Central,
   CentralEventMap,
-  CharacteristicValueChangedEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 
 /**
@@ -49,25 +48,19 @@ export default class BleSession extends PixelSession {
   }
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {
-    const onValueChange = (ev: CharacteristicValueChangedEvent) => {
-      if (ev.value?.length) {
-        listener(new DataView(new Uint8Array(ev.value).buffer));
-      }
-    };
-
     await Central.subscribeCharacteristic(
       this.systemId,
       this._bleUuids.service,
       this._bleUuids.notifyCharacteristic,
-      onValueChange
+      (ev) =>
+        ev.value?.length &&
+        listener(new DataView(new Uint8Array(ev.value).buffer))
     );
-
     return () => {
       Central.unsubscribeCharacteristic(
         this.systemId,
         this._bleUuids.service,
-        this._bleUuids.notifyCharacteristic,
-        onValueChange
+        this._bleUuids.notifyCharacteristic
       ).catch(() => {});
       // TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
     };
