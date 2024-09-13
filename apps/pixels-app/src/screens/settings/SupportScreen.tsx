@@ -37,6 +37,11 @@ function SupportPage({
 }: {
   navigation: SupportScreenProps["navigation"];
 }) {
+  const createURL = (subject: string) =>
+    `mailto:${supportEmail}?` +
+    encodeURIComponent(
+      `subject=Pixels App ${subject}&body=Please describe your ${subject.toLocaleLowerCase()} here.`
+    );
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>Support</PageHeader>
@@ -54,23 +59,11 @@ function SupportPage({
         >
           {"Contact Us" + TrailingSpaceFix}
         </URLButton> */}
-        <URLButton
-          url={
-            `mailto:${supportEmail}?` +
-            "subject=Pixels App Suggestion&body=Please describe your suggestion here."
-          }
-          sentry-label="send-email"
-        >
+        <URLButton url={createURL("Suggestion")} sentry-label="send-email">
           Email Us at {supportEmail}
         </URLButton>
         <Text>To report issues:</Text>
-        <URLButton
-          url={
-            `mailto:${supportEmail}?` +
-            "subject=Pixels App Issue&body=Please describe your issue here."
-          }
-          sentry-label="send-email"
-        >
+        <URLButton url={createURL("Issue")} sentry-label="send-email">
           Email Us at {supportEmail}
         </URLButton>
         <Text style={{ marginTop: 20 }}>Or join us on our Discord server:</Text>
