@@ -76,13 +76,12 @@ export function createLibraryProfile(
     count = 1,
     duration?: number
   ) {
+    const topFace = DiceUtils.getTopFace(dieType);
     profile.rules.push(
       new EditRule(
         new EditConditionRolled({
           faces: mapFaces(
-            DiceUtils.getDieFaces(dieType).filter(
-              (face) => face !== DiceUtils.getTopFace(dieType)
-            )
+            DiceUtils.getDieFaces(dieType).filter((face) => face !== topFace)
           ),
         }),
         new EditActionPlayAnimation({
@@ -111,7 +110,7 @@ export function createLibraryProfile(
   };
 
   switch (name) {
-    case "default":
+    case "default": {
       profile.name = "Default Profile";
       profile.description = "The default profile for all dice.";
       // Rolling
@@ -127,14 +126,14 @@ export function createLibraryProfile(
       );
       // OnFace
       pushRolledAnimTopFaceRule(DefaultRulesAnimations.hello); // Validation default: Rainbow All Faces
+      const topFace = DiceUtils.getTopFace(dieType);
+      const bottomFace = DiceUtils.getBottomFace(dieType);
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
-                (face) =>
-                  face !== DiceUtils.getTopFace(dieType) &&
-                  face !== DiceUtils.getBottomFace(dieType)
+                (face) => face !== topFace && face !== bottomFace
               )
             ),
           }),
@@ -147,7 +146,7 @@ export function createLibraryProfile(
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
-            faces: [mapFace(DiceUtils.getBottomFace(dieType))],
+            faces: [mapFace(bottomFace)],
           }),
           new EditActionPlayAnimation({
             animation: PrebuildAnimations.quickRed,
@@ -156,7 +155,7 @@ export function createLibraryProfile(
         )
       );
       break;
-
+    }
     // case "firmware":
     //   profile.name = "Default";
     //   profile.description = "The default profile for all dice.";
@@ -241,14 +240,14 @@ export function createLibraryProfile(
       profile.name = "High Low";
       pushRollingAnimRule(PrebuildAnimations.blueFlash);
       // Bottom half
+      const faceCount = fixD4FaceCount(DiceUtils.getFaceCount(dieType));
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
                 (face) =>
-                  DiceUtils.indexFromFace(face, dieType) <
-                  fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 2
+                  DiceUtils.indexFromFace(face, dieType, true) < faceCount / 2
               )
             ),
           }),
@@ -265,8 +264,7 @@ export function createLibraryProfile(
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
                 (face) =>
-                  DiceUtils.indexFromFace(face, dieType) >=
-                  fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 2
+                  DiceUtils.indexFromFace(face, dieType, true) >= faceCount / 2
               )
             ),
           }),
@@ -283,14 +281,14 @@ export function createLibraryProfile(
     case "worm": {
       profile.name = "Worm";
       pushRollingAnimRule(PrebuildAnimations.blueFlash);
+      const faceCount = fixD4FaceCount(DiceUtils.getFaceCount(dieType));
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
                 (face) =>
-                  DiceUtils.indexFromFace(face, dieType) <
-                  fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 3
+                  DiceUtils.indexFromFace(face, dieType, true) < faceCount / 3
               )
             ),
           }),
@@ -304,13 +302,10 @@ export function createLibraryProfile(
         new EditRule(
           new EditConditionRolled({
             faces: mapFaces(
-              DiceUtils.getDieFaces(dieType).filter(
-                (face) =>
-                  DiceUtils.indexFromFace(face, dieType) >=
-                    fixD4FaceCount(DiceUtils.getFaceCount(dieType)) / 3 &&
-                  DiceUtils.indexFromFace(face, dieType) <
-                    (2 * fixD4FaceCount(DiceUtils.getFaceCount(dieType))) / 3
-              )
+              DiceUtils.getDieFaces(dieType).filter((face) => {
+                const index = DiceUtils.indexFromFace(face, dieType, true);
+                return index >= faceCount / 3 && index < (2 * faceCount) / 3;
+              })
             ),
           }),
           new EditActionPlayAnimation({
@@ -319,15 +314,15 @@ export function createLibraryProfile(
           })
         )
       );
+      const topFace = DiceUtils.getTopFace(dieType);
       profile.rules.push(
         new EditRule(
           new EditConditionRolled({
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
                 (face) =>
-                  DiceUtils.indexFromFace(face, dieType) >=
-                    (2 * fixD4FaceCount(DiceUtils.getFaceCount(dieType))) / 3 &&
-                  face !== DiceUtils.getTopFace(dieType)
+                  DiceUtils.indexFromFace(face, dieType, true) >=
+                    (2 * faceCount) / 3 && face !== topFace
               )
             ),
           }),
