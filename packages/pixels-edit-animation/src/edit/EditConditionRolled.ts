@@ -12,6 +12,7 @@ import { observable } from "./decorators";
 export default class EditConditionRolled extends EditCondition {
   readonly type = "rolled";
 
+  // Face index but starting at 1 :(
   // @widget("faces")
   // @range(1, 20)
   // @name("Faces")

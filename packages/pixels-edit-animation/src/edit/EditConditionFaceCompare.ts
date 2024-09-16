@@ -19,6 +19,7 @@ export default class EditConditionFaceCompare extends EditCondition {
   @observable
   flags: number;
 
+  // Face index but starting at 1 :(
   @widget("face")
   @range(1, 20)
   @name("Than")

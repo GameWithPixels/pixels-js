@@ -116,7 +116,9 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
   unavailableFaces?: number[];
 }) {
   const { colors } = useTheme();
-  const faces = condition.faces;
+  const faces = condition.faces.map((f) =>
+    DiceUtils.unMapFaceFromAnimation(f, dieType)
+  );
   return (
     <>
       <Text variant="titleMedium">When roll is</Text>
@@ -127,11 +129,12 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
           unavailable={unavailableFaces}
           onToggleFace={(face) =>
             runInAction(() => {
-              const i = faces.indexOf(face);
+              face = DiceUtils.mapFaceForAnimation(face, dieType);
+              const i = condition.faces.indexOf(face);
               if (i >= 0) {
-                faces.splice(i, 1);
+                condition.faces.splice(i, 1);
               } else {
-                faces.push(face);
+                condition.faces.push(face);
               }
             })
           }
@@ -152,9 +155,9 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
               onPress={() =>
                 runInAction(
                   () =>
-                    (condition.faces = DiceUtils.getDieFaces(dieType).filter(
-                      (f) => !unavailableFaces?.includes(f)
-                    ))
+                    (condition.faces = DiceUtils.getDieFaces(dieType)
+                      .filter((f) => !unavailableFaces?.includes(f))
+                      .map((f) => DiceUtils.mapFaceForAnimation(f, dieType)))
                 )
               }
             >
@@ -164,7 +167,7 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
               compact
               textColor={colors.primary}
               sentry-label="unselect-all-faces"
-              onPress={() => runInAction(() => (faces.length = 0))}
+              onPress={() => runInAction(() => (condition.faces.length = 0))}
             >
               Unselect All
             </Button>
@@ -667,6 +670,18 @@ function fromNamedFormat(format: NamedFormat): Profiles.ActionWebRequestFormat {
   }
 }
 
+function getHighestFace(
+  faces: readonly number[] | false,
+  dieType: PixelDieType
+): number {
+  const topFace = DiceUtils.getTopFace(dieType);
+  if (!faces || faces.includes(topFace)) {
+    return topFace;
+  } else {
+    return Math.max(...faces);
+  }
+}
+
 const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   action,
   profileName,
@@ -817,11 +832,13 @@ export const ConfigureActionBottomSheet = observer(
                   action={action}
                   profileName={profileName}
                   dieType={dieType}
-                  currentFace={
-                    condition instanceof Profiles.ConditionRolled
-                      ? Math.max(...condition.faces)
-                      : DiceUtils.getTopFace(dieType)
-                  }
+                  currentFace={getHighestFace(
+                    condition instanceof Profiles.ConditionRolled &&
+                      condition.faces.map((f) =>
+                        DiceUtils.unMapFaceFromAnimation(f, dieType)
+                      ),
+                    dieType
+                  )}
                 />
               ) : null}
               {condition instanceof Profiles.ConditionRolling ? (

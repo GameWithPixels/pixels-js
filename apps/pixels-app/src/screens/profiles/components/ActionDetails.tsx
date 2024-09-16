@@ -1,4 +1,7 @@
-import { createDataSetForAnimation } from "@systemic-games/pixels-edit-animation";
+import {
+  createDataSetForAnimation,
+  DiceUtils,
+} from "@systemic-games/pixels-edit-animation";
 import {
   PixelDieType,
   Profiles,
@@ -144,9 +147,14 @@ function getActionText(action: Profiles.Action): string {
   }
 }
 
-function getConditionText(condition: Profiles.Condition): string | undefined {
+function getConditionText(
+  condition: Profiles.Condition,
+  dieType: PixelDieType
+): string | undefined {
   if (condition instanceof Profiles.ConditionRolled) {
-    const faces = condition.faces;
+    const faces = condition.faces.map((f) =>
+      DiceUtils.unMapFaceFromAnimation(f, dieType)
+    );
     return `On face${faces.length > 1 ? "s" : ""} ${getFacesAsText(faces)}`;
   } else if (condition instanceof Profiles.ConditionRolling) {
     return `Recheck after ${condition.recheckAfter.toFixed(1)}s`;
@@ -185,10 +193,12 @@ export const ActionDetails = observer(function ActionDetails({
 
 export const ConditionDetails = observer(function ConditionDetails({
   condition,
+  dieType,
 }: {
   condition: Profiles.Condition;
+  dieType: PixelDieType;
 }) {
-  const text = getConditionText(condition);
+  const text = getConditionText(condition, dieType);
   return text ? (
     <View style={styles.ruleTextStyle}>
       <Text variant="titleSmall">{text}</Text>
@@ -243,7 +253,9 @@ export function ActionDetailsCard({
       {actionType === "playAnimation" ? (
         <View style={styles.animationBox}>
           <View style={styles.animationDetails}>
-            {condition && <ConditionDetails condition={condition} />}
+            {condition && (
+              <ConditionDetails condition={condition} dieType={dieType} />
+            )}
             <ActionDetails action={action} />
           </View>
           <View style={styles.animationDie}>
@@ -257,7 +269,9 @@ export function ActionDetailsCard({
             gap: 5,
           }}
         >
-          {condition && <ConditionDetails condition={condition} />}
+          {condition && (
+            <ConditionDetails condition={condition} dieType={dieType} />
+          )}
           <ActionDetails action={action} />
         </View>
       )}
