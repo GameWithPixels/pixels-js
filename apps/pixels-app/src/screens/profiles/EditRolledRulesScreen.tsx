@@ -134,7 +134,9 @@ function RolledConditionCard({
   const action = rule.actions.find((a) => a.type === type);
   const faces =
     rule.condition instanceof Profiles.ConditionRolled
-      ? rule.condition.faces
+      ? rule.condition.faces.map((f) =>
+          DiceUtils.unMapFaceFromAnimation(f, dieType)
+        )
       : [];
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
@@ -252,8 +254,10 @@ function RemainingFacesText({
 
 function createObservableRolledRule(
   faces: number[],
+  dieType: PixelDieType,
   actionType?: Profiles.ActionType
 ): Profiles.Rule {
+  faces = faces.map((f) => DiceUtils.mapFaceForAnimation(f, dieType));
   return makeObservable(
     new Profiles.Rule(
       new Profiles.ConditionRolled({ faces }),
@@ -269,6 +273,7 @@ function getRolledRules(rules: Readonly<Profiles.Rule>[]): Profiles.Rule[] {
 function getRolledFaces(
   rolledRules: Readonly<Profiles.Rule>[],
   actionType: Profiles.ActionType,
+  dieType: PixelDieType,
   excludedRule?: Readonly<Profiles.Rule>
 ): number[] {
   return rolledRules
@@ -276,7 +281,10 @@ function getRolledFaces(
       (r) => r !== excludedRule && r.actions.find((a) => a.type === actionType)
     )
     .flatMap(
-      (r) => ((r.condition as Profiles.ConditionRolled).faces ?? []) as number[]
+      (r) =>
+        ((r.condition as Profiles.ConditionRolled).faces.map((f) =>
+          DiceUtils.unMapFaceFromAnimation(f, dieType)
+        ) ?? []) as number[]
     );
 }
 
@@ -311,7 +319,8 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
   );
   const unavailableFaces = getRolledFaces(
     rolledRules,
-    EditorActionTypes[index]
+    EditorActionTypes[index],
+    profile.dieType
   );
   const availableFaces = dieFaces.filter((f) => !unavailableFaces?.includes(f));
   const availCount = availableFaces.length;
@@ -481,6 +490,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
             cancelAnimation(bounceSv);
             const newRule = createObservableRolledRule(
               [availableFaces[0]],
+              profile.dieType,
               EditorActionTypes[index]
             );
             runInAction(() => {
@@ -498,6 +508,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
         unavailableFaces={getRolledFaces(
           rolledRules,
           EditorActionTypes[index],
+          profile.dieType,
           configureRule
         )}
         visible={!!configureRule}

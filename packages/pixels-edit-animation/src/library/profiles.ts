@@ -246,8 +246,7 @@ export function createLibraryProfile(
           new EditConditionRolled({
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
-                (face) =>
-                  DiceUtils.indexFromFace(face, dieType, true) < faceCount / 2
+                (face) => DiceUtils.indexFromFace(face, dieType) < faceCount / 2
               )
             ),
           }),
@@ -264,7 +263,7 @@ export function createLibraryProfile(
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
                 (face) =>
-                  DiceUtils.indexFromFace(face, dieType, true) >= faceCount / 2
+                  DiceUtils.indexFromFace(face, dieType) >= faceCount / 2
               )
             ),
           }),
@@ -287,8 +286,7 @@ export function createLibraryProfile(
           new EditConditionRolled({
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
-                (face) =>
-                  DiceUtils.indexFromFace(face, dieType, true) < faceCount / 3
+                (face) => DiceUtils.indexFromFace(face, dieType) < faceCount / 3
               )
             ),
           }),
@@ -303,7 +301,7 @@ export function createLibraryProfile(
           new EditConditionRolled({
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter((face) => {
-                const index = DiceUtils.indexFromFace(face, dieType, true);
+                const index = DiceUtils.indexFromFace(face, dieType);
                 return index >= faceCount / 3 && index < (2 * faceCount) / 3;
               })
             ),
@@ -321,7 +319,7 @@ export function createLibraryProfile(
             faces: mapFaces(
               DiceUtils.getDieFaces(dieType).filter(
                 (face) =>
-                  DiceUtils.indexFromFace(face, dieType, true) >=
+                  DiceUtils.indexFromFace(face, dieType) >=
                     (2 * faceCount) / 3 && face !== topFace
               )
             ),
