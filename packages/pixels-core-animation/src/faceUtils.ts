@@ -5,6 +5,7 @@ import {
   combineFlags,
 } from "@systemic-games/pixels-core-utils";
 
+import { DiceUtils } from "./DiceUtils";
 import { PixelDieType } from "./PixelDieType";
 
 export function getFaceForLEDIndex(
@@ -91,10 +92,7 @@ export function getLEDCount(dieType: PixelDieType): number {
 }
 
 function getFaceMaskPd6(faceValue: number): number {
-  let start = 0;
-  for (let i = 1; i < faceValue; ++i) {
-    start += i;
-  }
+  const start = DiceUtils.getPd6LedIndex(faceValue);
   const ledsMasks = Array(faceValue);
   for (let i = start; i < start + faceValue; ++i) {
     ledsMasks[i - start] = bitIndexToFlag(i);
