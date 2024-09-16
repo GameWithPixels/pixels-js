@@ -333,24 +333,24 @@ const rawAssetsLoader = new CachedAssetLoader<
 
     // Check face count
     const isPD6 = dieType === "d6pipped";
-    const faceCount = isPD6
+    const meshCount = isPD6
       ? DiceUtils.getLEDCount(dieType)
       : DiceUtils.getFaceCount(dieType);
-    if (faceMeshes.length !== faceCount) {
+    if (faceMeshes.length !== meshCount) {
       throw new CreateDie3DError(
-        `Mesh for ${dieType} has ${faceMeshes.length} faces instead of ${faceCount}`
+        `Mesh for ${dieType} has ${faceMeshes.length} faces instead of ${meshCount}`
       );
     }
 
     // Get their names
-    const faceNames: string[] = Array(DiceUtils.getFaceCount(dieType));
-    faceMeshes.forEach((faceMesh, i) => {
+    const faceNames: string[] = Array(meshCount);
+    for (let i = 0; i < faceMeshes.length; ++i) {
+      const faceMesh = faceMeshes[i];
       // Get face index
-      const indexAsString = faceMesh.name
+      const [baseName, ledIndexAsString] = faceMesh.name
         .toLowerCase()
-        .split("face")[1]
-        .split("mesh")[0]
-        .split("led")[0];
+        .split("led");
+      const indexAsString = baseName.split("face")[1].split("mesh")[0];
       const indexFromName = indexAsString?.length ? Number(indexAsString) : NaN;
       if (isNaN(indexFromName)) {
         log(
@@ -358,22 +358,31 @@ const rawAssetsLoader = new CachedAssetLoader<
           `Face index not found in ${faceMesh.name}, using node index ${i}`
         );
       }
+      const ledIndexFromName = ledIndexAsString?.length
+        ? Number(ledIndexAsString)
+        : NaN;
+      if (isPD6 === isNaN(ledIndexFromName)) {
+        throw new CreateDie3DError(
+          `LED index ${isNaN(ledIndexFromName) ? "not " : ""}found in ${faceMesh.name} for ${dieType}`
+        );
+      }
       const index = isNaN(indexFromName)
         ? i
-        : DiceUtils.indexFromFace(indexFromName, dieType);
+        : isPD6
+          ? DiceUtils.getPd6LedIndex(indexFromName, ledIndexFromName)
+          : DiceUtils.indexFromFace(indexFromName, dieType);
       if (index < 0 || index >= faceNames.length) {
         throw new CreateDie3DError(
           `Out of bound face index ${index} for face ${faceMesh.name} of ${dieType}`
         );
       }
-      // TODO pipped dice
-      if (!isPD6 && faceNames[index]) {
+      if (faceNames[index]) {
         throw new CreateDie3DError(
           `Duplicate face index ${index} for ${dieType}`
         );
       }
       faceNames[index] = faceMesh.name;
-    });
+    }
 
     // Compute scale used to display die
     const aabb = new THREE.Box3();
