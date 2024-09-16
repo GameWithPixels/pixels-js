@@ -1,4 +1,7 @@
-import { Profiles } from "@systemic-games/react-native-pixels-connect";
+import {
+  PixelDieType,
+  Profiles,
+} from "@systemic-games/react-native-pixels-connect";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { StyleSheet, View } from "react-native";
@@ -31,14 +34,16 @@ export interface RuleProp {
 
 const RuleSummary = observer(function RuleSummary({
   rule,
+  dieType,
   colors,
 }: {
   rule: Profiles.Rule;
+  dieType: PixelDieType;
   colors: MD3Theme["colors"];
 }) {
   return rule?.actions.length ? (
     <>
-      <ConditionDetails condition={rule.condition} />
+      <ConditionDetails condition={rule.condition} dieType={dieType} />
       {rule.actions.map((action, i) => (
         <ActionDetails
           key={action.type + i} // In case we have multiple of actions of same type
@@ -55,17 +60,19 @@ const RuleSummary = observer(function RuleSummary({
 
 const RolledRulesSummary = observer(function RolledRulesSummary({
   rules,
+  dieType,
   maxRules,
   colors,
 }: {
   rules: Profiles.Rule[];
+  dieType: PixelDieType;
   maxRules?: number;
   colors: MD3Theme["colors"];
 }) {
   return rules.length ? (
     <>
       {rules.slice(0, maxRules).map((r) => (
-        <RuleSummary key={r.uuid} rule={r} colors={colors} />
+        <RuleSummary key={r.uuid} rule={r} dieType={dieType} colors={colors} />
       ))}
       {maxRules && rules.length > maxRules && (
         <Text style={AppStyles.greyedOut}>And more...</Text>
@@ -121,6 +128,7 @@ export const RuleCard = observer(function RuleCard({
         >
           <RolledRulesSummary
             rules={rules}
+            dieType={profile.dieType}
             colors={colors}
             maxRules={conditionType === "rolled" ? 4 : 2}
           />
