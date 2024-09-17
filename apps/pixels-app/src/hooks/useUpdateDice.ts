@@ -37,6 +37,7 @@ export function useUpdateDice(): (
               filesInfo.timestamp
             ) === "outdated"
           ) {
+            const fwTimestamp = pixel.firmwareDate.getTime();
             await central.updatePixelAsync({
               pixelId: pixel.pixelId,
               bootloaderPath: updateBootloader
@@ -51,6 +52,14 @@ export function useUpdateDice(): (
                 timestamp: filesInfo.timestamp,
               })
             );
+            // Check if we need to reset die settings to reprogram the normals
+            const FW_2024_02_06 = 1707254440000;
+            if (fwTimestamp < FW_2024_02_06) {
+              console.warn(`Resetting settings for die ${pixel.name}`);
+              central.getScheduler(pixelId).schedule({
+                type: "resetSettings",
+              });
+            }
           }
         } catch {
           // Error logged in PixelsCentral and notified as an event
