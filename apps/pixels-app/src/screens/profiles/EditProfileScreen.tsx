@@ -25,13 +25,70 @@ import { makeTransparent } from "~/components/colors";
 import { Library, readProfile } from "~/features/store";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
+  commitEditableProfile,
   useCommitEditableProfile,
   useConfirmActionSheet,
   useEditableProfile,
+  useEditableProfileStore,
   useEditProfilesList,
   useIsEditableProfileModified,
   useUpdateProfiles,
 } from "~/hooks";
+
+function saveChangesAlert(args: {
+  onSave: () => void;
+  onDiscard: () => void;
+}): void {
+  Alert.alert(
+    "Edited Profile",
+    "Do you want to save the changes made to this library profile?",
+    [
+      {
+        text: "Yes",
+        style: "default",
+        onPress: args.onSave,
+      },
+      {
+        text: "No",
+        style: "destructive",
+        onPress: args.onDiscard,
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]
+  );
+}
+
+function updateDiceAlert(args: {
+  diceNames: readonly string[];
+  onSave: () => void;
+  onDiscard: () => void;
+}): void {
+  const { diceNames } = args;
+  const names =
+    diceNames.length === 1
+      ? `die ${diceNames[0]}`
+      : `dice ${diceNames.join(", ")}`;
+  Alert.alert(
+    "Modified Profile",
+    `This library profile has been modified since it was copied to ${names}.\n\n` +
+      `Do you want to copy the changes to ${diceNames.length === 1 ? "this die" : "those dice"}?`,
+    [
+      {
+        text: "Yes",
+        style: "default",
+        onPress: args.onSave,
+      },
+      {
+        text: "No",
+        style: "cancel",
+        onPress: args.onDiscard,
+      },
+    ]
+  );
+}
 
 const Header = observer(function Header({
   profile,
@@ -231,56 +288,70 @@ export function EditProfileScreen({
   },
   navigation,
 }: EditProfileScreenProps) {
+  const profileStore = useEditableProfileStore(profileUuid);
   const store = useAppStore();
   const updateProfiles = useUpdateProfiles();
   React.useEffect(() => {
     // Ask user if they want to update the source profile
     return navigation.addListener("beforeRemove", (e) => {
-      const { profiles } = store.getState().library;
-      const profileData = profiles.entities[profileUuid];
-      const dice = store.getState().pairedDice.paired.filter((d) => {
-        const dieProfileData = profiles.entities[d.profileUuid];
-        return (
-          dieProfileData?.sourceUuid === profileUuid &&
-          (dieProfileData.hash !== profileData?.hash ||
-            !isSameBrightness(
-              dieProfileData.brightness,
-              profileData.brightness
-            ))
-        );
-      });
-      if (profileData && dice.length) {
+      const getUpdateDice = () => {
+        const { profiles } = store.getState().library;
+        const profileData = profiles.entities[profileUuid];
+        const dice = store.getState().pairedDice.paired.filter((d) => {
+          const dieProfileData = profiles.entities[d.profileUuid];
+          return (
+            dieProfileData?.sourceUuid === profileUuid &&
+            (dieProfileData.hash !== profileData?.hash ||
+              !isSameBrightness(
+                dieProfileData.brightness,
+                profileData.brightness
+              ))
+          );
+        });
+        return profileData && dice.length
+          ? () => {
+              updateDiceAlert({
+                diceNames: dice.map((d) => d.name),
+                onSave: () => {
+                  updateProfiles(
+                    profileData,
+                    dice.map((d) => d.profileUuid)
+                  );
+                  navigation.dispatch(e.data.action);
+                },
+                onDiscard: () => navigation.dispatch(e.data.action),
+              });
+              return true;
+            }
+          : undefined;
+      };
+      // First check if profile was modified
+      if (profileStore.version > 0) {
         e.preventDefault();
-        const diceNames =
-          dice.length === 1
-            ? `die ${dice[0].name}`
-            : `dice ${dice.map((d) => d.name).join(", ")}`;
-        Alert.alert(
-          `Profile Modified`,
-          `This library profile has been modified since it was copied to ${diceNames}.\n\n` +
-            `Do you want to copy the changes to ${dice.length === 1 ? "this die" : "those dice"}?`,
-          [
-            {
-              text: "Yes",
-              style: "default",
-              onPress: () => {
-                updateProfiles(
-                  profileData,
-                  dice.map((d) => d.profileUuid)
-                );
-                navigation.dispatch(e.data.action);
-              },
-            },
-            {
-              text: "No",
-              style: "cancel",
-              onPress: () => navigation.dispatch(e.data.action),
-            },
-          ]
-        );
+        saveChangesAlert({
+          onSave: () => {
+            commitEditableProfile(profileStore.profile, store);
+            profileStore.resetVersion();
+            // Once saved check if dice need to be updated
+            const askUpdateDice = getUpdateDice();
+            if (askUpdateDice) {
+              askUpdateDice();
+            } else {
+              navigation.dispatch(e.data.action);
+            }
+          },
+          onDiscard: () => navigation.dispatch(e.data.action),
+        });
+      } else {
+        // If unmodified or already saved, check if dice need to be updated
+        const askUpdateDice = getUpdateDice();
+        if (askUpdateDice) {
+          e.preventDefault();
+          askUpdateDice();
+        }
       }
     });
-  }, [navigation, profileUuid, store, updateProfiles]);
+  }, [navigation, profileStore, profileUuid, store, updateProfiles]);
   return (
     <AppBackground>
       <EditProfilePage

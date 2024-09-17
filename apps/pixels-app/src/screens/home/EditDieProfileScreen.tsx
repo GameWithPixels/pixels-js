@@ -32,6 +32,30 @@ import {
   useUpdateProfiles,
 } from "~/hooks";
 
+function updateLibraryAlert(args: {
+  profileName: string;
+  onSave: () => void;
+  onDiscard: () => void;
+}): void {
+  Alert.alert(
+    "Modified Profile",
+    `This die profile has been modified since it was copied from ${args.profileName}.\n\n` +
+      "Do you want to copy the changes back to the library profile?",
+    [
+      {
+        text: "Yes",
+        style: "default",
+        onPress: args.onSave,
+      },
+      {
+        text: "No",
+        style: "cancel",
+        onPress: args.onDiscard,
+      },
+    ]
+  );
+}
+
 function EditDieProfilePage({
   pairedDie,
   navigation,
@@ -191,26 +215,14 @@ export function EditDieProfileScreen({
             ))
         ) {
           e.preventDefault();
-          Alert.alert(
-            "Modified Profile",
-            `This die profile has been modified since it was copied from ${profileData.name}.\n\n` +
-              "Do you want to copy the changes back to the library profile?",
-            [
-              {
-                text: "Yes",
-                style: "default",
-                onPress: () => {
-                  updateProfiles(profileData, [dstUuid]);
-                  navigation.dispatch(e.data.action);
-                },
-              },
-              {
-                text: "No",
-                style: "cancel",
-                onPress: () => navigation.dispatch(e.data.action),
-              },
-            ]
-          );
+          updateLibraryAlert({
+            profileName: profileData.name,
+            onSave: () => {
+              updateProfiles(profileData, [dstUuid]);
+              navigation.dispatch(e.data.action);
+            },
+            onDiscard: () => navigation.dispatch(e.data.action),
+          });
         }
       });
     }
