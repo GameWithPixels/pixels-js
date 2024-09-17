@@ -35,62 +35,6 @@ export function getFaceForLEDIndex(
   }
 }
 
-export function getTopFace(dieType: PixelDieType): number {
-  switch (dieType) {
-    case "unknown":
-      return 0;
-    case "d20":
-      return 19;
-    case "d12":
-      return 11;
-    case "d10":
-    case "d00":
-      return 0;
-    case "d8":
-      return 7;
-    default:
-      return 5;
-  }
-}
-
-export function getFaceCount(dieType: PixelDieType): number {
-  switch (dieType) {
-    case "unknown":
-      return 0;
-    case "d20":
-      return 20;
-    case "d12":
-      return 12;
-    case "d10":
-    case "d00":
-      return 10;
-    case "d8":
-      return 8;
-    default:
-      return 6;
-  }
-}
-
-export function getLEDCount(dieType: PixelDieType): number {
-  switch (dieType) {
-    case "unknown":
-      return 0;
-    case "d20":
-      return 20;
-    case "d12":
-      return 12;
-    case "d10":
-    case "d00":
-      return 10;
-    case "d8":
-      return 8;
-    case "d6pipped":
-      return 21;
-    default:
-      return 6;
-  }
-}
-
 function getFaceMaskPd6(faceValue: number): number {
   const start = DiceUtils.getPd6LedIndex(faceValue);
   const ledsMasks = Array(faceValue);

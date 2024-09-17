@@ -1,5 +1,5 @@
+import { DiceUtils } from "./DiceUtils";
 import { PixelDieType } from "./PixelDieType";
-import { getLEDCount, getFaceCount, getTopFace } from "./faceUtils";
 
 export default class VirtualDie {
   private _currentFace = 0;
@@ -17,9 +17,13 @@ export default class VirtualDie {
 
   constructor(dieType: PixelDieType = "d20") {
     this.dieType = dieType;
-    this.ledCount = getLEDCount(dieType);
-    this.faceCount = getFaceCount(dieType);
-    this.topFace = getTopFace(dieType);
+    this.ledCount = DiceUtils.getLEDCount(dieType);
+    this.faceCount = DiceUtils.getFaceCount(dieType);
+    this.topFace = DiceUtils.indexFromFace(
+      DiceUtils.getTopFace(dieType),
+      dieType,
+      true
+    );
     this.tryRoll();
   }
 
