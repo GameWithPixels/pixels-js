@@ -95,7 +95,7 @@ function rolling(dieType: PixelDieType) {
     count: 1,
     fade: 0.5,
     color: new EditColor("face"),
-    faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
+    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -108,7 +108,7 @@ function charging(dieType: PixelDieType) {
     count: 1,
     color: Color.red,
     fade: 0.5,
-    faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
+    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -121,7 +121,7 @@ function charged(dieType: PixelDieType) {
     count: 1,
     color: Color.green,
     fade: 0.5,
-    faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
+    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -134,7 +134,7 @@ function chargingError(dieType: PixelDieType) {
     count: 1,
     color: Color.yellow,
     fade: 0.5,
-    faces: getFaceMask(DiceUtils.getTopFace(dieType), dieType),
+    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -333,7 +333,7 @@ export function addDefaultAdvancedRules(
       }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.charging[dieType],
-        face: mapFace(DiceUtils.getTopFace(dieType)),
+        face: mapFace(DiceUtils.getHighestFace(dieType)),
         loopCount: 1,
       })
     )
@@ -348,7 +348,7 @@ export function addDefaultAdvancedRules(
       }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.charged[dieType],
-        face: mapFace(DiceUtils.getTopFace(dieType)),
+        face: mapFace(DiceUtils.getHighestFace(dieType)),
         loopCount: 1,
       })
     )
@@ -362,7 +362,7 @@ export function addDefaultAdvancedRules(
       }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.badCharging,
-        face: mapFace(DiceUtils.getTopFace(dieType)),
+        face: mapFace(DiceUtils.getHighestFace(dieType)),
         loopCount: 1,
       })
     )
@@ -377,7 +377,7 @@ export function addDefaultAdvancedRules(
       }),
       new EditActionPlayAnimation({
         animation: DefaultRulesAnimations.chargingError[dieType],
-        face: mapFace(DiceUtils.getTopFace(dieType)),
+        face: mapFace(DiceUtils.getHighestFace(dieType)),
         loopCount: 1,
       })
     )

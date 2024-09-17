@@ -56,10 +56,18 @@ export const DiceUtils = {
     }
   },
 
-  getTopFace(dieType: PixelDieType): number {
+  getHighestFace(dieType: PixelDieType): number {
     return dieType === "d10" || dieType === "d00"
       ? 0
       : DiceUtils.getFaceCount(dieType);
+  },
+
+  getLowestFace(dieType: PixelDieType): number {
+    return dieType === "d00" ? 10 : 1;
+  },
+
+  getTopFace(dieType: PixelDieType): number {
+    return DiceUtils.getHighestFace(dieType);
   },
 
   getBottomFace(dieType: PixelDieType): number {

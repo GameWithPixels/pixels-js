@@ -674,9 +674,9 @@ function getHighestFace(
   faces: readonly number[] | false,
   dieType: PixelDieType
 ): number {
-  const topFace = DiceUtils.getTopFace(dieType);
-  if (!faces || faces.includes(topFace)) {
-    return topFace;
+  const highFace = DiceUtils.getHighestFace(dieType);
+  if (!faces || faces.includes(highFace)) {
+    return highFace;
   } else {
     return Math.max(...faces);
   }
