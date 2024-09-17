@@ -358,19 +358,30 @@ async function loadAssetsAsync(
   const start = Date.now();
 
   // Use https://fabconvert.com/convert/fbx/to/glb to convert fbx files
-  const gltf: { scene: THREE.Group } = await loadAsync(
+  const gltf: { scenes?: THREE.Group[] } | undefined = await loadAsync(
     Asset.fromModule(getGlbAsset(dieType))
   );
-  if (!gltf?.scene?.isGroup) {
+  if (gltf?.scenes?.length !== 1) {
+    throw new CreateDie3DError(
+      `GLTF for ${dieType}/${colorway} has ${gltf?.scenes?.length ?? -1} scenes instead of 1`
+    );
+  }
+  const scene = gltf.scenes[0];
+  if (!scene.isGroup) {
     throw new CreateDie3DError(
       `GLTF scene for ${dieType}/${colorway} is not a group`
     );
   }
 
   // Get lights
-  const lights = gltf.scene.children.filter(
+  const lights = scene.children.filter(
     (obj) => (obj as THREE.Light).isLight
   ) as THREE.Light[];
+  if (lights.length !== 3) {
+    throw new CreateDie3DError(
+      `GLTF scene for ${dieType}/${colorway} has ${lights.length} lights instead of 3`
+    );
+  }
 
   // Fix lights
   lights.forEach((l, i) => {
@@ -390,10 +401,10 @@ async function loadAssetsAsync(
   });
 
   // Get die3d root object
-  const objects = gltf.scene.children.filter(
+  const objects = scene.children.filter(
     (obj) => !(lights as THREE.Object3D[]).includes(obj)
   );
-  const root = objects.length === 1 ? objects[0] : gltf.scene;
+  const root = objects.length === 1 ? objects[0] : scene;
   if (!root?.isObject3D) {
     throw new CreateDie3DError(
       `GLTF scene for ${dieType}/${colorway} doesn't have a root object that is not a light`
@@ -405,9 +416,10 @@ async function loadAssetsAsync(
   const faceMeshes: THREE.Mesh[] = [];
   root.traverse((obj) => {
     if ((obj as THREE.Mesh).isMesh) {
-      if (obj.name.toLocaleLowerCase().includes("face")) {
+      const name = obj.name.toLocaleLowerCase();
+      if (name.includes("face")) {
         faceMeshes.push(obj as THREE.Mesh);
-      } else if (obj.name.toLocaleLowerCase().includes("base")) {
+      } else if (name.includes("base")) {
         baseMeshes.push(obj as THREE.Mesh);
       }
     }
