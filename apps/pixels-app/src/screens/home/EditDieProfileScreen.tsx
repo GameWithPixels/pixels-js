@@ -24,7 +24,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { makeTransparent } from "~/components/colors";
 import { generateProfileUuid } from "~/features/profiles";
-import { Library } from "~/features/store";
+import { Library, readProfile } from "~/features/store";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
   useEditableProfileStore,
@@ -105,6 +105,8 @@ function SaveToLibraryDialog({
                           : profileData.dieType,
                   })
                 );
+                // Create non editable instance of the profile
+                readProfile(uuid, store.getState().library);
                 // Update die profile to use the saved profile as its source
                 store.dispatch(
                   Library.Profiles.update({
@@ -113,6 +115,8 @@ function SaveToLibraryDialog({
                     sourceUuid: uuid,
                   })
                 );
+                // Update non editable instance of the profile
+                readProfile(profileUuid, store.getState().library);
               }
               props.onDismiss();
             }}

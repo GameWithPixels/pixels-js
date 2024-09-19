@@ -493,9 +493,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
               profile.dieType,
               EditorActionTypes[index]
             );
-            runInAction(() => {
-              profile.rules.push(newRule);
-            });
+            runInAction(() => profile.rules.push(newRule));
             setConfigureRule(newRule);
           }}
         />
