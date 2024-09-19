@@ -1,3 +1,4 @@
+import { runInAction } from "mobx";
 import React from "react";
 import { Alert, Pressable, useWindowDimensions, View } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
@@ -25,8 +26,10 @@ import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProg
 import { makeTransparent } from "~/components/colors";
 import { generateProfileUuid } from "~/features/profiles";
 import { Library, readProfile } from "~/features/store";
+import { logError } from "~/features/utils";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
+  commitEditableProfile,
   useEditableProfileStore,
   useSetSelectedPairedDie,
   useUpdateProfiles,
@@ -64,6 +67,7 @@ function SaveToLibraryDialog({
 } & Omit<DialogProps, "children"> &
   Required<Pick<DialogProps, "onDismiss">>) {
   const store = useAppStore();
+  const profileStore = useEditableProfileStore(profileUuid);
   const [name, setName] = React.useState("");
   React.useEffect(() => setName(""), [props.visible]);
   return (
@@ -83,40 +87,49 @@ function SaveToLibraryDialog({
         <Dialog.Actions>
           <Button onPress={() => props.onDismiss()}>Cancel</Button>
           <Button
+            disabled={!name.trim()}
             onPress={() => {
-              const profileData =
-                store.getState().library.profiles.entities[profileUuid];
-              if (profileData) {
-                // Save to library
-                const uuid = generateProfileUuid(store.getState().library);
-                store.dispatch(
-                  Library.Profiles.add({
-                    ...profileData,
-                    uuid,
-                    name,
-                    // Make sure we don't reference another profile
-                    sourceUuid: undefined,
-                    // We don't have d00 and pd6 profiles in the library
-                    dieType:
-                      profileData.dieType === "d00"
-                        ? "d10"
-                        : profileData.dieType === "d6pipped"
-                          ? "d6"
-                          : profileData.dieType,
-                  })
-                );
-                // Create non editable instance of the profile
-                readProfile(uuid, store.getState().library);
-                // Update die profile to use the saved profile as its source
-                store.dispatch(
-                  Library.Profiles.update({
-                    ...profileData,
-                    name,
-                    sourceUuid: uuid,
-                  })
-                );
-                // Update non editable instance of the profile
-                readProfile(profileUuid, store.getState().library);
+              const { profiles } = store.getState().library;
+              const profileData = profiles.entities[profileUuid];
+              const profileName = name.trim();
+              for (const uuid of profiles.ids) {
+                if (profiles.entities[uuid]?.name === profileName) {
+                  Alert.alert(
+                    "Profile Name Taken",
+                    `A profile named "${profileName}" already exists in the library. Please choose a different name.`
+                  );
+                  return;
+                }
+              }
+              if (profileData && profileName.length) {
+                const profile = profileStore.profile;
+                if (profile) {
+                  // Save to library
+                  const uuid = generateProfileUuid(store.getState().library);
+                  store.dispatch(
+                    Library.Profiles.add({
+                      ...profileData,
+                      uuid,
+                      name: profileName,
+                      // Make sure we don't reference another profile
+                      sourceUuid: undefined,
+                      // We don't have d00 and pd6 profiles in the library
+                      dieType:
+                        profileData.dieType === "d00"
+                          ? "d10"
+                          : profileData.dieType === "d6pipped"
+                            ? "d6"
+                            : profileData.dieType,
+                    })
+                  );
+                  // Create non editable instance of the profile
+                  readProfile(uuid, store.getState().library);
+                  // Update die profile to use the library profile as its source
+                  runInAction(() => (profile.name = profileName));
+                  commitEditableProfile(profile, store, uuid);
+                } else {
+                  logError("No editable profile to assign name and source");
+                }
               }
               props.onDismiss();
             }}
