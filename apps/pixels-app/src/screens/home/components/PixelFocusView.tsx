@@ -336,6 +336,9 @@ export function PixelFocusView({
               uuid: pairedDie.profileUuid,
               hash: computeProfileHashWithOverrides(profile),
               sourceUuid,
+              // It's possible to use a profile from another die type
+              // (ex: D00 & D10 share the same profiles)
+              dieType: pairedDie.dieType,
             })
           );
           // Update profile instance
