@@ -116,28 +116,34 @@ export function useIsEditableProfileModified(profileUuid: string): boolean {
   return modified;
 }
 
-export function useCommitEditableProfile(profileUuid: string): () => void {
+export function useCommitEditableProfile(
+  profileUuid: string
+): (sourceUuid?: string) => void {
   const store = useAppStore();
   const profileStore = useEditableProfileStore(profileUuid);
-  return React.useCallback(() => {
-    const profile = profileStore.profile;
-    if (profile) {
-      commitEditableProfile(profile, store);
-    } else {
-      logError("No editable profile to save");
-    }
-    profileStore.resetVersion();
-  }, [profileStore, store]);
+  return React.useCallback(
+    (sourceUuid?: string) => {
+      const profile = profileStore.profile;
+      if (profile) {
+        commitEditableProfile(profile, store, sourceUuid);
+      } else {
+        logError("No editable profile to save");
+      }
+      profileStore.resetVersion();
+    },
+    [profileStore, store]
+  );
 }
 
 // EditableProfileStore version is not reset! See useCommitEditableProfile().
 export function commitEditableProfile(
   profile: Profiles.Profile,
-  store: AppStore
+  store: AppStore,
+  sourceUuid?: string
 ): void {
   // Store profile
   runInAction(() => (profile.lastModified = new Date()));
-  const sourceUuid =
+  sourceUuid ??=
     store.getState().library.profiles.entities[profile.uuid]?.sourceUuid;
   const profileData = Serializable.fromProfile(profile);
   store.dispatch(
