@@ -25,7 +25,6 @@ import { makeTransparent } from "~/components/colors";
 import { Library, readProfile } from "~/features/store";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
-  commitEditableProfile,
   useCommitEditableProfile,
   useConfirmActionSheet,
   useEditableProfile,
@@ -92,16 +91,14 @@ function updateDiceAlert(args: {
 
 const Header = observer(function Header({
   profile,
-  noDiscard,
   onCommitChanges,
   onDiscardChanges,
   onAdvancedOptions,
   onDeleteProfile,
 }: {
   profile: Profiles.Profile;
-  noDiscard?: boolean;
   onCommitChanges: () => void;
-  onDiscardChanges: () => void;
+  onDiscardChanges?: () => void;
   onAdvancedOptions: () => void;
   onDeleteProfile?: () => void;
 }) {
@@ -124,7 +121,7 @@ const Header = observer(function Header({
   return (
     <PageHeader
       leftElement={
-        noDiscard
+        !onDiscardChanges
           ? undefined
           : () => (
               <Button
@@ -203,23 +200,18 @@ const Header = observer(function Header({
 
 function EditProfilePage({
   profileUuid,
-  noDiscard,
+  onCommitChanges,
+  onDiscardChanges,
   navigation,
 }: {
   profileUuid: string;
-  noDiscard?: boolean;
+  onCommitChanges: (stay?: boolean) => void;
+  onDiscardChanges?: () => void;
   navigation: EditProfileScreenProps["navigation"];
 }) {
   const store = useAppStore();
   const profile = useEditableProfile(profileUuid);
   const { removeProfile } = useEditProfilesList();
-  const commitProfile = useCommitEditableProfile(profileUuid);
-
-  const goBack = React.useCallback(() => navigation.goBack(), [navigation]);
-  const commitChanges = React.useCallback(() => {
-    commitProfile();
-    goBack();
-  }, [commitProfile, goBack]);
 
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
@@ -234,7 +226,7 @@ function EditProfilePage({
 
   const showConfirmDelete = useConfirmActionSheet("Delete Profile", () => {
     // First leave the page so it won't try accessing the profile that's being deleted
-    goBack();
+    navigation.goBack();
     removeProfile(profileUuid);
   });
 
@@ -242,9 +234,8 @@ function EditProfilePage({
     <View style={{ height: "100%" }}>
       <Header
         profile={profile}
-        noDiscard={noDiscard}
-        onCommitChanges={commitChanges}
-        onDiscardChanges={goBack}
+        onCommitChanges={onCommitChanges}
+        onDiscardChanges={onDiscardChanges}
         onAdvancedOptions={() =>
           navigation.navigate("editAdvancedSettings", { profileUuid })
         }
@@ -260,7 +251,7 @@ function EditProfilePage({
           onEditRule={editRule}
           onProgramDie={(pairedDie) => {
             // Save profile
-            commitProfile();
+            onCommitChanges(true);
             // Update die profile
             const profileData =
               store.getState().library.profiles.entities[profile.uuid];
@@ -285,18 +276,43 @@ function EditProfilePage({
   );
 }
 
-export function EditProfileScreen({
-  route: {
-    params: { profileUuid, noDiscard },
-  },
+function SaveProfileOnLeave({
+  profileUuid,
   navigation,
-}: EditProfileScreenProps) {
-  const profileStore = useEditableProfileStore(profileUuid);
+  noDiscard,
+}: {
+  profileUuid: string;
+  navigation: EditProfileScreenProps["navigation"];
+  noDiscard?: boolean;
+}) {
   const store = useAppStore();
+  const profileStore = useEditableProfileStore(profileUuid);
+  const commitProfile = useCommitEditableProfile(profileUuid);
   const updateProfiles = useUpdateProfiles();
+
+  const discardRef = React.useRef(false);
+  const discardChanges = React.useCallback(() => {
+    // TODO find a better way to tag that we're not saving
+    discardRef.current = true;
+    navigation.goBack();
+  }, [navigation]);
+  const commitChanges = React.useCallback(
+    (stay?: boolean) => {
+      commitProfile();
+      if (stay) {
+        navigation.goBack();
+      }
+    },
+    [commitProfile, navigation]
+  );
+
   React.useEffect(() => {
     // Ask user if they want to update the source profile
     return navigation.addListener("beforeRemove", (e) => {
+      if (discardRef.current) {
+        discardRef.current = false;
+        return;
+      }
       const getUpdateDice = () => {
         const { profiles } = store.getState().library;
         const profileData = profiles.entities[profileUuid];
@@ -333,8 +349,7 @@ export function EditProfileScreen({
         e.preventDefault();
         saveChangesAlert({
           onSave: () => {
-            commitEditableProfile(profileStore.profile, store);
-            profileStore.resetVersion();
+            commitProfile();
             // Once saved check if dice need to be updated
             const askUpdateDice = getUpdateDice();
             if (askUpdateDice) {
@@ -354,10 +369,34 @@ export function EditProfileScreen({
         }
       }
     });
-  }, [navigation, profileStore, profileUuid, store, updateProfiles]);
+  }, [
+    commitProfile,
+    navigation,
+    profileStore,
+    profileUuid,
+    store,
+    updateProfiles,
+  ]);
+
+  return (
+    <EditProfilePage
+      profileUuid={profileUuid}
+      onCommitChanges={commitChanges}
+      onDiscardChanges={noDiscard ? undefined : discardChanges}
+      navigation={navigation}
+    />
+  );
+}
+
+export function EditProfileScreen({
+  route: {
+    params: { profileUuid, noDiscard },
+  },
+  navigation,
+}: EditProfileScreenProps) {
   return (
     <AppBackground>
-      <EditProfilePage
+      <SaveProfileOnLeave
         profileUuid={profileUuid}
         noDiscard={noDiscard}
         navigation={navigation}
