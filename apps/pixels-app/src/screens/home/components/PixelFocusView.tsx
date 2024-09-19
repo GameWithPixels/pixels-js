@@ -38,7 +38,6 @@ import {
   useConfirmActionSheet,
   useHasFirmwareUpdate,
   useIsModifiedDieProfile,
-  usePairedDieProfileUuid,
   usePixelsCentral,
   useProfile,
   useRegisteredPixel,
@@ -240,7 +239,7 @@ export function PixelFocusView({
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
 
-  const profile = useProfile(usePairedDieProfileUuid(pairedDie));
+  const profile = useProfile(pairedDie.profileUuid);
   const [showPickProfile, setShowPickProfile] = React.useState(false);
   const modifiedProfile = useIsModifiedDieProfile(
     profile.uuid,

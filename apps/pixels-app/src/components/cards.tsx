@@ -34,7 +34,6 @@ import { getRollStateAndFaceLabel } from "~/features/profiles";
 import {
   useIsModifiedDieProfile,
   useIsPixelRolling,
-  usePairedDieProfileUuid,
   useProfile,
   useRegisteredPixel,
 } from "~/hooks";
@@ -49,7 +48,7 @@ const CardLabels = observer(function CardLabels({
   pixel?: Pixel;
   compact?: boolean;
 } & ViewProps) {
-  const profile = useProfile(usePairedDieProfileUuid(pairedDie));
+  const profile = useProfile(pairedDie.profileUuid);
   const status = usePixelStatus(pixel);
   const isReady = pixel && status === "ready";
   // This hooks triggers a re-render on each roll event

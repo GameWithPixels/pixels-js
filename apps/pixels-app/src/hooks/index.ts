@@ -1,4 +1,3 @@
-export * from "./useActiveProfile";
 export * from "./useAnimation";
 export * from "./useAnimationsList";
 export * from "./useAppTheme";
