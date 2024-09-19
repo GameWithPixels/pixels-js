@@ -60,7 +60,8 @@ export function AppInit({ children }: React.PropsWithChildren) {
       // Inform user
       Alert.alert(
         "App Patch Available",
-        "Tap OK to update your app with the latest patch.",
+        "The app will update itself to apply the latest patch, " +
+          "you have no action to take.",
         [
           {
             text: "Ok",
