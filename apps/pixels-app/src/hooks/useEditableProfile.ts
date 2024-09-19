@@ -9,9 +9,12 @@ import { useAppStore } from "~/app/hooks";
 import { AppStore } from "~/app/store";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library, readProfile } from "~/features/store";
+import { logError } from "~/features/utils";
 
 export class EditableProfileStore {
-  private _profile: Profiles.Profile;
+  private readonly _profileUuid: string;
+  private _profile?: Profiles.Profile;
+  private readonly _createProfile: () => Profiles.Profile;
   private _disposer?: () => void;
   private _counter = 0;
   private _version = 0;
@@ -20,7 +23,7 @@ export class EditableProfileStore {
     return this._counter > 0;
   }
 
-  get profile(): Profiles.Profile {
+  get profile(): Profiles.Profile | undefined {
     return this._profile;
   }
 
@@ -28,24 +31,30 @@ export class EditableProfileStore {
     return this._version;
   }
 
-  constructor(profile: Profiles.Profile) {
-    this._profile = profile;
+  constructor(profileUuid: string, createProfile: () => Profiles.Profile) {
+    this._profileUuid = profileUuid;
+    this._createProfile = createProfile;
     makeAutoObservable(this);
+  }
+
+  getOrCreateProfile(): Profiles.Profile {
+    if (!this._profile) {
+      this._profile = this._createProfile();
+    }
+    return this._profile;
   }
 
   take(): () => void {
     if (!this._disposer) {
       this._disposer = reaction(
         () => {
-          const profile = this._profile;
-          if (profile) {
-            // React on all properties of the profile except `lastModified`
-            const keys = Object.getOwnPropertyNames(profile);
-            return (keys as (keyof Profiles.Profile)[])
-              .filter((k) => k !== "lastModified")
-              .map((k) => JSON.stringify(profile[k]))
-              .join(",");
-          }
+          const profile = this.getOrCreateProfile();
+          // React on all properties of the profile except `lastModified`
+          const keys = Object.getOwnPropertyNames(profile);
+          return (keys as (keyof Profiles.Profile)[])
+            .filter((k) => k !== "lastModified")
+            .map((k) => JSON.stringify(profile[k]))
+            .join(",");
         },
         () => this._version++
       );
@@ -61,6 +70,7 @@ export class EditableProfileStore {
       this._disposer = undefined;
       this._version = 0;
       this._counter = 0;
+      this._profile = undefined;
     }
   }
 
@@ -87,7 +97,7 @@ export function useEditableProfileStore(
 
 // Returns an observable profile that is editable
 export function useEditableProfile(profileUuid: string): Profiles.Profile {
-  return useEditableProfileStore(profileUuid).profile;
+  return useEditableProfileStore(profileUuid).getOrCreateProfile();
 }
 
 export function useIsEditableProfileModified(profileUuid: string): boolean {
@@ -110,7 +120,12 @@ export function useCommitEditableProfile(profileUuid: string): () => void {
   const store = useAppStore();
   const profileStore = useEditableProfileStore(profileUuid);
   return React.useCallback(() => {
-    commitEditableProfile(profileStore.profile, store);
+    const profile = profileStore.profile;
+    if (profile) {
+      commitEditableProfile(profile, store);
+    } else {
+      logError("No editable profile to save");
+    }
     profileStore.resetVersion();
   }, [profileStore, store]);
 }

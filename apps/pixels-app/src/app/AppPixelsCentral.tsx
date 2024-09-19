@@ -34,6 +34,7 @@ import {
   updatePairedDieName,
   updatePairedDieProfileHash,
 } from "~/features/store";
+import { logError } from "~/features/utils";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
   commitEditableProfile,
@@ -324,22 +325,29 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         if (item) {
           return item;
         } else {
-          const profile = readProfile(profileUuid, store.getState().library);
-          const profileStore = new EditableProfileStore(profile);
+          // Create a new editable profile
+          const profileStore = new EditableProfileStore(profileUuid, () =>
+            readProfile(profileUuid, store.getState().library, true)
+          );
           editableProfileStoresMap.set(profileUuid, profileStore);
           // Auto save dice profiles and update paired die profile hash
           const disposer = reaction(
             () => profileStore.version,
             (version) => {
               if (version > 0) {
-                // Find die using with this profile
+                // Find die programmed with this profile
                 const pairedDie = pairedDiceSelectors.selectByProfileUuid(
                   store.getState(),
-                  profile.uuid
+                  profileUuid
                 );
                 if (pairedDie) {
                   // Save die profile
-                  commitEditableProfile(profile, store);
+                  const profile = profileStore.profile;
+                  if (profile) {
+                    commitEditableProfile(profile, store);
+                  } else {
+                    logError("No die editable profile to save");
+                  }
                 }
               } else {
                 disposer();
