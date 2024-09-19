@@ -4,6 +4,7 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import {
   Button,
   Dialog,
+  DialogProps,
   Portal,
   Text,
   TextInput,
@@ -15,9 +16,8 @@ import { ProfileMenu } from "../profiles/components/ProfileMenu";
 import { RuleIndex } from "../profiles/components/RuleCard";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useAppStore } from "~/app/hooks";
+import { useAppSelector, useAppStore } from "~/app/hooks";
 import { EditDieProfileScreenProps } from "~/app/navigation";
-import { pairedDiceSelectors } from "~/app/store";
 import { AppBackground } from "~/components/AppBackground";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
@@ -27,7 +27,7 @@ import { generateProfileUuid } from "~/features/profiles";
 import { Library } from "~/features/store";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
-  usePairedDieProfileUuid,
+  useEditableProfileStore,
   useSetSelectedPairedDie,
   useUpdateProfiles,
 } from "~/hooks";
@@ -56,6 +56,75 @@ function updateLibraryAlert(args: {
   );
 }
 
+function SaveToLibraryDialog({
+  profileUuid,
+  ...props
+}: {
+  profileUuid: string;
+} & Omit<DialogProps, "children"> &
+  Required<Pick<DialogProps, "onDismiss">>) {
+  const store = useAppStore();
+  const [name, setName] = React.useState("");
+  React.useEffect(() => setName(""), [props.visible]);
+  return (
+    <Portal>
+      <Dialog {...props}>
+        <Dialog.Title>Save to Library</Dialog.Title>
+        <Dialog.Content style={{ gap: 10 }}>
+          <Text variant="bodyMedium">
+            Enter the name of the profile to create in the library:
+          </Text>
+          <TextInput
+            label="Profile Name"
+            value={name}
+            onChangeText={(text) => setName(text)}
+          />
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => props.onDismiss()}>Cancel</Button>
+          <Button
+            onPress={() => {
+              const profileData =
+                store.getState().library.profiles.entities[profileUuid];
+              if (profileData) {
+                // Save to library
+                const uuid = generateProfileUuid(store.getState().library);
+                store.dispatch(
+                  Library.Profiles.add({
+                    ...profileData,
+                    uuid,
+                    name,
+                    // Make sure we don't reference another profile
+                    sourceUuid: undefined,
+                    // We don't have d00 and pd6 profiles in the library
+                    dieType:
+                      profileData.dieType === "d00"
+                        ? "d10"
+                        : profileData.dieType === "d6pipped"
+                          ? "d6"
+                          : profileData.dieType,
+                  })
+                );
+                // Update die profile to use the saved profile as its source
+                store.dispatch(
+                  Library.Profiles.update({
+                    ...profileData,
+                    name,
+                    sourceUuid: uuid,
+                  })
+                );
+              }
+              props.onDismiss();
+            }}
+          >
+            Ok
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  );
+}
+
 function EditDieProfilePage({
   pairedDie,
   navigation,
@@ -63,9 +132,6 @@ function EditDieProfilePage({
   pairedDie: PairedDie;
   navigation: EditDieProfileScreenProps["navigation"];
 }) {
-  const store = useAppStore();
-  const profileUuid = usePairedDieProfileUuid(pairedDie);
-
   const editRule = React.useCallback(
     (ruleIndex: RuleIndex) => {
       if (ruleIndex.conditionType === "rolled") {
@@ -79,7 +145,6 @@ function EditDieProfilePage({
 
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
   const [saveToLibraryVisible, setSaveToLibraryVisible] = React.useState(false);
-  const [name, setName] = React.useState("");
 
   const { width: windowWidth } = useWindowDimensions();
   const { colors } = useTheme();
@@ -111,12 +176,11 @@ function EditDieProfilePage({
             visible={actionsMenuVisible}
             anchor={{ x: (windowWidth - 230) / 2, y: 40 }}
             onDismiss={() => setActionsMenuVisible(false)}
-            onSaveToLibrary={() => {
-              setName("");
-              setSaveToLibraryVisible(true);
-            }}
+            onSaveToLibrary={() => setSaveToLibraryVisible(true)}
             onAdvancedOptions={() =>
-              navigation.navigate("editAdvancedSettings", { profileUuid })
+              navigation.navigate("editAdvancedSettings", {
+                profileUuid: pairedDie.profileUuid,
+              })
             }
           />
         </Pressable>
@@ -126,96 +190,53 @@ function EditDieProfilePage({
         contentContainerStyle={{ paddingBottom: 10 }}
         automaticallyAdjustKeyboardInsets
       >
-        <EditProfile profileUuid={profileUuid} unnamed onEditRule={editRule} />
+        <EditProfile
+          profileUuid={pairedDie.profileUuid}
+          unnamed
+          onEditRule={editRule}
+        />
       </GHScrollView>
-      <Portal>
-        <Dialog
-          visible={saveToLibraryVisible}
-          onDismiss={() => setSaveToLibraryVisible(false)}
-        >
-          <Dialog.Title>Save to Library</Dialog.Title>
-          <Dialog.Content style={{ gap: 10 }}>
-            <Text variant="bodyMedium">
-              Enter the name of the profile to create in the library:
-            </Text>
-            <TextInput
-              label="Profile Name"
-              value={name}
-              onChangeText={(text) => setName(text)}
-            />
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setSaveToLibraryVisible(false)}>
-              Cancel
-            </Button>
-            <Button
-              onPress={() => {
-                const profileData =
-                  store.getState().library.profiles.entities[profileUuid];
-                if (profileData) {
-                  // Save to library
-                  const uuid = generateProfileUuid(store.getState().library);
-                  store.dispatch(
-                    Library.Profiles.add({
-                      ...profileData,
-                      uuid,
-                      name,
-                      // Make sure we don't reference another profile
-                      sourceUuid: undefined,
-                      // We don't have d00 and pd6 profiles in the library
-                      dieType:
-                        profileData.dieType === "d00"
-                          ? "d10"
-                          : profileData.dieType === "d6pipped"
-                            ? "d6"
-                            : profileData.dieType,
-                    })
-                  );
-                  // Update die profile to use the saved profile as its source
-                  store.dispatch(
-                    Library.Profiles.update({
-                      ...profileData,
-                      name,
-                      sourceUuid: uuid,
-                    })
-                  );
-                }
-                setSaveToLibraryVisible(false);
-              }}
-            >
-              Ok
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      <SaveToLibraryDialog
+        visible={saveToLibraryVisible}
+        onDismiss={() => setSaveToLibraryVisible(false)}
+        profileUuid={pairedDie.profileUuid}
+      />
     </View>
   );
 }
 
-export function EditDieProfileScreen({
-  route: {
-    params: { pixelId },
-  },
+function SaveProfileOnLeave({
+  children,
+  profileUuid,
   navigation,
-}: EditDieProfileScreenProps) {
+}: React.PropsWithChildren<{
+  profileUuid: string;
+  navigation: EditDieProfileScreenProps["navigation"];
+}>) {
   const store = useAppStore();
-  const pairedDie = useSetSelectedPairedDie(pixelId);
   const updateProfiles = useUpdateProfiles();
+  const sourceUuid = useAppSelector(
+    (state) => state.library.profiles.entities[profileUuid]?.sourceUuid
+  );
+  const profileStore = useEditableProfileStore(profileUuid);
   React.useEffect(() => {
-    if (pairedDie) {
-      // Ask user if they want to update the source profile
+    if (sourceUuid) {
+      // When modified, ask user if they want to copy
+      // the die profile over to the source profile.
+      // Note: it might be unmodified but different from the source
+      // profile if previous changes were not copied back.
       return navigation.addListener("beforeRemove", (e) => {
-        const die = pairedDiceSelectors.selectByPixelId(
-          store.getState(),
-          pixelId
-        );
         const { profiles } = store.getState().library;
-        const profileData = die && profiles.entities[die?.profileUuid];
+        const profileData = profiles.entities[profileUuid];
         const dstUuid = profileData?.sourceUuid;
         const dstProfileData = dstUuid && profiles.entities[dstUuid];
+        // Ask to copy over source profile
         if (
-          die &&
+          dstUuid &&
           dstProfileData &&
+          // Check profile was edited
+          profileStore.version > 0 &&
+          // Check if different than the source profile
           (profileData.hash !== dstProfileData.hash ||
             !isSameBrightness(
               profileData.brightness,
@@ -234,15 +255,37 @@ export function EditDieProfileScreen({
         }
       });
     }
-  }, [navigation, pairedDie, pixelId, store, updateProfiles]);
+  }, [
+    navigation,
+    profileStore,
+    profileUuid,
+    sourceUuid,
+    store,
+    updateProfiles,
+  ]);
+  return <>{children}</>;
+}
+
+export function EditDieProfileScreen({
+  route: {
+    params: { pixelId },
+  },
+  navigation,
+}: EditDieProfileScreenProps) {
+  const pairedDie = useSetSelectedPairedDie(pixelId);
   if (!pairedDie) {
     navigation.goBack();
     return null;
   }
   return (
     <AppBackground>
-      <EditDieProfilePage pairedDie={pairedDie} navigation={navigation} />
-      <SelectedPixelTransferProgressBar />
+      <SaveProfileOnLeave
+        profileUuid={pairedDie.profileUuid}
+        navigation={navigation}
+      >
+        <EditDieProfilePage pairedDie={pairedDie} navigation={navigation} />
+        <SelectedPixelTransferProgressBar />
+      </SaveProfileOnLeave>
     </AppBackground>
   );
 }
