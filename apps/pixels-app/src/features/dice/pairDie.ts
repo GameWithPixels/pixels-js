@@ -67,6 +67,8 @@ export function pairDie(
         uuid: profileUuid,
         hash: computeProfileHashWithOverrides(dieProfile),
         sourceUuid: opt?.sourceProfile?.uuid,
+        // Older versions of the app might have stored the wrong dieType
+        dieType: pixel.dieType,
       })
     );
     brightness = dieProfile.brightness;
