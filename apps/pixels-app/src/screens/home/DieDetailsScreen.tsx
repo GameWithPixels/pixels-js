@@ -27,7 +27,6 @@ import {
 } from "~/features/profiles";
 import {
   useHasFirmwareUpdate,
-  usePairedDieProfileUuid,
   useProfile,
   useSetSelectedPairedDie,
   useWatchedPixel,
@@ -174,7 +173,7 @@ function DieDetailsPage({
   navigation: DieDetailsScreenProps["navigation"];
 }) {
   const pixel = useWatchedPixel(pairedDie);
-  const activeProfile = useProfile(usePairedDieProfileUuid(pairedDie));
+  const activeProfile = useProfile(pairedDie.profileUuid);
   return (
     <View style={{ height: "100%" }}>
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
