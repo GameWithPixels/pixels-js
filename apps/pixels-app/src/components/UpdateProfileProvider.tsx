@@ -30,13 +30,14 @@ export function UpdateProfileProvider({
     if (profileData && profilesUuids.length) {
       for (const uuid of profilesUuids) {
         if (uuid.length) {
-          const sourceUuid =
-            store.getState().library.profiles.entities[uuid]?.sourceUuid;
+          const dstProfile = store.getState().library.profiles.entities[uuid];
           store.dispatch(
             Library.Profiles.update({
               ...profileData,
               uuid,
-              sourceUuid,
+              // Keep source UUID and die type of the original (destination) profile
+              sourceUuid: dstProfile?.sourceUuid,
+              dieType: dstProfile?.dieType ?? profileData.dieType,
             })
           );
           // Update profile instance

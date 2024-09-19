@@ -160,7 +160,15 @@ function EditDieProfilePage({
                       ...profileData,
                       uuid,
                       name,
-                      sourceUuid: undefined, // Make sure we don't reference another profile
+                      // Make sure we don't reference another profile
+                      sourceUuid: undefined,
+                      // We don't have d00 and pd6 profiles in the library
+                      dieType:
+                        profileData.dieType === "d00"
+                          ? "d10"
+                          : profileData.dieType === "d6pipped"
+                            ? "d6"
+                            : profileData.dieType,
                     })
                   );
                   // Update die profile to use the saved profile as its source

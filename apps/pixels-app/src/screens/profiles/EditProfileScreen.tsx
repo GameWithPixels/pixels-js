@@ -270,6 +270,9 @@ function EditProfilePage({
                   ...profileData,
                   uuid: pairedDie.profileUuid,
                   sourceUuid: profile.uuid,
+                  // It's possible to use a profile from another die type
+                  // (ex: D00 & D10 share the same profiles)
+                  dieType: pairedDie.dieType,
                 })
               );
               // Update profile instance
