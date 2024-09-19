@@ -173,7 +173,7 @@ function EditDieProfilePage({
                   );
                   // Update die profile to use the saved profile as its source
                   store.dispatch(
-                    Library.Profiles.add({
+                    Library.Profiles.update({
                       ...profileData,
                       name,
                       sourceUuid: uuid,
