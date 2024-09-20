@@ -162,11 +162,11 @@ export const DiceUtils = {
 
   // TODO fix for edit animations taking a face index starting at 1
   mapFaceForAnimation(face: number, dieType: PixelDieType): number {
-    return 1 + DiceUtils.indexFromFace(face, dieType, true);
+    return 1 + DiceUtils.indexFromFace(face, dieType);
   },
 
   unMapFaceFromAnimation(animFace: number, dieType: PixelDieType): number {
-    return DiceUtils.faceFromIndex(animFace - 1, dieType, true);
+    return DiceUtils.faceFromIndex(animFace - 1, dieType);
   },
 
   getPd6LedIndex(faceValue: number, faceLedIndex = 0): number {
