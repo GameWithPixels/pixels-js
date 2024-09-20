@@ -127,8 +127,8 @@ const Header = observer(function Header({
               <Button
                 sentry-label="cancel-edit-profile"
                 disabled={!isModified}
-                onPress={
-                  isModified ? () => showConfirmDiscard() : onDiscardChanges
+                onPress={() =>
+                  isModified ? showConfirmDiscard() : onDiscardChanges()
                 }
               >
                 Cancel
@@ -138,7 +138,9 @@ const Header = observer(function Header({
       rightElement={() => (
         <Button
           sentry-label="commit-edit-profile"
-          onPress={isModified ? onCommitChanges : onDiscardChanges}
+          onPress={() =>
+            isModified ? onCommitChanges() : onDiscardChanges?.()
+          }
         >
           Done
         </Button>
@@ -299,7 +301,7 @@ function SaveProfileOnLeave({
   const commitChanges = React.useCallback(
     (stay?: boolean) => {
       commitProfile();
-      if (stay) {
+      if (!stay) {
         navigation.goBack();
       }
     },

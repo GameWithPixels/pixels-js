@@ -172,7 +172,7 @@ export function EditProfile({
                 )}
                 onPress={() => setPickDieVisible(true)}
               >
-                Copy To Dice
+                Copy To Die
               </GradientButton>
               <Text
                 style={{ marginVertical: 5, color: colors.onSurfaceDisabled }}
@@ -193,7 +193,7 @@ export function EditProfile({
           >
             A Profile is composed of rules that dictate what action to take on
             rolls and others dice events.{"\n\n"}
-            Tap on the "Copy To Dice" button above to copy the Profile to one or
+            Tap on the "Copy To Die" button above to copy the Profile to one or
             more of your dice.
           </Banner>
           <SectionTitle>Roll Rules</SectionTitle>
