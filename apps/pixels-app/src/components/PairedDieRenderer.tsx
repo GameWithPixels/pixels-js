@@ -4,7 +4,7 @@ import { DieRendererWithFocus } from "./DieRendererWithFocus";
 import { ProfileDieRenderer } from "./ProfileDieRenderer";
 
 import { PairedDie } from "~/app/PairedDie";
-import { getCompatibleDiceTypes } from "~/features/profiles";
+import { getCompatibleDieTypes } from "~/features/profiles";
 import { DieRendererProps } from "~/features/render3d/DieRenderer";
 import { useProfile } from "~/hooks";
 
@@ -18,7 +18,7 @@ export const PairedDieRenderer = React.memo(function PixelDieRenderer({
   >;
 } & Pick<DieRendererProps, "speed">) {
   const profile = useProfile(pairedDie.profileUuid);
-  return getCompatibleDiceTypes(profile.dieType).includes(pairedDie.dieType) ? (
+  return getCompatibleDieTypes(profile.dieType).includes(pairedDie.dieType) ? (
     <ProfileDieRenderer
       profile={profile}
       colorway={pairedDie.colorway}

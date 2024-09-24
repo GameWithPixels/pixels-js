@@ -38,7 +38,7 @@ import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
 import { DieWireframe } from "~/components/icons";
-import { AvailableDiceTypes } from "~/features/dice/AvailableDiceTypes";
+import { AvailableDieTypes } from "~/features/dice/AvailableDieTypes";
 import {
   addRollerEntry,
   hideAllRollerEntries,
@@ -326,9 +326,9 @@ function OptionsMenu({
       {[0, 1].map((i) => (
         <RollDiceLine
           key={i}
-          diceTypes={AvailableDiceTypes.slice(
-            Math.ceil((i * AvailableDiceTypes.length) / 2),
-            Math.ceil(((i + 1) * AvailableDiceTypes.length) / 2)
+          diceTypes={AvailableDieTypes.slice(
+            Math.ceil((i * AvailableDieTypes.length) / 2),
+            Math.ceil(((i + 1) * AvailableDieTypes.length) / 2)
           )}
           addRoll={(dieType, value) => {
             appDispatch(addRollerEntry({ pixelId: 0, dieType, value }));
