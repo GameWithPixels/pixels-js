@@ -8,7 +8,7 @@ import {
 
 import { ProfileDieTypes } from "./ProfileDieTypes";
 import { getColorwayLabel, getProfileDieTypeLabel } from "./descriptions";
-import { AvailableDiceTypes } from "../dice/AvailableDiceTypes";
+import { AvailableDieTypes } from "../dice/AvailableDieTypes";
 
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
@@ -470,7 +470,7 @@ export function groupAndSortDice(
       case "none":
         return [{ title: defaultTitle, values: sort(dice) }];
       case "dieType": {
-        const arr = AvailableDiceTypes.map((dieType) => ({
+        const arr = AvailableDieTypes.map((dieType) => ({
           title: getProfileDieTypeLabel(dieType),
           values: sort(dice.filter((p) => p.dieType === dieType)),
         })).filter((group) => group.values.length > 0);

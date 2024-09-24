@@ -17,6 +17,7 @@ import { ProfilesGrid } from "~/components/profile";
 import {
   createProfileTemplates,
   generateProfileUuid,
+  getCompatibleDieTypes,
   getProfileDieTypeLabel,
   ProfileDieTypes,
 } from "~/features/profiles";
@@ -79,6 +80,10 @@ function CreateProfilePage({
     () => createProfileTemplates(dieType, store.getState().library),
     [dieType, store]
   );
+  const compatibleDieTypes = React.useMemo(
+    () => getCompatibleDieTypes(dieType),
+    [dieType]
+  );
   const profiles = React.useMemo(
     () =>
       (tab === "Builtin"
@@ -87,9 +92,12 @@ function CreateProfilePage({
           ? diceProfiles
           : libraryProfiles
       )
-        .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
+        .filter(
+          (p) =>
+            p.dieType === "unknown" || compatibleDieTypes.includes(p.dieType)
+        )
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [diceProfiles, dieType, libraryProfiles, tab, templates]
+    [compatibleDieTypes, diceProfiles, libraryProfiles, tab, templates]
   );
 
   const createProfile = () => {

@@ -29,7 +29,7 @@ import { FloatingAddButton } from "~/components/buttons";
 import { EmptyLibraryCard } from "~/components/cards";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import {
-  getCompatibleDiceTypes,
+  getCompatibleDieTypes,
   getProfilesGroupingLabel,
   getSortModeIcon,
   getSortModeLabel,
@@ -250,7 +250,7 @@ function ProfilesListPage({
       <PickDieBottomSheet
         dieTypes={
           profileToProgram
-            ? getCompatibleDiceTypes(profileToProgram.dieType)
+            ? getCompatibleDieTypes(profileToProgram.dieType)
             : undefined
         }
         visible={!!profileToProgram}

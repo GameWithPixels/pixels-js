@@ -24,7 +24,10 @@ import { ChevronDownIcon } from "~/components/ChevronDownIcon";
 import { PageHeader } from "~/components/PageHeader";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { makeTransparent } from "~/components/colors";
-import { generateProfileUuid } from "~/features/profiles";
+import {
+  generateProfileUuid,
+  getCompatibleDieTypes,
+} from "~/features/profiles";
 import { Library, readProfile } from "~/features/store";
 import { logError } from "~/features/utils";
 import { isSameBrightness } from "~/hackGetDieBrightness";
@@ -114,12 +117,7 @@ function SaveToLibraryDialog({
                       // Make sure we don't reference another profile
                       sourceUuid: undefined,
                       // We don't have d00 and pd6 profiles in the library
-                      dieType:
-                        profileData.dieType === "d00"
-                          ? "d10"
-                          : profileData.dieType === "d6pipped"
-                            ? "d6"
-                            : profileData.dieType,
+                      dieType: getCompatibleDieTypes(profileData.dieType)[0],
                     })
                   );
                   // Create non editable instance of the profile

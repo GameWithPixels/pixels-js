@@ -1,6 +1,6 @@
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 
-export const AvailableDiceTypes = [
+export const AvailableDieTypes = [
   "d20",
   "d12",
   "d00",

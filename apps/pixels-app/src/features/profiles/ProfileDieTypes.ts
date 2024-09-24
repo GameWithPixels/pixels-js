@@ -11,7 +11,7 @@ export const ProfileDieTypes: readonly PixelDieType[] = Object.freeze([
 
 // Return list of dice that are compatible with the given die type
 // This functions is useful to get list of dice types compatible with a given profile
-export function getCompatibleDiceTypes(
+export function getCompatibleDieTypes(
   profileDieType?: PixelDieType
 ): PixelDieType[] {
   switch (profileDieType) {

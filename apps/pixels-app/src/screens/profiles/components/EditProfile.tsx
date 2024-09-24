@@ -26,7 +26,7 @@ import { GradientButton } from "~/components/buttons";
 import {
   EditorAnimationFlags,
   EditorRollRulesTypes,
-  getCompatibleDiceTypes,
+  getCompatibleDieTypes,
   getConditionTypeLabel,
 } from "~/features/profiles";
 import { setShowProfileHelp } from "~/features/store";
@@ -222,7 +222,7 @@ export function EditProfile({
         </SlideInView>
       </SlideInView>
       <PickDieBottomSheet
-        dieTypes={getCompatibleDiceTypes(profile.dieType)}
+        dieTypes={getCompatibleDieTypes(profile.dieType)}
         visible={pickDieVisible}
         onDismiss={(pairedDie) => {
           if (pairedDie) {

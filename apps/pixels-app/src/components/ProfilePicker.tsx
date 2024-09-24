@@ -19,7 +19,11 @@ import { TabsHeaders } from "./TabsHeaders";
 import { ProfilesList } from "./profile";
 
 import { useAppStore } from "~/app/hooks";
-import { createProfileTemplates, getDieTypeLabel } from "~/features/profiles";
+import {
+  createProfileTemplates,
+  getCompatibleDieTypes,
+  getDieTypeLabel,
+} from "~/features/profiles";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 
 const tabsNames = ["Builtin", /*"Dice",*/ "Library"] as const;
@@ -46,6 +50,10 @@ export function ProfilePicker({
       ),
     [dieType, store]
   );
+  const compatibleDieTypes = React.useMemo(
+    () => getCompatibleDieTypes(dieType),
+    [dieType]
+  );
   const profiles = React.useMemo(
     () =>
       (tab === "Builtin"
@@ -54,9 +62,12 @@ export function ProfilePicker({
           //   ? diceProfiles
           libraryProfiles
       )
-        .filter((p) => p.dieType === "unknown" || p.dieType === dieType)
+        .filter(
+          (p) =>
+            p.dieType === "unknown" || compatibleDieTypes.includes(p.dieType)
+        )
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [dieType, libraryProfiles, tab, templates]
+    [compatibleDieTypes, libraryProfiles, tab, templates]
   );
 
   const [filter, setFilter] = React.useState("");
