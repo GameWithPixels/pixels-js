@@ -102,6 +102,7 @@ const Header = observer(function Header({
   onAdvancedOptions: () => void;
   onDeleteProfile?: () => void;
 }) {
+  const isModified = useIsEditableProfileModified(profile.uuid);
   const [renameVisible, setRenameVisible] = React.useState(false);
   const [editedName, setEditedName] = React.useState("");
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
@@ -115,9 +116,6 @@ const Header = observer(function Header({
     "Discard Profile changes",
     onDiscardChanges
   );
-
-  const isModified = useIsEditableProfileModified(profile.uuid);
-
   return (
     <PageHeader
       leftElement={
@@ -138,9 +136,7 @@ const Header = observer(function Header({
       rightElement={() => (
         <Button
           sentry-label="commit-edit-profile"
-          onPress={() =>
-            isModified ? onCommitChanges() : onDiscardChanges?.()
-          }
+          onPress={() => onCommitChanges()}
         >
           Done
         </Button>
@@ -207,7 +203,7 @@ function EditProfilePage({
   navigation,
 }: {
   profileUuid: string;
-  onCommitChanges: (stay?: boolean) => void;
+  onCommitChanges: (opt?: { stayOnScreen?: boolean }) => void;
   onDiscardChanges?: () => void;
   navigation: EditProfileScreenProps["navigation"];
 }) {
@@ -253,7 +249,7 @@ function EditProfilePage({
           onEditRule={editRule}
           onProgramDie={(pairedDie) => {
             // Save profile
-            onCommitChanges(true);
+            onCommitChanges({ stayOnScreen: true });
             // Update die profile
             const profileData =
               store.getState().library.profiles.entities[profile.uuid];
@@ -299,9 +295,9 @@ function SaveProfileOnLeave({
     navigation.goBack();
   }, [navigation]);
   const commitChanges = React.useCallback(
-    (stay?: boolean) => {
+    (opt?: { stayOnScreen?: boolean }) => {
       commitProfile();
-      if (!stay) {
+      if (!opt?.stayOnScreen) {
         navigation.goBack();
       }
     },

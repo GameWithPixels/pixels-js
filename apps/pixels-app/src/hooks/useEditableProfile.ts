@@ -124,12 +124,14 @@ export function useCommitEditableProfile(
   return React.useCallback(
     (sourceUuid?: string) => {
       const profile = profileStore.profile;
-      if (profile) {
+      if (profile && profileStore.version) {
         commitEditableProfile(profile, store, sourceUuid);
+        profileStore.resetVersion();
+      } else if (profile) {
+        console.log("Skipping saving unmodified profile");
       } else {
         logError("No editable profile to save");
       }
-      profileStore.resetVersion();
     },
     [profileStore, store]
   );
