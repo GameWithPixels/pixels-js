@@ -6,6 +6,7 @@ export const AvailableDiceTypes = [
   "d00",
   "d10",
   "d8",
+  "d6pipped",
   "d6",
   "d4",
 ] as PixelDieType[];

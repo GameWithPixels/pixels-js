@@ -151,9 +151,8 @@ export function getProfileDieTypeLabel(dieType: PixelDieType): string {
     case "d4":
       return "D4";
     case "d6":
-      return "D6";
     case "d6pipped":
-      return "Pipped D6";
+      return "D6 / Pipped D6";
     case "d6fudge":
       return "Fudge D6";
     case "d8":
