@@ -4,7 +4,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
-import { getCompatibleDiceTypes } from "~/features/profiles";
+import { getCompatibleDieTypes } from "~/features/profiles";
 
 export function useFilteredProfiles(
   profiles: Readonly<Profiles.Profile>[],
@@ -12,7 +12,7 @@ export function useFilteredProfiles(
   dieType?: PixelDieType
 ): Readonly<Profiles.Profile>[] {
   return React.useMemo(() => {
-    const compatDiceTypes = getCompatibleDiceTypes(dieType);
+    const compatDiceTypes = getCompatibleDieTypes(dieType);
     const filterLower = filter.length ? filter.toLowerCase() : undefined;
     return !filterLower && !dieType
       ? profiles
