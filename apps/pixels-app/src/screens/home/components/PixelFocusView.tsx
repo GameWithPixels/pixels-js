@@ -110,6 +110,8 @@ export function PixelFocusViewHeader({
           hash: computeProfileHashWithOverrides(defaultProfile),
         })
       );
+      // Update profile instance
+      readProfile(pairedDie.profileUuid, store.getState().library);
     }
   });
   const showConfirmTurnOff = useConfirmActionSheet(
