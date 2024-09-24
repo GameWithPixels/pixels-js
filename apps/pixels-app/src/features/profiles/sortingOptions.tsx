@@ -469,11 +469,25 @@ export function groupAndSortDice(
         return [{ title: defaultTitle, values: sort(dice) }];
       case "none":
         return [{ title: defaultTitle, values: sort(dice) }];
-      case "dieType":
-        return AvailableDiceTypes.map((dieType) => ({
+      case "dieType": {
+        const arr = AvailableDiceTypes.map((dieType) => ({
           title: getProfileDieTypeLabel(dieType),
           values: sort(dice.filter((p) => p.dieType === dieType)),
         })).filter((group) => group.values.length > 0);
+        // Group items with same title
+        for (let i = 0; i < arr.length; i++) {
+          const { title } = arr[i];
+          // Find item with same title
+          const index = arr.findIndex((item) => item.title === title);
+          if (index > -1 && index < i) {
+            // Combine values
+            arr[index].values.push(...arr[i].values);
+            // Remove duplicate
+            arr.splice(i, 1);
+          }
+        }
+        return arr;
+      }
       case "colorway":
         return (Object.keys(PixelColorwayValues) as PixelColorway[])
           .map((colorway) => ({
