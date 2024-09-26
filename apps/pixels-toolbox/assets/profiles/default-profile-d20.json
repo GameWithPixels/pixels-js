@@ -2613,6 +2613,55 @@
               }
             }
           ]
+        },
+        {
+          "keyframes": [
+            {
+              "time": 0.0,
+              "color": {
+                "r": 10,
+                "g": 10,
+                "b": 10,
+                "a": 255
+              }
+            },
+            {
+              "time": 0.24509804,
+              "color": {
+                "r": 246,
+                "g": 246,
+                "b": 246,
+                "a": 255
+              }
+            },
+            {
+              "time": 0.352941155,
+              "color": {
+                "r": 226,
+                "g": 226,
+                "b": 226,
+                "a": 255
+              }
+            },
+            {
+              "time": 0.588235259,
+              "color": {
+                "r": 0,
+                "g": 0,
+                "b": 0,
+                "a": 255
+              }
+            },
+            {
+              "time": 1.0,
+              "color": {
+                "r": 0,
+                "g": 0,
+                "b": 0,
+                "a": 255
+              }
+            }
+          ]
         }
       ]
     },
@@ -89640,7 +89689,7 @@
     {
       "type": 5,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "gradient": {
           "keyframes": [
             {
@@ -89700,7 +89749,7 @@
     {
       "type": 2,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "count": 5,
         "fade": 0.5323098,
         "traveling": true,
@@ -89723,7 +89772,7 @@
     {
       "type": 5,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "gradient": {
           "keyframes": [
             {
@@ -89774,7 +89823,7 @@
     {
       "type": 1,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "color": {
           "type": 0,
           "rgbColor": {
@@ -89796,7 +89845,7 @@
     {
       "type": 1,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "color": {
           "type": 1,
           "rgbColor": {
@@ -89818,7 +89867,7 @@
     {
       "type": 1,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "color": {
           "type": 0,
           "rgbColor": {
@@ -89840,7 +89889,7 @@
     {
       "type": 5,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "gradient": {
           "keyframes": [
             {
@@ -89940,7 +89989,7 @@
     {
       "type": 2,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "count": 3,
         "fade": 0.320800841,
         "traveling": false,
@@ -89955,7 +90004,7 @@
     {
       "type": 1,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "color": {
           "type": 1,
           "rgbColor": {
@@ -90786,7 +90835,7 @@
     {
       "type": 1,
       "data": {
-        "faces": 1048575,
+        "faces": 2097151,
         "color": {
           "type": 0,
           "rgbColor": {
