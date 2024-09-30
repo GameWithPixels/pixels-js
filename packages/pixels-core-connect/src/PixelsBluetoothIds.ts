@@ -19,7 +19,19 @@ export type PixelsConnectUuids = {
  */
 export const PixelsBluetoothIds = {
   /** Service and characteristic UUIDs of a Pixels die. */
-  pixel: {
+  die: {
+    /** Die service UUID. */
+    service: "a6b90001-7a5a-43f2-a962-350c8edc9b5b",
+
+    /** Die notify characteristic UUID. */
+    notifyCharacteristic: "a6b90002-7a5a-43f2-a962-350c8edc9b5b",
+
+    /** Die write characteristic UUID. */
+    writeCharacteristic: "a6b90003-7a5a-43f2-a962-350c8edc9b5b",
+  } as Readonly<PixelsConnectUuids>,
+
+  /** Legacy service and characteristic UUIDs of a Pixels die. */
+  legacyDie: {
     /** Die service UUID. */
     service: "6e400001-b5a3-f393-e0a9-e50e24dcca9e",
 

@@ -274,7 +274,8 @@ export class PixelScanner {
           try {
             await Central.startScan(
               [
-                PixelsBluetoothIds.pixel.service,
+                PixelsBluetoothIds.die.service,
+                PixelsBluetoothIds.legacyDie.service,
                 PixelsBluetoothIds.charger.service,
               ],
               this
@@ -336,7 +337,10 @@ export class PixelScanner {
       return;
     }
     const services = peripheral.advertisementData.services;
-    if (services?.includes(PixelsBluetoothIds.pixel.service)) {
+    if (
+      !!services?.includes(PixelsBluetoothIds.die.service) ||
+      !!services?.includes(PixelsBluetoothIds.legacyDie.service)
+    ) {
       const pixel = getScannedPixel(peripheral);
       if (pixel) {
         this._processItem(pixel);

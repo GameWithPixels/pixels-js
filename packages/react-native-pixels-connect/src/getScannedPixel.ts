@@ -19,7 +19,10 @@ export function getScannedPixel(
   peripheral: ScannedPeripheral
 ): ScannedPixel | undefined {
   const advData = peripheral.advertisementData;
-  if (!advData.services?.includes(PixelsBluetoothIds.pixel.service)) {
+  if (
+    !advData.services?.includes(PixelsBluetoothIds.die.service) &&
+    !advData.services?.includes(PixelsBluetoothIds.legacyDie.service)
+  ) {
     // Not a Pixels die
     return;
   }
