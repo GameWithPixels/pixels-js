@@ -18,7 +18,14 @@ export const PixelsDevices = {
     }
     // Request user to select a Pixel
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [PixelsBluetoothIds.pixel.service] }],
+      filters: [
+        {
+          services: [
+            PixelsBluetoothIds.die.service,
+            PixelsBluetoothIds.legacyDie.service,
+          ],
+        },
+      ],
     });
     _devices.set(device.id, device);
     return device;

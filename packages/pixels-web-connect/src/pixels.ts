@@ -5,13 +5,20 @@ import { PixelsDevices } from "./PixelsDevices";
 
 const _pixels = new Map<string, Pixel>();
 
-function getOrCreatePixel(device: BluetoothDevice): Pixel {
+function getOrCreatePixel(
+  device: BluetoothDevice,
+  opt?: {
+    legacyService?: boolean;
+  }
+): Pixel {
   // Keep Pixel instances
   let pixel = _pixels.get(device.id);
   if (!pixel) {
     const session = new BleSession({
       systemId: device.id,
-      uuids: PixelsBluetoothIds.pixel,
+      uuids: opt?.legacyService
+        ? PixelsBluetoothIds.legacyDie
+        : PixelsBluetoothIds.die,
     });
     pixel = new Pixel(session);
     _pixels.set(device.id, pixel);

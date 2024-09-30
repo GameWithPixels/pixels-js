@@ -4,6 +4,11 @@ import BleSession from "./BleSession";
 import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
 import { DevicesMap } from "./static";
 
+function isFirmwareWithLegacyService(firmwareTimestamp?: number) {
+  const FW_2024_10_15 = 1728943200000;
+  return firmwareTimestamp && firmwareTimestamp <= FW_2024_10_15;
+}
+
 /**
  * Error thrown when a Pixel device can't be found.
  */
@@ -21,7 +26,12 @@ class GetPixelError extends Error {
  *           It can be either the system id as a string or the Pixel id as a number.
  * @returns A {@link Pixel} instance or undefined.
  */
-export function getPixel(id: string | number): Pixel | undefined {
+export function getPixel(
+  id: string | number,
+  opt?: {
+    legacyService?: boolean;
+  }
+): Pixel | undefined {
   if (typeof id === "number" ? id !== 0 : id?.length > 0) {
     const sp = ScannedDevicesRegistry.findPixel(id);
     // Get system id from the input data
@@ -37,7 +47,13 @@ export function getPixel(id: string | number): Pixel | undefined {
           new BleSession({
             systemId,
             name: sp?.name,
-            uuids: PixelsBluetoothIds.pixel,
+            uuids: (
+              opt?.legacyService !== undefined
+                ? opt?.legacyService
+                : sp && isFirmwareWithLegacyService(sp.firmwareDate.getTime())
+            )
+              ? PixelsBluetoothIds.legacyDie
+              : PixelsBluetoothIds.die,
           }),
           sp
         );
