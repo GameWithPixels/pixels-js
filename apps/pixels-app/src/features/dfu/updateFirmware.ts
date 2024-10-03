@@ -112,6 +112,7 @@ export async function updateFirmware({
   // Update firmware
   if (hasFirmware && !abort) {
     const update = async (retryOnVersionError = true) => {
+      const startTime = Date.now();
       try {
         // After attempting to update the bootloader, device stays in bootloader mode
         // Bootloader address = firmware address + 1 on Android
@@ -148,6 +149,9 @@ export async function updateFirmware({
           dfuStateCallback?.("errored");
           throw error;
         }
+      } finally {
+        // Log DFU duration
+        console.log(`DFU duration: ${Date.now() - startTime} ms`);
       }
     };
     await update(bootloaderSkipped);
