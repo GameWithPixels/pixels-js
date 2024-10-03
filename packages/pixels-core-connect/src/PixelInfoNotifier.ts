@@ -51,7 +51,7 @@ export abstract class PixelInfoNotifier<
   }>();
 
   // Device type
-  abstract type: "pixel" | "charger"; // TODO also "charger" until we have a separate class for ScannedChargerNotifier
+  abstract type: "pixel" | "charger" | "bootloader"; // TODO also "charger" & "bootloader" until we have a separate class for ScannedChargerNotifier
 
   // It's a notifier object
   readonly isNotifier = true;

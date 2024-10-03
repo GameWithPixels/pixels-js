@@ -41,11 +41,15 @@ export const SwipeablePixelsList = React.memo(function ({
     (PixelDispatcher | ChargerDispatcher)[]
   >([]);
   const dispatchers = React.useMemo(() => {
-    const scanned = scannedDevices.map((dev) =>
-      dev.type === "pixel"
-        ? PixelDispatcher.getOrCreateDispatcher(dev)
-        : ChargerDispatcher.getOrCreateDispatcher(dev)
-    );
+    const scanned = scannedDevices
+      .map((dev) =>
+        dev.type === "pixel"
+          ? PixelDispatcher.getOrCreateDispatcher(dev)
+          : dev.type === "charger"
+            ? ChargerDispatcher.getOrCreateDispatcher(dev)
+            : undefined
+      )
+      .filter((pd): pd is PixelDispatcher | ChargerDispatcher => !!pd);
     const dispatchers = lastDispatchersList.current.filter(
       (p) => p.isInUse || scanned.includes(p)
     );
