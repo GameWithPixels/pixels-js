@@ -55,7 +55,7 @@ import {
 import {
   useConfirmActionSheet,
   useSetSelectedPairedDie,
-  useWatchedPixel,
+  useRegisteredPixel,
 } from "~/hooks";
 
 function computeStats(dieType: PixelDieType, rolls: number[]): RollStats {
@@ -390,7 +390,7 @@ function PlopControls({
   pixelId: number;
   hasNoSession: boolean;
 }) {
-  const pixel = useWatchedPixel(pixelId);
+  const pixel = useRegisteredPixel(pixelId);
   const status = usePixelStatus(pixel);
   return status !== "ready" || hasNoSession ? (
     <Text

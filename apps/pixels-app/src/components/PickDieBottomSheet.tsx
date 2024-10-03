@@ -17,7 +17,6 @@ import { listToText } from "~/features/utils";
 import {
   useBottomSheetBackHandler,
   useBottomSheetPadding,
-  usePixelScanner,
   usePixelsCentral,
 } from "~/hooks";
 
@@ -80,7 +79,6 @@ export function PickDieBottomSheet({
   onDismiss: (pairedDie?: PairedDie) => void;
 }) {
   const central = usePixelsCentral();
-  const { startScan, stopScan } = usePixelScanner();
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
@@ -88,15 +86,15 @@ export function PickDieBottomSheet({
     if (visible) {
       sheetRef.current?.present();
       // Try to reconnect to all dice while the bottom sheet is open
-      startScan();
+      central.tryConnectAll();
     } else {
       sheetRef.current?.dismiss();
     }
-  }, [startScan, visible]);
+  }, [central, visible]);
 
   const dismiss = (pairedDie?: PairedDie) => {
-    pairedDie && central.connectToMissingPixels(pairedDie.pixelId);
-    stopScan();
+    // Connect to the selected die (high priority)
+    pairedDie && central.tryConnect(pairedDie.pixelId);
     onDismiss(pairedDie);
   };
 

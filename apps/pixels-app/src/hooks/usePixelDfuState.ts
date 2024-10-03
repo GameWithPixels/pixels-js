@@ -3,8 +3,6 @@ import React from "react";
 
 import { usePixelsCentral } from "./usePixelsCentral";
 
-import { PixelsCentralEventMap } from "~/features/dice";
-
 export function usePixelDfuState(pixelId?: number): {
   state?: DfuState;
   progress?: number;
@@ -17,41 +15,40 @@ export function usePixelDfuState(pixelId?: number): {
   React.useEffect(() => {
     setState(undefined);
     setProgress(undefined);
-    const onState = ({
-      pixel,
-      state,
-    }: PixelsCentralEventMap["pixelDfuState"]) => {
-      if (pixelId === pixel.pixelId) {
-        setState(state);
-        if (state !== "errored") {
-          setError(undefined);
+    if (pixelId) {
+      const removeOnState = central.addSchedulerListener(
+        pixelId,
+        "onDfuState",
+        ({ state }) => {
+          setState(state);
+          if (state !== "errored") {
+            setError(undefined);
+          }
         }
-      }
-    };
-    central.addListener("pixelDfuState", onState);
-    const onProgress = ({
-      pixel,
-      progress,
-    }: PixelsCentralEventMap["pixelDfuProgress"]) => {
-      if (pixelId === pixel.pixelId) {
-        setProgress(progress);
-      }
-    };
-    central.addListener("pixelDfuProgress", onProgress);
-    const onError = ({
-      pixel,
-      error,
-    }: PixelsCentralEventMap["pixelDfuError"]) => {
-      if (pixelId === pixel.pixelId) {
-        setError(error);
-      }
-    };
-    central.addListener("pixelDfuError", onError);
-    return () => {
-      central.removeListener("pixelDfuState", onState);
-      central.removeListener("pixelDfuProgress", onProgress);
-      central.removeListener("pixelDfuError", onError);
-    };
+      );
+      const removeOnProgress = central.addSchedulerListener(
+        pixelId,
+        "onDfuProgress",
+        ({ progress }) => setProgress(progress)
+      );
+      const removeOnError = central.addSchedulerListener(
+        pixelId,
+        "onOperationStatus",
+        (op) => {
+          if (
+            op.status === "failed" &&
+            op.operation.type === "updateFirmware"
+          ) {
+            setError(op.error);
+          }
+        }
+      );
+      return () => {
+        removeOnState();
+        removeOnProgress();
+        removeOnError();
+      };
+    }
   }, [central, pixelId]);
   return { state, progress, error };
 }

@@ -30,7 +30,7 @@ import {
   usePairedDieProfileUuid,
   useProfile,
   useSetSelectedPairedDie,
-  useWatchedPixel,
+  useRegisteredPixel,
 } from "~/hooks";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
@@ -173,7 +173,7 @@ function DieDetailsPage({
   pairedDie: PairedDie;
   navigation: DieDetailsScreenProps["navigation"];
 }) {
-  const pixel = useWatchedPixel(pairedDie);
+  const pixel = useRegisteredPixel(pairedDie);
   const activeProfile = useProfile(usePairedDieProfileUuid(pairedDie));
   return (
     <View style={{ height: "100%" }}>

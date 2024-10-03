@@ -6,7 +6,7 @@ import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { useSelectedPairedDie, useWatchedPixel } from "~/hooks";
+import { useSelectedPairedDie, useRegisteredPixel } from "~/hooks";
 
 export function PixelTransferProgressBar({
   pixel,
@@ -48,7 +48,7 @@ export function SelectedPixelTransferProgressBar({
 }: {
   style?: ViewStyle;
 }) {
-  const pixel = useWatchedPixel(useSelectedPairedDie());
+  const pixel = useRegisteredPixel(useSelectedPairedDie());
   return pixel ? (
     <PixelTransferProgressBar
       style={[

@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DiceListScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
+import { DebugConnectionStatusesBar } from "~/components/DebugConnectionStatusesBar";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
@@ -39,7 +40,7 @@ import {
   setDiceSortMode,
   setDiceViewMode,
 } from "~/features/store";
-import { useConnectToMissingPixels, useOutdatedPixelsCount } from "~/hooks";
+import { useOutdatedPixelsCount, usePixelsCentral } from "~/hooks";
 
 export type DiceViewMode = "list" | "grid";
 
@@ -124,7 +125,6 @@ function GridListSelector({
           width: "100%",
           flexDirection: "row",
           alignItems: "center",
-          padding: 10,
         }}
       >
         <LinearGradient
@@ -135,7 +135,6 @@ function GridListSelector({
             flexGrow: 1,
             height: 2,
             borderRadius: 1,
-            backgroundColor: colors.secondary,
           }}
         />
         <TouchableRipple
@@ -162,7 +161,10 @@ function GridListSelector({
             }
           />
         </TouchableRipple>
-        <TouchableRipple onPress={() => setSortVisible(true)}>
+        <TouchableRipple
+          onPress={() => setSortVisible(true)}
+          style={{ padding: 5 }}
+        >
           <MaterialCommunityIcons
             name="dots-horizontal"
             size={28}
@@ -229,7 +231,8 @@ function DiceListPage({
   const [showPairDice, setShowPairDice] = React.useState(false);
 
   // Scan for missing dice on showing page
-  useFocusEffect(useConnectToMissingPixels());
+  const central = usePixelsCentral();
+  useFocusEffect(React.useCallback(() => central.tryConnectAll(), [central]));
 
   // Firmware update
   const outdatedCount = useOutdatedPixelsCount();
@@ -262,6 +265,7 @@ function DiceListPage({
                 viewMode={viewMode}
                 onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
               />
+              {__DEV__ && <DebugConnectionStatusesBar />}
               {viewMode === "grid" ? (
                 <DiceGrid
                   pairedDice={pairedDice}

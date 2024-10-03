@@ -17,7 +17,7 @@ import { useAppSelector } from "~/app/hooks";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
 import { makeTransparent } from "~/components/colors";
-import { useIsPixelRolling, useWatchedPixel } from "~/hooks";
+import { useIsPixelRolling, useRegisteredPixel } from "~/hooks";
 
 function useLastRolls({
   pixelId,
@@ -43,7 +43,7 @@ function PixelRollState({
 }: {
   pairedDie: PairedDie;
 } & Omit<TextProps<string>, "children">) {
-  const pixel = useWatchedPixel(pairedDie);
+  const pixel = useRegisteredPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const rolling = useIsPixelRolling(pixel, status);
   return <Text {...props}>{rolling ? "Rolling..." : "Last rolls"}</Text>;

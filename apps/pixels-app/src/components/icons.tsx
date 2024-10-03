@@ -147,7 +147,7 @@ export function DieWireframe({
     <View style={{ width: size, height: size }}>
       <Image
         contentFit="cover"
-        style={{ flex: 1 }}
+        style={{ flex: 1, opacity: disabled ? 0.5 : 1 }}
         source={getImage()}
         blurRadius={disabled ? 1.5 : undefined}
       />

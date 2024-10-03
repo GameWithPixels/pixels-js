@@ -17,6 +17,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { DebugPixelID } from "./DebugPixelID";
 import { FirmwareUpdateBadge } from "./FirmwareUpdateBadge";
 import { PairedDieRendererWithRoll } from "./PairedDieRendererWithRoll";
 import { PixelBattery } from "./PixelBattery";
@@ -36,7 +37,7 @@ import {
   useIsPixelRolling,
   usePairedDieProfileUuid,
   useProfile,
-  useWatchedPixel,
+  useRegisteredPixel,
 } from "~/hooks";
 
 const CardLabels = observer(function CardLabels({
@@ -219,6 +220,7 @@ function PixelVCardContent({
           />
         </View>
       )}
+      {__DEV__ && <DebugPixelID pixelId={pairedDie.pixelId} />}
       <View
         style={{
           width: "100%",
@@ -347,7 +349,7 @@ export function PixelCard({
   selected?: boolean;
   selectable?: boolean;
 } & Omit<TouchableCardProps, "children" | "row">) {
-  const pixel = useWatchedPixel(pairedDie);
+  const pixel = useRegisteredPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const flash = useIsPixelRolling(pixel, status);
   return (

@@ -25,6 +25,7 @@ import { PixelStatusCard } from "./PixelStatusCard";
 import { PairedDie } from "~/app/PairedDie";
 import { useAppStore } from "~/app/hooks";
 import { ChevronDownIcon } from "~/components/ChevronDownIcon";
+import { DebugPixelID } from "~/components/DebugPixelID";
 import { FirmwareUpdateBadge } from "~/components/FirmwareUpdateBadge";
 import { PairedDieRendererWithRoll } from "~/components/PairedDieRendererWithRoll";
 import { SlideInView } from "~/components/SlideInView";
@@ -40,7 +41,7 @@ import {
   usePairedDieProfileUuid,
   usePixelsCentral,
   useProfile,
-  useWatchedPixel,
+  useRegisteredPixel,
 } from "~/hooks";
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
@@ -85,7 +86,7 @@ export function PixelFocusViewHeader({
 }) {
   const store = useAppStore();
   const central = usePixelsCentral();
-  const pixel = useWatchedPixel(pairedDie);
+  const pixel = useRegisteredPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const ready = status === "ready";
   const hasFirmwareUpdate = useHasFirmwareUpdate(pairedDie.pixelId);
@@ -94,9 +95,9 @@ export function PixelFocusViewHeader({
   const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
     if (ready) {
       // Schedule reset settings
-      central
-        .getScheduler(pairedDie.pixelId)
-        .schedule({ type: "resetSettings" });
+      central.scheduleOperation(pairedDie.pixelId, {
+        type: "resetSettings",
+      });
       // Program default profile
       // Use profile with pre-serialized data so the hash is stable
       const defaultProfile = preSerializeProfile(
@@ -116,9 +117,7 @@ export function PixelFocusViewHeader({
     "Turn Die Off",
     () =>
       ready &&
-      central
-        .getScheduler(pairedDie.pixelId)
-        .schedule({ type: "disconnect", mode: "turnOff" }),
+      central.scheduleOperation(pairedDie.pixelId, { type: "turnOff" }),
     {
       message:
         "Reminder: your die will stay off until placed back in its case with the lid closed. " +
@@ -140,11 +139,9 @@ export function PixelFocusViewHeader({
   }, [ready]);
   const renameDie = React.useCallback(
     (name: string) => {
-      if (pixel) {
-        const scheduler = central.getScheduler(pixel.pixelId);
-        // Update name
-        scheduler.schedule({ type: "rename", name });
-      }
+      // Update name
+      pixel &&
+        central.scheduleOperation(pixel.pixelId, { type: "rename", name });
     },
     [central, pixel]
   );
@@ -239,7 +236,7 @@ export function PixelFocusView({
   const store = useAppStore();
   const central = usePixelsCentral();
 
-  const pixel = useWatchedPixel(pairedDie);
+  const pixel = useRegisteredPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const disabled = status !== "ready";
 
@@ -253,6 +250,7 @@ export function PixelFocusView({
   const { colors } = useTheme();
   return (
     <SlideInView {...props} style={[{ gap: 10 }, style]}>
+      {__DEV__ && <DebugPixelID pixelId={pairedDie.pixelId} />}
       <Pressable
         disabled={disabled}
         sentry-label="header-bar-select"
@@ -262,7 +260,9 @@ export function PixelFocusView({
           alignSelf: "center",
         }}
         onPress={() => {
-          central.getScheduler(pairedDie.pixelId).schedule({ type: "blink" });
+          central.scheduleOperation(pairedDie.pixelId, {
+            type: "blink",
+          });
           onPress?.();
         }}
       >

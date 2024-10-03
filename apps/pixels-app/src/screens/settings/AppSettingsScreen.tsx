@@ -27,7 +27,7 @@ import {
   setDisablePlayingAnimations,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
-import { useConfirmActionSheet, usePixelsCentral } from "~/hooks";
+import { useConfirmActionSheet } from "~/hooks";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
@@ -42,7 +42,6 @@ function AppSettingsPage({
 }: {
   navigation: SettingsMenuScreenProps["navigation"];
 }) {
-  const central = usePixelsCentral();
   const appDispatch = useAppDispatch();
 
   const brightness = useAppSelector(
@@ -55,7 +54,6 @@ function AppSettingsPage({
     "Reset App Settings",
     (data) => {
       const keepProfiles = data === "keepProfiles";
-      central.stopScan();
       console.warn(
         "Resetting app settings" + (keepProfiles ? " except profiles" : "")
       );

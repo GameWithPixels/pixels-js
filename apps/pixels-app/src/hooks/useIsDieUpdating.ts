@@ -5,16 +5,12 @@ import { usePixelsCentral } from "./usePixelsCentral";
 export function useIsDieUpdatingFirmware(pixelId: number) {
   const central = usePixelsCentral();
   const [updating, setUpdating] = React.useState(
-    central.pixelInDFU?.pixelId === pixelId
+    central.pixelInDFU === pixelId
   );
   React.useEffect(() => {
-    const onPixelInDFU = () =>
-      setUpdating(central.pixelInDFU?.pixelId === pixelId);
+    const onPixelInDFU = () => setUpdating(central.pixelInDFU === pixelId);
     onPixelInDFU();
-    central.addListener("pixelInDFU", onPixelInDFU);
-    return () => {
-      central.removeListener("pixelInDFU", onPixelInDFU);
-    };
+    return central.addListener("pixelInDFU", onPixelInDFU);
   }, [central, pixelId]);
   return updating;
 }
@@ -25,10 +21,7 @@ export function useIsAppUpdatingFirmware(): boolean {
   React.useEffect(() => {
     const onPixelInDFU = () => setUpdating(!!central.pixelInDFU);
     onPixelInDFU();
-    central.addListener("pixelInDFU", onPixelInDFU);
-    return () => {
-      central.removeListener("pixelInDFU", onPixelInDFU);
-    };
+    return central.addListener("pixelInDFU", onPixelInDFU);
   }, [central]);
   return updating;
 }

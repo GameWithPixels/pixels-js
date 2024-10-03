@@ -3,7 +3,7 @@ import { usePixelStatus } from "@systemic-games/react-native-pixels-connect";
 import { PairedDieRenderer } from "./PairedDieRenderer";
 
 import { PairedDie } from "~/app/PairedDie";
-import { useIsPixelRolling, useWatchedPixel } from "~/hooks";
+import { useIsPixelRolling, useRegisteredPixel } from "~/hooks";
 
 export function PairedDieRendererWithRoll({
   pairedDie,
@@ -12,7 +12,7 @@ export function PairedDieRendererWithRoll({
   pairedDie: Pick<PairedDie, "pixelId" | "dieType" | "colorway">;
   disabled: boolean;
 }) {
-  const pixel = useWatchedPixel(pairedDie);
+  const pixel = useRegisteredPixel(pairedDie);
   const status = usePixelStatus(pixel);
   const rolling = useIsPixelRolling(pixel, status);
   return (

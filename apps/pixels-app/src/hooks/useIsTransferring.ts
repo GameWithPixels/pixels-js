@@ -4,37 +4,36 @@ import React from "react";
 import { usePixelsCentral } from "./usePixelsCentral";
 
 import { PairedDie } from "~/app/PairedDie";
-import { PixelSchedulerEventMap } from "~/features/dice";
 
 export function useIsTransferring({
   pixelId,
 }: Pick<PairedDie, "pixelId">): boolean {
   const central = usePixelsCentral();
   const [transferring, setIsTransferring] = React.useState(
-    central.getScheduler(pixelId).currentOperation?.type === "programProfile"
+    central.getCurrentOperation(pixelId)?.type === "programProfile"
   );
   React.useEffect(() => {
-    const onOperation = (op: PixelSchedulerEventMap["onOperation"]) => {
+    setIsTransferring(
+      central.getCurrentOperation(pixelId)?.type === "programProfile"
+    );
+    return central.addSchedulerListener(pixelId, "onOperationStatus", (op) => {
       const { type: opType } = op.operation;
-      const { type: evType } = op.event;
-      switch (evType) {
+      const status = op.status;
+      switch (status) {
         case "queued":
           break;
-        case "processing":
+        case "starting":
           setIsTransferring(opType === "programProfile");
           break;
         case "succeeded":
         case "failed":
+        case "dropped":
           setIsTransferring(false);
           break;
         default:
-          assertNever(evType);
+          assertNever(status);
       }
-    };
-    const scheduler = central.getScheduler(pixelId);
-    scheduler.addListener("onOperation", onOperation);
-    setIsTransferring(scheduler.currentOperation?.type === "programProfile");
-    return scheduler.removeListener("onOperation", onOperation);
+    });
   }, [central, pixelId]);
   return transferring;
 }

@@ -4,7 +4,6 @@ import { DfuFilesInfo } from "./useDfuFiles";
 import { usePixelsCentral } from "./usePixelsCentral";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { getDieDfuAvailability } from "~/features/dice";
 import { updatePairedDieFirmwareTimestamp } from "~/features/store";
 
 export function useUpdateDice(): (
@@ -14,7 +13,7 @@ export function useUpdateDice(): (
 ) => Promise<number[]> {
   const appDispatch = useAppDispatch();
   const central = usePixelsCentral();
-  const updateBootloader = useAppSelector(
+  const bootloader = useAppSelector(
     (state) => state.appSettings.updateBootloader
   );
   return React.useCallback(
@@ -24,41 +23,44 @@ export function useUpdateDice(): (
       stopRequested?: () => boolean
     ) => {
       const failedPixelsIds: number[] = [];
-      for (const pixelId of pixelsIds) {
-        if (stopRequested?.()) {
-          break;
-        }
-        try {
-          const pixel = central.getPixel(pixelId);
-          if (
-            pixel?.status === "ready" &&
-            getDieDfuAvailability(
-              pixel.firmwareDate.getTime(),
-              filesInfo.timestamp
-            ) === "outdated"
-          ) {
-            await central.updatePixelAsync({
-              pixelId: pixel.pixelId,
-              bootloaderPath: updateBootloader
-                ? filesInfo.bootloaderPath
-                : undefined,
-              firmwarePath: filesInfo.firmwarePath,
-            });
-            // Update stored timestamp
-            appDispatch(
-              updatePairedDieFirmwareTimestamp({
-                pixelId,
-                timestamp: filesInfo.timestamp,
-              })
-            );
+      const idsToProcess = [...new Set(pixelsIds)];
+      // First try to update connected Pixels
+      let stopScan: (() => void) | undefined;
+      try {
+        while (idsToProcess.length) {
+          if (stopRequested?.()) {
+            break;
           }
-        } catch {
-          // Error logged in PixelsCentral and notified as an event
-          failedPixelsIds.push(pixelId);
+          const pixelId = idsToProcess[0];
+          try {
+            if (
+              await central.tryUpdateFirmware(pixelId, filesInfo, {
+                bootloader,
+                force: true,
+              })
+            ) {
+              // Update stored timestamp
+              appDispatch(
+                updatePairedDieFirmwareTimestamp({
+                  pixelId,
+                  timestamp: filesInfo.timestamp,
+                })
+              );
+            }
+          } catch (error) {
+            failedPixelsIds.push(pixelId);
+          }
+          // Remove id
+          idsToProcess.shift();
         }
+      } finally {
+        stopScan?.();
       }
+      console.warn(
+        "Finished updating dice, failed: " + failedPixelsIds.join(", ")
+      );
       return failedPixelsIds;
     },
-    [central, appDispatch, updateBootloader]
+    [central, appDispatch, bootloader]
   );
 }

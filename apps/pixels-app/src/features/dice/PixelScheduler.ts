@@ -4,23 +4,33 @@ import {
   EventReceiver,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
+import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
   DataSet,
+  getPixel,
   Pixel,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { logError } from "~/features/utils";
 import { hackGetDieBrightness, isSameBrightness } from "~/hackGetDieBrightness";
 
 export type PixelOperationParams = Readonly<
   | {
+      type: "updateFirmware";
+      firmwarePath: string;
+      bootloaderPath?: string;
+    }
+  | {
       type: "connect";
-      mode?: "default" | "reconnect";
+      // mode?: "default" | "reconnect";
     }
   | {
       type: "disconnect";
-      mode?: "default" | "turnOff";
+    }
+  | {
+      type: "turnOff";
     }
   | {
       type: "resetSettings";
@@ -40,91 +50,143 @@ export type PixelOperationParams = Readonly<
 
 export type PixelSchedulerEventMap = Readonly<{
   // Properties
-  currentOperationChanged: Readonly<PixelOperationParams> | undefined;
+  currentOperation: Readonly<PixelOperationParams> | undefined;
   // Events
-  onOperation: {
-    operation: PixelOperationParams;
-    event: Readonly<
-      | { type: "queued" }
+  onOperationStatus: Readonly<{ operation: PixelOperationParams }> &
+    Readonly<
+      | { status: "queued" | "dropped" }
       | {
-          type: "processing" | "succeeded";
+          status: "starting" | "succeeded";
           pixel: Pixel;
         }
       | {
-          type: "failed";
+          status: "failed";
           pixel: Pixel;
           error: Error;
         }
     >;
-  };
+  // DFU events
+  onDfuState: { pixel: Pixel; state: DfuState; error?: Error };
+  onDfuProgress: { pixel: Pixel; progress: number };
 }>;
 
-type ConnectParams = Omit<
-  Extract<PixelOperationParams, { type: "connect" }>,
-  "type"
->;
-type DisconnectParams = Omit<
-  Extract<PixelOperationParams, { type: "disconnect" }>,
-  "type"
->;
-type ResetParams = Omit<
-  Extract<PixelOperationParams, { type: "resetSettings" }>,
-  "type"
->;
-type RenameParams = Omit<
-  Extract<PixelOperationParams, { type: "rename" }>,
-  "type"
->;
-type BlinkParams = Omit<
-  Extract<PixelOperationParams, { type: "blink" }>,
-  "type"
->;
-type ProfileParams = Omit<
-  Extract<PixelOperationParams, { type: "programProfile" }>,
-  "type"
->;
+type OperationsParams = Readonly<{
+  connect: Omit<Extract<PixelOperationParams, { type: "connect" }>, "type">;
+  disconnect: Omit<
+    Extract<PixelOperationParams, { type: "disconnect" }>,
+    "type"
+  >;
+  turnOff: Omit<Extract<PixelOperationParams, { type: "turnOff" }>, "type">;
+  updateFirmware: Omit<
+    Extract<PixelOperationParams, { type: "updateFirmware" }>,
+    "type"
+  >;
+  resetSettings: Omit<
+    Extract<PixelOperationParams, { type: "resetSettings" }>,
+    "type"
+  >;
+  rename: Omit<Extract<PixelOperationParams, { type: "rename" }>, "type">;
+  blink: Omit<Extract<PixelOperationParams, { type: "blink" }>, "type">;
+  programProfile: Omit<
+    Extract<PixelOperationParams, { type: "programProfile" }>,
+    "type"
+  >;
+}>;
+
+class OperationsMap {
+  private readonly _operations = new Map<
+    PixelOperationParams["type"],
+    unknown // PixelOperationParams[keyof PixelOperationParams]
+  >();
+
+  get<K extends keyof OperationsParams>(
+    type: K
+  ): OperationsParams[K] | undefined {
+    return this._operations.get(type) as OperationsParams[K] | undefined;
+  }
+
+  set<K extends keyof OperationsParams>(
+    type: K,
+    op: OperationsParams[K]
+  ): void {
+    this._operations.set(type, op);
+  }
+
+  delete(type: PixelOperationParams["type"]): void {
+    this._operations.delete(type);
+  }
+
+  clear(): void {
+    this._operations.clear();
+  }
+
+  has(type: PixelOperationParams["type"]): boolean {
+    return this._operations.has(type);
+  }
+
+  get hasAny(): boolean {
+    return !Object.values(this._operations).every((r) => !r);
+  }
+}
 
 // A queue of operations to be processed by a Pixel.
-// Currently a scheduler is associated with a single Pixel
-// but it could be extended to switch Pixels.
+// Note: most operations will fail if the Pixel is not connected.
 // TODO introduce a timeout for each operation, interrupt current profile transfer if a new one is scheduled
 export class PixelScheduler {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelSchedulerEventMap>();
   private _pixel?: Pixel;
   private _currentOperation?: PixelOperationParams;
-  private readonly _operations: {
-    connect?: ConnectParams;
-    disconnect?: DisconnectParams;
-    reset?: ResetParams;
-    rename?: RenameParams;
-    blink?: BlinkParams;
-    profile?: ProfileParams;
-  } = {};
+  private readonly _operations = new OperationsMap();
   private _triggerProcessPromise?: () => void;
 
   // Static properties to configure operations
   static blinkColor = Color.white;
+
+  // All schedulers created so far (never removed!)
+  private static readonly _allSchedulers = new Map<number, PixelScheduler>();
+
+  static getScheduler(pixelId: number): PixelScheduler {
+    const existing = this._allSchedulers.get(pixelId);
+    const scheduler = existing ?? new PixelScheduler();
+    if (!existing) {
+      this._allSchedulers.set(pixelId, scheduler);
+    }
+    if (!scheduler._pixel) {
+      scheduler._pixel = getPixel(pixelId, { legacyService: true });
+      scheduler._pixel && scheduler._triggerProcessPromise?.();
+    }
+    return scheduler;
+  }
 
   get currentOperation(): PixelOperationParams | undefined {
     return this._currentOperation;
   }
 
   get hasPendingOperation(): boolean {
-    return !Object.values(this._operations).every((r) => !r);
+    return this._operations.hasAny;
+  }
+
+  get pixel(): Pixel | undefined {
+    return this._pixel;
   }
 
   constructor() {
     const task = async () => {
       while (true) {
-        if (!this._pixel || !this.hasPendingOperation) {
+        const operation = this._getNextOperation();
+        if (this._currentOperation !== operation) {
+          this._currentOperation = operation;
+          this._emitEvent("currentOperation", this._currentOperation);
+        }
+        if (!operation) {
           // Wait for new operation
           if (this._triggerProcessPromise) {
             logError(
-              "PixelScheduler: Unexpected _processPromise in idle state"
+              "PixelScheduler: Unexpected _triggerProcessPromise in idle state"
             );
           }
-          this._log("Waiting for new operation");
+          this._pixel && this._log("Waiting for new operation");
           await new Promise<void>((resolve) => {
             this._triggerProcessPromise = () => {
               this._triggerProcessPromise = undefined;
@@ -133,18 +195,16 @@ export class PixelScheduler {
           });
         } else {
           // Process next operation
-          const operation = this._getNextOperation();
-          if (operation) {
-            const pixel = this._pixel;
-            const type = operation.type;
+          const pixel = this._pixel;
+          const type = operation.type;
+          if (pixel) {
             // Emit processing event
             this._log(`Processing operation ${type}`);
-            this._currentOperation = operation;
-            this._emitEvent("onOperation", {
+            this._emitEvent("onOperationStatus", {
               operation,
-              event: { type: "processing", pixel },
+              status: "starting",
+              pixel,
             });
-            this._emitEvent("currentOperationChanged", this._currentOperation);
             // Process operation
             let error: Error | undefined;
             try {
@@ -156,14 +216,19 @@ export class PixelScheduler {
             this._log(
               `Operation ${type} ${error ? "failed" : "succeeded"}${error ? `: ${error}` : ""}`
             );
-            this._emitEvent("onOperation", {
+            this._emitEvent(
+              "onOperationStatus",
+              error
+                ? { operation, status: "failed", pixel, error }
+                : { operation, status: "succeeded", pixel }
+            );
+          } else {
+            // Emit result event
+            this._log(`Operation ${type} dropped`);
+            this._emitEvent("onOperationStatus", {
               operation,
-              event: error
-                ? { type: "failed", pixel, error }
-                : { type: "succeeded", pixel },
+              status: "dropped",
             });
-            this._currentOperation = undefined;
-            this._emitEvent("currentOperationChanged", this._currentOperation);
           }
         }
       }
@@ -176,7 +241,7 @@ export class PixelScheduler {
   /**
    * Registers a listener function that will be called when the specified
    * event is raised.
-   * See {@link PixelsCentralEventMap} for the list of events and their
+   * See {@link PixelSchedulerEventMap} for the list of events and their
    * associated data.
    * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
@@ -191,7 +256,7 @@ export class PixelScheduler {
   /**
    * Unregisters a listener from receiving events identified by
    * the given event name.
-   * See {@link PixelsCentralEventMap} for the list of events and their
+   * See {@link PixelSchedulerEventMap} for the list of events and their
    * associated data.
    * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
@@ -203,46 +268,80 @@ export class PixelScheduler {
     this._evEmitter.removeListener(type, listener);
   }
 
-  attach(pixel: Pixel): void {
-    if (this._pixel && this._pixel !== pixel) {
-      // TODO Implement detach()
-      throw new Error("Pixel already attached to another PixelScheduler");
-    } else if (!this._pixel) {
-      this._pixel = pixel;
-      this._triggerProcessPromise?.();
-    }
-  }
-
   schedule(operation: PixelOperationParams): void {
-    this._log(`Scheduling operation ${operation.type}`);
     const { type } = operation;
+    this._log(`Scheduling operation ${type}`);
     switch (type) {
       case "connect":
-        this._operations.connect = { mode: operation.mode };
-        this._operations.disconnect = undefined;
+        // if (this._currentOperation?.type !== "connect") {
+        //   // No need to queue a new connect operation if already connecting
+        this._operations.set(type, {}); // mode: operation.mode
+        // }
+        // Clear any pending disconnect operation
+        this._operations.delete("disconnect");
+        break;
+      case "updateFirmware":
+        this._operations.set(type, {
+          firmwarePath: operation.firmwarePath,
+          bootloaderPath: operation.bootloaderPath,
+        });
         break;
       case "disconnect":
-        this._operations.disconnect = { mode: operation.mode };
-        this._operations.connect = undefined;
-        break;
+      case "turnOff":
       case "resetSettings":
-        this._operations.reset = {};
+      case "blink":
+        this._operations.set(type, {});
         break;
       case "rename":
-        this._operations.rename = { name: operation.name };
-        break;
-      case "blink":
-        this._operations.blink = {};
+        this._operations.set(type, { name: operation.name });
         break;
       case "programProfile":
-        this._operations.profile = {
+        this._operations.set(type, {
           dataSet: operation.dataSet,
-        };
+        });
         break;
       default:
         assertNever(type);
     }
+    this._emitEvent("onOperationStatus", {
+      operation,
+      status: "queued",
+    });
     this._triggerProcessPromise?.();
+  }
+
+  unschedule(operationType: PixelOperationParams["type"]): void {
+    if (this._operations.get(operationType)) {
+      this._log(`Un-scheduling pending operation ${operationType}`);
+      this._operations.delete(operationType);
+    }
+  }
+
+  isScheduled(operationType: PixelOperationParams["type"]): boolean {
+    return !!this._operations.get(operationType);
+  }
+
+  // If Pixel is processing a connect operation, or has a pending connect,
+  // and hasn't connected yet then cancel the operation immediately
+  cancelConnecting(): boolean {
+    const status = this._pixel?.status;
+    if (status && status !== "identifying" && status !== "ready") {
+      if (
+        this.currentOperation?.type === "connect" ||
+        this._operations.has("connect")
+      ) {
+        this._operations.delete("connect");
+        this._pixel
+          ?.disconnect()
+          .catch((e) =>
+            console.log(
+              `PixelScheduler: Error cancelling connect operation: ${e}`
+            )
+          );
+        return true;
+      }
+    }
+    return false;
   }
 
   private _emitEvent<T extends keyof PixelSchedulerEventMap>(
@@ -259,38 +358,44 @@ export class PixelScheduler {
   }
 
   private _log(message: string): void {
-    console.log(
-      `[PixelScheduler ${this._pixel?.name ?? "<no die>"}] ${message}`
-    );
+    const name = this._pixel?.name ?? "NOT ATTACHED";
+    const id = this._pixel && unsigned32ToHex(this._pixel.pixelId);
+    name && console.log(`[PixelScheduler ${name} (${id})] ${message}`);
   }
 
   private _getNextOperation(): PixelOperationParams | undefined {
     // Operations sorted by priority
-    if (this._operations.connect) {
-      const { mode } = this._operations.connect;
-      this._operations.connect = undefined;
-      return { type: "connect", mode };
-    } else if (this._operations.reset) {
-      this._operations.reset = undefined;
+    if (this._operations.has("connect")) {
+      this._operations.delete("connect");
+      return { type: "connect" };
+    } else if (this._operations.has("updateFirmware")) {
+      const { firmwarePath, bootloaderPath } =
+        this._operations.get("updateFirmware")!;
+      this._operations.delete("updateFirmware");
+      return { type: "updateFirmware", firmwarePath, bootloaderPath };
+    } else if (this._operations.has("resetSettings")) {
+      this._operations.delete("resetSettings");
       return { type: "resetSettings" };
-    } else if (this._operations.rename) {
-      const { name } = this._operations.rename;
-      this._operations.rename = undefined;
+    } else if (this._operations.has("rename")) {
+      const { name } = this._operations.get("rename")!;
+      this._operations.delete("rename");
       return { type: "rename", name };
-    } else if (this._operations.blink) {
-      this._operations.blink = undefined;
+    } else if (this._operations.get("blink")) {
+      this._operations.delete("blink");
       return { type: "blink" };
-    } else if (this._operations.profile) {
-      const { dataSet } = this._operations.profile;
-      this._operations.profile = undefined;
+    } else if (this._operations.has("programProfile")) {
+      const { dataSet } = this._operations.get("programProfile")!;
+      this._operations.delete("programProfile");
       return {
         type: "programProfile",
         dataSet,
       };
-    } else if (this._operations.disconnect) {
-      const { mode } = this._operations.disconnect;
-      this._operations.disconnect = undefined;
-      return { type: "disconnect", mode };
+    } else if (this._operations.has("turnOff")) {
+      this._operations.delete("turnOff");
+      return { type: "turnOff" };
+    } else if (this._operations.has("disconnect")) {
+      this._operations.delete("disconnect");
+      return { type: "disconnect" };
     } else {
       return undefined;
     }
@@ -304,23 +409,39 @@ export class PixelScheduler {
     const { type } = op;
     switch (type) {
       case "connect":
-        if (op.mode === "reconnect") {
-          try {
-            await pixel.disconnect();
-          } catch (e) {
-            this._log(
-              `Disconnect error before reconnecting to die ${pixel.name}: ${e}`
-            );
-          }
-        }
+        // if (op.mode === "reconnect") {
+        //   try {
+        //     await pixel.disconnect();
+        //     // TODO Temp fix: connecting immediately after a disconnect causes issues
+        //     // on Android: the device is never actually disconnected, but the MTU
+        //     // is reset to 23 as far as the native code is concerned.
+        //     await delay(300);
+        //   } catch (e) {
+        //     this._log(
+        //       `Disconnect error before reconnecting to die ${pixel.name}: ${e}`
+        //     );
+        //   }
+        // }
+        // Check if already connected
+        // if (pixel.status !== "ready") {
+        //   if (pixel.status === "connecting" || pixel.status === "identifying") {
+        //     this._log(`Trying to connect while already connecting`);
+        //   }
         await pixel.connect();
+        // }
+        break;
+      case "turnOff":
+        await pixel.turnOff();
         break;
       case "disconnect":
-        if (op.mode === "turnOff") {
-          await pixel.turnOff();
-        } else {
-          await pixel.disconnect();
-        }
+        await pixel.disconnect();
+        break;
+      case "updateFirmware":
+        await this._updateFirmwareAsync(
+          pixel,
+          op.firmwarePath,
+          op.bootloaderPath
+        );
         break;
       case "resetSettings":
         await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
@@ -349,7 +470,7 @@ export class PixelScheduler {
             await pixel.transferDataSet(op.dataSet);
           } else {
             this._log(
-              `Dice already has profile with hash ${unsigned32ToHex(hash)} and brightness ${brightness}`
+              `Profile with hash ${unsigned32ToHex(hash)} and brightness ${brightness} already programmed`
             );
           }
         }
@@ -358,4 +479,63 @@ export class PixelScheduler {
         assertNever(type);
     }
   }
+
+  async _updateFirmwareAsync(
+    pixel: Pixel,
+    firmwarePath: string,
+    bootloaderPath?: string
+  ): Promise<void> {
+    let attemptsCount = 0;
+    let uploadStarted = false;
+    while (true) {
+      try {
+        const recoverFromUploadError = uploadStarted;
+        ++attemptsCount;
+        uploadStarted = false;
+        await updateFirmware({
+          systemId: pixel.systemId,
+          pixelId: pixel.pixelId,
+          bootloaderPath,
+          firmwarePath,
+          recoverFromUploadError,
+          dfuStateCallback: (state) => {
+            if (state === "uploading") {
+              uploadStarted = true;
+            }
+            this._emitEvent("onDfuState", { pixel, state });
+          },
+          dfuProgressCallback: (progress) =>
+            this._emitEvent("onDfuProgress", { pixel, progress }),
+        });
+        break;
+      } catch (e) {
+        logError(
+          `DFU${uploadStarted ? " update" : ""} error #${attemptsCount} ${e}`
+        );
+        if (attemptsCount >= 3) {
+          throw e instanceof Error ? e : new Error(String(e));
+        }
+      }
+    }
+  }
+
+  // private async _fakeUpdateFirmware(pixel: Pixel): Promise<void> {
+  //   this._emitEvent("onDfuState", { pixel, state: "initializing" });
+  //   await delay(300);
+  //   this._emitEvent("onDfuState", { pixel, state: "connecting" });
+  //   pixel.disconnect();
+  //   await delay(300);
+  //   this._emitEvent("onDfuState", { pixel, state: "connected" });
+  //   await delay(300);
+  //   this._emitEvent("onDfuState", { pixel, state: "starting" });
+  //   await delay(300);
+  //   this._emitEvent("onDfuState", { pixel, state: "uploading" });
+  //   for (let progress = 0; progress <= 100; progress += 20) {
+  //     await delay(300);
+  //     this._emitEvent("onDfuProgress", { pixel, progress });
+  //   }
+  //   this._emitEvent("onDfuState", { pixel, state: "disconnected" });
+  //   await delay(300);
+  //   this._emitEvent("onDfuState", { pixel, state: "completed" });
+  // }
 }
