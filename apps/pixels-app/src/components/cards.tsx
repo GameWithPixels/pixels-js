@@ -4,7 +4,6 @@ import {
   Pixel,
   PixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
-import { LinearGradient } from "expo-linear-gradient";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ViewProps } from "react-native";
@@ -356,6 +355,7 @@ export function PixelCard({
     <TouchableCard
       row
       gradientBorder={status === "ready" ? "bright" : "dark"}
+      rotatingBorder={status === "connecting"}
       flash={flash}
       selected={selected}
       selectable={selectable}
@@ -425,12 +425,9 @@ export function EmptyLibraryCard({ onPress }: { onPress: () => void }) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
   return (
-    <LinearGradient
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
+    <RotatingGradient
       colors={[colors.primary, colors.tertiary]}
       style={{
-        overflow: "hidden",
         width: "80%",
         marginTop: 60,
         alignSelf: "center",
@@ -460,6 +457,6 @@ export function EmptyLibraryCard({ onPress }: { onPress: () => void }) {
         </Text>
         <GradientButton onPress={onPress}>Create Profile</GradientButton>
       </View>
-    </LinearGradient>
+    </RotatingGradient>
   );
 }

@@ -28,6 +28,7 @@ export type TouchableCardProps = Omit<
     frameless?: boolean;
     gradientBorder?: "bright" | "dark";
     thinBorder?: boolean;
+    rotatingBorder?: boolean;
     selectable?: boolean;
     transparent?: boolean;
     flash?: boolean;
@@ -48,6 +49,7 @@ export function TouchableCard({
   frameless,
   gradientBorder,
   thinBorder,
+  rotatingBorder,
   selectable,
   transparent,
   flash,
@@ -93,11 +95,12 @@ export function TouchableCard({
   );
   return (
     <RotatingGradient
+      disabled={!rotatingBorder}
       colors={[
         makeTransparent(colors.primary, gradientAlpha),
         makeTransparent(colors.tertiary, gradientAlpha),
       ]}
-      style={[{ ...cornersStyle, overflow: "hidden" }, style]}
+      style={[cornersStyle, style]}
     >
       <AnimatedTouchableRipple
         style={[
