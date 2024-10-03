@@ -71,11 +71,10 @@ import {
 import { setShowOnboarding } from "~/features/store";
 import {
   useAppDfuFiles,
-  useWatchedPixels,
+  useRegisteredPixels,
   usePixelScanner,
   usePixelScannerStatus,
   usePixelsCentral,
-  usePixelsCentralOnReady,
   useUpdateDice,
   DfuFilesInfo,
   useRollStateLabel,
@@ -417,21 +416,27 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
     () => new Map<number, ScannedPixel>()
   )[0];
   const central = usePixelsCentral();
+  const [centralReady, setCentralReady] = React.useState(central.isReady);
   React.useEffect(() => {
-    // Note: list of watched Pixels not cleared on fast refresh
-    for (const scannedPixel of availablePixels) {
-      central.watch(scannedPixel.pixelId);
-      scannedPixels.set(scannedPixel.pixelId, scannedPixel);
+    const listener = () => setCentralReady(central.isReady);
+    listener();
+    return central.addListener("isReady", listener);
+  }, [central]);
+  React.useEffect(() => {
+    if (centralReady) {
+      // Note: list of watched Pixels not cleared on fast refresh
+      for (const scannedPixel of availablePixels) {
+        central.register(scannedPixel.pixelId);
+        scannedPixels.set(scannedPixel.pixelId, scannedPixel);
+      }
+    } else {
+      // And unregister all if Bluetooth becomes unavailable
+      central.unregisterAll();
     }
-  }, [availablePixels, central, scannedPixels]);
-
-  // And unwatch all if Bluetooth becomes unavailable
-  usePixelsCentralOnReady(
-    React.useCallback((ready) => !ready && central.unwatchAll(), [central])
-  );
+  }, [availablePixels, central, centralReady, scannedPixels]);
 
   // List of monitored pixels
-  const pixels = useWatchedPixels();
+  const pixels = useRegisteredPixels();
   const diceCount = pixels.length;
 
   // On leaving page
@@ -439,7 +444,7 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
   const leavePage = (action: "pair" | "skip") => {
     stopScan();
     if (action === "skip") {
-      central.unwatchAll();
+      central.unregisterAll();
       onNext(false); // Skip updating dice
     } else {
       const needUpdate = [...scannedPixels.values()].some(
@@ -644,7 +649,7 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
 
 function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
   // List of monitored pixels
-  const pixels = useWatchedPixels();
+  const pixels = useRegisteredPixels();
   const diceStr = pixels.length <= 1 ? "die" : "dice";
 
   // DFU

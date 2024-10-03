@@ -3,6 +3,7 @@ import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Pixel,
   PixelInfo,
+  PixelInfoNotifier,
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -14,6 +15,12 @@ import {
   TextProps,
   useTheme,
 } from "react-native-paper";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSpring,
+} from "react-native-reanimated";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 import { DieWireframe } from "./icons";
@@ -21,10 +28,13 @@ import { DieWireframe } from "./icons";
 import { getPixelStatusLabel } from "~/features/profiles";
 import {
   useBatteryStateLabel,
+  useIsDieUpdatingFirmware,
   usePixelDfuAvailability,
   usePixelDfuState,
+  usePixelScannerStatus,
+  usePixelsCentral,
   useRollStateLabel,
-  useWatchedPixel,
+  useRegisteredPixel,
 } from "~/hooks";
 
 function TextStatus({
@@ -55,25 +65,57 @@ function TextStatus({
   );
 }
 
+function BouncingView({ children }: { children: React.ReactNode }) {
+  const translateY = useSharedValue(0);
+  // Start bouncing animation
+  React.useEffect(() => {
+    translateY.value = withRepeat(
+      withSpring(1, {
+        duration: 1500,
+        dampingRatio: 0.2,
+      }),
+      -1 // true
+    );
+  }, [translateY]);
+  const animStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateY: (translateY.value - 0.5) * 10 }, // 10 pixels
+      ],
+    };
+  });
+  return <Animated.View style={animStyle}>{children}</Animated.View>;
+}
+
 function PixelDfuItem({
   pairedDie,
   contentStyle,
   ...props
 }: {
   pairedDie: Pick<PixelInfo, "pixelId" | "name" | "dieType">;
-  selected?: boolean;
-} & Omit<TouchableCardProps, "children">) {
+} & Omit<TouchableCardProps, "children" | "selected">) {
   const availability = usePixelDfuAvailability(pairedDie.pixelId);
-  const pixel = useWatchedPixel(pairedDie.pixelId);
+  const pixel = useRegisteredPixel(pairedDie.pixelId);
   const status = usePixelStatus(pixel);
   const rollState = usePixelProp(pixel, "rollState");
   const { state, progress, error } = usePixelDfuState(pairedDie.pixelId);
-  const updating =
-    state &&
-    state !== "completed" &&
-    state !== "errored" &&
-    state !== "aborted";
-  const unavailable = status !== "ready" && !state;
+  const [scanned, setScanned] = React.useState<PixelInfoNotifier>();
+  const scanning = usePixelScannerStatus() === "scanning";
+  const central = usePixelsCentral();
+  React.useEffect(() => {
+    return central.addListener("onPixelScanned", ({ status, notifier }) => {
+      if (notifier.pixelId === pairedDie.pixelId) {
+        setScanned(status === "scanned" ? notifier : undefined);
+      }
+    });
+  }, [central, pairedDie]);
+  const uploading = state === "starting" || state === "uploading";
+  // state &&
+  // state !== "completed" &&
+  // state !== "errored" &&
+  // state !== "aborted";
+  const updating = useIsDieUpdatingFirmware(pairedDie.pixelId);
+  const unavailable = status !== "ready" && status !== "identifying" && !state;
   const { colors } = useTheme();
   const color = unavailable ? colors.onSurfaceDisabled : colors.onSurface;
   return (
@@ -110,19 +152,33 @@ function PixelDfuItem({
         </Text>
         {unavailable || !pixel || error ? (
           <Text style={{ color: colors.onSurfaceDisabled }}>
-            {error ? String(error) : "Not Connected"}
+            {error
+              ? String(error)
+              : scanned
+                ? "Available"
+                : scanning && updating
+                  ? "Scanning..."
+                  : "Not found"}
           </Text>
         ) : (
           <TextStatus pixel={pixel} state={state} progress={progress} />
         )}
       </View>
       <View style={{ alignSelf: "center" }}>
-        {updating ? (
+        {uploading ? (
+          <BouncingView>
+            <FontAwesome5 name="download" size={24} color={colors.primary} />
+          </BouncingView>
+        ) : updating ? (
           <ActivityIndicator />
         ) : availability === "outdated" ? (
           <FontAwesome5 name="download" size={24} color={color} />
         ) : availability === "up-to-date" ? (
-          <MaterialIcons name="check-circle-outline" size={28} color={color} />
+          <MaterialIcons
+            name="check-circle-outline"
+            size={28}
+            color="darkgreen"
+          />
         ) : (
           <Text>{availability}</Text>
         )}

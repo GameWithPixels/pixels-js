@@ -15,35 +15,60 @@ export function usePixelScanner(): {
   const central = usePixelsCentral();
   const [availablePixels, setAvailablePixels] = React.useState<
     readonly ScannedPixelNotifier[]
-  >(central.availablePixels);
+  >([]);
   const [scanError, setScanError] = React.useState<Error>();
-  const needStopRef = React.useRef(false);
+  const stopRef = React.useRef<(() => void) | null>(null);
   React.useEffect(() => {
-    central.addListener("availablePixels", setAvailablePixels);
-    const onScanError = ({ error }: { error: Error }) => setScanError(error);
-    central.addListener("onScanError", onScanError);
-    const onScanStatus = (status: ScanStatus) =>
-      status === "scanning" && setScanError(undefined);
-    central.addListener("scanStatus", onScanStatus);
+    setScanError(undefined);
+    const removeOnScanError = central.addListener("onScanError", ({ error }) =>
+      setScanError(error)
+    );
+    const removeScanStatus = central.addListener(
+      "scanStatus",
+      (status) => status === "scanning" && setScanError(undefined)
+    );
     return () => {
-      central.removeListener("availablePixels", setAvailablePixels);
-      central.removeListener("onScanError", onScanError);
-      central.removeListener("scanStatus", onScanStatus);
-      if (needStopRef.current) {
-        needStopRef.current = false;
-        central.stopScan();
-      }
+      removeOnScanError();
+      removeScanStatus();
+      stopRef.current?.();
     };
   }, [central]);
   const startScan = React.useCallback(() => {
-    setScanError(undefined);
-    central.startScan();
-    needStopRef.current = true;
+    if (!stopRef.current) {
+      const removeOnAvailable = central.addListener(
+        "onAvailability",
+        ({ status, notifier }) => {
+          if (status === "available") {
+            setAvailablePixels((notifiers) => {
+              if (!notifiers.find((p) => p.pixelId === notifier.pixelId)) {
+                return [...notifiers, notifier];
+              } else {
+                return notifiers;
+              }
+            });
+          } else {
+            setAvailablePixels((notifiers) => {
+              const newNotifiers = notifiers.filter(
+                (p) => p.pixelId !== notifier.pixelId
+              );
+              return newNotifiers.length === notifiers.length
+                ? notifiers
+                : newNotifiers;
+            });
+          }
+        }
+      );
+      const stop = central.scanForPixels();
+      stopRef.current = () => {
+        stopRef.current = null;
+        removeOnAvailable();
+        stop();
+      };
+    }
   }, [central]);
   const stopScan = React.useCallback(() => {
-    needStopRef.current = false;
-    central.stopScan();
-  }, [central]);
+    stopRef.current?.();
+  }, []);
   return {
     availablePixels,
     startScan,
@@ -57,10 +82,7 @@ export function usePixelScannerStatus(): ScanStatus {
   const [scanStatus, setScanStatus] = React.useState(central.scanStatus);
   React.useEffect(() => {
     setScanStatus(central.scanStatus);
-    central.addListener("scanStatus", setScanStatus);
-    return () => {
-      central.removeListener("scanStatus", setScanStatus);
-    };
+    return central.addListener("scanStatus", setScanStatus);
   }, [central]);
   return scanStatus;
 }

@@ -6,6 +6,7 @@ import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 import { useAppSelector } from "~/app/hooks";
 import { FirmwareUpdateScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
+import { DebugConnectionStatusesBar } from "~/components/DebugConnectionStatusesBar";
 import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
 import { PixelDfuList } from "~/components/PixelDfuList";
@@ -16,12 +17,12 @@ import {
 } from "~/features/profiles";
 import {
   DfuFilesInfo,
-  useBottomSheetPadding,
   useAppDfuFiles,
-  useOutdatedPixelsCount,
-  useUpdateDice,
+  useBottomSheetPadding,
   useIsAppUpdatingFirmware,
-  useConnectToMissingPixels,
+  useOutdatedPixelsCount,
+  usePixelsCentral,
+  useUpdateDice,
 } from "~/hooks";
 
 export function useConfirmStopUpdatingActionSheet(
@@ -79,7 +80,14 @@ function FirmwareUpdatePage({
   navigation: FirmwareUpdateScreenProps["navigation"];
 }) {
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-  useConnectToMissingPixels();
+
+  const central = usePixelsCentral();
+  const [stopScan, setStopScan] = React.useState<() => void>();
+  React.useEffect(() => {
+    const stop = central.scanForPixels();
+    setStopScan(() => stop);
+    return stop;
+  }, [central]);
 
   const updating = useIsAppUpdatingFirmware();
   const updateDice = useUpdateDice();
@@ -88,6 +96,7 @@ function FirmwareUpdatePage({
   const cancelUpdating = useConfirmStopUpdatingActionSheet(() =>
     stopRequester?.()
   );
+
   const outdatedCount = useOutdatedPixelsCount();
 
   usePreventRemovingScreen(navigation, updating);
@@ -104,6 +113,7 @@ function FirmwareUpdatePage({
       >
         Update Dice Firmware
       </PageHeader>
+      {__DEV__ && <DebugConnectionStatusesBar />}
       <ScrollView
         style={{ flex: 1, marginHorizontal: 20 }}
         contentContainerStyle={{ paddingBottom: bottom, gap: 20 }}
@@ -121,6 +131,7 @@ function FirmwareUpdatePage({
                 updating && !stopRequester ? <ActivityIndicator /> : undefined
               }
               onPress={() => {
+                stopScan?.();
                 if (updating) {
                   cancelUpdating();
                 } else if (outdatedCount) {

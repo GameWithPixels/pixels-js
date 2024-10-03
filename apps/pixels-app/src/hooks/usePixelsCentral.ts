@@ -9,16 +9,3 @@ export const PixelsCentralContext = React.createContext<PixelsCentral>(
 export function usePixelsCentral(): PixelsCentral {
   return React.useContext(PixelsCentralContext);
 }
-
-export function usePixelsCentralOnReady(
-  onReadyCallback: (isReady: boolean) => void
-): void {
-  const central = usePixelsCentral();
-  React.useEffect(() => {
-    central.addListener("isReady", onReadyCallback);
-    onReadyCallback(central.isReady);
-    return () => {
-      central.removeListener("isReady", onReadyCallback);
-    };
-  }, [central, onReadyCallback]);
-}

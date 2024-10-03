@@ -14,14 +14,11 @@ import { useAppDispatch } from "~/app/hooks";
 import { DieFocusScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
+import { DebugConnectionStatusesBar } from "~/components/DebugConnectionStatusesBar";
 import { PageHeader } from "~/components/PageHeader";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { removePairedDie } from "~/features/store";
-import {
-  useConnectToMissingPixels,
-  usePixelsCentral,
-  useSetSelectedPairedDie,
-} from "~/hooks";
+import { usePixelsCentral, useSetSelectedPairedDie } from "~/hooks";
 
 function useUnpairActionSheet(
   pairedDie: PairedDie | undefined,
@@ -70,14 +67,15 @@ function DieFocusPage({
   navigation: DieFocusScreenProps["navigation"];
 }) {
   const central = usePixelsCentral();
-  const connectToMissingPixels = useConnectToMissingPixels();
   const showUnpairActionSheet = useUnpairActionSheet(pairedDie, navigation);
 
   useFocusEffect(
     React.useCallback(() => {
-      central.getScheduler(pairedDie.pixelId).schedule({ type: "blink" });
-      connectToMissingPixels(pairedDie.pixelId);
-    }, [central, pairedDie.pixelId, connectToMissingPixels])
+      central.scheduleOperation(pairedDie.pixelId, {
+        type: "blink",
+      });
+      central.tryConnect(pairedDie.pixelId);
+    }, [central, pairedDie.pixelId])
   );
 
   return (
@@ -97,9 +95,10 @@ function DieFocusPage({
         }}
       >
         <BluetoothStateWarning />
+        {__DEV__ && <DebugConnectionStatusesBar />}
         <PixelFocusView
           pairedDie={pairedDie}
-          onPress={() => connectToMissingPixels(pairedDie.pixelId)}
+          onPress={() => central.tryConnect(pairedDie.pixelId)}
           onShowDetails={() =>
             navigation.navigate("dieDetails", {
               pixelId: pairedDie.pixelId,
