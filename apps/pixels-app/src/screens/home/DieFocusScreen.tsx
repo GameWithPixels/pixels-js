@@ -95,7 +95,7 @@ function DieFocusPage({
         }}
       >
         <BluetoothStateWarning />
-        {__DEV__ && <DebugConnectionStatusesBar />}
+        <DebugConnectionStatusesBar />
         <PixelFocusView
           pairedDie={pairedDie}
           onPress={() => central.tryConnect(pairedDie.pixelId)}

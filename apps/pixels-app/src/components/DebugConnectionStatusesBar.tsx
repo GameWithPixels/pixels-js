@@ -6,7 +6,7 @@ import { View } from "react-native";
 import { IconButton, Text, TouchableRipple } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
-import { usePixelsCentral } from "~/hooks";
+import { useDebugMode, usePixelsCentral } from "~/hooks";
 
 function ConnectionStatusButton({
   count,
@@ -148,8 +148,9 @@ function ConnectQueueStatusBar() {
 }
 
 export function DebugConnectionStatusesBar() {
+  const devMode = useDebugMode();
   return (
-    __DEV__ && (
+    devMode && (
       <>
         <ConnectionStatusBar />
         <ConnectQueueStatusBar />

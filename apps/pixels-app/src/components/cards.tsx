@@ -219,7 +219,7 @@ function PixelVCardContent({
           />
         </View>
       )}
-      {__DEV__ && <DebugPixelID pixelId={pairedDie.pixelId} />}
+      <DebugPixelID pixelId={pairedDie.pixelId} />
       <View
         style={{
           width: "100%",

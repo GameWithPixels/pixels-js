@@ -113,7 +113,7 @@ function FirmwareUpdatePage({
       >
         Update Dice Firmware
       </PageHeader>
-      {__DEV__ && <DebugConnectionStatusesBar />}
+      <DebugConnectionStatusesBar />
       <ScrollView
         style={{ flex: 1, marginHorizontal: 20 }}
         contentContainerStyle={{ paddingBottom: bottom, gap: 20 }}

@@ -31,6 +31,7 @@ export interface AppSettingsState {
   diceBrightnessFactor: number;
   rollerCardsSizeRatio: number;
   disablePlayingAnimations: boolean;
+  enableDebugMode: boolean;
   screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
 }
 
@@ -52,6 +53,7 @@ const initialState: AppSettingsState = {
   diceBrightnessFactor: 1,
   rollerCardsSizeRatio: 0.5,
   disablePlayingAnimations: false,
+  enableDebugMode: false,
   screensTheme: {
     onboarding: "blue",
     home: "blue",
@@ -138,6 +140,13 @@ const appSettingsSlice = createSlice({
       state.disablePlayingAnimations = action.payload;
     },
 
+    switchEnableDebugMode(state) {
+      state.enableDebugMode = !state.enableDebugMode;
+      console.log(
+        `Debug mode ${state.enableDebugMode ? "enabled" : "disabled"}`
+      );
+    },
+
     setScreenTheme(
       state,
       action: PayloadAction<{
@@ -169,6 +178,7 @@ export const {
   setDiceBrightnessFactor,
   setRollerCardsSizeRatio,
   setDisablePlayingAnimations,
+  switchEnableDebugMode,
   setScreenTheme,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

@@ -2,7 +2,7 @@ import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import React from "react";
 import { Text } from "react-native-paper";
 
-import { usePixelsCentral } from "~/hooks";
+import { useDebugMode, usePixelsCentral } from "~/hooks";
 
 export function DebugPixelID({ pixelId }: { pixelId: number }) {
   const central = usePixelsCentral();
@@ -11,8 +11,9 @@ export function DebugPixelID({ pixelId }: { pixelId: number }) {
     setQueue(central.connectQueue);
     return central.addListener("connectQueue", setQueue);
   }, [central]);
+  const devMode = useDebugMode();
   return (
-    __DEV__ && (
+    devMode && (
       <Text
         numberOfLines={1}
         variant="titleSmall"

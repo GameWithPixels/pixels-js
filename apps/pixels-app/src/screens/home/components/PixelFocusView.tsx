@@ -250,7 +250,7 @@ export function PixelFocusView({
   const { colors } = useTheme();
   return (
     <SlideInView {...props} style={[{ gap: 10 }, style]}>
-      {__DEV__ && <DebugPixelID pixelId={pairedDie.pixelId} />}
+      <DebugPixelID pixelId={pairedDie.pixelId} />
       <Pressable
         disabled={disabled}
         sentry-label="header-bar-select"
