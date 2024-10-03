@@ -24,7 +24,7 @@ import {
   PixelDieType,
   PixelDieTypeValues,
   PixelScanner,
-  ScannedCharger,
+  ScannedDevice,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { Audio, AVPlaybackSource } from "expo-av";
@@ -237,8 +237,7 @@ async function scanForPixelWithTimeout(
 
   // Setup scanner
   const scanner = new PixelScanner();
-  scanner.scanFilter = (device: ScannedPixel | ScannedCharger) =>
-    device.pixelId === pixelId;
+  scanner.scanFilter = (device: ScannedDevice) => device.pixelId === pixelId;
   scanner.minNotifyInterval = 0;
 
   // Wait until we find our Pixel or timeout

@@ -8,6 +8,7 @@ import {
   PixelScannerStatus,
 } from "./usePixelScannerNotify";
 import { PixelScannerListOperation } from "../PixelScanner";
+import { ScannedBootloaderNotifier } from "../ScannedBootloaderNotifier";
 import { ScannedChargerNotifier } from "../ScannedChargerNotifier";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
@@ -29,13 +30,17 @@ import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 export function useScannedPixelNotifiers(
   opt?: PixelScannerOptions
 ): [
-  (ScannedPixelNotifier | ScannedChargerNotifier)[],
+  (ScannedPixelNotifier | ScannedChargerNotifier | ScannedBootloaderNotifier)[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {
   const mapItems = React.useCallback(
     (
-      items: (ScannedPixelNotifier | ScannedChargerNotifier)[],
+      items: (
+        | ScannedPixelNotifier
+        | ScannedChargerNotifier
+        | ScannedBootloaderNotifier
+      )[],
       ops: readonly PixelScannerListOperation[]
     ) => {
       // We only want to create a React re-render when items are added
@@ -50,7 +55,9 @@ export function useScannedPixelNotifiers(
             const notifier =
               op.item.type === "pixel"
                 ? ScannedPixelNotifier.getInstance(op.item)
-                : ScannedChargerNotifier.getInstance(op.item);
+                : op.item.type === "charger"
+                  ? ScannedChargerNotifier.getInstance(op.item)
+                  : ScannedBootloaderNotifier.getInstance(op.item);
             const index = retItems.findIndex(
               (sp) => sp.pixelId === op.item.pixelId
             );

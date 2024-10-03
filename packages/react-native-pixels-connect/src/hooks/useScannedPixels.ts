@@ -7,9 +7,7 @@ import {
   PixelScannerDispatchAction,
   PixelScannerStatus,
 } from "./usePixelScannerNotify";
-import { PixelScannerListOperation } from "../PixelScanner";
-import { ScannedCharger } from "../ScannedCharger";
-import { ScannedPixel } from "../ScannedPixel";
+import { PixelScannerListOperation, ScannedDevice } from "../PixelScanner";
 
 /**
  * React hook that creates {@link PixelScanner} to scan for Pixels using Bluetooth.
@@ -25,15 +23,12 @@ import { ScannedPixel } from "../ScannedPixel";
 export function useScannedPixels(
   opt?: PixelScannerOptions
 ): [
-  (ScannedPixel | ScannedCharger)[],
+  ScannedDevice[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {
   const passthrough = React.useCallback(
-    (
-      items: (ScannedPixel | ScannedCharger)[],
-      ops: readonly PixelScannerListOperation[]
-    ) => {
+    (items: ScannedDevice[], ops: readonly PixelScannerListOperation[]) => {
       // Create new list to trigger a React re-render
       const retItems = [...items];
       // Apply updates

@@ -1,4 +1,7 @@
-import { PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
+import {
+  fromShortBluetoothId,
+  PixelsBluetoothIds,
+} from "@systemic-games/pixels-core-connect";
 import {
   createTypedEventEmitter,
   EventReceiver,
@@ -13,10 +16,14 @@ import {
   ScanStopReason,
 } from "@systemic-games/react-native-bluetooth-le";
 
+import { ScannedBootloader } from "./ScannedBootloader";
 import { ScannedCharger } from "./ScannedCharger";
 import { ScannedPixel } from "./ScannedPixel";
+import { getScannedBootloader } from "./getScannedBootloader";
 import { getScannedCharger } from "./getScannedCharger";
 import { getScannedPixel } from "./getScannedPixel";
+
+export type ScannedDevice = ScannedPixel | ScannedCharger | ScannedBootloader;
 
 /**
  * The different possible operations on a {@link PixelScanner} list.
@@ -24,12 +31,12 @@ import { getScannedPixel } from "./getScannedPixel";
 export type PixelScannerListOperation = Readonly<
   | {
       status: "scanned";
-      item: ScannedPixel | ScannedCharger;
+      item: ScannedDevice;
     }
   | {
       status: "lost";
       item: Readonly<{
-        type: (ScannedPixel | ScannedCharger)["type"];
+        type: ScannedDevice["type"];
         pixelId: number;
       }>;
     }
@@ -46,6 +53,7 @@ export type PixelScannerEventMap = Readonly<{
   status: ScanStatus;
   scannedPixels: readonly ScannedPixel[];
   scannedChargers: readonly ScannedCharger[];
+  scannedBootloaders: readonly ScannedBootloader[];
   // Events
   onStatusChange: Readonly<{
     status: ScanStatus;
@@ -55,10 +63,10 @@ export type PixelScannerEventMap = Readonly<{
 }>;
 
 /**
- * Type for a callback filtering {@link ScannedPixel}, used by {@link PixelScanner}.
+ * Type for a callback filtering {@link ScannedDevice}, used by {@link PixelScanner}.
  */
 export type PixelScannerFilter =
-  | ((item: ScannedPixel | ScannedCharger) => boolean)
+  | ((item: ScannedDevice) => boolean)
   | null
   | undefined;
 
@@ -88,7 +96,7 @@ export class PixelScanner {
   private static readonly _sharedQueue = new SequentialPromiseQueue();
 
   // Instance internal data
-  private readonly _devices: (ScannedPixel | ScannedCharger)[] = [];
+  private readonly _devices: ScannedDevice[] = [];
   private readonly _evEmitter = createTypedEventEmitter<PixelScannerEventMap>();
   private _startPromise?: Promise<void>;
   private _status: ScanStatus = "stopped";
@@ -98,10 +106,7 @@ export class PixelScanner {
   private _keepAliveDuration = 5000;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdateMs = 0;
-  private readonly _touched = new Map<
-    number,
-    (ScannedPixel | ScannedCharger)["type"]
-  >();
+  private readonly _touched = new Map<number, ScannedDevice["type"]>();
   private _onBluetoothState?: (ev: { state: BluetoothState }) => void;
   private readonly _onScannedCb = this._onScannedPeripheral.bind(this);
   private readonly _onStatusCb = this._onScanStatus.bind(this);
@@ -135,6 +140,14 @@ export class PixelScanner {
    */
   get scannedChargers(): ScannedCharger[] {
     return this._devices.filter((i) => i.type === "charger");
+  }
+
+  /**
+   * A copy of the list of scanned Bootloaders (cleared on loosing Bluetooth access
+   * if {@link PixelScanner.keepAliveDuration} is greater than zero).
+   */
+  get scannedBootloaders(): ScannedBootloader[] {
+    return this._devices.filter((i) => i.type === "bootloader");
   }
 
   /**
@@ -277,6 +290,7 @@ export class PixelScanner {
                 PixelsBluetoothIds.die.service,
                 PixelsBluetoothIds.legacyDie.service,
                 PixelsBluetoothIds.charger.service,
+                fromShortBluetoothId(PixelsBluetoothIds.dfuService),
               ],
               this
             );
@@ -336,19 +350,18 @@ export class PixelScanner {
     if (context !== this) {
       return;
     }
-    const services = peripheral.advertisementData.services;
-    if (
-      !!services?.includes(PixelsBluetoothIds.die.service) ||
-      !!services?.includes(PixelsBluetoothIds.legacyDie.service)
-    ) {
-      const pixel = getScannedPixel(peripheral);
-      if (pixel) {
-        this._processItem(pixel);
-      }
-    } else if (services?.includes(PixelsBluetoothIds.charger.service)) {
+    const pixel = getScannedPixel(peripheral);
+    if (pixel) {
+      this._processItem(pixel);
+    } else {
       const charger = getScannedCharger(peripheral);
       if (charger) {
         this._processItem(charger);
+      } else {
+        const bootloader = getScannedBootloader(peripheral);
+        if (bootloader) {
+          this._processItem(bootloader);
+        }
       }
     }
   }
@@ -410,7 +423,7 @@ export class PixelScanner {
     }
   }
 
-  private _processItem(sp: ScannedPixel | ScannedCharger): void {
+  private _processItem(sp: ScannedDevice): void {
     if (!this._scanFilter || this._scanFilter(sp)) {
       // Have we already seen this Pixel?
       const index = this._devices.findIndex(
@@ -475,6 +488,9 @@ export class PixelScanner {
       }
       if (ops.find((op) => op.item.type === "charger")) {
         this._emitEvent("scannedChargers", this.scannedChargers);
+      }
+      if (ops.find((op) => op.item.type === "bootloader")) {
+        this._emitEvent("scannedBootloaders", this.scannedBootloaders);
       }
     }
   }

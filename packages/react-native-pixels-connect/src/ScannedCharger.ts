@@ -2,29 +2,29 @@ export type ScannedCharger = Readonly<{
   /** Device type is Pixels charger. */
   type: "charger";
 
-  /** The unique id assigned by the system to the Pixel Bluetooth peripheral. */
+  /** The unique id assigned by the system to the charger Bluetooth peripheral. */
   systemId: string;
 
-  /** The unique Pixel id of the device. */
+  /** The unique charger id of the device. */
   pixelId: number;
 
   /** The Pixels die name. */
   name: string;
 
-  /** The number of LEDs of the Pixel. */
+  /** The number of LEDs of the charger. */
   ledCount: number;
 
-  /** The Pixel firmware build date. */
+  /** The charger firmware build date. */
   firmwareDate: Date;
 
-  /** The last RSSI value measured by the Pixel. */
+  /** The last RSSI value measured by the charger. */
   rssi: number;
 
-  /** The Pixel battery level (percentage). */
+  /** The charger battery level (percentage). */
   batteryLevel: number; // Percentage
 
   /**
-   * Whether the Pixel battery is charging or not.
+   * Whether the charger internal battery is charging or not.
    * Set to 'true' if fully charged but still on charger.
    */
   isCharging: boolean;
