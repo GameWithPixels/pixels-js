@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import {
   Divider,
   Text as PaperText,
@@ -7,12 +7,14 @@ import {
   TextProps,
   useTheme,
 } from "react-native-paper";
+import Toast from "react-native-root-toast";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import {
   AppSettingsScreenProps,
   SettingsMenuScreenProps,
 } from "~/app/navigation";
+import { ToastSettings } from "~/app/themes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
@@ -25,6 +27,7 @@ import {
   resetPairedDice,
   setDiceBrightnessFactor,
   setDisablePlayingAnimations,
+  switchEnableDebugMode,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
 import { useConfirmActionSheet } from "~/hooks";
@@ -35,6 +38,36 @@ function Text(props: Omit<TextProps<never>, "variant">) {
 
 function TextSmall(props: Omit<TextProps<never>, "variant">) {
   return <PaperText {...props} />;
+}
+
+function SecretButton({
+  top,
+  bottom,
+  left,
+  right,
+  onPress,
+}: {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+  onPress?: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        position: "absolute",
+        top,
+        bottom,
+        left,
+        right,
+        width: 50,
+        height: 50,
+        zIndex: 1000,
+      }}
+    />
+  );
 }
 
 function AppSettingsPage({
@@ -67,9 +100,31 @@ function AppSettingsPage({
     }
   );
 
+  // Secret buttons to enable debug mode
+  const store = useAppStore();
+  const pressedSecretButtonsRef = React.useRef<Set<string>>(new Set());
+  const pressSecretButton = (secret: string) => {
+    pressedSecretButtonsRef.current.add(secret);
+    setTimeout(() => pressedSecretButtonsRef.current.delete(secret), 3000);
+    if (pressedSecretButtonsRef.current.size === 2) {
+      pressedSecretButtonsRef.current.clear();
+      appDispatch(switchEnableDebugMode());
+      Toast.show(
+        `Debug Mode ${store.getState().appSettings.enableDebugMode ? "On" : "Off"}`,
+        ToastSettings
+      );
+    }
+  };
+
   const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
+      <SecretButton top={0} right={0} onPress={() => pressSecretButton("1")} />
+      <SecretButton
+        left={0}
+        bottom={0}
+        onPress={() => pressSecretButton("2")}
+      />
       <PageHeader onGoBack={() => navigation.goBack()}>App Settings</PageHeader>
       <ScrollView
         contentContainerStyle={{

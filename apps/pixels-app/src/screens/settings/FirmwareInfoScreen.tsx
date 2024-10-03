@@ -12,7 +12,7 @@ import { FirmwareInfoScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { setUpdateBootloader } from "~/features/store";
-import { useAppDfuFiles } from "~/hooks";
+import { useAppDfuFiles, useDebugMode } from "~/hooks";
 
 function Title(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="titleLarge" {...props} />;
@@ -37,6 +37,7 @@ function FirmwareInfoPage({
   );
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const date = new Date(dfuFilesInfo?.timestamp ?? 0);
+  const debugMode = useDebugMode();
   const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
@@ -61,25 +62,34 @@ function FirmwareInfoPage({
                 Bootloader: {dfuFilesInfo.bootloaderPath ? "yes" : "no"}
               </Text>
             </View>
-            <Divider style={{ marginVertical: 10 }} />
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-            >
-              <Switch
-                value={updateBootloader}
-                onValueChange={(v) => {
-                  appDispatch(setUpdateBootloader(v));
-                }}
-                trackColor={{
-                  false: colors.onSurfaceDisabled,
-                  true: colors.primary,
-                }}
-              />
-              <Text>Also Update Bootloader</Text>
-            </View>
-            <TextSmall style={{ marginLeft: 10 }}>
-              Don't turn this setting on unless you know what you're doing ;)
-            </TextSmall>
+            {debugMode && (
+              <>
+                <Divider style={{ marginVertical: 10 }} />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <Switch
+                    value={updateBootloader}
+                    onValueChange={(v) => {
+                      appDispatch(setUpdateBootloader(v));
+                    }}
+                    trackColor={{
+                      false: colors.onSurfaceDisabled,
+                      true: colors.primary,
+                    }}
+                  />
+                  <Text>Also Update Bootloader</Text>
+                </View>
+                <TextSmall style={{ marginLeft: 10 }}>
+                  Don't turn this setting on unless you know what you're doing
+                  ;)
+                </TextSmall>
+              </>
+            )}
           </>
         ) : dfuFilesError ? (
           <Text>Error reading firmware files: {String(dfuFilesError)}</Text>

@@ -265,7 +265,7 @@ function DiceListPage({
                 viewMode={viewMode}
                 onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
               />
-              {__DEV__ && <DebugConnectionStatusesBar />}
+              <DebugConnectionStatusesBar />
               {viewMode === "grid" ? (
                 <DiceGrid
                   pairedDice={pairedDice}
