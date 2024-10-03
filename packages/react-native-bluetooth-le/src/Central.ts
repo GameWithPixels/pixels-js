@@ -461,7 +461,7 @@ export const Central = {
   // more than 5 times over the last 30 seconds.
   // Devices supporting at least one of the services will be reported.
   async startScan(
-    services: string | readonly string[],
+    services?: string | readonly string[],
     context?: unknown
   ): Promise<void> {
     if (!_nativeEmitter) {
@@ -527,12 +527,11 @@ export const Central = {
     checkActive();
 
     // Requested services
-    const servicesArray =
-      services === ""
-        ? []
-        : typeof services === "string"
-          ? [services]
-          : [...services];
+    const servicesArray = !services?.length
+      ? []
+      : typeof services === "string"
+        ? [services]
+        : [...services];
     const servicesStr = servicesArray.join(",");
 
     // Listen to native scan events
@@ -754,7 +753,7 @@ export const Central = {
       // Those errors should only happen when we are already disconnecting/disconnected
       if (pInf.state !== "disconnecting" && pInf.state !== "disconnected") {
         console.warn(
-          `[BLE ${name}] Got exception when disconnecting while in state ${pInf.state}`
+          `[BLE ${name}] Got exception when disconnecting while in state ${pInf.state}: ${errToStr(error)}`
         );
       }
     }
