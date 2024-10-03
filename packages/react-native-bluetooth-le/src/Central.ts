@@ -541,7 +541,7 @@ export const Central = {
         // Scan failed to start, Android only
         console.warn(`[BLE] Scan failed: ${ev.error}`);
         _updateScanStatus("stopped", "failedToStart");
-      } else {
+      } else if (_scanStatus !== "stopped") {
         // Forward event
         const peripheral = {
           ...ev.device,
@@ -571,6 +571,10 @@ export const Central = {
           });
         }
         _emitEvent("scannedPeripheral", { peripheral, context });
+      } else {
+        console.warn(
+          `[BLE] Dropping scan result for device ${ev.device.name} because scan status is ${_scanStatus}`
+        );
       }
     });
 
