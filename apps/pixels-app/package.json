@@ -77,6 +77,7 @@
     "react": "18.2.0",
     "react-error-boundary": "^4.0.13",
     "react-native": "0.74.5",
+    "react-native-file-logger": "~0.5.6m",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-paper": "^5.12.5",
     "react-native-reanimated": "~3.10.1",

@@ -15,6 +15,7 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LogBox, Platform, StyleSheet, ViewStyle } from "react-native";
+import { FileLogger } from "react-native-file-logger";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   configureFonts,
@@ -74,6 +75,12 @@ LogBox.ignoreLogs([
   // Ignore warning caused by AnimatedComponent/ExponentGLView & TouchableNativeFeedback using findNodeHandle & findHostInstance_DEPRECATED respectively
   "Warning: findNodeHandle is deprecated in StrictMode.",
 ]);
+
+// Configure the file logger
+// TODO add UI gate that wait on returned promise
+FileLogger.configure().catch((error) => {
+  console.error(`Failed to configure file logger: ${error}`);
+});
 
 const routingInstrumentation = !__DEV__
   ? new Sentry.ReactNavigationInstrumentation()
