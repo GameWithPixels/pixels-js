@@ -1,4 +1,4 @@
-import { BluetoothState } from "./events";
+import { BluetoothState } from "./BluetoothLE";
 
 /** Base class for errors thrown by this package. */
 export class BluetoothLEError extends Error {
@@ -89,9 +89,11 @@ function getErrorMessage(name: string, type: ConnectErrorType): string {
 
 export class ConnectError extends BluetoothLEError {
   readonly type: ConnectErrorType;
+  readonly nativeCode?: string;
   constructor(name: string, type: ConnectError["type"], code?: string) {
     super(getErrorMessage(name, type) + (code ? ` (${code})` : ""));
     this.name = "ConnectError";
     this.type = type;
+    this.nativeCode = code;
   }
 }

@@ -9,12 +9,14 @@ import { NativeEventEmitter, EmitterSubscription } from "react-native";
 import {
   AdvertisementData,
   BluetoothLE,
+  BluetoothState,
+  ConnectionEventReason,
   ConnectionStatus,
   Device,
 } from "./BluetoothLE";
 import { Constants } from "./Constants";
 import * as Errors from "./errors";
-import { BleEventMap, BluetoothState, ConnectionEventReason } from "./events";
+import { BleEventMap } from "./events";
 import { getNativeErrorCode } from "./getNativeErrorCode";
 import { requestPermissions } from "./requestPermissions";
 
