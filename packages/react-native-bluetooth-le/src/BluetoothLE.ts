@@ -53,6 +53,7 @@ export type Characteristic = Readonly<{
   instanceIndex: number;
 }>;
 
+// See also PixelSessionConnectionStatus from pixels-core-connect
 export type ConnectionStatus =
   | "connecting"
   | "connected"
@@ -60,6 +61,25 @@ export type ConnectionStatus =
   | "ready"
   | "disconnecting"
   | "disconnected";
+
+// See also PixelSessionConnectionEventReason from pixels-core-connect
+export type ConnectionEventReason =
+  | "unknown"
+  | "success"
+  | "canceled"
+  | "notSupported" // The device does not have the required services.
+  | "timeout"
+  | "linkLoss"
+  | "bluetoothOff"
+  | "host" // The local device initiated disconnection.
+  | "peripheral"; // The remote device initiated graceful disconnection.
+
+export type BluetoothState =
+  | "unknown"
+  | "off"
+  | "resetting"
+  | "unauthorized"
+  | "ready";
 
 export interface NativeBluetoothLE extends NativeModule {
   bleInitialize(): Promise<void>;

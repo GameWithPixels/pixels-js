@@ -1,27 +1,11 @@
 import {
   AdvertisementData,
+  BluetoothState,
   Characteristic,
+  ConnectionEventReason,
   ConnectionStatus,
   Device,
 } from "./BluetoothLE";
-
-export type ConnectionEventReason =
-  | "unknown"
-  | "success"
-  | "canceled"
-  | "notSupported" // The device does not have the required services.
-  | "timeout"
-  | "linkLoss"
-  | "bluetoothOff"
-  | "host" // The local device initiated disconnection.
-  | "peripheral"; // The remote device initiated graceful disconnection.
-
-export type BluetoothState =
-  | "unknown"
-  | "off"
-  | "resetting"
-  | "unauthorized"
-  | "ready";
 
 export type BleBluetoothStateEvent = Readonly<{
   state: BluetoothState;
