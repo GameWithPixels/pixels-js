@@ -24,7 +24,7 @@ export default class BleSession extends PixelSession {
       ev: CentralEventMap["peripheralConnectionStatus"]
     ) => {
       this._setName(ev.peripheral.name);
-      this._notifyConnectionEvent(ev.connectionStatus);
+      this._notifyConnectionEvent(ev.connectionStatus, ev.reason);
     };
     Central.addPeripheralConnectionListener(this.systemId, onConnection);
     this._disposeFunc = () => {
