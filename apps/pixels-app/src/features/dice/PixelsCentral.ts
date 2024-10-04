@@ -7,7 +7,9 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import {
   Color,
+  ConnectError,
   Pixel,
+  PixelConnectError,
   PixelMutableProps,
   PixelScannerEventMap,
   PixelStatus,
@@ -37,6 +39,7 @@ const connectionRelease = {
   window: 20000, // 4 times the above interval, should allow for 3 connection releases
   maxScanDelta: 1500, // Release connection if scanned twice within this time
   minScanDuration: 500, // Avoid starting a scan if we'll be stopping it right away
+  connectErrorDelta: 3000, // Maximum time between 2 connection errors to trigger a connection release
 } as const;
 
 // This delay is to avoid stopping/starting scanner too often
@@ -110,6 +113,7 @@ export class PixelsCentral {
       lastScanTime?: number; // Timestamp of last scan
       nextDisco?: number; // Timestamp for next connection release attempt, undefined if not scheduled
       scanEndTime?: number; // Timestamp for end of scan window
+      lastConnectionError?: number; // Timestamp of last connection error possibly due to connection limit
       cancelScan?: () => void;
       unhook?: () => void;
     }
@@ -702,8 +706,70 @@ export class PixelsCentral {
         const onStatus = ({ status }: PixelMutableProps) =>
           this._onConnectionStatus(pixelId, status);
         pixel.addPropertyListener("status", onStatus);
+        // Listen for scheduler events
+        const scheduler = getScheduler(pixelId);
+        const onOperationStatus = (
+          ev: PixelSchedulerEventMap["onOperationStatus"]
+        ) => {
+          if (ev.operation.type === "connect") {
+            const data = this._pixels.get(pixelId);
+            if (data) {
+              if (ev.status === "succeeded") {
+                data.lastConnectionError = undefined;
+              } else if (
+                ev.status === "failed" &&
+                ev.error instanceof PixelConnectError &&
+                ev.error.cause instanceof ConnectError &&
+                ev.error.cause.nativeCode === "ERROR_GATT_ERROR"
+              ) {
+                // Assume the error is due to the connection limit being reached
+                const now = Date.now();
+                console.log(
+                  ">> CONNECT FAILED for Pixel " +
+                    unsigned32ToHex(pixelId) +
+                    " => " +
+                    JSON.stringify({
+                      now,
+                      lastConnectionErrorRelative:
+                        data.lastConnectionError &&
+                        now - data.lastConnectionError,
+                      nextDiscoRelative: data.nextDisco && data.nextDisco - now,
+                      canDisco: data.nextDisco && now > data.nextDisco,
+                    })
+                );
+                if (
+                  data.lastConnectionError &&
+                  now - data.lastConnectionError <
+                    connectionRelease.connectErrorDelta &&
+                  // And that we are past the time to attempt to release a connection
+                  data.nextDisco &&
+                  now > data.nextDisco && // Use last scan time to be sure we're not using a scan that occurred while disconnected
+                  // Make you sure we're still trying to connect
+                  this._connectQueue.includes(pixelId)
+                ) {
+                  data.lastConnectionError = undefined;
+                  // Try to disconnect another Pixel
+                  const disconnectedId = this._tryDisconnectOne(pixelId);
+                  // Set new connection release time
+                  data.nextDisco = now + connectionRelease.interval;
+                  // Notify
+                  this._emitEvent("onConnectionLimitReached", {
+                    pixel,
+                    disconnectedId,
+                  });
+                } else {
+                  data.lastConnectionError = now;
+                }
+              }
+            }
+          }
+        };
+        scheduler.addListener("onOperationStatus", onOperationStatus);
         // Store unhook function
-        data.unhook = () => pixel.removePropertyListener("status", onStatus);
+        data.unhook = () => {
+          pixel.removePropertyListener("status", onStatus);
+          scheduler.removeListener("onOperationStatus", onOperationStatus);
+        };
         // Notify Pixels list changed
         this._emitEvent("pixels", this.pixels);
         // Notify Pixel found
@@ -726,9 +792,11 @@ export class PixelsCentral {
           // Prevent any further connection release attempt
           data.nextDisco = undefined;
         } else if (data.nextDisco && status === "disconnected") {
-          // Postpone next connection release attempt
-          data.nextDisco =
-            Math.max(data.nextDisco, Date.now()) + reconnectionDelay;
+          // Postpone next connection release attempt if disconnected on timeout
+          if (getPixel(pixelId)?.lastDisconnectReason === "timeout") {
+            data.nextDisco =
+              Math.max(data.nextDisco, Date.now()) + reconnectionDelay;
+          }
         }
         // Cancel any scan request as we are no longer connecting
         data.cancelScan?.();
@@ -739,6 +807,12 @@ export class PixelsCentral {
       // on Android: the device is never actually disconnected, but the MTU
       // is reset to 23 as far as the native code is concerned.
       if (status === "disconnected") {
+        console.log(
+          ">> DISCONNECTED Pixel " +
+            unsigned32ToHex(pixelId) +
+            " with reason " +
+            getPixel(pixelId)?.lastDisconnectReason
+        );
         setTimeout(
           () => this._scheduleConnectIfQueued(pixelId),
           reconnectionDelay
