@@ -1,26 +1,43 @@
 import { PixelsConnectUuids } from "./PixelsBluetoothIds";
 
 /**
- * List of possible connection statuses for a {@link PixelSession}.
- * @category Pixels
- */
-export type PixelSessionConnectionStatus =
-  | "connecting"
-  | "connected"
-  | "failedToConnect"
-  | "ready"
-  | "disconnecting"
-  | "disconnected";
-
-/**
  * Data for a connection event.
  * @category Pixels
  */
 export interface PixelSessionConnectionEvent {
   systemId: string;
-  connectionStatus: PixelSessionConnectionStatus;
-  // TODO add reason
+  status:
+    | "connecting"
+    | "connected"
+    | "failedToConnect"
+    | "ready"
+    | "disconnecting"
+    | "disconnected";
+  reason:
+    | "unknown"
+    | "success"
+    | "canceled"
+    | "notSupported"
+    | "timeout"
+    | "linkLoss"
+    | "bluetoothOff"
+    | "host"
+    | "peripheral";
 }
+
+/**
+ * List of possible connection statuses for a {@link PixelSession}.
+ * @category Pixels
+ */
+export type PixelSessionConnectionStatus =
+  PixelSessionConnectionEvent["status"];
+
+/**
+ * List of possible reasons for a connection event of a {@link PixelSession}.
+ * @category Pixels
+ */
+export type PixelSessionConnectionEventReason =
+  PixelSessionConnectionEvent["reason"];
 
 /**
  * Represents a session with a Pixel die.
@@ -108,13 +125,15 @@ export abstract class PixelSession {
   ): Promise<void>;
 
   protected _notifyConnectionEvent(
-    connectionStatus: PixelSessionConnectionStatus
+    status: PixelSessionConnectionStatus,
+    reason: PixelSessionConnectionEventReason = "success"
   ) {
-    if (this._lastConnStatus !== connectionStatus) {
-      this._lastConnStatus = connectionStatus;
+    if (this._lastConnStatus !== status) {
+      this._lastConnStatus = status;
       this._connStatusCb?.({
         systemId: this._systemId,
-        connectionStatus,
+        status,
+        reason,
       });
     }
   }

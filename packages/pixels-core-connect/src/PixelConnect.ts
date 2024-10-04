@@ -9,7 +9,10 @@ import {
   PixelInfoNotifier,
 } from "./PixelInfoNotifier";
 import { PixelMessage } from "./PixelMessage";
-import { PixelSession } from "./PixelSession";
+import {
+  PixelSession,
+  PixelSessionConnectionEventReason,
+} from "./PixelSession";
 import {
   PixelConnectCancelledError,
   PixelConnectTimeoutError,
@@ -75,6 +78,7 @@ export abstract class PixelConnect<
   // Connection data
   private readonly _session: PixelSession;
   private _status: PixelStatus;
+  private _lastDisconnectReason: PixelSessionConnectionEventReason = "success";
 
   /** Toggle logging information about each send and received message. */
   get logMessages(): boolean {
@@ -105,6 +109,11 @@ export abstract class PixelConnect<
     return this._status;
   }
 
+  /** Reason for the last disconnection event. */
+  get lastDisconnectReason(): PixelSessionConnectionEventReason {
+    return this._lastDisconnectReason;
+  }
+
   protected get sessionDeviceName(): string | undefined {
     return this._session.pixelName;
   }
@@ -119,16 +128,15 @@ export abstract class PixelConnect<
     this._status = "disconnected"; // TODO use the getLastConnectionStatus()
 
     // Listen to session connection status changes
-    session.setConnectionEventListener(({ connectionStatus }) => {
-      if (connectionStatus === "connected" || connectionStatus === "ready") {
+    session.setConnectionEventListener(({ status, reason }) => {
+      if (status === "connected" || status === "ready") {
         // It's possible that we skip some steps and get a "ready" without
         // getting first a "connecting" if the device was already connected
         this._updateStatus("connecting");
       } else {
         this._updateStatus(
-          connectionStatus === "failedToConnect"
-            ? "disconnected"
-            : connectionStatus
+          status === "failedToConnect" ? "disconnected" : status,
+          reason
         );
       }
     });
@@ -391,10 +399,16 @@ export abstract class PixelConnect<
     )) as T;
   }
 
-  private _updateStatus(status: PixelStatus): void {
+  private _updateStatus(
+    status: PixelStatus,
+    reason?: PixelSessionConnectionEventReason
+  ): void {
     if (status !== this._status) {
       this._status = status;
-      this._log(`Status changed to ${status}`);
+      this._log(`Status changed to ${status} with reason: ${reason}`);
+      if (reason) {
+        this._lastDisconnectReason = reason;
+      }
       this.emitPropertyEvent("status");
     }
   }
