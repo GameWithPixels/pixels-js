@@ -233,18 +233,30 @@ function _updateScanStatus(status: ScanStatus, reason?: ScanStopReason): void {
   }
 }
 
-function _notifyConnectionStatus(
+function _updateConnectionStatus(
   pInf: PeripheralInfo,
   connectionStatus: ConnectionStatus,
   reason: ConnectionEventReason = "success"
 ): void {
-  const ev = {
-    peripheral: pInf.scannedPeripheral,
-    connectionStatus,
-    reason,
-  } as const;
-  _emitEvent("peripheralConnectionStatus", ev);
-  _emitPeripheralEvent(pInf, "connectionStatus", ev);
+  const prevState = pInf.state;
+  if (connectionStatus === "connected") {
+    // Connection status is "ready" once the MTU has been set
+    pInf.state = "connecting";
+  } else if (connectionStatus === "failedToConnect") {
+    // We're not connected
+    pInf.state = "disconnected";
+  } else {
+    pInf.state = connectionStatus;
+  }
+  if (prevState !== pInf.state) {
+    const ev = {
+      peripheral: pInf.scannedPeripheral,
+      connectionStatus,
+      reason,
+    } as const;
+    _emitEvent("peripheralConnectionStatus", ev);
+    _emitPeripheralEvent(pInf, "connectionStatus", ev);
+  }
 }
 
 async function _logServicesAndCharacteristicsAsync(
@@ -309,40 +321,17 @@ export const Central = {
           const name = device.name;
           if (pInf) {
             if (reason !== "success") {
-              console.log(
+              // Log reason for unexpected disconnection
+              console.warn(
                 `[BLE ${name}] Connection state ${connectionStatus} reason ${reason}` +
                   ` (state was ${pInf.state})`
               );
             }
-            const prevState = pInf.state;
-            switch (connectionStatus) {
-              case "connecting":
-              case "disconnecting":
-                pInf.state = connectionStatus;
-                break;
-              case "disconnected":
-                // Warn of disconnection without getting a "disconnecting" first
-                if (pInf.state === "ready") {
-                  console.log(
-                    `[BLE ${name}] Unexpected immediate disconnection`
-                  );
-                }
-                pInf.state = connectionStatus;
-                // Clear all now inactive subscriptions callbacks
-                pInf.valueChangedCallbacks.clear();
-                break;
-              case "failedToConnect":
-                pInf.state = "disconnected";
-                break;
-              case "connected":
-              case "ready":
-                // The ready status is notified once the MTU has been set
-                pInf.state = "connecting";
-                break;
+            // The ready status is notified once the MTU has been set
+            if (connectionStatus === "ready") {
+              connectionStatus = "connected";
             }
-            if (prevState !== pInf.state) {
-              _notifyConnectionStatus(pInf, connectionStatus, reason);
-            }
+            _updateConnectionStatus(pInf, connectionStatus, reason);
           } else {
             console.warn(
               `[BLE ${name}] Got connection status ${connectionStatus}` +
@@ -643,8 +632,7 @@ export const Central = {
 
     // Update connection status if not already connecting/connected
     if (pInf.state === "disconnected") {
-      pInf.state = "connecting";
-      _notifyConnectionStatus(pInf, "connecting");
+      _updateConnectionStatus(pInf, "connecting");
     }
 
     try {
@@ -656,8 +644,7 @@ export const Central = {
         // TODO another connection request might have been made in the meantime
         //      in which case we shouldn't change the status
         if (pInf.state === "connecting") {
-          pInf.state = "disconnected";
-          _notifyConnectionStatus(pInf, "disconnected");
+          _updateConnectionStatus(pInf, "disconnected");
         }
         throw new Errors.ConnectError(name, "createFailed");
       }
@@ -706,10 +693,9 @@ export const Central = {
         // await _logServicesAndCharacteristicsAsync(pInf.scannedPeripheral);
 
         // And finally set state to "ready"
-        pInf.state = "ready";
         // We always notify the ready state so a new status listener gets
         // the notification even if it was already in the ready state
-        _notifyConnectionStatus(pInf, "ready");
+        _updateConnectionStatus(pInf, "ready");
       } else {
         throw (
           (mtuError as Error) ?? new Errors.ConnectError(name, "disconnected")
@@ -731,6 +717,11 @@ export const Central = {
         case "ERROR_CANCELLED":
           throw new Errors.ConnectError(name, "cancelled");
         case "ERROR_BLUETOOTH_DISABLED":
+          if (pInf.state === "connecting") {
+            // If BLE is off on initiating connection, we get here without
+            // the native code ever switching to connecting and disconnected
+            _updateConnectionStatus(pInf, "disconnected");
+          }
           throw new Errors.ConnectError(name, "bluetoothUnavailable");
         case "ERROR_UNKNOWN_PERIPHERAL":
           throw new Errors.UnknownPeripheralError(_getSystemId(peripheral));
