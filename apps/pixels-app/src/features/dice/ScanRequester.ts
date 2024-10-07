@@ -89,10 +89,9 @@ export class ScanRequester {
     this._scanner.keepAliveDuration = 5000;
     // Start scan function
     const startScan = () => {
-      this._scanner.startAsync().catch((e) => {
-        console.error(`[ManagedScanner] Error starting scan: ${e}`);
-        this._emitEvent("onScanError", { error: e });
-      });
+      this._scanner
+        .startAsync()
+        .catch((e) => this._emitEvent("onScanError", { error: e }));
     };
     // Callback that resumes scanning when BLE is ready and the scanner is taken
     const onReady = (ready: boolean) => {
