@@ -9,6 +9,7 @@ import {
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
+import { ScannedDevicesRegistry } from "@systemic-games/react-native-pixels-connect/src/ScannedDevicesRegistry";
 import { Image, ImageProps } from "expo-image";
 import React from "react";
 import {
@@ -38,7 +39,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
+import { useAppSelector, useAppStore } from "~/app/hooks";
 import {
   getBluetoothScanErrorMessage,
   getNoAvailableDiceMessage,
@@ -412,9 +413,6 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
   const { availablePixels, startScan, stopScan, scanError } = usePixelScanner();
 
   // Connect to all dice
-  const scannedPixels = React.useState(
-    () => new Map<number, ScannedPixel>()
-  )[0];
   const central = usePixelsCentral();
   const [centralReady, setCentralReady] = React.useState(central.isReady);
   React.useEffect(() => {
@@ -427,13 +425,13 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
       // Note: list of watched Pixels not cleared on fast refresh
       for (const scannedPixel of availablePixels) {
         central.register(scannedPixel.pixelId);
-        scannedPixels.set(scannedPixel.pixelId, scannedPixel);
+        central.tryConnect(scannedPixel.pixelId);
       }
     } else {
       // And unregister all if Bluetooth becomes unavailable
       central.unregisterAll();
     }
-  }, [availablePixels, central, centralReady, scannedPixels]);
+  }, [availablePixels, central, centralReady]);
 
   // List of monitored pixels
   const pixels = useRegisteredPixels();
@@ -447,13 +445,15 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
       central.unregisterAll();
       onNext(false); // Skip updating dice
     } else {
-      const needUpdate = [...scannedPixels.values()].some(
-        (p) =>
-          getDieDfuAvailability(
-            p.firmwareDate.getTime(),
-            dfuFilesInfo?.timestamp
-          ) !== "up-to-date"
-      );
+      const needUpdate = central.registeredPixelsIds
+        .map(ScannedDevicesRegistry.findPixel)
+        .some(
+          (p) =>
+            getDieDfuAvailability(
+              p!.firmwareDate.getTime(),
+              dfuFilesInfo?.timestamp
+            ) !== "up-to-date"
+        );
       onNext(needUpdate);
     }
   };
@@ -585,7 +585,7 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
               {pixels.map((p) => (
                 <PixelItem
                   key={p.pixelId}
-                  scannedPixel={scannedPixels.get(p.pixelId)!}
+                  scannedPixel={ScannedDevicesRegistry.findPixel(p.pixelId)!}
                   pixel={p}
                 />
               ))}
@@ -757,7 +757,6 @@ function OnboardingPage({
   navigation: OnboardingScreenProps["navigation"];
 }) {
   const store = useAppStore();
-  const appDispatch = useAppDispatch();
   const central = usePixelsCentral();
 
   // Page scrolling
@@ -778,12 +777,22 @@ function OnboardingPage({
   );
 
   const storeDiceAndScrollTo = (page: number) => {
+    const pixels = central.pixels;
     // Add all paired dice to the store
-    for (const p of central.pixels) {
-      pairDie(central.getPixel(p.pixelId)!, store);
+    for (const p of pixels) {
+      pairDie(p, store);
     }
     // Don't show onboarding again
-    appDispatch(setShowOnboarding(false));
+    store.dispatch(setShowOnboarding(false));
+    // Scroll to page
+    scrollTo(page);
+  };
+
+  const connectAndScrollTo = (page: number) => {
+    // Reconnect all dice
+    for (const id of central.registeredPixelsIds) {
+      central.tryConnect(id);
+    }
     // Scroll to page
     scrollTo(page);
   };
@@ -804,7 +813,7 @@ function OnboardingPage({
         <HealthSlide onNext={() => scrollTo(2)} />
         {/* <SettingsSlide onNext={() => scrollTo(3)} /> */}
         <ScanSlide onNext={(update) => storeDiceAndScrollTo(update ? 3 : 4)} />
-        <UpdateDiceSlide onNext={() => scrollTo(4)} />
+        <UpdateDiceSlide onNext={() => connectAndScrollTo(4)} />
         <ReadySlide onDone={() => navigation.navigate("home")} />
       </ScrollView>
       {/* Bottom page indicator */}
