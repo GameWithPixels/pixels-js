@@ -1,4 +1,4 @@
-import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Color,
   ColorUtils,
@@ -36,7 +36,6 @@ import {
   EditableProfileStore,
   EditableProfileStoreGetterContext,
   PixelsCentralContext,
-  usePixelsCentral,
 } from "~/hooks";
 
 function remoteActionListener(
@@ -80,17 +79,6 @@ function remoteActionListener(
   }
 }
 
-function ConnectToMissingPixels({ children }: React.PropsWithChildren) {
-  const central = usePixelsCentral();
-  React.useEffect(() => {
-    // TODO integrate this in PixelsCentral
-    const listener = () => central.isReady && central.tryConnectAll();
-    listener();
-    return central.addListener("isReady", listener);
-  }, [central]);
-  return <>{children}</>;
-}
-
 export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   const store = useAppStore();
   const [central] = React.useState(() => new PixelsCentral());
@@ -102,10 +90,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     // Hook to Pixel events
     const removeOnPixelFound = central.addListener(
       "onPixelFound",
-      ({ pixel: p }) => {
-        const pixel = central.getPixel(p.pixelId);
-        assert(pixel, "Missing Pixel instance on onPixelFound event");
-
+      ({ pixel }) => {
         // Clean up previous event listeners
         disposers.get(pixel.pixelId)?.();
 
@@ -265,15 +250,23 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   React.useEffect(() => {
     // Paired dice may have changed since the last render
     const newPairedDice = store.getState().pairedDice.paired;
-    // Update watched pixels
+    // Update list of registered Pixels
     const pixelIds = newPairedDice.map((d) => d.pixelId);
     for (const id of central.registeredPixelsIds) {
       if (!pixelIds.includes(id)) {
         central.unregister(id);
       }
     }
+    const registeredPixelsIds = new Set(central.registeredPixelsIds);
     for (const id of pixelIds) {
-      central.register(id);
+      if (!registeredPixelsIds.has(id)) {
+        central.register(id);
+        // Connect to initial list of dice with low priority,
+        // dice added later will connect with high priority
+        central.tryConnect(id, {
+          priority: registeredPixelsIds.size ? "high" : "low",
+        });
+      }
     }
     // Keep pairedDice in dependencies!
   }, [central, pairedDice, store]);
@@ -359,13 +352,11 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
   return (
     <PixelsCentralContext.Provider value={central}>
-      <ConnectToMissingPixels>
-        <EditableProfileStoreGetterContext.Provider
-          value={editableProfileStoreGetter}
-        >
-          {children}
-        </EditableProfileStoreGetterContext.Provider>
-      </ConnectToMissingPixels>
+      <EditableProfileStoreGetterContext.Provider
+        value={editableProfileStoreGetter}
+      >
+        {children}
+      </EditableProfileStoreGetterContext.Provider>
     </PixelsCentralContext.Provider>
   );
 }

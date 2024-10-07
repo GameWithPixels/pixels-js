@@ -233,7 +233,7 @@ export function PairDiceBottomSheet({
       }
       dismiss(scannedPixels);
     },
-    [store, dismiss]
+    [dismiss, store]
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
