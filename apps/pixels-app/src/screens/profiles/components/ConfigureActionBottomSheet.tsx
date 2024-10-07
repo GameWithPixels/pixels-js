@@ -137,7 +137,7 @@ const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
           }
           style={{ marginHorizontal: 10 }}
         />
-        {DiceUtils.getFaceCount(dieType) > 6 && (
+        {DiceUtils.getFaceCount(dieType) >= 6 && (
           <View
             style={{
               flexDirection: "row",
