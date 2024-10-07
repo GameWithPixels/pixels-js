@@ -11979,6 +11979,11 @@ react-native-paper@^5.12.5:
     color "^3.1.2"
     use-latest-callback "^0.1.5"
 
+react-native-performance-stats@~0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/react-native-performance-stats/-/react-native-performance-stats-0.2.3.tgz#2cbf49a71b1bb28a8472fec75cbfebcc6a354f2b"
+  integrity sha512-PnnxuLcm2yU3TFiiFSltfgP+Hun9z6e6IqbIx/sqFgpHJqc70BLpzmCnfPsOpqTbpg2daFrs42siIstGVGk9Jw==
+
 react-native-reanimated@~3.10.1:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/react-native-reanimated/-/react-native-reanimated-3.10.1.tgz#3c37d1100bbba0065df39c96aab0c1ff1b50c0fa"
