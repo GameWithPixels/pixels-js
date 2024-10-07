@@ -41,6 +41,7 @@ import {
 } from "./app/navigation";
 import { persistor, store } from "./app/store";
 import { AppDarkTheme, AppThemes } from "./app/themes";
+import { DebugPerfMetrics } from "./components/DebugPerfMetrics";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
 import { UpdateProfileProvider } from "./components/UpdateProfileProvider";
@@ -190,6 +191,7 @@ function AppPage() {
           }}
         />
       </Tab.Navigator>
+      <DebugPerfMetrics />
     </SafeAreaView>
   );
 }
