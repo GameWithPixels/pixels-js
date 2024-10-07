@@ -82,6 +82,7 @@
     "react-native-file-logger": "~0.5.6m",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-paper": "^5.12.5",
+    "react-native-performance-stats": "~0.2.3",
     "react-native-reanimated": "~3.10.1",
     "react-native-root-toast": "^3.6.0",
     "react-native-safe-area-context": "4.10.5",
