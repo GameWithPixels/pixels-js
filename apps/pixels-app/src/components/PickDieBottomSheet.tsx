@@ -85,8 +85,6 @@ export function PickDieBottomSheet({
   React.useEffect(() => {
     if (visible) {
       sheetRef.current?.present();
-      // Try to reconnect to all dice while the bottom sheet is open
-      central.tryConnectAll();
     } else {
       sheetRef.current?.dismiss();
     }
@@ -94,7 +92,7 @@ export function PickDieBottomSheet({
 
   const dismiss = (pairedDie?: PairedDie) => {
     // Connect to the selected die (high priority)
-    pairedDie && central.tryConnect(pairedDie.pixelId);
+    pairedDie && central.tryConnect(pairedDie.pixelId, { priority: "high" });
     onDismiss(pairedDie);
   };
 

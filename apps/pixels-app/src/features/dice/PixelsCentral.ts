@@ -105,6 +105,7 @@ export class PixelsCentral {
 
   // Scanner for discovering Pixels
   private readonly _scanner = new ScanRequester(stopScanDelay);
+  private readonly _onScanReady: () => void;
 
   // Registered Pixels
   private readonly _pixels = new Map<
@@ -133,7 +134,7 @@ export class PixelsCentral {
     return this._scanner.status;
   }
 
-  // Pixels ids of all Pixels that are being watched
+  // Pixels ids of all Pixels that have been registered
   get registeredPixelsIds(): number[] {
     return [...this._pixels.keys()];
   }
@@ -161,6 +162,15 @@ export class PixelsCentral {
 
   constructor() {
     this._evEmitter.setMaxListeners(100); // We expect a lot of listeners
+    this._onScanReady = () => {
+      if (this._scanner.isReady) {
+        // Connect to all queued dice on Bluetooth ready
+        const ids = this._connectQueue.allIds.reverse();
+        for (const id of ids) {
+          this._connect(id);
+        }
+      }
+    };
   }
 
   /**
@@ -241,6 +251,11 @@ export class PixelsCentral {
   }
 
   register(pixelId: number): void {
+    if (!this._pixels.size) {
+      // There should be no need to unsubscribe, this is just out of caution
+      this._scanner.removeListener("isReady", this._onScanReady);
+      this._scanner.addListener("isReady", this._onScanReady);
+    }
     if (!this._pixels.has(pixelId)) {
       console.log(
         `[PixelsCentral] Registering Pixel ${unsigned32ToHex(pixelId)}`
@@ -279,10 +294,9 @@ export class PixelsCentral {
       if (getPixel(pixelId)) {
         this._emitEvent("pixels", this.pixels);
       }
-      if (!this._connectQueue.size) {
-        // Unsubscribe from priority queue events
-        this._connectQueue.removeAllListeners();
-      }
+    }
+    if (!this._pixels.size) {
+      this._scanner.removeListener("isReady", this._onScanReady);
     }
   }
 
@@ -385,25 +399,26 @@ export class PixelsCentral {
   // but only if the new connection is of high priority
   tryConnect(
     pixelId: number,
-    opt?: { priority?: "low" | "high" } // Default: high
+    opt?: { priority?: "low" | "high" } // Default: keep or low
   ): void {
-    if (this._pixels.has(pixelId)) {
+    if (
+      this._pixels.has(pixelId) &&
+      (!!opt?.priority || !this._connectQueue.includes(pixelId))
+    ) {
+      console.log(
+        `>> TRY CONNECT Pixel ${unsigned32ToHex(pixelId)} with priority=${opt?.priority}`
+      );
       // Subscribe to priority queue events
       this._subscribeToConnectQueueEvents();
       // Queue item
-      this._connectQueue.queue(pixelId, opt?.priority ?? "high");
+      this._connectQueue.queue(pixelId, opt?.priority ?? "low");
     }
   }
 
-  // Connect to all registered Pixels, with low connection priority.
-  // Pixels already connected will not see their connection priority changed.
-  tryConnectAll(opt?: { priority?: "low" | "high" }): void {
-    console.log("TRY CONNECT ALL " + opt?.priority);
-    for (const id of this.registeredPixelsIds) {
-      const priority =
-        opt?.priority ??
-        (this._connectQueue.isHighPriority(id) ? "high" : "low");
-      this.tryConnect(id, { priority });
+  // Try to reconnect to all dice already in the connection queue
+  tryReconnectDice(): void {
+    for (const id of this._connectQueue.allIds) {
+      this._connect(id, { keepConnectionReleaseTimings: true });
     }
   }
 
@@ -471,36 +486,6 @@ export class PixelsCentral {
       force?: boolean;
     }
   ): Promise<boolean> {
-    // const onOpStatus = (op: PixelSchedulerEventMap["onOperationStatus"]) => {
-    //   // Forward errors
-    //   if (op.status === "failed") {
-    //     this._emitEvent("onPixelSchedulerError", {
-    //       pixel: op.pixel,
-    //       error: op.error,
-    //     });
-    //   }
-    //   // Update pixelInDfu
-    //   if (op.operation.type === "updateFirmware") {
-    //     if (op.status === "queued") {
-    //       if (this._pixelInDfu) {
-    //         console.error(
-    //           "PixelsCentral: DFU queued while another Pixel is in DFU"
-    //         );
-    //       }
-    //       this._pixelInDfu = getPixel(pixelId);
-    //       this._emitEvent("pixelInDFU", this._pixelInDfu);
-    //     } else if (op.status === "failed" || op.status === "succeeded") {
-    //       if (!this._pixelInDfu) {
-    //         console.error(
-    //           "PixelsCentral: DFU operation status without Pixel in DFU"
-    //         );
-    //       }
-    //       this._pixelInDfu = undefined;
-    //       this._emitEvent("pixelInDFU", undefined);
-    //     }
-    //   }
-    // };
-
     let success = false;
     if (this._pixels.has(pixelId)) {
       if (this._pixelInDfu) {
@@ -524,7 +509,7 @@ export class PixelsCentral {
         this.addListener("onPixelScanned", onScanned);
         const stopScan = this.scanForPixels();
         this.stopTryConnecting();
-        this.tryConnect(pixelId);
+        this.tryConnect(pixelId, { priority: "high" });
         // await new Promise<void>((resolve) => {
         //   const onStatus = ({ status }: { status: PixelStatus }) => {
         //     if (this.getPixel(pixelId)?.status === "ready") {
@@ -710,60 +695,7 @@ export class PixelsCentral {
         const scheduler = getScheduler(pixelId);
         const onOperationStatus = (
           ev: PixelSchedulerEventMap["onOperationStatus"]
-        ) => {
-          if (ev.operation.type === "connect") {
-            const data = this._pixels.get(pixelId);
-            if (data) {
-              if (ev.status === "succeeded") {
-                data.lastConnectionError = undefined;
-              } else if (
-                ev.status === "failed" &&
-                ev.error instanceof PixelConnectError &&
-                ev.error.cause instanceof ConnectError &&
-                ev.error.cause.nativeCode === "ERROR_GATT_ERROR"
-              ) {
-                // Assume the error is due to the connection limit being reached
-                const now = Date.now();
-                console.log(
-                  ">> CONNECT FAILED for Pixel " +
-                    unsigned32ToHex(pixelId) +
-                    " => " +
-                    JSON.stringify({
-                      now,
-                      lastConnectionErrorRelative:
-                        data.lastConnectionError &&
-                        now - data.lastConnectionError,
-                      nextDiscoRelative: data.nextDisco && data.nextDisco - now,
-                      canDisco: data.nextDisco && now > data.nextDisco,
-                    })
-                );
-                if (
-                  data.lastConnectionError &&
-                  now - data.lastConnectionError <
-                    connectionRelease.connectErrorDelta &&
-                  // And that we are past the time to attempt to release a connection
-                  data.nextDisco &&
-                  now > data.nextDisco && // Use last scan time to be sure we're not using a scan that occurred while disconnected
-                  // Make you sure we're still trying to connect
-                  this._connectQueue.includes(pixelId)
-                ) {
-                  data.lastConnectionError = undefined;
-                  // Try to disconnect another Pixel
-                  const disconnectedId = this._tryDisconnectOne(pixelId);
-                  // Set new connection release time
-                  data.nextDisco = now + connectionRelease.interval;
-                  // Notify
-                  this._emitEvent("onConnectionLimitReached", {
-                    pixel,
-                    disconnectedId,
-                  });
-                } else {
-                  data.lastConnectionError = now;
-                }
-              }
-            }
-          }
-        };
+        ) => this._onOperationStatus(pixel, ev);
         scheduler.addListener("onOperationStatus", onOperationStatus);
         // Store unhook function
         data.unhook = () => {
@@ -827,7 +759,74 @@ export class PixelsCentral {
     }
   }
 
+  _onOperationStatus(
+    pixel: Pixel,
+    ev: PixelSchedulerEventMap["onOperationStatus"]
+  ) {
+    if (ev.operation.type !== "connect") {
+      return;
+    }
+    if (ev.status === "succeeded") {
+      const data = this._pixels.get(ev.pixel.pixelId);
+      if (data) {
+        data.lastConnectionError = undefined;
+      }
+    } else if (
+      ev.status === "failed" &&
+      ev.error instanceof PixelConnectError &&
+      ev.error.cause instanceof ConnectError &&
+      ev.error.cause.nativeCode === "ERROR_GATT_ERROR"
+    ) {
+      const data = this._pixels.get(ev.pixel.pixelId);
+      if (!data) {
+        return;
+      }
+      const pixelId = ev.pixel.pixelId;
+      // Assume the error is due to the connection limit being reached
+      const now = Date.now();
+      console.log(
+        ">> CONNECT FAILED for Pixel " +
+          unsigned32ToHex(pixelId) +
+          " => " +
+          JSON.stringify({
+            now,
+            lastConnectionErrorRelative:
+              data.lastConnectionError && now - data.lastConnectionError,
+            nextDiscoRelative: data.nextDisco && data.nextDisco - now,
+            canDisco: data.nextDisco && now > data.nextDisco,
+          })
+      );
+      if (
+        data.lastConnectionError &&
+        now - data.lastConnectionError < connectionRelease.connectErrorDelta &&
+        // And that we are past the time to attempt to release a connection
+        data.nextDisco &&
+        now > data.nextDisco && // Use last scan time to be sure we're not using a scan that occurred while disconnected
+        // Make you sure we're still trying to connect
+        this._connectQueue.includes(pixelId)
+      ) {
+        data.lastConnectionError = undefined;
+        // Try to disconnect another Pixel
+        const disconnectedId = this._tryDisconnectOne(pixelId);
+        // Set new connection release time
+        data.nextDisco = now + connectionRelease.interval;
+        // Notify
+        this._emitEvent("onConnectionLimitReached", {
+          pixel,
+          disconnectedId,
+        });
+      } else {
+        data.lastConnectionError = now;
+      }
+    }
+  }
+
   private _scheduleConnectIfQueued(pixelId: number): void {
+    // Only reconnect if Bluetooth is ready
+    // (otherwise, connection will be scheduled when ready)
+    if (!this.isReady) {
+      return;
+    }
     // Check Pixel is registered and in the connection queue
     if (this._pixels.has(pixelId) && this._connectQueue.includes(pixelId)) {
       const scheduler = getScheduler(pixelId);
@@ -961,48 +960,52 @@ export class PixelsCentral {
     }
   }
 
+  private _connect(
+    pixelId: number,
+    opt?: { keepConnectionReleaseTimings?: boolean }
+  ): void {
+    const data = this._pixels.get(pixelId);
+    if (!data) {
+      // Pixel is not registered, this shouldn't happen
+      logError(
+        `PixelsCentral: Connection queued for unregistered Pixel ${unsigned32ToHex(
+          pixelId
+        )}`
+      );
+      return;
+    }
+    const pixel = getPixel(pixelId);
+    if (pixel) {
+      // We have a Pixel instance, try to connect
+      this._scheduleConnectIfQueued(pixelId);
+
+      if (!opt?.keepConnectionReleaseTimings) {
+        // Allow again for scanning to release a connection
+        // (or extend the current scan time window)
+        data.scanEndTime = 0;
+        this._scheduleScan(pixelId);
+      }
+    } else {
+      // Need to first discover dice to access its Pixel instance,
+      // it will connect upon discovery
+      this.waitForScannedPixelAsync(pixelId).catch((e) => {
+        logError(
+          `PixelsCentral: Error waiting for Pixel ${unsigned32ToHex(
+            pixelId
+          )} to be scanned: ${e}`
+        );
+      });
+    }
+  }
+
   private _subscribeToConnectQueueEvents() {
     if (!this._connectQueue.size) {
-      const connect = (pixelId: number, op: "queued" | "requeued") => {
-        const data = this._pixels.get(pixelId);
-        if (data) {
-          const pixel = getPixel(pixelId);
-          if (pixel) {
-            if (op === "queued") {
-              // We have a Pixel instance, try to connect
-              this._scheduleConnectIfQueued(pixelId);
-            } else {
-              // Pixel is already trying to connect but its connection priority has changed
-              // Allow again for scanning to release a connection (or extend the current scan time window)
-              data.scanEndTime = 0;
-              this._scheduleScan(pixelId);
-            }
-          } else {
-            // Need to first discover dice to access its Pixel instance,
-            // it will connect upon discovery
-            this.waitForScannedPixelAsync(pixelId).catch((e) => {
-              logError(
-                `PixelsCentral: Error waiting for Pixel ${unsigned32ToHex(
-                  pixelId
-                )} to be scanned: ${e}`
-              );
-            });
-          }
-        } else {
-          // Pixel is not registered, this shouldn't happen
-          logError(
-            `PixelsCentral: Connection queued for unregistered Pixel ${unsigned32ToHex(
-              pixelId
-            )}`
-          );
-        }
-      };
       this._connectQueue.addListener("queued", (pixelId) => {
-        connect(pixelId, "queued");
+        this._connect(pixelId);
         this._emitEvent("connectQueue", this.connectQueue);
       });
       this._connectQueue.addListener("requeued", (pixelId) => {
-        connect(pixelId, "requeued");
+        this._connect(pixelId);
         this._emitEvent("connectQueue", this.connectQueue);
       });
       this._connectQueue.addListener("dequeued", (pixelId) => {
@@ -1011,6 +1014,10 @@ export class PixelsCentral {
         // Disconnect
         getScheduler(pixelId).schedule({ type: "disconnect" });
         this._emitEvent("connectQueue", this.connectQueue);
+        // Unsubscribe from priority queue events if queue is empty
+        if (!this._connectQueue.size) {
+          this._connectQueue.removeAllListeners();
+        }
       });
     }
   }

@@ -74,7 +74,7 @@ function DieFocusPage({
       central.scheduleOperation(pairedDie.pixelId, {
         type: "blink",
       });
-      central.tryConnect(pairedDie.pixelId);
+      central.tryConnect(pairedDie.pixelId, { priority: "high" });
     }, [central, pairedDie.pixelId])
   );
 
@@ -98,7 +98,9 @@ function DieFocusPage({
         <DebugConnectionStatusesBar />
         <PixelFocusView
           pairedDie={pairedDie}
-          onPress={() => central.tryConnect(pairedDie.pixelId)}
+          onPress={() =>
+            central.tryConnect(pairedDie.pixelId, { priority: "high" })
+          }
           onShowDetails={() =>
             navigation.navigate("dieDetails", {
               pixelId: pairedDie.pixelId,

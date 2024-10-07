@@ -232,7 +232,9 @@ function DiceListPage({
 
   // Scan for missing dice on showing page
   const central = usePixelsCentral();
-  useFocusEffect(React.useCallback(() => central.tryConnectAll(), [central]));
+  useFocusEffect(
+    React.useCallback(() => central.tryReconnectDice(), [central])
+  );
 
   // Firmware update
   const outdatedCount = useOutdatedPixelsCount();
