@@ -6,7 +6,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { View } from "react-native";
-import { Text, ThemeProvider, useTheme } from "react-native-paper";
+import { Button, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
@@ -19,13 +19,13 @@ import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
-import { GradientButton, OutlineButton } from "~/components/buttons";
+import { GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { pairDie } from "~/features/dice";
+import { TrailingSpaceFix } from "~/fixes";
 import {
   usePixelScanner,
   useBottomSheetPadding,
-  usePixelsCentralOnReady,
   useRollStateLabel,
   useBottomSheetBackHandler,
 } from "~/hooks";
@@ -119,6 +119,7 @@ function SelectScannedPixels({
   }, [noAvailableDie]);
 
   const [selection, setSelection] = React.useState<ScannedPixelNotifier[]>([]);
+  const { colors } = useTheme();
 
   return (
     <>
@@ -159,17 +160,37 @@ function SelectScannedPixels({
           </AnimatedText>
         )}
       </BottomSheetScrollView>
-      <OutlineButton
-        disabled={!scannedPixels.length}
-        sentry-label="select-all"
-        onPress={() => setSelection([...scannedPixels])}
-      >
-        Select All
-      </OutlineButton>
+      {/* Show select/ unselect all when more than 1 line of dice cards */}
+      {scannedPixels.length > 3 && (
+        <View
+          style={{
+            flexDirection: "row",
+            marginVertical: -10,
+            justifyContent: "space-between",
+          }}
+        >
+          <Button
+            compact
+            textColor={colors.primary}
+            sentry-label="select-all-dice"
+            onPress={() => setSelection([...scannedPixels])}
+          >
+            {"Select All" + TrailingSpaceFix}
+          </Button>
+          <Button
+            compact
+            textColor={colors.primary}
+            sentry-label="unselect-all-dice"
+            onPress={() => setSelection([])}
+          >
+            Unselect All
+          </Button>
+        </View>
+      )}
       <GradientButton
         disabled={!selection.length}
         sentry-label="pair-dice"
-        style={{ marginBottom: 10 }}
+        style={{ marginVertical: 10 }}
         onPress={() => onPairDice(selection)}
       >
         {!selection.length
@@ -191,13 +212,6 @@ export function PairDiceBottomSheet({
   const { availablePixels, startScan, stopScan, scanError } = usePixelScanner();
 
   // Start scan on opening bottom sheet
-  // and resume scan on BLE enabled
-  usePixelsCentralOnReady(
-    React.useCallback(
-      (ready: boolean) => ready && visible && startScan(),
-      [startScan, visible]
-    )
-  );
   React.useEffect(() => {
     visible && startScan();
   }, [startScan, visible]);
@@ -238,7 +252,7 @@ export function PairDiceBottomSheet({
   return (
     <BottomSheetModal
       ref={sheetRef}
-      snapPoints={["50%"]}
+      snapPoints={["60%"]}
       onDismiss={dismiss}
       onChange={onChange}
       {...getBottomSheetProps(colors)}
