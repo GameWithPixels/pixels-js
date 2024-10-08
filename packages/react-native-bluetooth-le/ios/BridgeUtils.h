@@ -123,7 +123,7 @@ inline NSDictionary *advertisementToDict(NSDictionary<NSString *,id> *advertisem
     [dict setValue:@([isConnectable boolValue]) forKey:@"isConnectable"];
     [dict setValue:rssi forKey:@"rssi"];
     [dict setValue:txPowerLevel forKey:@"txPowerLevel"];
-    [dict setValue:@(timestamp) forKey:@"timestamp"];
+    [dict setValue:@(timestamp * 1000) forKey:@"timestamp"];
 
     if (serviceUUIDs.count)
     {
