@@ -440,6 +440,9 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
 
   // On leaving page
   const { dfuFilesInfo } = useAppDfuFiles();
+  const { forceUpdateFirmware, enableDebugMode } = useAppSelector(
+    (state) => state.appSettings
+  );
   const leavePage = (action: "pair" | "skip") => {
     stopScan();
     if (action === "skip") {
@@ -450,6 +453,7 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
         .map(ScannedDevicesRegistry.findPixel)
         .some(
           (p) =>
+            (forceUpdateFirmware && enableDebugMode) ||
             getDieDfuAvailability(
               p!.firmwareDate.getTime(),
               dfuFilesInfo?.timestamp
