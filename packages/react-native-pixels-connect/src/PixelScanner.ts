@@ -1,6 +1,6 @@
 import {
-  fromShortBluetoothId,
   PixelsBluetoothIds,
+  toFullUuid,
 } from "@systemic-games/pixels-core-connect";
 import {
   createTypedEventEmitter,
@@ -290,7 +290,7 @@ export class PixelScanner {
                 PixelsBluetoothIds.die.service,
                 PixelsBluetoothIds.legacyDie.service,
                 PixelsBluetoothIds.charger.service,
-                fromShortBluetoothId(PixelsBluetoothIds.dfuService),
+                toFullUuid(PixelsBluetoothIds.dfuService),
               ],
               this
             );
