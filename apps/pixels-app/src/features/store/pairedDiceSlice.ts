@@ -118,9 +118,13 @@ const PairedDiceSlice = createSlice({
       }>
     ) {
       const { payload } = action;
-      log("updatePairedDieFirmwareTimestamp", payload);
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
-      if (die && payload.timestamp > 0) {
+      if (
+        die &&
+        payload.timestamp > 0 &&
+        die.firmwareTimestamp !== payload.timestamp
+      ) {
+        log("updatePairedDieFirmwareTimestamp", payload);
         die.firmwareTimestamp = payload.timestamp;
       }
     },
@@ -133,9 +137,9 @@ const PairedDiceSlice = createSlice({
       }>
     ) {
       const { payload } = action;
-      log("updatePairedDieProfileHash", payload);
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
-      if (die) {
+      if (die && die.profileHash !== payload.hash) {
+        log("updatePairedDieProfileHash", payload);
         die.profileHash = payload.hash;
       }
     },
@@ -148,9 +152,9 @@ const PairedDiceSlice = createSlice({
       }>
     ) {
       const { payload } = action;
-      log("updatePairedDieBrightness", payload);
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
-      if (die) {
+      if (die && die.brightness !== payload.brightness) {
+        log("updatePairedDieBrightness", payload);
         die.brightness = payload.brightness;
       }
     },
