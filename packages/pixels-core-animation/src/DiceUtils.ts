@@ -88,7 +88,6 @@ export const DiceUtils = {
     }
   },
 
-  // TODO fix for D4 rolling as D6 and D00 rolling as D10
   faceFromIndex(
     faceIndex: number,
     dieType: PixelDieType,
@@ -122,7 +121,6 @@ export const DiceUtils = {
     }
   },
 
-  // TODO fix for D4 rolling as D6 and D00 rolling as D10
   indexFromFace(
     face: number,
     dieType: PixelDieType,
