@@ -119,6 +119,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           if (status === "ready") {
             onRename(pixel);
             onFwDate(pixel);
+            onProfileHash(pixel);
             if (
               store
                 .getState()
