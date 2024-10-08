@@ -360,7 +360,7 @@ export class PixelsCentral {
 
   async waitForScannedPixelAsync(
     pixelId: number,
-    timeout = 7000
+    timeout = 10000
   ): Promise<boolean> {
     // Create a promise that resolves when the Pixel is scanned
     let resolver: (value: boolean) => void;
