@@ -17,7 +17,23 @@ inline NSString *toString(NSUUID *uuid)
 
 inline NSString *toString(CBUUID *uuid)
 {
-    return uuid.UUIDString.lowercaseString;
+    NSString *str = uuid.UUIDString.lowercaseString;
+    NSUInteger len = str.length;
+    if (len == 4)
+    {
+        // Most common case: 16-bit UUID
+        str = [NSString stringWithFormat:@"0000%@-0000-1000-8000-00805f9b34fb", str];
+    }
+    else if (len <= 8)
+    {
+        str = [NSString stringWithFormat:@"%@-0000-1000-8000-00805f9b34fb", str];
+        len = str.length;
+        if (len < 36)
+        {
+            str = [[@"00000000" substringFromIndex:8 - 36 + len] stringByAppendingString:str];
+        }
+    }
+    return str;
 }
 
 inline NSString *getPeripheralId(CBPeripheral *peripheral)
