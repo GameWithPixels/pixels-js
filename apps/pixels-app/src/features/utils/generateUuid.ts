@@ -1,5 +1,7 @@
 import * as Crypto from "expo-crypto";
 
+import { logError } from "./logError";
+
 export function generateUuid(): string {
   let uuid = "";
   // Workaround randomUUID() sometimes returning a promise object
@@ -7,6 +9,12 @@ export function generateUuid(): string {
   let counter = 10;
   do {
     uuid = Crypto.randomUUID();
+    if (typeof uuid !== "string") {
+      logError(
+        "Crypto.randomUUID() returned an unexpected value " +
+          JSON.stringify(uuid)
+      );
+    }
   } while (typeof uuid !== "string" && --counter >= 0);
   if (typeof uuid !== "string") {
     // Generating UUID failed, fallback to manual generation
