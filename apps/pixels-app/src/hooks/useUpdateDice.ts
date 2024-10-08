@@ -3,7 +3,7 @@ import React from "react";
 import { DfuFilesInfo } from "./useDfuFiles";
 import { usePixelsCentral } from "./usePixelsCentral";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppStore } from "~/app/hooks";
 import { updatePairedDieFirmwareTimestamp } from "~/features/store";
 
 export function useUpdateDice(): (
@@ -11,11 +11,8 @@ export function useUpdateDice(): (
   filesInfo: DfuFilesInfo,
   stopRequested?: () => boolean
 ) => Promise<number[]> {
-  const appDispatch = useAppDispatch();
+  const store = useAppStore();
   const central = usePixelsCentral();
-  const bootloader = useAppSelector(
-    (state) => state.appSettings.updateBootloader
-  );
   return React.useCallback(
     async (
       pixelsIds: readonly number[],
@@ -33,14 +30,16 @@ export function useUpdateDice(): (
           }
           const pixelId = idsToProcess[0];
           try {
+            const { updateBootloader, forceUpdateFirmware, enableDebugMode } =
+              store.getState().appSettings;
             if (
               await central.tryUpdateFirmware(pixelId, filesInfo, {
-                bootloader,
-                force: true,
+                bootloader: updateBootloader && enableDebugMode,
+                force: forceUpdateFirmware && enableDebugMode,
               })
             ) {
               // Update stored timestamp
-              appDispatch(
+              store.dispatch(
                 updatePairedDieFirmwareTimestamp({
                   pixelId,
                   timestamp: filesInfo.timestamp,
@@ -61,6 +60,6 @@ export function useUpdateDice(): (
       );
       return failedPixelsIds;
     },
-    [central, appDispatch, bootloader]
+    [central, store]
   );
 }

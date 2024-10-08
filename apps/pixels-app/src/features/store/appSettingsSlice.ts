@@ -32,6 +32,7 @@ export interface AppSettingsState {
   rollerCardsSizeRatio: number;
   disablePlayingAnimations: boolean;
   enableDebugMode: boolean;
+  forceUpdateFirmware: boolean;
   screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
 }
 
@@ -54,6 +55,7 @@ const initialState: AppSettingsState = {
   rollerCardsSizeRatio: 0.5,
   disablePlayingAnimations: false,
   enableDebugMode: false,
+  forceUpdateFirmware: false,
   screensTheme: {
     onboarding: "blue",
     home: "blue",
@@ -147,6 +149,10 @@ const appSettingsSlice = createSlice({
       );
     },
 
+    setForceUpdateFirmware(state, action: PayloadAction<boolean>) {
+      state.forceUpdateFirmware = action.payload;
+    },
+
     setScreenTheme(
       state,
       action: PayloadAction<{
@@ -179,6 +185,7 @@ export const {
   setRollerCardsSizeRatio,
   setDisablePlayingAnimations,
   switchEnableDebugMode,
+  setForceUpdateFirmware,
   setScreenTheme,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;
