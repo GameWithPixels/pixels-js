@@ -491,7 +491,6 @@ export class PixelScheduler {
       try {
         const recoverFromUploadError = uploadStarted;
         ++attemptsCount;
-        uploadStarted = false;
         await updateFirmware({
           systemId: pixel.systemId,
           pixelId: pixel.pixelId,
@@ -499,9 +498,7 @@ export class PixelScheduler {
           firmwarePath,
           recoverFromUploadError,
           dfuStateCallback: (state) => {
-            if (state === "uploading") {
-              uploadStarted = true;
-            }
+            uploadStarted ||= state === "uploading";
             this._emitEvent("onDfuState", { pixel, state });
           },
           dfuProgressCallback: (progress) =>
