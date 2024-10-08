@@ -1,7 +1,6 @@
 import {
   assertNever,
   createTypedEventEmitter,
-  delay,
   EventReceiver,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
@@ -13,6 +12,7 @@ import {
   PixelMutableProps,
   PixelScannerEventMap,
   PixelStatus,
+  ScannedPixel,
   ScannedPixelNotifier,
   ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -62,6 +62,30 @@ function getPixel(pixelId: number): Pixel | undefined {
 
 function isConnected(status?: PixelStatus): status is "identifying" | "ready" {
   return status === "identifying" || status === "ready";
+}
+
+async function waitConnectedAsync(
+  pixel: Pixel,
+  timeout = 20000
+): Promise<boolean> {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  let resolveConnected: () => void;
+  const onStatus = ({ status }: PixelMutableProps) => {
+    if (isConnected(status)) {
+      clearTimeout(timeoutId);
+      resolveConnected();
+    }
+  };
+  pixel.addPropertyListener("status", onStatus);
+  try {
+    return await new Promise<boolean>((resolve) => {
+      resolveConnected = () => resolve(true);
+      timeoutId = setTimeout(() => resolve(false), timeout);
+      onStatus(pixel);
+    });
+  } finally {
+    pixel.removePropertyListener("status", onStatus);
+  }
 }
 
 /**
@@ -330,8 +354,8 @@ export class PixelsCentral {
                 notifier &&
                   this._emitEvent(
                     this._pixels.has(op.item.pixelId)
-                      ? "onAvailability"
-                      : "onPixelScanned",
+                      ? "onPixelScanned"
+                      : "onAvailability",
                     {
                       status: "lost",
                       notifier,
@@ -361,10 +385,14 @@ export class PixelsCentral {
   async waitForScannedPixelAsync(
     pixelId: number,
     timeout = 10000
-  ): Promise<boolean> {
+  ): Promise<ScannedPixel | undefined> {
+    console.log(`WAIT FOR Pixel ${unsigned32ToHex(pixelId)}`);
+
     // Create a promise that resolves when the Pixel is scanned
-    let resolver: (value: boolean) => void;
-    const promise = new Promise<boolean>((resolve) => (resolver = resolve));
+    let resolver: (value: ScannedPixel | undefined) => void;
+    const promise = new Promise<ScannedPixel | undefined>(
+      (resolve) => (resolver = resolve)
+    );
 
     // Listen for scan events
     const onScanListChange = (ev: PixelScannerEventMap["onScanListChange"]) => {
@@ -374,7 +402,7 @@ export class PixelsCentral {
           op.item.type === "pixel" &&
           op.item.pixelId === pixelId
         ) {
-          resolver(true);
+          resolver(op.item);
           break;
         }
       }
@@ -382,7 +410,7 @@ export class PixelsCentral {
     this._scanner.addListener("onScanListChange", onScanListChange);
 
     // Stop scanning on timeout
-    const id = setTimeout(() => resolver(false), timeout);
+    const id = setTimeout(() => resolver(undefined), timeout);
 
     // Start scanning
     const stopScan = this.scanForPixels();
@@ -486,123 +514,109 @@ export class PixelsCentral {
       force?: boolean;
     }
   ): Promise<boolean> {
-    let success = false;
-    if (this._pixels.has(pixelId)) {
-      if (this._pixelInDfu) {
-        throw new Error("A firmware update is already in progress");
-      }
-      this._pixelInDfu = pixelId;
-      this._emitEvent("pixelInDFU", this._pixelInDfu);
+    if (this._pixelInDfu) {
+      throw new Error("A firmware update is already in progress");
+    }
+    if (!this._pixels.has(pixelId)) {
+      throw new Error("Pixel not registered: " + unsigned32ToHex(pixelId));
+    }
+    this._pixelInDfu = pixelId;
+    this._emitEvent("pixelInDFU", this._pixelInDfu);
 
-      try {
-        // Try connect to die (scan immediately if not connected)
-        let scanned: boolean | undefined;
-        const onScanned = ({
-          status,
-          notifier,
-        }: PixelsCentralEventMap["onPixelScanned"]) => {
-          if (status === "scanned" && notifier.pixelId === pixelId) {
-            console.log("###### SCANNED " + unsigned32ToHex(pixelId));
-            scanned = true;
+    try {
+      // Get timestamp from scan if Pixel is not connected
+      const scannedFwDate = !isConnected(getPixel(pixelId)?.status)
+        ? (await this.waitForScannedPixelAsync(pixelId))?.firmwareDate
+        : undefined;
+      console.log(
+        `Got scanned timestamp ${scannedFwDate?.getTime()} for Pixel ${unsigned32ToHex(pixelId)}`
+      );
+
+      // Get Pixel instance again as it might have been discovered during the scan
+      // (and it also checks if it's still registered)
+      const pixel = this.getPixel(pixelId);
+      if (!pixel) {
+        throw new Error("DFU Pixel not found " + unsigned32ToHex(pixelId));
+      }
+
+      // We might have connected during the scan
+      const timestamp = (
+        isConnected(pixel.status) // Don't use old timestamp if not connected
+          ? pixel.firmwareDate
+          : scannedFwDate
+      )?.getTime();
+      console.log(
+        `Got timestamp ${timestamp} for Pixel ${unsigned32ToHex(pixelId)}`
+      );
+
+      if (!timestamp) {
+        throw new Error("Pixel not found " + unsigned32ToHex(pixelId));
+      }
+
+      // Check if we need to update the firmware
+      if (
+        !!opt.force ||
+        getDieDfuAvailability(timestamp, filesInfo.timestamp) === "outdated"
+      ) {
+        // Connect to Pixel if not already connected
+        if (!isConnected(pixel.status)) {
+          console.warn("WAIT CONNECT Pixel " + unsigned32ToHex(pixelId));
+          this.tryConnect(pixelId, { priority: "high" });
+          if (!(await waitConnectedAsync(pixel))) {
+            // Stop connecting
+            getScheduler(pixelId).cancelConnecting();
+            this._connectQueue.dequeue(pixelId);
+            throw new Error("Connect Timeout");
           }
-        };
-        this.addListener("onPixelScanned", onScanned);
-        const stopScan = this.scanForPixels();
-        this.stopTryConnecting();
-        this.tryConnect(pixelId, { priority: "high" });
-        // await new Promise<void>((resolve) => {
-        //   const onStatus = ({ status }: { status: PixelStatus }) => {
-        //     if (this.getPixel(pixelId)?.status === "ready") {
-        //       pixel.removePropertyListener("status", onStatus);
-        //       resolve();
-        //     }
-        //   };
-        //   pixel.addPropertyListener("status", onStatus);
-        // });
-        try {
-          for (let i = 0; i < (scanned ? 30 : 10); ++i) {
-            console.log(
-              "###### CHECK STATUS " +
-                unsigned32ToHex(pixelId) +
-                " => " +
-                this.getPixel(pixelId)?.status
-            );
-            if (this.getPixel(pixelId)?.status === "ready") {
-              break;
-            }
-            await delay(1000);
-          }
-        } finally {
-          this.removeListener("onPixelScanned", onScanned);
-          stopScan();
         }
-        // Get Pixel instance (and check it's still registered)
-        const pixel = this.getPixel(pixelId);
-        if (
-          pixel?.status === "ready" &&
-          (!!opt.force ||
-            getDieDfuAvailability(
-              pixel.firmwareDate.getTime(),
-              filesInfo.timestamp
-            ) === "outdated")
-        ) {
-          console.warn("UPDATE PIXEL " + unsigned32ToHex(pixelId));
-          success = await new Promise<boolean>((resolve, reject) => {
-            // const scheduler = getScheduler(pixelId);
-            // scheduler.addListener(type, listener);
-            const disposer = this.addSchedulerListener(
-              pixelId,
-              "onOperationStatus",
-              ({ operation, status }) => {
-                if (operation.type === "updateFirmware") {
-                  if (status === "starting" || status === "dropped") {
-                    // Don't attempt to reconnect once DFU is starting
-                    this._connectQueue.dequeue(pixelId);
-                  }
-                  if (
-                    status === "succeeded" ||
-                    status === "dropped" ||
-                    status === "failed"
-                  ) {
-                    console.warn(
-                      "Done with DFU with status=" + status + " for " + pixelId
-                    );
-                    disposer();
-                    if (status === "failed") {
-                      reject(new Error("DFU " + status));
-                    } else {
-                      resolve(status === "succeeded");
-                    }
+
+        // Listen to DFU events and start DFU
+        console.warn("UPDATE PIXEL " + unsigned32ToHex(pixelId));
+        await new Promise<void>((resolve, reject) => {
+          const disposer = this.addSchedulerListener(
+            pixelId,
+            "onOperationStatus",
+            ({ operation, status }) => {
+              if (operation.type === "updateFirmware") {
+                if (status === "starting" || status === "dropped") {
+                  // Don't reconnect after DFU has finished
+                  this._connectQueue.dequeue(pixelId);
+                }
+                if (
+                  status === "succeeded" ||
+                  status === "dropped" ||
+                  status === "failed"
+                ) {
+                  console.warn(
+                    "Done with DFU with status=" + status + " for " + pixelId
+                  );
+                  disposer();
+                  if (status === "succeeded") {
+                    resolve();
+                  } else {
+                    reject(new Error("DFU " + status));
                   }
                 }
               }
-            );
-            getScheduler(pixelId).schedule({
-              type: "updateFirmware",
-              bootloaderPath: opt?.bootloader
-                ? filesInfo.bootloaderPath
-                : undefined,
-              firmwarePath: filesInfo.firmwarePath,
-            });
+            }
+          );
+          getScheduler(pixelId).schedule({
+            type: "updateFirmware",
+            bootloaderPath: opt?.bootloader
+              ? filesInfo.bootloaderPath
+              : undefined,
+            firmwarePath: filesInfo.firmwarePath,
           });
-        } else {
-          // Don't reconnect
-          getScheduler(pixelId).cancelConnecting();
-          this._connectQueue.dequeue(pixelId);
-          if (pixel) {
-            console.warn(
-              "Skipping update for Pixel " + unsigned32ToHex(pixelId)
-            );
-          } else {
-            console.warn("No PIXEL for " + unsigned32ToHex(pixelId));
-          }
-        }
-      } finally {
-        this._pixelInDfu = undefined;
-        this._emitEvent("pixelInDFU", undefined);
+        });
+        return true;
+      } else {
+        console.warn("Skipping update for Pixel " + unsigned32ToHex(pixelId));
+        return false;
       }
+    } finally {
+      this._pixelInDfu = undefined;
+      this._emitEvent("pixelInDFU", undefined);
     }
-    return success;
   }
 
   private _emitEvent<T extends keyof PixelsCentralEventMap>(
@@ -629,6 +643,8 @@ export class PixelsCentral {
         // Try to connect if queued for connection
         this._scheduleConnectIfQueued(pixelId);
       } else {
+        this._connectQueue.includes(pixelId) &&
+          console.log(">> SCANNED Pixel " + unsigned32ToHex(pixelId));
         // Track time of last scan
         const scanTime = notifier.timestamp.getTime();
         if (
