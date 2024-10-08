@@ -1120,20 +1120,6 @@ export class Pixel
     state: PixelRollState,
     faceIndex: number
   ): RollEvent {
-    if (this.dieType === "d4") {
-      // TODO fix for D4 rolling as D6
-      if (faceIndex === 1 || faceIndex === 4) {
-        // Those faces are not valid for a D4, reuse last valid face instead
-        faceIndex = DiceUtils.indexFromFace(
-          this.currentFace > 0 ? this.currentFace : 1,
-          "d4",
-          this.firmwareDate.getTime()
-        );
-        if (state === "onFace") {
-          state = "crooked";
-        }
-      }
-    }
     // Convert face index to face value
     const face = DiceUtils.faceFromIndex(
       faceIndex,
@@ -1150,9 +1136,10 @@ export class Pixel
   ) {
     // Fix for accelerometer being slightly tilted on some D6/D4/Fudge
     // Also fixed in Firmware commit 380f496, May 22nd 2024
+    const FW_2024_05_22 = 1716382800000;
     if (
-      this._info.firmwareDate.getTime() < 1716382800000 &&
       this._info.ledCount === 6 &&
+      this._info.firmwareDate.getTime() < FW_2024_05_22 &&
       state === "crooked"
     ) {
       state = "onFace";
