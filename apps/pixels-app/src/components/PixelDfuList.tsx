@@ -31,7 +31,6 @@ import {
   useIsDieUpdatingFirmware,
   usePixelDfuAvailability,
   usePixelDfuState,
-  usePixelScannerStatus,
   usePixelsCentral,
   useRollStateLabel,
   useRegisteredPixel,
@@ -94,28 +93,48 @@ function PixelDfuItem({
 }: {
   pairedDie: Pick<PixelInfo, "pixelId" | "name" | "dieType">;
 } & Omit<TouchableCardProps, "children" | "selected">) {
-  const availability = usePixelDfuAvailability(pairedDie.pixelId);
   const pixel = useRegisteredPixel(pairedDie.pixelId);
   const status = usePixelStatus(pixel);
   const rollState = usePixelProp(pixel, "rollState");
+  // DFU
+  const availability = usePixelDfuAvailability(pairedDie.pixelId);
   const { state, progress, error } = usePixelDfuState(pairedDie.pixelId);
-  const [scanned, setScanned] = React.useState<PixelInfoNotifier>();
-  const scanning = usePixelScannerStatus() === "scanning";
-  const central = usePixelsCentral();
-  React.useEffect(() => {
-    return central.addListener("onPixelScanned", ({ status, notifier }) => {
-      if (notifier.pixelId === pairedDie.pixelId) {
-        setScanned(status === "scanned" ? notifier : undefined);
-      }
-    });
-  }, [central, pairedDie]);
   const uploading = state === "starting" || state === "uploading";
   // state &&
   // state !== "completed" &&
   // state !== "errored" &&
   // state !== "aborted";
   const updating = useIsDieUpdatingFirmware(pairedDie.pixelId);
-  const unavailable = status !== "ready" && status !== "identifying" && !state;
+  // Scanning
+  const central = usePixelsCentral();
+  const [scanned, setScanned] = React.useState<PixelInfoNotifier>();
+  const [scanning, setScanning] = React.useState(
+    central.scanStatus === "scanning"
+  );
+  const lastScannedRef = React.useRef(false);
+  React.useEffect(() => {
+    return central.addListener("scanStatus", (status) => {
+      setScanning(status === "scanning");
+      if (status === "starting") {
+        lastScannedRef.current = false;
+      } else if (status === "stopped" && !lastScannedRef.current) {
+        // Mark as not scanned
+        setScanned(undefined);
+      }
+    });
+  }, [central, pairedDie]);
+  React.useEffect(() => {
+    return central.addListener("onPixelScanned", ({ status, notifier }) => {
+      if (notifier.pixelId === pairedDie.pixelId) {
+        const scanned = status === "scanned";
+        setScanned(scanned ? notifier : undefined);
+        lastScannedRef.current = scanned;
+      }
+    });
+  }, [central, pairedDie]);
+
+  const connected = status === "ready" || status === "identifying";
+  const unavailable = !connected && !state && !scanned;
   const { colors } = useTheme();
   const color = unavailable ? colors.onSurfaceDisabled : colors.onSurface;
   return (
@@ -150,22 +169,27 @@ function PixelDfuItem({
         <Text variant="bodyLarge" style={unavailable ? { color } : undefined}>
           {pairedDie.name}
         </Text>
-        {unavailable || !pixel || error ? (
-          <Text style={{ color: colors.onSurfaceDisabled }}>
-            {error
-              ? String(error)
-              : scanned
-                ? "Available"
-                : scanning && updating
-                  ? "Scanning..."
-                  : "Not found"}
-          </Text>
-        ) : (
-          <TextStatus pixel={pixel} state={state} progress={progress} />
-        )}
+        {/* This view makes sure the text properly wraps and leave space for the icon */}
+        <View style={{ flexDirection: "row" }}>
+          {pixel && (connected || state) && !error ? (
+            <TextStatus pixel={pixel} state={state} progress={progress} />
+          ) : (
+            <Text style={{ flex: 1, color }}>
+              {error
+                ? String(error)
+                : scanned
+                  ? "Available"
+                  : scanning && updating
+                    ? "Looking for die..."
+                    : "Unavailable"}
+            </Text>
+          )}
+        </View>
       </View>
       <View style={{ alignSelf: "center" }}>
-        {uploading ? (
+        {error ? (
+          <FontAwesome5 name="exclamation-triangle" size={24} color="red" />
+        ) : uploading ? (
           <BouncingView>
             <FontAwesome5 name="download" size={24} color={colors.primary} />
           </BouncingView>
