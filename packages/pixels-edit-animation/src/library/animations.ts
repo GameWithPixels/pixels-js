@@ -111,20 +111,6 @@ export const PrebuildAnimations = {
     cycles: 2,
   }),
 
-  fixedRainbowD4: new AnimRainbow({
-    uuid: "6d91261e-ab23-47a9-bd7b-a9a7f98a4ea0",
-    name: "Fixed Rainbow D4",
-    category: "colorful",
-    dieType: "d4",
-    duration: 10,
-    faces: getFaceMask([1, 4, 5, 6], "d6"),
-    animFlags: travelingWithLedIndices,
-    count: 0,
-    fade: 0.05,
-    cycles: 3.67,
-    intensity: 0.1,
-  }),
-
   cycleFire: new AnimCycle({
     uuid: "0d44ed15-4f78-4833-9986-cc569a9e6325",
     name: "Cycle Fire",
