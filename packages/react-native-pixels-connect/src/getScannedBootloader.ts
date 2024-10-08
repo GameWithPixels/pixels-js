@@ -1,6 +1,6 @@
 import {
   PixelsBluetoothIds,
-  fromShortBluetoothId,
+  toFullUuid,
 } from "@systemic-games/pixels-core-connect";
 import { ScannedPeripheral } from "@systemic-games/react-native-bluetooth-le";
 
@@ -11,11 +11,7 @@ export function getScannedBootloader(
   peripheral: ScannedPeripheral
 ): ScannedBootloader | undefined {
   const advData = peripheral.advertisementData;
-  if (
-    !advData.services?.includes(
-      fromShortBluetoothId(PixelsBluetoothIds.dfuService)
-    )
-  ) {
+  if (!advData.services?.includes(toFullUuid(PixelsBluetoothIds.dfuService))) {
     // Not a device in bootloader mode
     return;
   }
