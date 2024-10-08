@@ -119,6 +119,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           if (status === "ready") {
             onRename(pixel);
             onFwDate(pixel);
+            onProfileHash(pixel);
             if (
               store
                 .getState()
@@ -288,14 +289,14 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   React.useEffect(() => {
     // Paired dice may have changed since the last render
     const newPairedDice = store.getState().pairedDice.paired;
-    // Check if on dice profile matches the expected hash
+    // Check if on-dice profile matches the expected hash
     for (const d of newPairedDice) {
+      const { diceBrightnessFactor } = store.getState().appSettings;
+      const { library } = store.getState();
       // Check profile
       const { profileUuid } = d;
-      const profileData =
-        store.getState().library.profiles.entities[profileUuid];
+      const profileData = library.profiles.entities[profileUuid];
       const profileHash = profileData?.hash;
-      const { diceBrightnessFactor } = store.getState().appSettings;
       if (
         profileHash &&
         (profileHash !== d.profileHash ||
@@ -305,7 +306,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           ))
       ) {
         const dataSet = createProfileDataSetWithOverrides(
-          readProfile(profileUuid, store.getState().library),
+          readProfile(profileUuid, library),
           diceBrightnessFactor
         );
         central.scheduleOperation(d.pixelId, {
@@ -319,7 +320,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     store,
     // Keep to update profiles on app brightness change
     appBrightness,
-    // Keep to update profiles on dice change
+    // Keep to update profiles on-dice change
     checkProfiles,
     pairedDice,
     // Keep to update profiles on profile data change
