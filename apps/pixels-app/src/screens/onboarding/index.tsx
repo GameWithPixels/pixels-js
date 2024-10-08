@@ -209,6 +209,7 @@ function HealthSlide({ onNext }: { onNext: () => void }) {
   return (
     <Slide title="Health & Safety Information">
       <ScrollView
+        alwaysBounceVertical={false}
         style={{ marginTop: 20 }}
         contentContainerStyle={{ gap: 30, paddingVertical: 10 }}
       >
@@ -482,102 +483,102 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
   const { colors } = useTheme();
   return (
     <Slide title="Pair Your Dice">
-      <Image
-        contentFit="cover"
-        style={{
-          width: "100%",
-          height: 60,
-          marginVertical: 40,
-        }}
-        source={require("#/temp/dice-row.jpg")}
-      />
-      {scanStatus !== "scanning" ? (
-        <Animated.ScrollView
-          key="stopped"
-          exiting={FadeOut.duration(300)}
+      <ScrollView alwaysBounceVertical={false} style={{ marginVertical: 10 }}>
+        <Image
+          contentFit="cover"
           style={{
-            flexGrow: 1,
-            flexShrink: 1,
-            marginVertical: 10,
+            width: "100%",
+            height: 60,
+            marginVertical: 40,
           }}
-          contentContainerStyle={{ alignItems: "center", gap: 40 }}
-        >
-          <Text>
-            To customize your Pixels Dice the app needs to establish a Bluetooth
-            connection.
-          </Text>
+          source={require("#/temp/dice-row.jpg")}
+        />
+        {scanStatus !== "scanning" ? (
           <Animated.View
-            key={scanError ? "error" : "ok"}
-            entering={FadeIn.duration(300)}
+            key="stopped"
             exiting={FadeOut.duration(300)}
-            style={{ alignItems: "center", gap: 40 }}
+            style={{
+              flexGrow: 1,
+              flexShrink: 1,
+              marginVertical: 10,
+              gap: 40,
+            }}
           >
-            {!scanError ? (
-              <>
-                <View style={{ height: 40 }}>
-                  <MaterialCommunityIcons
-                    name="bluetooth"
-                    size={40}
-                    color={colors.onSurface}
-                  />
-                </View>
-                {scanStatus === "stopped" && (
-                  <Text>
-                    {"Please ensure you have Bluetooth turned on and grant permissions " +
-                      "through your device settings. Tap the Continue button to allow " +
-                      "the app to request access."}
-                  </Text>
-                )}
-              </>
-            ) : (
-              <>
-                {/* Encapsulate icon in a fixed size view so the layout doesn't change when
-                icon gets loaded... don't know why this is happening though */}
-                <View style={{ height: 40 }}>
-                  <MaterialIcons
-                    name={
-                      scanError instanceof BluetoothNotAuthorizedError
-                        ? "block"
-                        : "bluetooth-disabled"
-                    }
-                    size={40}
-                    color={colors.error}
-                  />
-                </View>
-                <Text>
-                  {getBluetoothScanErrorMessage(scanError, {
-                    withContinue: true,
-                  })}
-                </Text>
-              </>
-            )}
-          </Animated.View>
-          {scanStatus === "stopped" && (
+            <Text>
+              To customize your Pixels Dice the app needs to establish a
+              Bluetooth connection.
+            </Text>
             <Animated.View
+              key={scanError ? "error" : "ok"}
               entering={FadeIn.duration(300)}
               exiting={FadeOut.duration(300)}
+              style={{ alignItems: "center", gap: 40 }}
             >
-              <GradientButton
-                style={{
-                  marginTop: 20,
-                  alignItems: "flex-start",
-                  alignSelf: "center",
-                }}
-                onPress={() => startScan()}
-              >
-                Continue
-              </GradientButton>
+              {!scanError ? (
+                <>
+                  <View style={{ height: 40 }}>
+                    <MaterialCommunityIcons
+                      name="bluetooth"
+                      size={40}
+                      color={colors.onSurface}
+                    />
+                  </View>
+                  {scanStatus === "stopped" && (
+                    <Text>
+                      {"Please ensure you have Bluetooth turned on and grant permissions " +
+                        "through your device settings. Tap the Continue button to allow " +
+                        "the app to request access."}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Encapsulate icon in a fixed size view so the layout doesn't change when
+                icon gets loaded... don't know why this is happening though */}
+                  <View style={{ height: 40 }}>
+                    <MaterialIcons
+                      name={
+                        scanError instanceof BluetoothNotAuthorizedError
+                          ? "block"
+                          : "bluetooth-disabled"
+                      }
+                      size={40}
+                      color={colors.error}
+                    />
+                  </View>
+                  <Text>
+                    {getBluetoothScanErrorMessage(scanError, {
+                      withContinue: true,
+                    })}
+                  </Text>
+                </>
+              )}
             </Animated.View>
-          )}
-        </Animated.ScrollView>
-      ) : (
-        <Animated.View
-          key="scanning"
-          entering={FadeIn.duration(300).delay(200)}
-          style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 10 }}
-        >
-          <ScannedPixelsCount diceCount={diceCount} />
-          <ScrollView contentContainerStyle={{ paddingBottom: 10, gap: 20 }}>
+            {scanStatus === "stopped" && (
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                exiting={FadeOut.duration(300)}
+              >
+                <GradientButton
+                  style={{
+                    marginTop: 20,
+                    alignItems: "flex-start",
+                    alignSelf: "center",
+                  }}
+                  onPress={() => startScan()}
+                >
+                  Continue
+                </GradientButton>
+              </Animated.View>
+            )}
+          </Animated.View>
+        ) : (
+          <Animated.View
+            key="scanning"
+            entering={FadeIn.duration(300).delay(200)}
+            style={{ flexGrow: 1, flexShrink: 1, marginVertical: 10, gap: 10 }}
+          >
+            <ScannedPixelsCount diceCount={diceCount} />
             <View
               style={{
                 paddingHorizontal: 10,
@@ -627,15 +628,14 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
                 </SmallText>
               </Animated.View>
             )}
-          </ScrollView>
-        </Animated.View>
-      )}
-      {!diceCount ? (
-        <SkipButton
-          sentry-label="skip-pairing"
-          onPress={() => leavePage("skip")}
-        />
-      ) : (
+          </Animated.View>
+        )}
+      </ScrollView>
+      <SkipButton
+        sentry-label="skip-pairing"
+        onPress={() => leavePage("skip")}
+      />
+      {diceCount > 0 && (
         <AnimatedGradientButton
           entering={FadeIn.duration(300).delay(200)}
           onPress={() => leavePage("pair")}
@@ -662,54 +662,62 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
   const [step, setStep] = React.useState<"wait" | "update" | "done">("wait");
   return (
     <Slide title="Update Dice Firmware">
-      <LightUpYourGameImage marginVertical={40} />
-      {step === "wait" ? (
-        <Animated.View
-          key="wait"
-          exiting={FadeOut.duration(300)}
-          style={{ flexGrow: 1, flexShrink: 1, alignItems: "center", gap: 40 }}
-        >
-          <Text>{getFirmwareUpdateAvailable(pixels.length)}</Text>
-          <Text>{getKeepAllDiceUpToDate()}</Text>
-          <Text>{getKeepDiceNearDevice(pixels.length)}</Text>
-          <DfuFilesGate
-            dfuFilesInfo={dfuFilesInfo}
-            dfuFilesError={dfuFilesError}
+      <ScrollView
+        alwaysBounceVertical={false}
+        contentContainerStyle={{ paddingVertical: 10, gap: 20 }}
+      >
+        <LightUpYourGameImage marginVertical={40} />
+        {step === "wait" ? (
+          <Animated.View
+            key="wait"
+            exiting={FadeOut.duration(300)}
+            style={{
+              flexGrow: 1,
+              flexShrink: 1,
+              alignItems: "center",
+              gap: 40,
+            }}
           >
-            {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
-              <GradientButton
-                style={{ alignItems: "flex-start", alignSelf: "center" }}
-                onPress={() => {
-                  setStep("update");
-                  updateDice(
-                    pixels.map((d) => d.pixelId),
-                    dfuFilesInfo
-                  ).finally(() => setStep("done")); // No error should be thrown
-                }}
-              >
-                Update
-              </GradientButton>
-            )}
-          </DfuFilesGate>
-        </Animated.View>
-      ) : (
-        <Animated.View
-          key="update"
-          entering={FadeIn.duration(300).delay(200)}
-          style={{ flexGrow: 1, flexShrink: 1, gap: 20 }}
-        >
-          <Text>
-            {step === "update"
-              ? `Updating your ${diceStr}...`
-              : `Your ${
-                  pixels.length <= 1 ? "die is" : "dice are"
-                } up-to-date.`}
-          </Text>
-          <ScrollView contentContainerStyle={{ paddingVertical: 10, gap: 20 }}>
+            <Text>{getFirmwareUpdateAvailable(pixels.length)}</Text>
+            <Text>{getKeepAllDiceUpToDate()}</Text>
+            <Text>{getKeepDiceNearDevice(pixels.length)}</Text>
+            <DfuFilesGate
+              dfuFilesInfo={dfuFilesInfo}
+              dfuFilesError={dfuFilesError}
+            >
+              {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
+                <GradientButton
+                  style={{ alignItems: "flex-start", alignSelf: "center" }}
+                  onPress={() => {
+                    setStep("update");
+                    updateDice(
+                      pixels.map((d) => d.pixelId),
+                      dfuFilesInfo
+                    ).finally(() => setStep("done")); // No error should be thrown
+                  }}
+                >
+                  Update
+                </GradientButton>
+              )}
+            </DfuFilesGate>
+          </Animated.View>
+        ) : (
+          <Animated.View
+            key="update"
+            entering={FadeIn.duration(300).delay(200)}
+            style={{ flexGrow: 1, flexShrink: 1, gap: 20 }}
+          >
+            <Text>
+              {step === "update"
+                ? `Updating your ${diceStr}...`
+                : `Your ${
+                    pixels.length <= 1 ? "die is" : "dice are"
+                  } up-to-date.`}
+            </Text>
             <PixelDfuList pairedDice={pixels} />
-          </ScrollView>
-        </Animated.View>
-      )}
+          </Animated.View>
+        )}
+      </ScrollView>
       {step === "done" && (
         <AnimatedGradientButton
           entering={FadeIn.duration(300)}
