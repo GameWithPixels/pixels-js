@@ -30,7 +30,7 @@ import {
   switchEnableDebugMode,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
-import { useConfirmActionSheet } from "~/hooks";
+import { useConfirmActionSheet, useDebugMode } from "~/hooks";
 
 function Text(props: Omit<TextProps<never>, "variant">) {
   return <PaperText variant="bodyLarge" {...props} />;
@@ -83,6 +83,7 @@ function AppSettingsPage({
   const disablePlayingAnimations = useAppSelector(
     (state) => state.appSettings.disablePlayingAnimations
   );
+  const debugMode = useDebugMode();
   const showConfirmReset = useConfirmActionSheet<"keepProfiles">(
     "Reset App Settings",
     (data) => {
@@ -90,7 +91,7 @@ function AppSettingsPage({
       console.warn(
         "Resetting app settings" + (keepProfiles ? " except profiles" : "")
       );
-      appDispatch(resetAppSettings());
+      !debugMode && appDispatch(resetAppSettings());
       appDispatch(resetPairedDice());
       appDispatch(resetDiceStats());
       appDispatch(resetDiceRoller());
