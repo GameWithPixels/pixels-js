@@ -16,4 +16,3 @@ export * from "./PixelSession";
 export * from "./repeatConnect";
 export * from "./TelemetryRequestMode";
 export * from "./toFullUuid";
-export * from "./utils";
