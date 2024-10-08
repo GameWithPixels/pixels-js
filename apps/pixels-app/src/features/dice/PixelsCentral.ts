@@ -979,7 +979,7 @@ export class PixelsCentral {
       // We have a Pixel instance, try to connect
       this._scheduleConnectIfQueued(pixelId);
 
-      if (opt?.keepConnectionReleaseTimings) {
+      if (!opt?.keepConnectionReleaseTimings) {
         // Allow again for scanning to release a connection
         // (or extend the current scan time window)
         data.scanEndTime = 0;
