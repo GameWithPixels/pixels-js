@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, StyleProp, View, ViewStyle } from "react-native";
 import { Icon, Text, TouchableRipple, useTheme } from "react-native-paper";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
@@ -198,9 +198,11 @@ function GridListSelector({
 function FirmwareUpdateBanner({
   diceCount,
   onUpdate,
+  style,
 }: {
   diceCount: number;
   onUpdate?: () => void;
+  style?: StyleProp<ViewStyle>;
 }) {
   return (
     diceCount > 0 && (
@@ -208,7 +210,7 @@ function FirmwareUpdateBanner({
         visible
         title="Firmware Update Available"
         actionText="Update Now"
-        style={{ margin: 10 }}
+        style={style}
         onAction={onUpdate}
       >
         {getFirmwareUpdateAvailable(diceCount)}
@@ -251,10 +253,6 @@ function DiceListPage({
           onShowPairDice={() => setShowPairDice(true)}
           onShowDiceRoller={() => navigation.navigate("diceRoller")}
         />
-        <FirmwareUpdateBanner
-          diceCount={outdatedCount}
-          onUpdate={() => navigation.navigate("firmwareUpdate")}
-        />
         <ScrollView
           contentContainerStyle={{
             paddingHorizontal: 10,
@@ -266,6 +264,11 @@ function DiceListPage({
               <GridListSelector
                 viewMode={viewMode}
                 onChangeViewMode={(vm) => appDispatch(setDiceViewMode(vm))}
+              />
+              <FirmwareUpdateBanner
+                diceCount={outdatedCount}
+                onUpdate={() => navigation.navigate("firmwareUpdate")}
+                style={{ marginVertical: 10 }}
               />
               <DebugConnectionStatusesBar />
               {viewMode === "grid" ? (

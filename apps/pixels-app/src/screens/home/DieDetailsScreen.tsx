@@ -7,7 +7,13 @@ import {
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { StyleSheet, View, ViewProps } from "react-native";
+import {
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewProps,
+  ViewStyle,
+} from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { Text } from "react-native-paper";
 
@@ -149,9 +155,11 @@ function DieAdvancedInfo({
 function FirmwareUpdateBanner({
   pixel,
   onUpdate,
+  style,
 }: {
   pixel: Pixel;
   onUpdate?: () => void;
+  style?: StyleProp<ViewStyle>;
 }) {
   const hasFirmwareUpdate = useHasFirmwareUpdate(pixel);
   return hasFirmwareUpdate ? (
@@ -159,6 +167,7 @@ function FirmwareUpdateBanner({
       visible
       title="Update Available"
       actionText="Update Now"
+      style={style}
       onAction={onUpdate}
     >
       {getFirmwareUpdateAvailable(1)}
