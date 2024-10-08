@@ -94,27 +94,42 @@ function PixelDfuItem({
 }: {
   pairedDie: Pick<PixelInfo, "pixelId" | "name" | "dieType">;
 } & Omit<TouchableCardProps, "children" | "selected">) {
-  const availability = usePixelDfuAvailability(pairedDie.pixelId);
   const pixel = useRegisteredPixel(pairedDie.pixelId);
   const status = usePixelStatus(pixel);
   const rollState = usePixelProp(pixel, "rollState");
+  // DFU
+  const availability = usePixelDfuAvailability(pairedDie.pixelId);
   const { state, progress, error } = usePixelDfuState(pairedDie.pixelId);
-  const [scanned, setScanned] = React.useState<PixelInfoNotifier>();
-  const scanning = usePixelScannerStatus() === "scanning";
-  const central = usePixelsCentral();
-  React.useEffect(() => {
-    return central.addListener("onPixelScanned", ({ status, notifier }) => {
-      if (notifier.pixelId === pairedDie.pixelId) {
-        setScanned(status === "scanned" ? notifier : undefined);
-      }
-    });
-  }, [central, pairedDie]);
   const uploading = state === "starting" || state === "uploading";
   // state &&
   // state !== "completed" &&
   // state !== "errored" &&
   // state !== "aborted";
   const updating = useIsDieUpdatingFirmware(pairedDie.pixelId);
+  // Scanning
+  const [scanned, setScanned] = React.useState<PixelInfoNotifier>();
+  const scanning = usePixelScannerStatus() === "scanning";
+  const scannedTimeoutRef = React.useRef<() => void>();
+  React.useEffect(() => {
+    if (scanning) {
+      const id = setTimeout(() => setScanned(undefined), 5000);
+      scannedTimeoutRef.current = () => {
+        clearTimeout(id);
+        scannedTimeoutRef.current = undefined;
+      };
+      return () => scannedTimeoutRef.current?.();
+    }
+  }, [scanning]);
+  const central = usePixelsCentral();
+  React.useEffect(() => {
+    return central.addListener("onPixelScanned", ({ status, notifier }) => {
+      if (notifier.pixelId === pairedDie.pixelId) {
+        setScanned(status === "scanned" ? notifier : undefined);
+        status === "scanned" && scannedTimeoutRef.current?.();
+      }
+    });
+  }, [central, pairedDie]);
+
   const unavailable = status !== "ready" && status !== "identifying" && !state;
   const { colors } = useTheme();
   const color = unavailable ? colors.onSurfaceDisabled : colors.onSurface;
@@ -150,22 +165,27 @@ function PixelDfuItem({
         <Text variant="bodyLarge" style={unavailable ? { color } : undefined}>
           {pairedDie.name}
         </Text>
-        {unavailable || !pixel || error ? (
-          <Text style={{ color: colors.onSurfaceDisabled }}>
-            {error
-              ? String(error)
-              : scanned
-                ? "Available"
-                : scanning && updating
-                  ? "Scanning..."
-                  : "Not found"}
-          </Text>
-        ) : (
-          <TextStatus pixel={pixel} state={state} progress={progress} />
-        )}
+        {/* This view makes sure the text properly wraps and leave space for the icon */}
+        <View style={{ flexDirection: "row" }}>
+          {unavailable || !pixel || error ? (
+            <Text style={{ flex: 1, color: colors.onSurfaceDisabled }}>
+              {error
+                ? String(error)
+                : scanned
+                  ? "Available"
+                  : scanning && updating
+                    ? "Scanning..."
+                    : "Not found"}
+            </Text>
+          ) : (
+            <TextStatus pixel={pixel} state={state} progress={progress} />
+          )}
+        </View>
       </View>
       <View style={{ alignSelf: "center" }}>
-        {uploading ? (
+        {error ? (
+          <FontAwesome5 name="exclamation-triangle" size={24} color="red" />
+        ) : uploading ? (
           <BouncingView>
             <FontAwesome5 name="download" size={24} color={colors.primary} />
           </BouncingView>
