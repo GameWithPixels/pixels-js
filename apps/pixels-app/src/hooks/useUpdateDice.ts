@@ -1,3 +1,4 @@
+import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
 import { DfuFilesInfo } from "./useDfuFiles";
@@ -55,9 +56,12 @@ export function useUpdateDice(): (
       } finally {
         stopScan?.();
       }
-      console.warn(
-        "Finished updating dice, failed: " + failedPixelsIds.join(", ")
-      );
+      if (failedPixelsIds.length) {
+        console.warn(
+          "Failed updating dice: " +
+            failedPixelsIds.map(unsigned32ToHex).join(", ")
+        );
+      }
       return failedPixelsIds;
     },
     [central, store]
