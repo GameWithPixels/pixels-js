@@ -1,9 +1,4 @@
-import {
-  assert,
-  bitIndexToFlag,
-  bitsToIndices,
-  combineFlags,
-} from "@systemic-games/pixels-core-utils";
+import { assert, bitsToIndices } from "@systemic-games/pixels-core-utils";
 
 import { PixelDieType } from "./PixelDieType";
 
@@ -90,18 +85,6 @@ export function getLEDCount(dieType: PixelDieType): number {
   }
 }
 
-function getFaceMaskPd6(faceValue: number): number {
-  let start = 0;
-  for (let i = 1; i < faceValue; ++i) {
-    start += i;
-  }
-  const ledsMasks = Array(faceValue);
-  for (let i = start; i < start + faceValue; ++i) {
-    ledsMasks[i - start] = bitIndexToFlag(i);
-  }
-  return combineFlags(ledsMasks);
-}
-
 /**
  * Convert a die face value or a list of face values to a face mask
  * for use with the animation classes.
@@ -130,8 +113,6 @@ export function getFaceMask(
             break;
         }
         break;
-      case "d6pipped":
-        return getFaceMaskPd6(faceValueOrFaceList);
       case "d10":
       case "unknown":
         ++faceValueOrFaceList;
