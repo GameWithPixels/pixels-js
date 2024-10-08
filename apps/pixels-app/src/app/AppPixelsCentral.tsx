@@ -237,6 +237,21 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     };
   }, [central, store]);
 
+  // Update firmware timestamp on scan
+  React.useEffect(() => {
+    return central.addListener(
+      "onPixelScanned",
+      ({ notifier: { pixelId, firmwareDate } }) => {
+        store.dispatch(
+          updatePairedDieFirmwareTimestamp({
+            pixelId,
+            timestamp: firmwareDate.getTime(),
+          })
+        );
+      }
+    );
+  }, [central, store]);
+
   // Monitor paired dice
   const [checkProfiles, setCheckProfiles] = React.useReducer(
     (x) => (x + 1) & 0xffff, // See useForceUpdate()
@@ -299,8 +314,17 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         });
       }
     }
-    // Keep appBrightness, checkProfiles, pairedDice & profiles in dependencies!
-  }, [appBrightness, central, checkProfiles, store, pairedDice, profiles]);
+  }, [
+    central,
+    store,
+    // Keep to update profiles on app brightness change
+    appBrightness,
+    // Keep to update profiles on dice change
+    checkProfiles,
+    pairedDice,
+    // Keep to update profiles on profile data change
+    profiles,
+  ]);
 
   // Profiles edition
   const [editableProfileStoresMap] = React.useState(
