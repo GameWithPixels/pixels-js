@@ -95,23 +95,28 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         disposers.get(pixel.pixelId)?.();
 
         // Die name
-        const onRename = ({ name }: PixelMutableProps) =>
-          store.dispatch(
-            updatePairedDieName({
-              pixelId: pixel.pixelId,
-              name,
-            })
-          );
+        const onRename = ({ pixelId, name }: PixelMutableProps) =>
+          store.dispatch(updatePairedDieName({ pixelId, name }));
         pixel.addPropertyListener("name", onRename);
 
         // Firmware date
-        const onFwDate = ({ firmwareDate }: PixelMutableProps) =>
-          store.dispatch(
-            updatePairedDieFirmwareTimestamp({
-              pixelId: pixel.pixelId,
-              timestamp: firmwareDate.getTime(),
-            })
+        const onFwDate = ({ pixelId, firmwareDate }: PixelMutableProps) => {
+          const pairedDie = pairedDiceSelectors.selectByPixelId(
+            store.getState(),
+            pixelId
           );
+          if (
+            pairedDie &&
+            pairedDie.firmwareTimestamp !== firmwareDate.getTime()
+          ) {
+            store.dispatch(
+              updatePairedDieFirmwareTimestamp({
+                pixelId,
+                timestamp: firmwareDate.getTime(),
+              })
+            );
+          }
+        };
         pixel.addPropertyListener("firmwareDate", onFwDate);
 
         // Update name and firmware timestamp on connection
@@ -179,12 +184,14 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
               `[Pixel ${name}] Got profile hash ${unsigned32ToHex(hash)} ` +
                 `(stored hash ${unsigned32ToHex(pairedDie.profileHash)})`
             );
-            store.dispatch(
-              updatePairedDieProfileHash({
-                pixelId: pixel.pixelId,
-                hash,
-              })
-            );
+            if (pairedDie.profileHash !== hash) {
+              store.dispatch(
+                updatePairedDieProfileHash({
+                  pixelId: pixel.pixelId,
+                  hash,
+                })
+              );
+            }
           }
         };
         pixel.addPropertyListener("profileHash", onProfileHash);
@@ -243,12 +250,21 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     return central.addListener(
       "onPixelScanned",
       ({ notifier: { pixelId, firmwareDate } }) => {
-        store.dispatch(
-          updatePairedDieFirmwareTimestamp({
-            pixelId,
-            timestamp: firmwareDate.getTime(),
-          })
+        const pairedDie = pairedDiceSelectors.selectByPixelId(
+          store.getState(),
+          pixelId
         );
+        if (
+          pairedDie &&
+          pairedDie.firmwareTimestamp !== firmwareDate.getTime()
+        ) {
+          store.dispatch(
+            updatePairedDieFirmwareTimestamp({
+              pixelId,
+              timestamp: firmwareDate.getTime(),
+            })
+          );
+        }
       }
     );
   }, [central, store]);
