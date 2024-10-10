@@ -4,7 +4,10 @@ import {
   EventReceiver,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
+import {
+  DfuConnectionError,
+  DfuState,
+} from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
   DataSet,
@@ -492,6 +495,7 @@ export class PixelScheduler {
   ): Promise<void> {
     let attemptsCount = 0;
     let uploadStarted = false;
+    let firstError: unknown | undefined;
     while (true) {
       try {
         const recoverFromUploadError = uploadStarted;
@@ -514,30 +518,14 @@ export class PixelScheduler {
         logError(
           `DFU${uploadStarted ? " update" : ""} error #${attemptsCount} ${e}`
         );
+        if (!firstError) {
+          firstError = e;
+        }
         if (attemptsCount >= 3) {
-          throw e instanceof Error ? e : new Error(String(e));
+          // Throw the original error if what we got is a connection error
+          throw e instanceof DfuConnectionError ? firstError : e;
         }
       }
     }
   }
-
-  // private async _fakeUpdateFirmware(pixel: Pixel): Promise<void> {
-  //   this._emitEvent("onDfuState", { pixel, state: "initializing" });
-  //   await delay(300);
-  //   this._emitEvent("onDfuState", { pixel, state: "connecting" });
-  //   pixel.disconnect();
-  //   await delay(300);
-  //   this._emitEvent("onDfuState", { pixel, state: "connected" });
-  //   await delay(300);
-  //   this._emitEvent("onDfuState", { pixel, state: "starting" });
-  //   await delay(300);
-  //   this._emitEvent("onDfuState", { pixel, state: "uploading" });
-  //   for (let progress = 0; progress <= 100; progress += 20) {
-  //     await delay(300);
-  //     this._emitEvent("onDfuProgress", { pixel, progress });
-  //   }
-  //   this._emitEvent("onDfuState", { pixel, state: "disconnected" });
-  //   await delay(300);
-  //   this._emitEvent("onDfuState", { pixel, state: "completed" });
-  // }
 }
