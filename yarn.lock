@@ -11946,7 +11946,7 @@ react-native-document-picker@^9.3.1:
   dependencies:
     invariant "^2.2.4"
 
-react-native-file-logger@~0.5.6m:
+react-native-file-logger@~0.5.6:
   version "0.5.6"
   resolved "https://registry.yarnpkg.com/react-native-file-logger/-/react-native-file-logger-0.5.6.tgz#b6439717a943b4677b99a6c43ffba43991ea08e9"
   integrity sha512-npp0IB94QDhy6JjsA9jipuNmbHwcFGGSf8xPXquVbU7z2zM9GQk/JTtXm4IVidQxbDiy0Mzk48eUGkxhry0Ofg==
