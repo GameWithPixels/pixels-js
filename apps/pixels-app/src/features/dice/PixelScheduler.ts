@@ -366,14 +366,17 @@ export class PixelScheduler {
   private _getNextOperation(): PixelOperationParams | undefined {
     // Operations sorted by priority
     if (this._operations.has("connect")) {
+      // Connect before doing anything else
       this._operations.delete("connect");
       return { type: "connect" };
     } else if (this._operations.has("updateFirmware")) {
+      // Update firmware before running other operations
       const { firmwarePath, bootloaderPath } =
         this._operations.get("updateFirmware")!;
       this._operations.delete("updateFirmware");
       return { type: "updateFirmware", firmwarePath, bootloaderPath };
     } else if (this._operations.has("resetSettings")) {
+      // Reset settings before running other operations
       this._operations.delete("resetSettings");
       return { type: "resetSettings" };
     } else if (this._operations.has("rename")) {
@@ -391,9 +394,11 @@ export class PixelScheduler {
         dataSet,
       };
     } else if (this._operations.has("turnOff")) {
+      // Turnoff once all other operations are done (except disconnect)
       this._operations.delete("turnOff");
       return { type: "turnOff" };
     } else if (this._operations.has("disconnect")) {
+      // Disconnect once all other operations are done
       this._operations.delete("disconnect");
       return { type: "disconnect" };
     } else {

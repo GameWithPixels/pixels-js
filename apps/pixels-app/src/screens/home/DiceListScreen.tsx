@@ -208,7 +208,7 @@ function FirmwareUpdateBanner({
     diceCount > 0 && (
       <Banner
         visible
-        title="Update Available"
+        title="Firmware Update Available"
         actionText="Update Now"
         style={style}
         onAction={onUpdate}
