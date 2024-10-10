@@ -30,7 +30,7 @@ export function DebugPerfMetrics({ disabled }: { disabled?: boolean }) {
         style={{ position: "absolute", top, right: 5 }}
       >
         <Text style={{ color: "cyan", fontSize: 10 }}>
-          JS: {stats.jsFps} / UI: {stats.uiFps} / RAM:{" "}
+          JS: {Math.round(stats.jsFps)} / UI: {Math.round(stats.uiFps)} / RAM:{" "}
           {Math.round(stats.usedRam)}
         </Text>
       </View>
