@@ -284,6 +284,8 @@ export async function startDfu(
       default:
         switch (error.code) {
           // iOS errors
+          case "DFUErrorFailedToConnect":
+            throw new DfuConnectionError(targetId, msg);
           case "DFUErrorFileInvalid":
             throw new DfuFileInvalidError(targetId, msg);
           case "DFUErrorDeviceNotSupported":
@@ -307,7 +309,14 @@ export async function startDfu(
             throw new DfuRemoteError(targetId, msg);
           case "E_DFU_ERROR":
           default:
-            throw new DfuError(targetId, msg);
+            if (
+              typeof error.code === "string" &&
+              error.code.startsWith("DFUErrorRemote")
+            ) {
+              throw new DfuRemoteError(targetId, msg);
+            } else {
+              throw new DfuError(targetId, msg);
+            }
         }
     }
   } finally {
