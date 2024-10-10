@@ -333,23 +333,24 @@ async function updateFactoryFirmware(
     try {
       await updateFW();
     } catch (error) {
-      let lastError: any = error;
+      let recovered = false;
       if (dfuTarget.address && error instanceof DfuUpdateError) {
         console.warn(
-          `Error updating FW, trying again with BL address: ${lastError}`
+          `Error updating FW, trying again with BL address: ${error}`
         );
         setDfuState(undefined);
         setDfuProgress(0);
         // Switch to bootloader address (only available on Android)
         try {
           await updateFW(dfuTarget.address + 1);
-          lastError = undefined;
-        } catch (error) {
-          lastError = error;
+          recovered = true;
+        } catch (e) {
+          console.error(`Errored again updating FW: ${error}`);
         }
       }
-      if (lastError) {
+      if (!recovered) {
         onFirmwareUpdate?.("error");
+        // Throw the original error
         throw error;
       }
     }
