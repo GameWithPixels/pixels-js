@@ -643,6 +643,8 @@ export class PixelsCentral {
         // Try to connect if queued for connection
         this._scheduleConnectIfQueued(pixelId);
       } else {
+        this._connectQueue.includes(pixelId) &&
+          console.log(">> SCANNED Pixel " + unsigned32ToHex(pixelId));
         // Track time of last scan
         const scanTime = notifier.timestamp.getTime();
         if (
