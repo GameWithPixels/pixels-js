@@ -48,9 +48,6 @@ export function createLibraryProfile(
   const profile = new EditProfile({ uuid, dieType });
   addDefaultAdvancedRules(profile, dieType);
 
-  // TODO fix for D4 rolling as D6
-  const fixD4FaceCount = (count: number): number =>
-    dieType === "d4" ? 6 : count;
   const mapFace = (face: number): number =>
     DiceUtils.mapFaceForAnimation(face, dieType);
   const mapFaces = (faces: number[]): number[] => faces.map(mapFace);
@@ -235,7 +232,7 @@ export function createLibraryProfile(
       profile.name = "High Low";
       pushRollingAnimRule(PrebuildAnimations.blueFlash);
       // Highest faces
-      const faceCount = fixD4FaceCount(DiceUtils.getFaceCount(dieType));
+      const faceCount = DiceUtils.getFaceCount(dieType);
       const faces = DiceUtils.getDieFaces(dieType);
       profile.rules.push(
         new EditRule(
@@ -276,7 +273,7 @@ export function createLibraryProfile(
     case "worm": {
       profile.name = "Worm";
       pushRollingAnimRule(PrebuildAnimations.blueFlash);
-      const faceCount = fixD4FaceCount(DiceUtils.getFaceCount(dieType));
+      const faceCount = DiceUtils.getFaceCount(dieType);
       const faces = DiceUtils.getDieFaces(dieType);
       profile.rules.push(
         new EditRule(
