@@ -260,6 +260,7 @@ export function PixelFocusView({
           alignSelf: "center",
         }}
         onPress={() => {
+          central.tryConnect(pairedDie.pixelId, { priority: "high" });
           central.scheduleOperation(pairedDie.pixelId, {
             type: "blink",
           });
