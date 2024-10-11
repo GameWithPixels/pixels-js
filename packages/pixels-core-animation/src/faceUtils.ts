@@ -98,21 +98,6 @@ export function getFaceMask(
 ): number {
   if (typeof faceValueOrFaceList === "number") {
     switch (dieType) {
-      case "d4":
-        // TODO fix for D4 rolling as D6
-        switch (faceValueOrFaceList) {
-          case 1:
-            break;
-          case 2:
-          case 3:
-            ++faceValueOrFaceList;
-            break;
-          default:
-          case 4:
-            faceValueOrFaceList = 6;
-            break;
-        }
-        break;
       case "d10":
       case "unknown":
         ++faceValueOrFaceList;
