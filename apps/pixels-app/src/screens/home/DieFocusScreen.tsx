@@ -71,10 +71,11 @@ function DieFocusPage({
 
   useFocusEffect(
     React.useCallback(() => {
+      central.tryConnect(pairedDie.pixelId, { priority: "high" });
+      // TODO blink if connected or on successful connection
       central.scheduleOperation(pairedDie.pixelId, {
         type: "blink",
       });
-      central.tryConnect(pairedDie.pixelId, { priority: "high" });
     }, [central, pairedDie.pixelId])
   );
 
