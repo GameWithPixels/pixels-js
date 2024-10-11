@@ -1,7 +1,4 @@
-import {
-  createTypedEventEmitter,
-  assertNever,
-} from "@systemic-games/pixels-core-utils";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import {
   PixelDieType,
   PixelColorway,
@@ -11,6 +8,7 @@ import { Asset } from "expo-asset";
 import { loadAsync, THREE } from "expo-three";
 
 import "./readAsArrayBuffer";
+import { CachedAssetLoader } from "./CachedLoader";
 import { ensureAssetReadableAsync } from "./ensureAssetReadableAsync";
 
 import Die3D from "~/pixels-three/Die3D";
@@ -23,9 +21,8 @@ function warn(funcName: string, msg: string): void {
   __DEV__ && console.warn(`${funcName}(): ${msg}`);
 }
 
-function getGlbAsset(dieType: PixelDieType): number {
+function getGlbAsset(dieType: Exclude<PixelDieType, "unknown">): number {
   switch (dieType) {
-    default:
     case "d20":
       return require(`#/meshes/dice/d20.glb`);
     case "d12":
@@ -44,6 +41,8 @@ function getGlbAsset(dieType: PixelDieType): number {
       return require(`#/meshes/dice/d6fudge.glb`);
     case "d4":
       return require(`#/meshes/dice/d4.glb`);
+    default:
+      assertNever(dieType, "Unexpected GLB asset die type " + dieType);
   }
 }
 
@@ -55,108 +54,58 @@ interface Die3DAssets {
   envMap?: THREE.Texture;
 }
 
-const diceAssets = new Map<string, Die3DAssets | "loading" | Error>();
-const dieLoadEvent = createTypedEventEmitter<{
-  done: { result: Die3DAssets | Error; key: string };
-}>();
-// We may create a bunch of Die3D at once
-dieLoadEvent.setMaxListeners(100);
+const texturesLoader = new CachedAssetLoader<
+  THREE.Texture,
+  {
+    virtualAssetModule: string | number;
+    textureName: string;
+  }
+>(
+  async ({ virtualAssetModule, textureName }) => {
+    const start = Date.now();
+    // Load texture
+    const obj = await loadAsync(
+      await ensureAssetReadableAsync(virtualAssetModule, textureName)
+    );
+    if (!obj) {
+      throw new CreateDie3DError(`Failed to load die3d texture ${textureName}`);
+    }
+    const texture = obj as THREE.Texture;
+    if (!texture.isTexture) {
+      throw new CreateDie3DError(
+        `Expected a texture for ${textureName} but got ${obj.type}`
+      );
+    }
+    texture.flipY = false;
+    log(
+      "loadTextureAsync",
+      `Texture for ${textureName} loaded in ${Date.now() - start}ms`
+    );
+    return texture;
+  },
+  ({ virtualAssetModule }) => String(virtualAssetModule)
+);
 
-const textures = new Map<string | number, THREE.Texture | "loading" | Error>();
-const textureLoadEvent = createTypedEventEmitter<{
-  done: { result: THREE.Texture | Error; key: string };
-}>();
-textureLoadEvent.setMaxListeners(100);
-
-const materials = new Map<
-  string,
-  THREE.MeshPhysicalMaterial | "loading" | Error
->();
-const materialLoadEvent = createTypedEventEmitter<{
-  done: {
-    result: THREE.MeshPhysicalMaterial | Error;
-    key: string;
-  };
-}>();
-materialLoadEvent.setMaxListeners(100);
-
-async function loadTextureAsync(
+function loadTextureAsync(
   virtualAssetModule: string | number,
   textureName: string
 ): Promise<THREE.Texture> {
-  const key = String(virtualAssetModule);
-  const result = textures.get(key);
-  if (result instanceof Error) {
-    throw result;
-  }
-  if (typeof result === "object") {
-    return result;
-  }
-  switch (result) {
-    case undefined:
-      textures.set(key, "loading");
-      try {
-        // Load texture
-        const start = Date.now();
-        const obj = await loadAsync(
-          await ensureAssetReadableAsync(virtualAssetModule, textureName)
-        );
-        log(
-          "loadTextureAsync",
-          `Texture for ${textureName} loaded in ${Date.now() - start}ms`
-        );
-        if (!obj) {
-          throw new CreateDie3DError(
-            `Failed to load die3d texture ${textureName}`
-          );
-        }
-        const texture = obj as THREE.Texture;
-        if (!texture.isTexture) {
-          throw new CreateDie3DError(
-            `Expected a texture for ${textureName} but got ${obj.type}`
-          );
-        }
-        texture.flipY = false;
-        textures.set(key, texture);
-        textureLoadEvent.emit("done", { result: texture, key });
-        return texture;
-      } catch (error) {
-        textures.set(key, error as Error);
-        textureLoadEvent.emit("done", { result: error as Error, key });
-        throw error;
-      }
-    case "loading":
-      return new Promise<THREE.Texture>((resolve, reject) => {
-        const listener = ({
-          result,
-          key: loadedKey,
-        }: {
-          result: THREE.Texture | Error;
-          key: string;
-        }) => {
-          if (key === loadedKey) {
-            textureLoadEvent.removeListener("done", listener);
-            if (result instanceof Error) {
-              reject(result);
-            } else {
-              resolve(result);
-            }
-          }
-        };
-        textureLoadEvent.addListener("done", listener);
-      });
-    default:
-      assertNever(result, "Unexpected Die3D loading result");
-  }
+  return texturesLoader.loadAsync({
+    virtualAssetModule,
+    textureName,
+  });
 }
 
-async function loadMaterialAsync(
-  colorway: PixelColorway,
-  isPD6: boolean
-): Promise<THREE.MeshPhysicalMaterial> {
-  // Our load function
-  const loadMatAsync = async (): Promise<THREE.MeshPhysicalMaterial> => {
+const materialsLoader = new CachedAssetLoader<
+  THREE.MeshPhysicalMaterial,
+  {
+    colorway: Exclude<PixelColorway, "unknown" | "custom">;
+    isPD6: boolean;
+  }
+>(
+  async ({ colorway, isPD6 }) => {
     const start = Date.now();
+    // Create material
     const material = new THREE.MeshPhysicalMaterial();
     material.color.setRGB(1, 1, 1);
     if (isPD6) {
@@ -295,6 +244,8 @@ async function loadMaterialAsync(
         material.transparent = true;
         material.side = THREE.DoubleSide;
         break;
+      default:
+        assertNever(colorway, "Unexpected material colorway " + colorway);
     }
 
     log(
@@ -303,212 +254,182 @@ async function loadMaterialAsync(
     );
 
     return material;
-  };
+  },
+  ({ colorway, isPD6 }) => colorway + (isPD6 ? "/pd6" : "")
+);
 
-  const key = colorway + (isPD6 ? "/pd6" : "");
-  const result = materials.get(key);
-  if (result instanceof Error) {
-    throw result;
-  }
-  if (typeof result === "object") {
-    return result;
-  }
-  switch (result) {
-    case undefined:
-      materials.set(key, "loading");
-      try {
-        // Load material
-        const material = await loadMatAsync();
-        materials.set(key, material);
-        materialLoadEvent.emit("done", { result: material, key });
-        return material;
-      } catch (error) {
-        materials.set(key, error as Error);
-        materialLoadEvent.emit("done", { result: error as Error, key });
-        throw error;
-      }
-    case "loading":
-      return new Promise<THREE.MeshPhysicalMaterial>((resolve, reject) => {
-        const listener = ({
-          result,
-          key: loadedKey,
-        }: {
-          result: THREE.MeshPhysicalMaterial | Error;
-          key: string;
-        }) => {
-          if (key === loadedKey) {
-            materialLoadEvent.removeListener("done", listener);
-            if (result instanceof Error) {
-              reject(result);
-            } else {
-              resolve(result);
-            }
-          }
-        };
-        materialLoadEvent.addListener("done", listener);
-      });
-    default:
-      assertNever(result, "Unexpected Die3D loading result");
-  }
-}
-
-async function loadAssetsAsync(
-  dieType: PixelDieType,
-  colorway: PixelColorway
-): Promise<Die3DAssets> {
-  if (dieType === "unknown") {
-    warn("loadAssetsAsync", `Unknown dieType, defaulting to D20`);
-    dieType = "d20";
-  }
-  if (colorway === "unknown") {
-    warn("loadAssetsAsync", `Unknown colorway for ${dieType}`);
+function loadMaterialAsync(
+  colorway: PixelColorway,
+  isPD6: boolean
+): Promise<THREE.MeshPhysicalMaterial> {
+  if (colorway === "unknown" || colorway === "custom") {
+    warn(
+      "loadMaterialAsync",
+      `Got ${colorway} colorway, defaulting to Onyx Black`
+    );
     colorway = "onyxBlack";
   }
-
-  // Load mesh
-  const start = Date.now();
-
-  // Use https://fabconvert.com/convert/fbx/to/glb to convert fbx files
-  const gltf: { scene: THREE.Group } = await loadAsync(
-    Asset.fromModule(getGlbAsset(dieType))
-  );
-  if (!gltf?.scene?.isGroup) {
-    throw new CreateDie3DError(
-      `GLTF scene for ${dieType}/${colorway} is not a group`
-    );
-  }
-
-  // Get lights
-  const lights = gltf.scene.children.filter(
-    (obj) => (obj as THREE.Light).isLight
-  ) as THREE.Light[];
-
-  // Fix lights
-  lights.forEach((l, i) => {
-    l.intensity = 2;
-    // Color values from ThreeJS JSON scene file
-    switch (i) {
-      case 0:
-        l.color.setRGB(214 / 255, 243 / 255, 245 / 255);
-        break;
-      case 1:
-        l.color.setRGB(230 / 255, 178 / 255, 178 / 255);
-        break;
-      case 2:
-        l.color.setRGB(238 / 255, 236 / 255, 206 / 255);
-        break;
-    }
-  });
-
-  // Get die3d root object
-  const objects = gltf.scene.children.filter(
-    (obj) => !(lights as THREE.Object3D[]).includes(obj)
-  );
-  const root = objects.length === 1 ? objects[0] : gltf.scene;
-  if (!root?.isObject3D) {
-    throw new CreateDie3DError(
-      `GLTF scene for ${dieType}/${colorway} doesn't have a root object that is not a light`
-    );
-  }
-
-  // Find face meshes
-  const baseMeshes: THREE.Mesh[] = [];
-  const faceMeshes: THREE.Mesh[] = [];
-  root.traverse((obj) => {
-    if ((obj as THREE.Mesh).isMesh) {
-      if (obj.name.toLocaleLowerCase().includes("face")) {
-        faceMeshes.push(obj as THREE.Mesh);
-      } else if (obj.name.toLocaleLowerCase().includes("base")) {
-        baseMeshes.push(obj as THREE.Mesh);
-      }
-    }
-  });
-
-  // // Check face count
-  const isPD6 = dieType === "d6pipped";
-  const faceCount = isPD6
-    ? DiceUtils.getLEDCount(dieType)
-    : DiceUtils.getFaceCount(dieType);
-  if (faceMeshes.length !== faceCount) {
-    throw new CreateDie3DError(
-      `Mesh for ${dieType} has ${faceMeshes.length} faces instead of ${faceCount}`
-    );
-  }
-
-  // Get their names
-  const faceNames: string[] = Array(DiceUtils.getFaceCount(dieType));
-  faceMeshes.forEach((faceMesh, i) => {
-    // Get face index
-    const indexAsString = faceMesh.name
-      .toLowerCase()
-      .split("face")[1]
-      .split("mesh")[0]
-      .split("led")[0];
-    const indexFromName = indexAsString?.length ? Number(indexAsString) : NaN;
-    if (isNaN(indexFromName)) {
-      log(
-        "loadAssetsAsync",
-        `Face index not found in ${faceMesh.name}, using node index ${i}`
-      );
-    }
-    const index = isNaN(indexFromName)
-      ? i
-      : DiceUtils.indexFromFace(indexFromName, dieType);
-    if (index < 0 || index >= faceNames.length) {
-      throw new CreateDie3DError(
-        `Out of bound face index ${index} for face ${faceMesh.name} of ${dieType}/${colorway}`
-      );
-    }
-    // TODO pipped dice
-    if (!isPD6 && faceNames[index]) {
-      throw new CreateDie3DError(
-        `Duplicate face index ${index} for ${dieType}/${colorway}`
-      );
-    }
-    faceNames[index] = faceMesh.name;
-  });
-
-  // Update materials
-  const mat = await loadMaterialAsync(colorway, isPD6);
-  for (const mesh of faceMeshes.concat(baseMeshes)) {
-    mesh.material = mat;
-  }
-
-  // Compute scale used to display die
-  const aabb = new THREE.Box3();
-  aabb.setFromObject(root);
-  const size = aabb.getSize(new THREE.Vector3());
-
-  log(
-    "loadAssetsAsync",
-    `Assets for ${dieType} loaded in ${Date.now() - start}ms`
-  );
-
-  return { root, faceNames, size, lights };
+  return materialsLoader.loadAsync({ colorway, isPD6 });
 }
+
+const rawAssetsLoader = new CachedAssetLoader<
+  Die3DAssets,
+  Exclude<PixelDieType, "unknown">
+>(
+  async (dieType) => {
+    const start = Date.now();
+    // Load mesh from GLB file
+    // Use https://fabconvert.com/convert/fbx/to/glb to convert fbx files
+    const gltf: { scene: THREE.Group } = await loadAsync(
+      Asset.fromModule(getGlbAsset(dieType))
+    );
+    if (!gltf?.scene?.isGroup) {
+      throw new CreateDie3DError(`GLTF scene for ${dieType} is not a group`);
+    }
+
+    // Get lights
+    const lights = gltf.scene.children.filter(
+      (obj) => (obj as THREE.Light).isLight
+    ) as THREE.Light[];
+
+    // Fix lights
+    lights.forEach((l, i) => {
+      l.intensity = 2;
+      // Color values from ThreeJS JSON scene file
+      switch (i) {
+        case 0:
+          l.color.setRGB(214 / 255, 243 / 255, 245 / 255);
+          break;
+        case 1:
+          l.color.setRGB(230 / 255, 178 / 255, 178 / 255);
+          break;
+        case 2:
+          l.color.setRGB(238 / 255, 236 / 255, 206 / 255);
+          break;
+      }
+    });
+
+    // Get die3d root object
+    const objects = gltf.scene.children.filter(
+      (obj) => !(lights as THREE.Object3D[]).includes(obj)
+    );
+    const root = objects.length === 1 ? objects[0] : gltf.scene;
+    if (!root?.isObject3D) {
+      throw new CreateDie3DError(
+        `GLTF scene for ${dieType} doesn't have a root object that is not a light`
+      );
+    }
+
+    // Find face meshes
+    const faceMeshes: THREE.Mesh[] = [];
+    root.traverse((obj) => {
+      if (
+        obj instanceof THREE.Mesh &&
+        obj.name.toLocaleLowerCase().includes("face")
+      ) {
+        faceMeshes.push(obj);
+      }
+    });
+
+    // Check face count
+    const isPD6 = dieType === "d6pipped";
+    const faceCount = isPD6
+      ? DiceUtils.getLEDCount(dieType)
+      : DiceUtils.getFaceCount(dieType);
+    if (faceMeshes.length !== faceCount) {
+      throw new CreateDie3DError(
+        `Mesh for ${dieType} has ${faceMeshes.length} faces instead of ${faceCount}`
+      );
+    }
+
+    // Get their names
+    const faceNames: string[] = Array(DiceUtils.getFaceCount(dieType));
+    faceMeshes.forEach((faceMesh, i) => {
+      // Get face index
+      const indexAsString = faceMesh.name
+        .toLowerCase()
+        .split("face")[1]
+        .split("mesh")[0]
+        .split("led")[0];
+      const indexFromName = indexAsString?.length ? Number(indexAsString) : NaN;
+      if (isNaN(indexFromName)) {
+        log(
+          "loadMeshAsync",
+          `Face index not found in ${faceMesh.name}, using node index ${i}`
+        );
+      }
+      const index = isNaN(indexFromName)
+        ? i
+        : DiceUtils.indexFromFace(indexFromName, dieType);
+      if (index < 0 || index >= faceNames.length) {
+        throw new CreateDie3DError(
+          `Out of bound face index ${index} for face ${faceMesh.name} of ${dieType}`
+        );
+      }
+      // TODO pipped dice
+      if (!isPD6 && faceNames[index]) {
+        throw new CreateDie3DError(
+          `Duplicate face index ${index} for ${dieType}`
+        );
+      }
+      faceNames[index] = faceMesh.name;
+    });
+
+    // Compute scale used to display die
+    const aabb = new THREE.Box3();
+    aabb.setFromObject(root);
+    const size = aabb.getSize(new THREE.Vector3());
+
+    log(
+      "loadMeshAsync",
+      `Assets for ${dieType} loaded in ${Date.now() - start}ms`
+    );
+
+    return { root, faceNames, size, lights };
+  },
+  (dieType) => dieType
+);
+
+function loadMeshAsync(dieType: PixelDieType): Promise<Die3DAssets> {
+  if (dieType === "unknown") {
+    warn("loadMeshAsync", `Got die type ${dieType}, defaulting to D20`);
+    dieType = "d20";
+  }
+
+  return rawAssetsLoader.loadAsync(dieType);
+}
+
+const assetsLoader = new CachedAssetLoader<
+  Die3DAssets,
+  {
+    dieType: PixelDieType;
+    colorway: PixelColorway;
+  }
+>(
+  async ({ dieType, colorway }) => {
+    // Load mesh and material
+    const assets = await loadMeshAsync(dieType);
+    const material = await loadMaterialAsync(colorway, dieType === "d6pipped");
+    const root = assets.root.clone();
+    // Update materials
+    root.traverse((obj) => {
+      if (obj instanceof THREE.Mesh) {
+        const name = obj.name.toLocaleLowerCase();
+        if (name.includes("face") || name.includes("base")) {
+          obj.material = material;
+        }
+      }
+    });
+    // Return updated asset
+    return { ...assets, root };
+  },
+  ({ dieType, colorway }) => dieType + "/" + colorway
+);
 
 export interface DieSceneObjects {
   die3d: Die3D;
   lights: THREE.Light[];
   envMap?: THREE.Texture;
-}
-
-function instantiate(
-  assets: Die3DAssets,
-  dieType: PixelDieType,
-  colorway: PixelColorway
-): DieSceneObjects {
-  return {
-    die3d: new Die3D(
-      assets.root,
-      assets.faceNames,
-      assets.size,
-      dieType,
-      colorway
-    ),
-    lights: assets.lights?.map((l) => l.clone()),
-    envMap: assets.envMap,
-  };
 }
 
 export class CreateDie3DError extends Error {
@@ -522,48 +443,16 @@ export async function createDie3DAsync(
   dieType: PixelDieType,
   colorway: PixelColorway
 ): Promise<DieSceneObjects> {
-  const key = dieType + "/" + colorway;
-  const result = diceAssets.get(key);
-  if (result instanceof Error) {
-    throw result;
-  }
-  if (typeof result === "object") {
-    return instantiate(result, dieType, colorway);
-  }
-  switch (result) {
-    case undefined:
-      diceAssets.set(key, "loading");
-      try {
-        const assets = await loadAssetsAsync(dieType, colorway);
-        diceAssets.set(key, assets);
-        dieLoadEvent.emit("done", { result: assets, key });
-        return instantiate(assets, dieType, colorway);
-      } catch (error) {
-        diceAssets.set(key, error as Error);
-        dieLoadEvent.emit("done", { result: error as Error, key });
-        throw error;
-      }
-    case "loading":
-      return new Promise<DieSceneObjects>((resolve, reject) => {
-        const listener = ({
-          result,
-          key: loadedKey,
-        }: {
-          result: Die3DAssets | Error;
-          key: string;
-        }) => {
-          if (key === loadedKey) {
-            dieLoadEvent.removeListener("done", listener);
-            if (result instanceof Error) {
-              reject(result);
-            } else {
-              resolve(instantiate(result, dieType, colorway));
-            }
-          }
-        };
-        dieLoadEvent.addListener("done", listener);
-      });
-    default:
-      assertNever(result, "Unexpected Die3D loading result");
-  }
+  const assets = await assetsLoader.loadAsync({ dieType, colorway });
+  return {
+    die3d: new Die3D(
+      assets.root,
+      assets.faceNames,
+      assets.size,
+      dieType,
+      colorway
+    ),
+    lights: assets.lights?.map((l) => l.clone()),
+    envMap: assets.envMap,
+  };
 }
