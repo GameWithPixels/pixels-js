@@ -307,23 +307,24 @@ export function createLibraryProfile(
         )
       );
       const highFace = DiceUtils.getHighestFace(dieType);
-      profile.rules.push(
-        new EditRule(
-          new EditConditionRolled({
-            faces: mapFaces(
-              DiceUtils.getDieFaces(dieType).filter(
-                (face) =>
-                  DiceUtils.indexFromFace(face, dieType) >=
-                    (2 * faceCount) / 3 && face !== highFace
-              )
-            ),
-          }),
-          new EditActionPlayAnimation({
-            animation: PrebuildAnimations.greenBlueWorm,
-            face: AnimConstants.currentFaceIndex,
-          })
-        )
+      const otherHighFaces = DiceUtils.getDieFaces(dieType).filter(
+        (face) =>
+          DiceUtils.indexFromFace(face, dieType) >= (2 * faceCount) / 3 &&
+          face !== highFace
       );
+      if (otherHighFaces.length) {
+        profile.rules.push(
+          new EditRule(
+            new EditConditionRolled({
+              faces: mapFaces(otherHighFaces),
+            }),
+            new EditActionPlayAnimation({
+              animation: PrebuildAnimations.greenBlueWorm,
+              face: AnimConstants.currentFaceIndex,
+            })
+          )
+        );
+      }
       pushRolledAnimTopFaceRule(PrebuildAnimations.rainbowFast, 1);
       break;
     }
