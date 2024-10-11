@@ -313,6 +313,34 @@ export class PixelScheduler {
     this._triggerProcessPromise?.();
   }
 
+  scheduleAndWaitAsync(
+    operation: PixelOperationParams,
+    opt?: { onStart?: () => void }
+  ): Promise<"succeeded" | "dropped" | "failed"> {
+    const opType = operation.type;
+    return new Promise<"succeeded" | "dropped" | "failed">((resolve) => {
+      const onOperation = ({
+        operation: { type },
+        status,
+      }: PixelSchedulerEventMap["onOperationStatus"]) => {
+        if (type === opType) {
+          if (status === "starting") {
+            opt?.onStart?.();
+          } else if (
+            status === "succeeded" ||
+            status === "dropped" ||
+            status === "failed"
+          ) {
+            this.removeListener("onOperationStatus", onOperation);
+            resolve(status);
+          }
+        }
+      };
+      this.addListener("onOperationStatus", onOperation);
+      this.schedule(operation);
+    });
+  }
+
   unschedule(operationType: PixelOperationParams["type"]): void {
     if (this._operations.get(operationType)) {
       this._log(`Un-scheduling pending operation ${operationType}`);

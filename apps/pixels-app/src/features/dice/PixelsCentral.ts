@@ -535,23 +535,18 @@ export class PixelsCentral {
       // Get Pixel instance again as it might have been discovered during the scan
       // (and it also checks if it's still registered)
       const pixel = this.getPixel(pixelId);
-      if (!pixel) {
-        throw new Error("DFU Pixel not found " + unsigned32ToHex(pixelId));
-      }
-
-      // We might have connected during the scan
+      // We also might have connected during the scan
       const timestamp = (
-        isConnected(pixel.status) // Don't use old timestamp if not connected
+        isConnected(pixel?.status) // Don't use old timestamp if not connected
           ? pixel.firmwareDate
           : scannedFwDate
       )?.getTime();
+      if (!pixel || !timestamp) {
+        throw new Error("DFU Pixel not found " + unsigned32ToHex(pixelId));
+      }
       console.log(
         `Got timestamp ${timestamp} for Pixel ${unsigned32ToHex(pixelId)}`
       );
-
-      if (!timestamp) {
-        throw new Error("Pixel not found " + unsigned32ToHex(pixelId));
-      }
 
       // Check if we need to update the firmware
       if (
@@ -570,44 +565,38 @@ export class PixelsCentral {
           }
         }
 
-        // Listen to DFU events and start DFU
+        // Start DFU and wait for completion
         console.warn("UPDATE PIXEL " + unsigned32ToHex(pixelId));
-        await new Promise<void>((resolve, reject) => {
-          const disposer = this.addSchedulerListener(
-            pixelId,
-            "onOperationStatus",
-            ({ operation, status }) => {
-              if (operation.type === "updateFirmware") {
-                if (status === "starting" || status === "dropped") {
-                  // Don't reconnect after DFU has finished
-                  this._connectQueue.dequeue(pixelId);
-                }
-                if (
-                  status === "succeeded" ||
-                  status === "dropped" ||
-                  status === "failed"
-                ) {
-                  console.warn(
-                    "Done with DFU with status=" + status + " for " + pixelId
-                  );
-                  disposer();
-                  if (status === "succeeded") {
-                    resolve();
-                  } else {
-                    reject(new Error("DFU " + status));
-                  }
-                }
-              }
-            }
-          );
-          getScheduler(pixelId).schedule({
+        const status = await getScheduler(pixelId).scheduleAndWaitAsync(
+          {
             type: "updateFirmware",
             bootloaderPath: opt?.bootloader
               ? filesInfo.bootloaderPath
               : undefined,
             firmwarePath: filesInfo.firmwarePath,
+          },
+          // Don't reconnect until after DFU has finished
+          { onStart: () => this._connectQueue.dequeue(pixelId) }
+        );
+        console.log(
+          `DFU done with status=${status} for ${unsigned32ToHex(pixelId)}`
+        );
+
+        // Reconnect after DFU
+        this.tryConnect(pixelId, { priority: "high" });
+
+        if (status !== "succeeded") {
+          throw new Error("DFU " + status);
+        }
+
+        // Check if we need to reset die settings to reprogram the normals
+        const FW_2024_03_25 = 1711398391000;
+        if (timestamp <= FW_2024_03_25 && pixel.ledCount <= 6) {
+          console.warn(`Resetting settings for die ${pixel.name}`);
+          getScheduler(pixelId).schedule({
+            type: "resetSettings",
           });
-        });
+        }
         return true;
       } else {
         console.warn("Skipping update for Pixel " + unsigned32ToHex(pixelId));
