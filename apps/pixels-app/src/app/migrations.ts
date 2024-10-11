@@ -152,6 +152,19 @@ function updateFrom3to4(state: NonNullable<PersistedState>): void {
   }
 }
 
+function updateFrom4to5(state: NonNullable<PersistedState>): void {
+  if ("ids" in state && Array.isArray(state.ids)) {
+    const cycleFireGradientId = "16b37bdc-741d-4766-9e33-51c3bf4c2e46";
+    if (state.ids.includes(cycleFireGradientId)) {
+      // Gradients
+      console.warn(
+        "Migrating from version 4 to 5: Deleting gradients (and therefore animations)"
+      );
+      state.ids.length = 0;
+    }
+  }
+}
+
 const factoryProfilesUuids: string[] = [
   "8c7d22e1-78ea-4433-86d3-298311f4414a", // unknown
   "3a1997bd-5a10-4475-a7f5-57d8f1a7e6c5", // d20
@@ -270,9 +283,31 @@ export default {
         case 2:
           updateFrom2To3(state);
           updateFrom3to4(state);
-          break;
+        // eslint-disable-next-line no-fallthrough
         case 3:
           updateFrom3to4(state);
+          break;
+      }
+    }
+    return state;
+  },
+  // v2.5
+  5: (state: PersistedState) => {
+    const ver = state?._persist?.version;
+    if (ver) {
+      switch (ver) {
+        case 1:
+          console.warn("Migrating from version 1 to 3: Clearing state");
+          return { _persist: state._persist };
+        case 2:
+          updateFrom2To3(state);
+          updateFrom3to4(state);
+        // eslint-disable-next-line no-fallthrough
+        case 3:
+          updateFrom3to4(state);
+        // eslint-disable-next-line no-fallthrough
+        case 4:
+          updateFrom4to5(state);
           break;
       }
     }
