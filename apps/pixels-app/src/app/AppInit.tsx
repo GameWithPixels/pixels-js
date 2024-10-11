@@ -6,11 +6,10 @@ import { updatePairedDiceAndProfilesFrom3to4 } from "./migrations";
 import { RootState } from "./store";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
-import { useAppSelector, useAppDispatch } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { Library } from "~/features/store";
 
 export function AppInit({ children }: React.PropsWithChildren) {
-  const appDispatch = useAppDispatch();
   const store = useStore<RootState>();
   const [initialized, setInitialized] = React.useState(false);
 
@@ -21,7 +20,7 @@ export function AppInit({ children }: React.PropsWithChildren) {
       const hasStuff = store.getState().library.gradients.ids.length > 0;
       if (!hasStuff) {
         console.warn("Resetting library except profiles");
-        Library.dispatchReset(appDispatch, {
+        Library.dispatchReset(store.dispatch, {
           keepProfiles: true,
         });
       }
@@ -30,7 +29,7 @@ export function AppInit({ children }: React.PropsWithChildren) {
       // Set as initialized
       setInitialized(true);
     }
-  }, [appDispatch, initialized, store]);
+  }, [initialized, store]);
 
   // Monitor app state
   const [active, setActive] = React.useState(true);
@@ -44,14 +43,14 @@ export function AppInit({ children }: React.PropsWithChildren) {
   // Check for updates every 10 minutes
   React.useEffect(() => {
     if (active) {
-      checkForAppUpdateAsync(appDispatch);
+      checkForAppUpdateAsync(store.dispatch);
       const id = setInterval(
-        () => checkForAppUpdateAsync(appDispatch),
+        () => checkForAppUpdateAsync(store.dispatch),
         10 * 60 * 1000
       );
       return () => clearInterval(id);
     }
-  }, [appDispatch, active]);
+  }, [active, store]);
   const hasUpdate = useAppSelector(
     (state) => !!state.appTransient.update.manifest
   );
@@ -65,12 +64,12 @@ export function AppInit({ children }: React.PropsWithChildren) {
         [
           {
             text: "Ok",
-            onPress: () => installAppUpdateAsync(appDispatch),
+            onPress: () => installAppUpdateAsync(store.dispatch),
           },
         ]
       );
     }
-  }, [appDispatch, hasUpdate]);
+  }, [hasUpdate, store]);
 
   return !initialized ? null : <>{children}</>;
 }

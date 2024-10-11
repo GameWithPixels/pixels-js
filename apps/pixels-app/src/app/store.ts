@@ -69,7 +69,7 @@ function persist<S, A extends Action = Action>(
 ) {
   return persistReducer(
     {
-      version: 4,
+      version: 5,
       storage: MyStorage,
       key,
       debug: __DEV__,
