@@ -78,7 +78,8 @@ LogBox.ignoreLogs([
 ]);
 
 // Configure the file logger
-// Note: we don't wait for the promise to resolve, it's okay if the first few logs are not saved
+// Note: we don't wait for the promise to resolve,
+// it's okay if the first few logs are not saved
 FileLogger.configure().catch((error) => {
   console.error(`Failed to configure file logger: ${error}`);
 });
