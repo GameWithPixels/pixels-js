@@ -71,7 +71,7 @@ const CardLabels = observer(function CardLabels({
     } else if (onFace) {
       id = setTimeout(() => setShowRoll(false), 3000);
     }
-    return () => id && clearTimeout(id);
+    return () => clearTimeout(id);
   }, [isReady, onFace, rolling]);
 
   // Animate roll results

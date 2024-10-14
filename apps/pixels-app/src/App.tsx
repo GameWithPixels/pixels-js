@@ -78,13 +78,13 @@ LogBox.ignoreLogs([
 ]);
 
 // Configure the file logger
-// TODO add UI gate that wait on returned promise
+// Note: we don't wait for the promise to resolve, it's okay if the first few logs are not saved
 FileLogger.configure().catch((error) => {
   console.error(`Failed to configure file logger: ${error}`);
 });
 
 const routingInstrumentation = !__DEV__
-  ? new Sentry.ReactNavigationInstrumentation()
+  ? Sentry.reactNavigationIntegration()
   : undefined;
 if (routingInstrumentation) {
   const loggingUri = Constants.expoConfig?.hostUri
@@ -98,7 +98,7 @@ if (routingInstrumentation) {
     tracesSampleRate: 1.0, // TODO Set to a lower value in production
     debug: __DEV__,
     integrations: [
-      new Sentry.ReactNativeTracing({
+      Sentry.reactNativeTracingIntegration({
         enableUserInteractionTracing: true,
         idleTimeoutMs: 5000,
         routingInstrumentation,

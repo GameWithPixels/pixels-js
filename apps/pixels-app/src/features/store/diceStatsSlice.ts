@@ -44,9 +44,10 @@ function log(
     | "mergeDieSessions"
     | "removeDieSession"
     | "removeDieSessionLastRoll"
-    | "setDieSessionPaused"
+    | "setDieSessionPaused",
+  payload?: unknown
 ) {
-  logWrite(action);
+  logWrite(payload ? `${action}, payload: ${JSON.stringify(payload)}` : action);
 }
 
 function getOrCreateStats(state: DiceStatsState, pixelId: number) {
@@ -94,7 +95,7 @@ const DiceStatsSlice = createSlice({
         roll: number;
       }>
     ) {
-      log("addDieRoll");
+      log("addDieRoll", action.payload);
       const { pixelId, roll } = action.payload;
       const { state: newState, stats } = getOrCreateStats(state, pixelId);
 

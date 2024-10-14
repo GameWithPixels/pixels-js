@@ -74,7 +74,7 @@ export async function updateFirmware({
     },
     alternativeAdvertisingName:
       // Name advertised by Bootloader
-      pixelId !== undefined ? getBootloaderAdvertisedName(pixelId) : undefined,
+      pixelId ? getBootloaderAdvertisedName(pixelId) : undefined,
   };
 
   const pixelIdStr =

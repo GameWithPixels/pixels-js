@@ -72,7 +72,7 @@ export abstract class PixelInfoNotifier<
 
   constructor() {
     // Increase the default limit of listeners to avoid warnings
-    this._infoEvEmitter.setMaxListeners(20);
+    this._infoEvEmitter.setMaxListeners(50);
   }
 
   /**

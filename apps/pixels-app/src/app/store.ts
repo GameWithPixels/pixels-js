@@ -44,21 +44,20 @@ import profilesReducer, {
   profilesAdapter,
 } from "~/features/store/library/profilesSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
-import { getTimeStringMs } from "~/features/utils";
 
 const MyStorage = !__DEV__
   ? AsyncStorage
   : {
       setItem: (key: string, value: string) => {
-        console.log(`[${getTimeStringMs()}] AsyncStorage Write => ${key}`);
+        console.log(`AsyncStorage Write => ${key}`);
         return AsyncStorage.setItem(key, value);
       },
       getItem: (key: string) => {
-        console.log(`[${getTimeStringMs()}] AsyncStorage Read => ${key}`);
+        console.log(`AsyncStorage Read => ${key}`);
         return AsyncStorage.getItem(key);
       },
       removeItem: (key: string) => {
-        console.log(`[${getTimeStringMs()}] AsyncStorage Delete => ${key}`);
+        console.log(`AsyncStorage Delete => ${key}`);
         return AsyncStorage.removeItem(key);
       },
     };
