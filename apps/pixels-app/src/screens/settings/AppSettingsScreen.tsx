@@ -104,6 +104,8 @@ function AppSettingsPage({
     }
   };
 
+  const [exportResult, setExportResult] = React.useState("");
+
   const { colors } = useTheme();
   return (
     <View
@@ -168,21 +170,27 @@ function AppSettingsPage({
         >
           Reset All App Settings
         </OutlineButton>
-        {debugMode && (
-          <>
-            <Divider style={{ marginVertical: 10 }} />
-            <OutlineButton
-              onPress={() =>
-                FileLogger.sendLogFilesByEmail({
-                  to: "olivier@gamewithpixels.com",
-                  subject: "Pixels App Logs",
-                })
-              }
-            >
-              Export Logs
-            </OutlineButton>
-          </>
-        )}
+        <Divider style={{ marginVertical: 10 }} />
+        <OutlineButton
+          onPress={() => {
+            setExportResult("");
+            FileLogger.getLogFilePaths().then((logFiles) =>
+              console.log("Log files: " + logFiles.join(", "))
+            );
+            FileLogger.sendLogFilesByEmail({
+              to: "olivier@gamewithpixels.com",
+              subject: "Pixels App Logs",
+            })
+              .then(() => setExportResult("Success!"))
+              .catch((e) => {
+                console.log("Error exporting logs: " + String(e));
+                setExportResult(e.message);
+              });
+          }}
+        >
+          Export Logs
+        </OutlineButton>
+        <Text>Export Result: {exportResult}</Text>
       </ScrollView>
     </View>
   );
