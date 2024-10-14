@@ -34,18 +34,17 @@ export function usePixelScanner(): {
     };
   }, [central]);
   const startScan = React.useCallback(() => {
+    setAvailablePixels((prev) => (prev.length ? [] : prev));
     if (!stopRef.current) {
       const removeOnAvailable = central.addListener(
         "onAvailability",
         ({ status, notifier }) => {
           if (status === "available") {
-            setAvailablePixels((notifiers) => {
-              if (!notifiers.find((p) => p.pixelId === notifier.pixelId)) {
-                return [...notifiers, notifier];
-              } else {
-                return notifiers;
-              }
-            });
+            setAvailablePixels((notifiers) =>
+              notifiers.find((p) => p.pixelId === notifier.pixelId)
+                ? notifiers
+                : [...notifiers, notifier]
+            );
           } else {
             setAvailablePixels((notifiers) => {
               const newNotifiers = notifiers.filter(
@@ -66,9 +65,7 @@ export function usePixelScanner(): {
       };
     }
   }, [central]);
-  const stopScan = React.useCallback(() => {
-    stopRef.current?.();
-  }, []);
+  const stopScan = React.useCallback(() => stopRef.current?.(), []);
   return {
     availablePixels,
     startScan,
