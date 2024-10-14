@@ -26,7 +26,7 @@ function log(
     | "updatePairedDieFirmwareTimestamp"
     | "updatePairedDieProfileHash"
     | "updatePairedDieBrightness",
-  payload?: any
+  payload?: unknown
 ) {
   logWrite(`${action}, payload: ${JSON.stringify(payload)}`);
 }

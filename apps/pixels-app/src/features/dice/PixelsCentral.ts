@@ -68,14 +68,10 @@ async function waitConnectedAsync(
   pixel: Pixel,
   timeout = 20000
 ): Promise<boolean> {
-  let timeoutId: ReturnType<typeof setTimeout>;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   let resolveConnected: () => void;
-  const onStatus = ({ status }: PixelMutableProps) => {
-    if (isConnected(status)) {
-      clearTimeout(timeoutId);
-      resolveConnected();
-    }
-  };
+  const onStatus = ({ status }: PixelMutableProps) =>
+    isConnected(status) && resolveConnected();
   pixel.addPropertyListener("status", onStatus);
   try {
     return await new Promise<boolean>((resolve) => {
@@ -85,6 +81,7 @@ async function waitConnectedAsync(
     });
   } finally {
     pixel.removePropertyListener("status", onStatus);
+    clearTimeout(timeoutId);
   }
 }
 
@@ -593,9 +590,7 @@ export class PixelsCentral {
         const FW_2024_03_25 = 1711398391000;
         if (timestamp <= FW_2024_03_25 && pixel.ledCount <= 6) {
           console.warn(`Resetting settings for die ${pixel.name}`);
-          getScheduler(pixelId).schedule({
-            type: "resetSettings",
-          });
+          getScheduler(pixelId).schedule({ type: "resetSettings" });
         }
         return true;
       } else {
