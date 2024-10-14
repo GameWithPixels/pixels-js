@@ -1,5 +1,6 @@
 import React from "react";
 import { ScrollView, useWindowDimensions, View } from "react-native";
+import { FileLogger } from "react-native-file-logger";
 import {
   Divider,
   Text as PaperText,
@@ -167,6 +168,21 @@ function AppSettingsPage({
         >
           Reset All App Settings
         </OutlineButton>
+        {debugMode && (
+          <>
+            <Divider style={{ marginVertical: 10 }} />
+            <OutlineButton
+              onPress={() =>
+                FileLogger.sendLogFilesByEmail({
+                  to: "olivier@gamewithpixels.com",
+                  subject: "Pixels App Logs",
+                })
+              }
+            >
+              Export Logs
+            </OutlineButton>
+          </>
+        )}
       </ScrollView>
     </View>
   );
