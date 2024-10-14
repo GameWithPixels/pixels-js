@@ -1,4 +1,3 @@
-import { useDebugMode } from "./useDebugMode";
 import { useAppDfuFiles } from "./useDfuFiles";
 
 import { PairedDie } from "~/app/PairedDie";
@@ -28,7 +27,6 @@ export function useHasFirmwareUpdate(
 
 export function useOutdatedPixelsCount(): number {
   const { dfuFilesInfo } = useAppDfuFiles();
-  const debugMode = useDebugMode();
   const forceUpdate = useAppSelector(
     (state) => state.appSettings.forceUpdateFirmware
   );
@@ -43,5 +41,5 @@ export function useOutdatedPixelsCount(): number {
       )
       .reduce((acc, val) => acc + (val ? 1 : 0), 0)
   );
-  return debugMode && forceUpdate ? 1 : count;
+  return forceUpdate ? 1 : count;
 }

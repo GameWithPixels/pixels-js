@@ -31,12 +31,12 @@ export function useUpdateDice(): (
           }
           const pixelId = idsToProcess[0];
           try {
-            const { updateBootloader, forceUpdateFirmware, enableDebugMode } =
+            const { updateBootloader, forceUpdateFirmware } =
               store.getState().appSettings;
             if (
               await central.tryUpdateFirmware(pixelId, filesInfo, {
-                bootloader: updateBootloader && enableDebugMode,
-                force: forceUpdateFirmware && enableDebugMode,
+                bootloader: updateBootloader,
+                force: forceUpdateFirmware,
               })
             ) {
               // Update stored timestamp

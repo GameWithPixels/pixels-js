@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, useWindowDimensions, View } from "react-native";
 import {
   Divider,
   Text as PaperText,
@@ -19,6 +19,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { OutlineButton } from "~/components/buttons";
+import { isDevApp } from "~/features/isDevApp";
 import {
   Library,
   resetAppSettings,
@@ -27,6 +28,8 @@ import {
   resetPairedDice,
   setDiceBrightnessFactor,
   setDisablePlayingAnimations,
+  setForceUpdateFirmware,
+  setUpdateBootloader,
   switchEnableDebugMode,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
@@ -38,36 +41,6 @@ function Text(props: Omit<TextProps<never>, "variant">) {
 
 function TextSmall(props: Omit<TextProps<never>, "variant">) {
   return <PaperText {...props} />;
-}
-
-function SecretButton({
-  top,
-  bottom,
-  left,
-  right,
-  onPress,
-}: {
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-  onPress?: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        position: "absolute",
-        top,
-        bottom,
-        left,
-        right,
-        width: 50,
-        height: 50,
-        zIndex: 1000,
-      }}
-    />
-  );
 }
 
 function AppSettingsPage({
@@ -103,31 +76,47 @@ function AppSettingsPage({
 
   // Secret buttons to enable debug mode
   const store = useAppStore();
-  const pressedSecretButtonsRef = React.useRef<Set<string>>(new Set());
-  const pressSecretButton = (secret: string) => {
-    pressedSecretButtonsRef.current.add(secret);
-    setTimeout(() => pressedSecretButtonsRef.current.delete(secret), 3000);
-    if (pressedSecretButtonsRef.current.size === 2) {
-      pressedSecretButtonsRef.current.clear();
-      appDispatch(switchEnableDebugMode());
-      Toast.show(
-        `Debug Mode ${store.getState().appSettings.enableDebugMode ? "On" : "Off"}`,
-        ToastSettings
-      );
+  const secretToggleRef = React.useRef<{
+    counter: number;
+    timeoutId?: ReturnType<typeof setTimeout>;
+  }>({ counter: 0 });
+  const { width, height } = useWindowDimensions();
+  const checkForTogglingDevMode = (x: number, y: number) => {
+    if (x > 0.8 * width && y < 0.1 * height) {
+      clearTimeout(secretToggleRef.current.timeoutId);
+      if (secretToggleRef.current.counter < 4) {
+        secretToggleRef.current.counter++;
+        secretToggleRef.current.timeoutId = setTimeout(
+          () => (secretToggleRef.current.counter = 0),
+          500
+        );
+      } else {
+        secretToggleRef.current.counter = 0;
+        appDispatch(switchEnableDebugMode());
+        const debugMode = store.getState().appSettings.enableDebugMode;
+        Toast.show(`Debug Mode ${debugMode ? "On" : "Off"}`, ToastSettings);
+        if (!debugMode) {
+          appDispatch(setUpdateBootloader(false));
+          appDispatch(setForceUpdateFirmware(false));
+        }
+      }
     }
   };
 
   const { colors } = useTheme();
   return (
-    <View style={{ height: "100%" }}>
-      <SecretButton top={0} right={0} onPress={() => pressSecretButton("1")} />
-      <SecretButton
-        left={0}
-        bottom={0}
-        onPress={() => pressSecretButton("2")}
-      />
+    <View
+      style={{ height: "100%" }}
+      onTouchEnd={(e) =>
+        checkForTogglingDevMode(
+          e.nativeEvent.locationX,
+          e.nativeEvent.locationY
+        )
+      }
+    >
       <PageHeader onGoBack={() => navigation.goBack()}>App Settings</PageHeader>
       <ScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           paddingVertical: 20,
           paddingHorizontal: 20,
@@ -135,6 +124,15 @@ function AppSettingsPage({
         }}
       >
         <View style={{ gap: 10 }}>
+          {isDevApp() && (
+            <>
+              <Divider style={{ marginVertical: 10 }} />
+              <Text style={{ alignSelf: "center" }}>
+                DEV APP!{debugMode ? " - Debug Mode Active" : ""}
+              </Text>
+              <Divider style={{ marginVertical: 10 }} />
+            </>
+          )}
           <Text>Global Dice Brightness</Text>
           <TextSmall>(Combined with each Profile's own brightness)</TextSmall>
           <SliderWithValue

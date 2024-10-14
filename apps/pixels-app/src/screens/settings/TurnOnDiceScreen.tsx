@@ -17,6 +17,7 @@ function TurnOnDicePage({
         How To Turn On Your Dice
       </PageHeader>
       <ScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           paddingVertical: 20,
           paddingHorizontal: 20,

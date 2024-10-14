@@ -116,6 +116,7 @@ function ThemesPage({
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>Themes</PageHeader>
       <ScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           paddingVertical: 20,
           paddingHorizontal: 20,
