@@ -50,6 +50,7 @@ function CheckForUpdatePage({
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>App Patching</PageHeader>
       <ScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           paddingVertical: 20,
           paddingHorizontal: 20,

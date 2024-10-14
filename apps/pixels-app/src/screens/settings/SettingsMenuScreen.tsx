@@ -103,6 +103,7 @@ function SettingsMenuPage({
   };
   return (
     <ScrollView
+      alwaysBounceVertical={false}
       style={{ height: "100%" }}
       contentContainerStyle={{
         paddingVertical: 20,

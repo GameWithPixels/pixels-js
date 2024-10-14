@@ -23,9 +23,9 @@ import {
 import {
   Button,
   ButtonProps,
+  Text as PaperText,
   Switch,
   SwitchProps,
-  Text as PaperText,
   TextProps,
   ThemeProvider,
   useTheme,
@@ -71,17 +71,17 @@ import {
 } from "~/features/profiles";
 import { setShowOnboarding } from "~/features/store";
 import {
-  useAppDfuFiles,
-  useRegisteredPixels,
-  usePixelScanner,
-  usePixelScannerStatus,
-  usePixelsCentral,
-  useUpdateDice,
   DfuFilesInfo,
-  useRollStateLabel,
+  useAppDfuFiles,
   useBatteryStateLabel,
   useBottomSheetBackHandler,
   useFlashAnimationStyleOnRoll,
+  usePixelScanner,
+  usePixelScannerStatus,
+  usePixelsCentral,
+  useRegisteredPixels,
+  useRollStateLabel,
+  useUpdateDice,
 } from "~/hooks";
 
 function LightUpYourGameImage({
@@ -440,8 +440,8 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
 
   // On leaving page
   const { dfuFilesInfo } = useAppDfuFiles();
-  const { forceUpdateFirmware, enableDebugMode } = useAppSelector(
-    (state) => state.appSettings
+  const forceUpdateFirmware = useAppSelector(
+    (state) => state.appSettings.forceUpdateFirmware
   );
   const leavePage = (action: "pair" | "skip") => {
     stopScan();
@@ -453,7 +453,7 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
         .map(ScannedDevicesRegistry.findPixel)
         .some(
           (p) =>
-            (forceUpdateFirmware && enableDebugMode) ||
+            forceUpdateFirmware ||
             getDieDfuAvailability(
               p!.firmwareDate.getTime(),
               dfuFilesInfo?.timestamp

@@ -49,6 +49,7 @@ function SystemInfoPage({
         App & System Information
       </PageHeader>
       <ScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           paddingVertical: 20,
           paddingHorizontal: 20,

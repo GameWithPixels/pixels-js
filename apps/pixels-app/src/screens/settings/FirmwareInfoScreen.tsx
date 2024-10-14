@@ -48,6 +48,7 @@ function FirmwareInfoPage({
         Dice Firmware Information
       </PageHeader>
       <ScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           paddingVertical: 20,
           paddingHorizontal: 20,
@@ -122,6 +123,7 @@ const styles = StyleSheet.create({
   switchContainer: {
     flexDirection: "row",
     alignItems: "center",
+    paddingTop: 10,
     gap: 10,
   },
 });
