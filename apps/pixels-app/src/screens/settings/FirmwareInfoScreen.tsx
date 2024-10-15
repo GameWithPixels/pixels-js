@@ -1,12 +1,8 @@
-import { ScrollView, StyleSheet, View } from "react-native";
-import {
-  Divider,
-  Switch,
-  Text as PaperText,
-  TextProps,
-  useTheme,
-  SwitchProps,
-} from "react-native-paper";
+import { ScrollView, View } from "react-native";
+import { Divider } from "react-native-paper";
+
+import { SettingsSwitch } from "./components/SettingsSwitch";
+import { Body, Remark, Title } from "./components/text";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { FirmwareInfoScreenProps } from "~/app/navigation";
@@ -17,38 +13,7 @@ import {
   setForceUpdateFirmware,
   setUpdateBootloader,
 } from "~/features/store";
-import { useAppDfuFiles, useDebugMode } from "~/hooks";
-
-function Title(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="titleLarge" {...props} />;
-}
-
-function Text(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="bodyLarge" {...props} />;
-}
-
-function TextSmall(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText {...props} />;
-}
-
-function SettingsSwitch({
-  children,
-  ...props
-}: Exclude<SwitchProps, "trackColor">) {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.switchContainer}>
-      <Switch
-        trackColor={{
-          false: colors.onSurfaceDisabled,
-          true: colors.primary,
-        }}
-        {...props}
-      />
-      <Text>{children}</Text>
-    </View>
-  );
-}
+import { useAppDfuFiles } from "~/hooks";
 
 function FirmwareInfoPage({
   navigation,
@@ -57,13 +22,13 @@ function FirmwareInfoPage({
 }) {
   const appDispatch = useAppDispatch();
   const {
+    showAdvancedSettings,
     updateBootloader,
     forceUpdateFirmware,
     useBetaFirmware: betaFirmware,
   } = useAppSelector((state) => state.appSettings);
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const date = new Date(dfuFilesInfo?.timestamp ?? 0);
-  const debugMode = useDebugMode();
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>
@@ -81,20 +46,20 @@ function FirmwareInfoPage({
           <>
             <Title>Available Dice Firmware</Title>
             <View style={{ marginLeft: 10, marginTop: 10, gap: 10 }}>
-              <Text>Date: {date.toUTCString()}</Text>
-              <Text>Timestamp: {date.getTime()}</Text>
-              <Text>Firmware: {dfuFilesInfo.firmwarePath ? "yes" : "no"}</Text>
-              <Text>
+              <Body>Date: {date.toUTCString()}</Body>
+              <Body>Timestamp: {date.getTime()}</Body>
+              <Body>Firmware: {dfuFilesInfo.firmwarePath ? "yes" : "no"}</Body>
+              <Body>
                 Bootloader: {dfuFilesInfo.bootloaderPath ? "yes" : "no"}
-              </Text>
+              </Body>
             </View>
-            {debugMode && (
+            {showAdvancedSettings && (
               <>
                 <Divider style={{ marginVertical: 10 }} />
-                <TextSmall style={{ marginLeft: 10 }}>
+                <Remark style={{ marginLeft: 10 }}>
                   Don't turn on these settings unless you know what you're doing
                   ;)
-                </TextSmall>
+                </Remark>
                 <SettingsSwitch
                   value={betaFirmware}
                   onValueChange={(v) => {
@@ -123,9 +88,9 @@ function FirmwareInfoPage({
             )}
           </>
         ) : dfuFilesError ? (
-          <Text>Error reading firmware files: {String(dfuFilesError)}</Text>
+          <Body>Error reading firmware files: {String(dfuFilesError)}</Body>
         ) : (
-          <Text>Preparing firmware files...</Text>
+          <Body>Preparing firmware files...</Body>
         )}
       </ScrollView>
     </View>
@@ -138,12 +103,3 @@ export function FirmwareInfoScreen({ navigation }: FirmwareInfoScreenProps) {
     </AppBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  switchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 10,
-    gap: 10,
-  },
-});

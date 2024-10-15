@@ -10,24 +10,14 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Text as PaperText,
-  TextProps,
-} from "react-native-paper";
+import { ActivityIndicator } from "react-native-paper";
 import { useReducedMotion } from "react-native-reanimated";
+
+import { Body, Title } from "./components/text";
 
 import { SettingsInfoScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-
-function Title(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="titleLarge" {...props} />;
-}
-
-function Text(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="bodyLarge" {...props} />;
-}
 
 function SystemInfoPage({
   navigation,
@@ -58,27 +48,27 @@ function SystemInfoPage({
       >
         <Title>App Information</Title>
         <View style={{ marginLeft: 10, gap: 10 }}>
-          <Text>Name: {Application.applicationName}</Text>
-          <Text>Version: {Application.nativeApplicationVersion}</Text>
-          <Text>Build: {Application.nativeBuildVersion}</Text>
+          <Body>Name: {Application.applicationName}</Body>
+          <Body>Version: {Application.nativeApplicationVersion}</Body>
+          <Body>Build: {Application.nativeBuildVersion}</Body>
           {!Updates.isEmbeddedLaunch && Updates.createdAt && (
-            <Text>Update: {Updates.createdAt.toUTCString()}</Text>
+            <Body>Update: {Updates.createdAt.toUTCString()}</Body>
           )}
-          {Updates.isEmergencyLaunch && <Text>Using Fallback Version</Text>}
+          {Updates.isEmergencyLaunch && <Body>Using Fallback Version</Body>}
         </View>
         <Title style={{ marginTop: 20 }}>System Information</Title>
         <View style={{ marginLeft: 10, gap: 10 }}>
-          <Text>OS: {Platform.OS}</Text>
-          <Text>Version: {Platform.Version}</Text>
-          <Text>
+          <Body>OS: {Platform.OS}</Body>
+          <Body>Version: {Platform.Version}</Body>
+          <Body>
             {`Display Size: ${Math.round(window.width)}x${Math.round(
               window.height
             )}`}
-          </Text>
-          <Text>Pixel Ratio: {PixelRatio.get()}</Text>
-          <Text>Font Scale: {PixelRatio.getFontScale()}</Text>
-          <Text>Reduced Motion: {reducedMotion ? "yes" : "no"}</Text>
-          <Text>
+          </Body>
+          <Body>Pixel Ratio: {PixelRatio.get()}</Body>
+          <Body>Font Scale: {PixelRatio.getFontScale()}</Body>
+          <Body>Reduced Motion: {reducedMotion ? "yes" : "no"}</Body>
+          <Body>
             Locales:{" "}
             {
               // Got a bug report "undefined is not a function"
@@ -87,10 +77,10 @@ function SystemInfoPage({
                 ? locales.map((l) => l.languageCode).join(", ")
                 : JSON.stringify(locales)
             }
-          </Text>
+          </Body>
           <View style={{ flexDirection: "row", gap: 3 }}>
-            <Text>Voices:</Text>
-            {voices ? <Text>{voices.length}</Text> : <ActivityIndicator />}
+            <Body>Voices:</Body>
+            {voices ? <Body>{voices.length}</Body> : <ActivityIndicator />}
           </View>
         </View>
       </ScrollView>

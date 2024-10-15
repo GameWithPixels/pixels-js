@@ -1,26 +1,15 @@
 import * as Updates from "expo-updates";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Text as PaperText,
-  TextProps,
-} from "react-native-paper";
+import { ActivityIndicator, Button } from "react-native-paper";
+
+import { Body, Remark } from "./components/text";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CheckForUpdateScreenProps } from "~/app/navigation";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "~/app/updates";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-
-function Text(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="bodyLarge" {...props} />;
-}
-
-function TextSmall(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText {...props} />;
-}
 
 function toUserDate(dateString: string): string {
   try {
@@ -58,28 +47,28 @@ function CheckForUpdatePage({
         }}
       >
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <Text>Patch Status:</Text>
+          <Body>Patch Status:</Body>
           {checking || !appUpdate.gotResponse ? (
             <ActivityIndicator />
           ) : (
-            <Text>
+            <Body>
               {appUpdate.error
                 ? "unknown"
                 : `${appUpdate.manifest ? "" : "no "}patch available`}
-            </Text>
+            </Body>
           )}
         </View>
         {appUpdate.error ? (
-          <Text>{appUpdate.error}</Text>
+          <Body>{appUpdate.error}</Body>
         ) : (
           appUpdate.manifest && (
-            <Text>Date: {toUserDate(appUpdate.manifest.createdAt)}</Text>
+            <Body>Date: {toUserDate(appUpdate.manifest.createdAt)}</Body>
           )
         )}
-        <TextSmall>
+        <Remark>
           Patches are small updates delivered directly to your app, on top of
           app store updates.
-        </TextSmall>
+        </Remark>
         <Button
           mode="outlined"
           disabled={checking || !appUpdate.gotResponse}
@@ -99,8 +88,8 @@ function CheckForUpdatePage({
         </Button>
         {!Updates.isEmbeddedLaunch && Updates.createdAt && (
           <>
-            <Text style={{ marginTop: 20 }}>Installed update:</Text>
-            <Text>{Updates.createdAt.toUTCString()}</Text>
+            <Body style={{ marginTop: 20 }}>Installed update:</Body>
+            <Body>{Updates.createdAt.toUTCString()}</Body>
           </>
         )}
       </ScrollView>

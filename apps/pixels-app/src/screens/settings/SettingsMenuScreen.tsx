@@ -1,7 +1,8 @@
 import * as Linking from "expo-linking";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Text } from "react-native-paper";
+
+import { Title } from "./components/text";
 
 import { SettingsMenuScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
@@ -43,11 +44,7 @@ function MenuSection({
 }) {
   return (
     <>
-      <Text
-        variant="titleLarge"
-        style={AppStyles.selfCentered}
-        children={title}
-      />
+      <Title style={AppStyles.selfCentered} children={title} />
       <View>
         {pages.slice(start, end).map((p, i) => (
           <MenuButton
