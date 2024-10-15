@@ -33,6 +33,7 @@ export interface AppSettingsState {
   disablePlayingAnimations: boolean;
   enableDebugMode: boolean;
   forceUpdateFirmware: boolean;
+  useBetaFirmware: boolean;
   screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
 }
 
@@ -56,6 +57,7 @@ const initialState: AppSettingsState = {
   disablePlayingAnimations: false,
   enableDebugMode: false,
   forceUpdateFirmware: false,
+  useBetaFirmware: false,
   screensTheme: {
     onboarding: "blue",
     home: "blue",
@@ -153,6 +155,10 @@ const appSettingsSlice = createSlice({
       state.forceUpdateFirmware = action.payload;
     },
 
+    setUseBetaFirmware(state, action: PayloadAction<boolean>) {
+      state.useBetaFirmware = action.payload;
+    },
+
     setScreenTheme(
       state,
       action: PayloadAction<{
@@ -186,6 +192,7 @@ export const {
   setDisablePlayingAnimations,
   switchEnableDebugMode,
   setForceUpdateFirmware,
+  setUseBetaFirmware,
   setScreenTheme,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

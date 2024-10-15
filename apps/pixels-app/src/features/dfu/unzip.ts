@@ -1,5 +1,6 @@
 import * as FileSystem from "expo-file-system";
 
+import dfuBetaFiles from "#/dfu-beta-files.zip";
 import dfuFiles from "#/dfu-files.zip";
 import Pathname from "~/features/files/Pathname";
 import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
@@ -62,6 +63,13 @@ async function unzipDfuFilesFromAssetsAsync(
 export async function unzipEmbeddedDfuFilesAsync(): Promise<string[]> {
   // Clear existing files
   return await unzipDfuFilesFromAssetsAsync(dfuFiles, {
+    clearCache: true,
+  });
+}
+
+export async function unzipEmbeddedDfuBetaFilesAsync(): Promise<string[]> {
+  // Clear existing files
+  return await unzipDfuFilesFromAssetsAsync(dfuBetaFiles, {
     clearCache: true,
   });
 }
