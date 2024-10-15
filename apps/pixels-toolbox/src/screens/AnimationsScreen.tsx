@@ -328,9 +328,6 @@ function RenderAnimWidget({ widget }: { widget: EditWidgetData }) {
     case "animation":
       return <Text>Animation Selector Placeholder</Text>;
 
-    case "audioClip":
-      return <Text>Audio Clip Selector Placeholder</Text>;
-
     case "userText":
       return <Text>User Text Editor Placeholder</Text>;
 

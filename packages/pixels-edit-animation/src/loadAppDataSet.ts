@@ -11,14 +11,12 @@ import AppDataSet from "./AppDataSet";
 import { ColorModeValues } from "./edit/ColorMode";
 import EditAction from "./edit/EditAction";
 import EditActionPlayAnimation from "./edit/EditActionPlayAnimation";
-import EditActionPlayAudioClip from "./edit/EditActionPlayAudioClip";
 import EditAnimation from "./edit/EditAnimation";
 import EditAnimationGradient from "./edit/EditAnimationGradient";
 import EditAnimationGradientPattern from "./edit/EditAnimationGradientPattern";
 import EditAnimationKeyframed from "./edit/EditAnimationKeyframed";
 import EditAnimationRainbow from "./edit/EditAnimationRainbow";
 import EditAnimationSimple from "./edit/EditAnimationSimple";
-import EditAudioClip from "./edit/EditAudioClip";
 import EditColor from "./edit/EditColor";
 import EditCondition from "./edit/EditCondition";
 import EditConditionBatteryState from "./edit/EditConditionBatteryState";
@@ -90,12 +88,6 @@ function toPatterns(
   return patterns?.map(toPattern) ?? [];
 }
 
-function toAudioClips(
-  audioClips?: readonly Readonly<Json.AudioClip>[]
-): EditAudioClip[] {
-  return audioClips?.map((ac) => new EditAudioClip(ac)) ?? [];
-}
-
 function toCondition(condition: Readonly<Json.Condition>): EditCondition {
   if (condition.data) {
     const data = condition.data;
@@ -131,7 +123,6 @@ function toCondition(condition: Readonly<Json.Condition>): EditCondition {
 
 function toActions(
   animations: readonly EditAnimation[],
-  audioClips: readonly EditAudioClip[],
   actions: readonly Readonly<Json.Action>[]
 ): EditAction[] {
   const validActions = actions?.filter(
@@ -150,10 +141,6 @@ function toActions(
               (data.faceIndex > 0 ? data.faceIndex + 1 : data.faceIndex),
             loopCount: data.loopCount,
           });
-        case ActionTypeValues.playAudioClip:
-          return safeAssign(new EditActionPlayAudioClip(), {
-            clip: audioClips[data.audioClipIndex ?? -1],
-          });
         default:
           throw Error(`Unsupported action type ${act.type}`);
       }
@@ -163,7 +150,6 @@ function toActions(
 
 export function toRules(
   animations: readonly EditAnimation[],
-  audioClips: readonly EditAudioClip[],
   rules?: readonly Readonly<Json.Rule>[]
 ): EditRule[] {
   const validRules = rules?.filter(
@@ -172,23 +158,19 @@ export function toRules(
   return (
     validRules?.map(
       (r) =>
-        new EditRule(
-          toCondition(r.condition),
-          toActions(animations, audioClips, r.actions)
-        )
+        new EditRule(toCondition(r.condition), toActions(animations, r.actions))
     ) ?? []
   );
 }
 
 export function toProfile(
   profile: Readonly<Json.Profile>,
-  animations: readonly EditAnimation[],
-  audioClips: readonly EditAudioClip[]
+  animations: readonly EditAnimation[]
 ): EditProfile {
   return new EditProfile({
     name: profile.name ?? undefined,
     description: profile.description ?? undefined,
-    rules: toRules(animations, audioClips, profile.rules),
+    rules: toRules(animations, profile.rules),
   });
 }
 
@@ -257,16 +239,12 @@ export function loadAppDataSet(jsonData: Readonly<Json.DataSet>): AppDataSet {
   );
   const animations =
     validAnimations?.map((anim) => toAnimation(anim, patterns)) ?? [];
-  const audioClips = toAudioClips(jsonData.audioClips);
   return new AppDataSet({
     patterns,
     animations,
-    audioClips,
-    profiles:
-      jsonData?.behaviors?.map((p) => toProfile(p, animations, audioClips)) ??
-      [],
+    profiles: jsonData?.behaviors?.map((p) => toProfile(p, animations)) ?? [],
     defaultProfile: jsonData?.defaultBehavior
-      ? toProfile(jsonData.defaultBehavior, animations, audioClips)
+      ? toProfile(jsonData.defaultBehavior, animations)
       : undefined,
   });
 }

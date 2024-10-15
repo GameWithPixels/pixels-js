@@ -55,8 +55,8 @@ function getAnimationActionText(action: Profiles.ActionPlayAnimation): string {
 }
 
 function getAudioClipActionText(action: Profiles.ActionPlayAudioClip): string {
-  if (action.clip) {
-    let msg = `Play "${action.clip.name}"`;
+  if (action.clipUuid) {
+    let msg = `Play "${action.clipUuid}"`;
     if (action.loopCount > 1) {
       msg += ` ${getCountAsText(action.loopCount)}`;
     }

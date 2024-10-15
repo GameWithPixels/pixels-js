@@ -49,6 +49,8 @@ export interface ProfileData extends UniqueNamedData {
     }[];
     playAudioClip: {
       clipUuid?: string;
+      volume: number;
+      loopCount: number;
     }[];
     makeWebRequest: {
       url: string;

@@ -40,7 +40,6 @@ export {
   EditAnimationSequence as AnimationSequence,
   EditAnimationSequenceItem as AnimationSequenceItem,
   EditAnimationSimple as AnimationFlashes,
-  EditAudioClip as AudioClip,
   EditColor as FaceColor,
   EditCondition as Condition,
   EditConditionBatteryState as ConditionBattery,

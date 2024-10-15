@@ -1,12 +1,10 @@
 import EditAnimation from "./edit/EditAnimation";
-import EditAudioClip from "./edit/EditAudioClip";
 import EditPattern from "./edit/EditPattern";
 import EditProfile from "./edit/EditProfile";
 
 export default class AppDataSet {
   readonly _patterns: EditPattern[];
   readonly _animations: EditAnimation[];
-  readonly _audioClips: EditAudioClip[];
   readonly _profiles: EditProfile[];
   readonly _defaultProfile: EditProfile;
 
@@ -16,10 +14,6 @@ export default class AppDataSet {
 
   get animations(): EditAnimation[] {
     return this._animations;
-  }
-
-  get audioClips(): EditAudioClip[] {
-    return this._audioClips;
   }
 
   get profiles(): EditProfile[] {
@@ -33,13 +27,11 @@ export default class AppDataSet {
   constructor(options?: {
     patterns?: EditPattern[];
     animations?: EditAnimation[];
-    audioClips?: EditAudioClip[];
     profiles?: EditProfile[];
     defaultProfile?: EditProfile;
   }) {
     this._patterns = options?.patterns ?? [];
     this._animations = options?.animations ?? [];
-    this._audioClips = options?.audioClips ?? [];
     this._profiles = options?.profiles ?? [];
     this._defaultProfile = options?.defaultProfile ?? new EditProfile();
   }
@@ -50,10 +42,6 @@ export default class AppDataSet {
 
   findAnimation(name: string): EditAnimation | undefined {
     return this._animations.find((p) => p.name === name);
-  }
-
-  findAudioClip(name: string): EditAudioClip | undefined {
-    return this._audioClips.find((p) => p.name === name);
   }
 
   findProfile(name: string): EditProfile | undefined {

@@ -3,7 +3,6 @@ import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import {
   decorators,
   EditAnimation,
-  EditAudioClip,
   EditColor,
   EditPattern,
   EditRgbGradient,
@@ -46,7 +45,6 @@ export type GrayscalePatternData = BaseWidgetData<
 >;
 export type RgbPattern = BaseWidgetData<"rgbPattern", EditPattern | undefined>;
 export type Animation = BaseWidgetData<"animation", EditAnimation | undefined>;
-export type AudioClip = BaseWidgetData<"audioClip", EditAudioClip | undefined>;
 export type UserText = BaseWidgetData<"userText", string | undefined>;
 
 /** Type union of all possible widget data types. */
@@ -64,7 +62,6 @@ export type EditWidgetData =
   | GrayscalePatternData
   | RgbPattern
   | Animation
-  | AudioClip
   | UserText;
 
 /**
@@ -230,18 +227,6 @@ export function getEditWidgetsData<T extends object>(
         assert(
           value === undefined || value instanceof EditAnimation,
           `Property is not an EditAnimation: ${propertyKey}`
-        );
-        return {
-          ...keyAndName,
-          type,
-          getValue,
-          update,
-        };
-
-      case "audioClip":
-        assert(
-          value === undefined || value instanceof EditAudioClip,
-          `Property is not an EditAudioClip: ${propertyKey}`
         );
         return {
           ...keyAndName,

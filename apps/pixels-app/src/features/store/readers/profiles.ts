@@ -12,7 +12,6 @@ import {
 import { runInAction } from "mobx";
 
 import { readAnimation } from "./animations";
-import { readAudioClip } from "./audioClips";
 import { log } from "./log";
 
 import { LibraryState } from "~/app/store";
@@ -207,9 +206,9 @@ function updateAction(
     case "playAudioClip":
       if (action instanceof Profiles.ActionPlayAudioClip) {
         const data = actionSetData[type][index];
-        action.clip = data.clipUuid
-          ? readAudioClip(data.clipUuid, library)
-          : undefined;
+        action.clipUuid = data.clipUuid;
+        action.volume = data.volume;
+        action.loopCount = data.loopCount;
       }
       break;
     case "makeWebRequest":
