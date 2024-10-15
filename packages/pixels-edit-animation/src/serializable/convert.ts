@@ -54,7 +54,6 @@ import {
   EditAnimationSequence,
   EditAnimationSequenceItem,
   EditAnimationSimple,
-  EditAudioClip,
   EditCondition,
   EditConditionBatteryState,
   EditConditionConnectionState,
@@ -76,7 +75,6 @@ import EditActionSpeakText from "../edit/EditActionSpeakText";
 export function toProfile(
   data: Readonly<ProfileData>,
   getAnimation: (uuid: string) => EditAnimation | undefined,
-  getAudioClip: (uuid: string) => EditAudioClip | undefined,
   allowMissingDependency = false
 ): EditProfile {
   const checkGetAnimation = (uuid?: string): EditAnimation | undefined => {
@@ -86,15 +84,6 @@ export function toProfile(
         throw new Error(`toProfile(): No animation with uuid ${uuid}`);
       }
       return anim;
-    }
-  };
-  const checkGetAudioClip = (uuid?: string): EditAudioClip | undefined => {
-    if (uuid) {
-      const clip = getAudioClip(uuid);
-      if (!allowMissingDependency && !clip) {
-        throw new Error(`toProfile(): No audio clip with uuid ${uuid}`);
-      }
-      return clip;
     }
   };
 
@@ -205,10 +194,7 @@ export function toProfile(
         case "playAudioClip": {
           const actData = data.actions.playAudioClip[a.index];
           assert(actData, `No data for ${actType} action at index ${a.index}`);
-          return new EditActionPlayAudioClip({
-            ...actData,
-            clip: checkGetAudioClip(actData.clipUuid),
-          });
+          return new EditActionPlayAudioClip(actData);
         }
         case "makeWebRequest": {
           const actData = data.actions.makeWebRequest[a.index];
@@ -507,7 +493,9 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
             {
               const act = action as EditActionPlayAudioClip;
               actions[actType].push({
-                clipUuid: act.clip?.uuid,
+                clipUuid: act.clipUuid,
+                volume: act.volume,
+                loopCount: act.loopCount,
               });
             }
             break;

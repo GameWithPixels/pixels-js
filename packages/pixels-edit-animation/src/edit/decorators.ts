@@ -156,7 +156,6 @@ export type WidgetType =
   | "grayscalePattern"
   | "rgbPattern"
   | "animation"
-  | "audioClip"
   | "userText";
 
 export interface WidgetProperty extends PropertyData {

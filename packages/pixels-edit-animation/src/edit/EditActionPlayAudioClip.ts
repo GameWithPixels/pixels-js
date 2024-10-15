@@ -7,17 +7,16 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAction from "./EditAction";
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
-import EditAudioClip from "./EditAudioClip";
 import EditDataSet from "./EditDataSet";
-import { name, observable, widget } from "./decorators";
+import { name, observable } from "./decorators";
 
 export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
   readonly type = "playAudioClip";
 
-  @widget("audioClip")
+  // @widget("audioClip")
   @name("Audio Clip")
   @observable
-  clip?: EditAudioClip;
+  clipUuid?: string;
 
   @observable
   volume: number;
@@ -26,13 +25,13 @@ export default class EditActionPlayAudioClip extends EditActionRunOnDevice {
   loopCount: number;
 
   constructor(opt?: {
-    clip?: EditAudioClip;
+    clipUuid?: string;
     volume?: number;
     loopCount?: number;
   }) {
     super();
-    this.clip = opt?.clip;
-    this.volume = opt?.volume ?? 100;
+    this.clipUuid = opt?.clipUuid;
+    this.volume = opt?.volume ?? 1;
     this.loopCount = opt?.loopCount ?? 1;
   }
 
