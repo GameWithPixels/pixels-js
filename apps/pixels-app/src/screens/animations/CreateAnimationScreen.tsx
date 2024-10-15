@@ -3,10 +3,10 @@ import React from "react";
 import { ScrollView, View } from "react-native";
 
 import { CreateAnimationScreenProps } from "~/app/navigation";
+import { AnimationsGrid } from "~/components/AnimationsGrid";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TabsHeaders } from "~/components/TabsHeaders";
-import { AnimationsGrid } from "~/components/animation";
 import { TightTextButton } from "~/components/buttons";
 import { useAnimationsList } from "~/hooks";
 

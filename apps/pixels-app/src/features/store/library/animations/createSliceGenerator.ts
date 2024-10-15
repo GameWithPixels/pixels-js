@@ -6,8 +6,8 @@ import {
 } from "@reduxjs/toolkit";
 import { Serializable } from "@systemic-games/react-native-pixels-connect";
 
-import { LibraryData } from "../LibraryData";
 import { logWrite } from "../logWrite";
+import { LibraryData } from "../types";
 
 export type AnimationsState<T extends Serializable.AnimationData> =
   EntityState<T>;

@@ -6,8 +6,8 @@ import {
 } from "@reduxjs/toolkit";
 import { assert, unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 
-import { LibraryData, AppProfileData } from "./LibraryData";
 import { logWrite } from "./logWrite";
+import { LibraryData, AppProfileData } from "./types";
 
 export type ProfilesState = EntityState<AppProfileData>;
 

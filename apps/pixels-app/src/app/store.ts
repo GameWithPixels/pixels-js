@@ -43,6 +43,7 @@ import patternsReducer, {
 import profilesReducer, {
   profilesAdapter,
 } from "~/features/store/library/profilesSlice";
+import audioClipsReducer from "~/features/store/libraryAssets/audioClipsSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
 
 const MyStorage = !__DEV__
@@ -121,6 +122,11 @@ const rootReducer = combineReducers({
     patterns: persist("library/patterns", patternsReducer),
     gradients: persist("library/gradients", gradientsReducer),
   }),
+  // Library assets
+  libraryAssets: combineReducers({
+    audioClips: persistAnim("libraryAssets/audioClips", audioClipsReducer),
+  }),
+  // Dice roller
   diceRoller: persist("diceRoller", diceRollerReducer),
   // Transient data
   appTransient: appTransientReducer,
