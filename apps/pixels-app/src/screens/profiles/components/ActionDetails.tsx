@@ -12,6 +12,8 @@ import React from "react";
 import { View, StyleSheet, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
+import { useAppStore } from "~/app/hooks";
+import { AppStore } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { DieRendererWithFocus } from "~/components/DieRendererWithFocus";
 import { ActionTypeIcon } from "~/components/actions";
@@ -54,9 +56,12 @@ function getAnimationActionText(action: Profiles.ActionPlayAnimation): string {
   }
 }
 
-function getAudioClipActionText(action: Profiles.ActionPlayAudioClip): string {
+function getAudioClipActionText(
+  action: Profiles.ActionPlayAudioClip,
+  clipName?: string
+): string {
   if (action.clipUuid) {
-    let msg = `Play "${action.clipUuid}"`;
+    let msg = `Play "${clipName ?? action.clipUuid}"`;
     if (action.loopCount > 1) {
       msg += ` ${getCountAsText(action.loopCount)}`;
     }
@@ -133,11 +138,16 @@ function getWebRequestActionText(
   }
 }
 
-function getActionText(action: Profiles.Action): string {
+function getActionText(action: Profiles.Action, store: AppStore): string {
   if (action instanceof Profiles.ActionPlayAnimation) {
     return getAnimationActionText(action);
   } else if (action instanceof Profiles.ActionPlayAudioClip) {
-    return getAudioClipActionText(action);
+    return getAudioClipActionText(
+      action,
+      action.clipUuid &&
+        store.getState().libraryAssets.audioClips.entities[action.clipUuid]
+          ?.name
+    );
   } else if (action instanceof Profiles.ActionSpeakText) {
     return getSpeakActionText(action);
   } else if (action instanceof Profiles.ActionMakeWebRequest) {
@@ -173,6 +183,7 @@ export const ActionDetails = observer(function ActionDetails({
   action: Profiles.Action;
   withIcon?: boolean;
 } & ViewProps) {
+  const store = useAppStore();
   return (
     <View {...props}>
       {withIcon && (
@@ -185,7 +196,7 @@ export const ActionDetails = observer(function ActionDetails({
         </View>
       )}
       <View style={styles.ruleTextStyle}>
-        <Text style={AppStyles.greyedOut}>{getActionText(action)}</Text>
+        <Text style={AppStyles.greyedOut}>{getActionText(action, store)}</Text>
       </View>
     </View>
   );

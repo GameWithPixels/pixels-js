@@ -1,6 +1,6 @@
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
-import { AnimationUtils } from "~/features/store/library/AnimationUtils";
+import { AnimationUtils } from "~/features/store/library";
 
 // Returns a new profile with overrides applied
 export function applyProfileOverrides(

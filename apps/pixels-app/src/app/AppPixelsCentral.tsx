@@ -17,6 +17,7 @@ import { PixelsCentral } from "~/features/dice";
 import {
   createProfileDataSetWithOverrides,
   getWebRequestPayload,
+  playActionAudioClip,
   playActionMakeWebRequest,
   playActionSpeakText,
 } from "~/features/profiles";
@@ -64,6 +65,11 @@ function remoteActionListener(
         );
       } else if (action instanceof Profiles.ActionSpeakText) {
         playActionSpeakText(action);
+      } else if (action instanceof Profiles.ActionPlayAudioClip) {
+        const clipName =
+          action.clipUuid &&
+          state.libraryAssets.audioClips.entities[action.clipUuid]?.name;
+        playActionAudioClip(action, clipName);
       } else {
         console.log(
           log(`Nothing to do for remote action of type "${action.type}`)

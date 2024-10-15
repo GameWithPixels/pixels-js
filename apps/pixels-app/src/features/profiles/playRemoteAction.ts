@@ -2,6 +2,8 @@ import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
+import { Audio, AVPlaybackSource } from "expo-av";
+import * as FileSystem from "expo-file-system";
 import * as Speech from "expo-speech";
 import Toast from "react-native-root-toast";
 
@@ -115,5 +117,52 @@ export function playActionSpeakText(action: Profiles.ActionSpeakText): void {
     Speech.speak(action.text, settings);
   } else {
     console.log("No text to speak");
+  }
+}
+
+const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
+
+async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
+  let loadedSound = soundMap.get(source);
+  if (!loadedSound) {
+    const { sound } = await Audio.Sound.createAsync(source);
+    soundMap.set(source, sound);
+    loadedSound = sound;
+  }
+  return loadedSound;
+}
+
+async function playSoundAsync(
+  source: AVPlaybackSource,
+  volume = 1
+): Promise<void> {
+  try {
+    const sound = await getSound(source);
+    await sound.setPositionAsync(0);
+    await sound.setVolumeAsync(volume);
+    await sound.playAsync();
+  } catch (e) {
+    console.log(`Error playing sound: ${e}`);
+  }
+}
+
+export function playActionAudioClip(
+  action: Profiles.ActionPlayAudioClip,
+  clipName?: string
+): void {
+  console.log(`Play Audio Clip: ${action.clipUuid}`);
+  if (action.clipUuid) {
+    Toast.show(
+      `Playing Audio Clip action.\nClip: ${clipName ?? action.clipUuid}`,
+      ToastSettings
+    );
+    playSoundAsync(
+      {
+        uri: FileSystem.documentDirectory + "audioClips/" + action.clipUuid,
+      },
+      action.volume
+    );
+  } else {
+    console.log("No audio clip");
   }
 }

@@ -26,6 +26,7 @@ import {
 } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
+import { useAppSelector } from "~/app/hooks";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
 import { ActionPlayAnimDieRenderer } from "~/components/ActionPlayAnimDieRenderer";
@@ -33,6 +34,7 @@ import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
 import { KeyframeGradient } from "~/components/KeyframeGradient";
 import { PickAnimationBottomSheet } from "~/components/PickAnimationBottomSheet";
+import { PickAudioClipBottomSheet } from "~/components/PickAudioClipBottomSheet";
 import { PickColorBottomSheet } from "~/components/PickColorBottomSheet";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import {
@@ -48,10 +50,11 @@ import {
   getSimplifyDiscordWebhookPayload,
   getWebRequestPayload,
   getWebRequestURL,
+  playActionAudioClip,
   playActionMakeWebRequest,
   playActionSpeakText,
 } from "~/features/profiles";
-import { AnimationUtils } from "~/features/store/library/AnimationUtils";
+import { AnimationUtils } from "~/features/store/library";
 import { TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 
@@ -285,7 +288,6 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         onDismiss={() => setAnimPickerVisible(false)}
       />
       <PlayAnimationSlider
-        title="Duration"
         unit="s"
         fractionDigits={1}
         minimumValue={0.1}
@@ -295,7 +297,9 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         isDefault={action.duration === undefined}
         onValueChange={(v) => (action.duration = v)}
         onReset={() => (action.duration = undefined)}
-      />
+      >
+        Duration
+      </PlayAnimationSlider>
       {color?.mode === "rgb" ? (
         <PlayAnimationColor action={action} defaultColor={color.color} />
       ) : (
@@ -313,7 +317,6 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         <PlayAnimationGradient action={action} defaultKeyframes={keyframes} />
       )}
       <PlayAnimationSlider
-        title="Repeat Count"
         minimumValue={1}
         maximumValue={10}
         step={1}
@@ -321,10 +324,11 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
         isDefault={action.loopCount <= 1}
         onValueChange={(v) => (action.loopCount = v)}
         onReset={() => (action.loopCount = 1)}
-      />
+      >
+        Repeat Count
+      </PlayAnimationSlider>
       {fading !== undefined && (
         <PlayAnimationSlider
-          title="Fading"
           minimumValue={0}
           maximumValue={1}
           step={0.01}
@@ -333,11 +337,12 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
           isDefault={action.fade === undefined}
           onValueChange={(v) => (action.fade = v)}
           onReset={() => (action.fade = undefined)}
-        />
+        >
+          Fading
+        </PlayAnimationSlider>
       )}
       {intensity !== undefined && (
         <PlayAnimationSlider
-          title="Intensity"
           minimumValue={0}
           maximumValue={1}
           step={0.01}
@@ -346,21 +351,22 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
           isDefault={action.intensity === undefined}
           onValueChange={(v) => (action.intensity = v)}
           onReset={() => (action.intensity = undefined)}
-        />
+        >
+          Intensity
+        </PlayAnimationSlider>
       )}
     </>
   );
 });
 
 const PlayAnimationSlider = observer(function Slider({
-  title,
+  children,
   value,
   isDefault,
   onReset,
   onValueChange,
   ...props
 }: {
-  title: string;
   value: number;
   isDefault: boolean;
   onReset: () => void;
@@ -368,7 +374,7 @@ const PlayAnimationSlider = observer(function Slider({
   const { colors } = useTheme();
   return (
     <View>
-      <Text variant="titleMedium">{title}</Text>
+      <Text variant="titleMedium">{children}</Text>
       <View
         style={{ flexDirection: "row", alignItems: "center", marginTop: -5 }}
       >
@@ -575,25 +581,57 @@ const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
 }: {
   action: Profiles.ActionPlayAudioClip;
 }) {
+  const [clipPickerVisible, setClipPickerVisible] = React.useState(false);
+  const clipName = useAppSelector(
+    (state) =>
+      action.clipUuid &&
+      state.libraryAssets.audioClips.entities[action.clipUuid]?.name
+  );
   return (
     <>
       <Text variant="titleMedium">Play</Text>
       <GradientButton
         outline
-        sentry-label="select-sound-file"
-        onPress={() => {}}
+        sentry-label="select-audio-clip"
+        onPress={() => setClipPickerVisible(true)}
       >
-        Select Sound File
+        {clipName ?? "Select Audio Clip"}
       </GradientButton>
-      <Text variant="titleMedium">Volume</Text>
-      <SliderWithValue
+      <PlayAnimationSlider
         minimumValue={0}
         maximumValue={1}
         step={0.01}
         percentage
         value={action.volume}
-        onEndEditing={(v) => runInAction(() => (action.volume = v))}
+        isDefault={action.volume === 1}
+        onValueChange={(v) => (action.volume = v)}
+        onReset={() => (action.volume = 1)}
+      >
+        Volume
+      </PlayAnimationSlider>
+      <PlayAnimationSlider
+        minimumValue={1}
+        maximumValue={10}
+        step={1}
+        value={action.loopCount}
+        isDefault={action.loopCount <= 1}
+        onValueChange={(v) => (action.loopCount = v)}
+        onReset={() => (action.loopCount = 1)}
+      >
+        Repeat Count
+      </PlayAnimationSlider>
+      <PickAudioClipBottomSheet
+        audioClipUuid={action.clipUuid}
+        visible={clipPickerVisible}
+        onSelectAudioClip={(clipUuid) => {
+          runInAction(() => (action.clipUuid = clipUuid));
+          setClipPickerVisible(false);
+        }}
+        onDismiss={() => setClipPickerVisible(false)}
       />
+      <OutlineButton onPress={() => playActionAudioClip(action, clipName)}>
+        Test Audio
+      </OutlineButton>
     </>
   );
 });

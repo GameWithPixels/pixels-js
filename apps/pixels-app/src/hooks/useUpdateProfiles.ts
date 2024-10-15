@@ -1,6 +1,6 @@
 import React from "react";
 
-import { AppProfileData } from "~/features/store/library/LibraryData";
+import { AppProfileData } from "~/features/store/library";
 
 export const UpdateProfilesContext = React.createContext({
   updateProfiles: (

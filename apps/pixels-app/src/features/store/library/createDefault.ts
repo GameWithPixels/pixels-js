@@ -10,8 +10,8 @@ import {
   Serializable,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { LibraryData } from "./LibraryData";
 import { jsonConvert } from "./jsonConvert";
+import { LibraryData } from "./types";
 
 import StandardProfilesJson from "#/profiles/standard-profiles.json";
 

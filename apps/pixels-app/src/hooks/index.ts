@@ -1,6 +1,7 @@
 export * from "./useAnimation";
 export * from "./useAnimationsList";
 export * from "./useAppTheme";
+export * from "./useAudioClipsList";
 export * from "./useBatteryStateLabel";
 export * from "./useBottomSheetBackHandler";
 export * from "./useBottomSheetPadding";

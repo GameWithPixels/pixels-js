@@ -8,11 +8,12 @@ import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
+import { AnimationsGrid } from "./AnimationsGrid";
+
 import { AnimationsCategories } from "~/app/displayNames";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
 import { TabsHeaders } from "~/components/TabsHeaders";
-import { AnimationsGrid } from "~/components/animation";
 import {
   useAnimationsList,
   useBottomSheetBackHandler,

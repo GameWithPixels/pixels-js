@@ -2,7 +2,7 @@ import React from "react";
 
 import { useAppStore } from "~/app/hooks";
 import { readProfile, Library } from "~/features/store";
-import { AppProfileData } from "~/features/store/library/LibraryData";
+import { AppProfileData } from "~/features/store/library";
 import { UpdateProfilesContext } from "~/hooks";
 
 // Use this context to defer updating a profile to the next render cycle

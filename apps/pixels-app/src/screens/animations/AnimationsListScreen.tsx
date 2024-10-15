@@ -9,13 +9,14 @@ import ListIcon from "#/icons/items-view/list";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { AnimationsListScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
+import { AnimationsGrid } from "~/components/AnimationsGrid";
+import { AnimationsList } from "~/components/AnimationsList";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderMenuButton } from "~/components/HeaderMenuButton";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
-import { AnimationsGrid, AnimationsList } from "~/components/animation";
 import { FloatingAddButton } from "~/components/buttons";
 import {
   AnimationsGrouping,

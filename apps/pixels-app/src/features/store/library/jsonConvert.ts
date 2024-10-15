@@ -16,7 +16,7 @@ import {
 } from "@systemic-games/pixels-edit-animation";
 import { fromByteArray } from "base64-js";
 
-import { LibraryData } from "./LibraryData";
+import { LibraryData } from "./types";
 
 import { generateUuid } from "~/features/utils";
 
