@@ -5,13 +5,18 @@ import {
   Text as PaperText,
   TextProps,
   useTheme,
+  SwitchProps,
 } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { FirmwareInfoScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { setForceUpdateFirmware, setUpdateBootloader } from "~/features/store";
+import {
+  setUseBetaFirmware,
+  setForceUpdateFirmware,
+  setUpdateBootloader,
+} from "~/features/store";
 import { useAppDfuFiles, useDebugMode } from "~/hooks";
 
 function Title(props: Omit<TextProps<never>, "variant">) {
@@ -26,22 +31,39 @@ function TextSmall(props: Omit<TextProps<never>, "variant">) {
   return <PaperText {...props} />;
 }
 
+function SettingsSwitch({
+  children,
+  ...props
+}: Exclude<SwitchProps, "trackColor">) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.switchContainer}>
+      <Switch
+        trackColor={{
+          false: colors.onSurfaceDisabled,
+          true: colors.primary,
+        }}
+        {...props}
+      />
+      <Text>{children}</Text>
+    </View>
+  );
+}
+
 function FirmwareInfoPage({
   navigation,
 }: {
   navigation: FirmwareInfoScreenProps["navigation"];
 }) {
   const appDispatch = useAppDispatch();
-  const updateBootloader = useAppSelector(
-    (state) => state.appSettings.updateBootloader
-  );
-  const forceUpdateFirmware = useAppSelector(
-    (state) => state.appSettings.forceUpdateFirmware
-  );
+  const {
+    updateBootloader,
+    forceUpdateFirmware,
+    useBetaFirmware: betaFirmware,
+  } = useAppSelector((state) => state.appSettings);
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const date = new Date(dfuFilesInfo?.timestamp ?? 0);
   const debugMode = useDebugMode();
-  const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>
@@ -70,35 +92,33 @@ function FirmwareInfoPage({
               <>
                 <Divider style={{ marginVertical: 10 }} />
                 <TextSmall style={{ marginLeft: 10 }}>
-                  Don't turn these settings on unless you know what you're doing
+                  Don't turn on these settings unless you know what you're doing
                   ;)
                 </TextSmall>
-                <View style={styles.switchContainer}>
-                  <Switch
-                    value={updateBootloader}
-                    onValueChange={(v) => {
-                      appDispatch(setUpdateBootloader(v));
-                    }}
-                    trackColor={{
-                      false: colors.onSurfaceDisabled,
-                      true: colors.primary,
-                    }}
-                  />
-                  <Text>Also Update Bootloader</Text>
-                </View>
-                <View style={styles.switchContainer}>
-                  <Switch
-                    value={forceUpdateFirmware}
-                    onValueChange={(v) => {
-                      appDispatch(setForceUpdateFirmware(v));
-                    }}
-                    trackColor={{
-                      false: colors.onSurfaceDisabled,
-                      true: colors.primary,
-                    }}
-                  />
-                  <Text>Always Update Firmware</Text>
-                </View>
+                <SettingsSwitch
+                  value={betaFirmware}
+                  onValueChange={(v) => {
+                    appDispatch(setUseBetaFirmware(v));
+                  }}
+                >
+                  Use Beta Firmware
+                </SettingsSwitch>
+                <SettingsSwitch
+                  value={forceUpdateFirmware}
+                  onValueChange={(v) => {
+                    appDispatch(setForceUpdateFirmware(v));
+                  }}
+                >
+                  Always Update Firmware
+                </SettingsSwitch>
+                <SettingsSwitch
+                  value={updateBootloader}
+                  onValueChange={(v) => {
+                    appDispatch(setUpdateBootloader(v));
+                  }}
+                >
+                  Also Update Bootloader
+                </SettingsSwitch>
               </>
             )}
           </>

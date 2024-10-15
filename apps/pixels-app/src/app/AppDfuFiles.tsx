@@ -1,15 +1,24 @@
 import React from "react";
 
+import { useAppSelector } from "./hooks";
+
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { getDfuFileInfo } from "~/features/dfu/getDfuFileInfo";
-import { unzipEmbeddedDfuFilesAsync } from "~/features/dfu/unzip";
+import {
+  unzipEmbeddedDfuBetaFilesAsync,
+  unzipEmbeddedDfuFilesAsync,
+} from "~/features/dfu/unzip";
 import { DfuFilesStatus, DfuFilesContext, DfuFilesInfo } from "~/hooks";
 
 // Never throws
-async function loadDfuFiles(): Promise<DfuFilesInfo | Error> {
+async function loadDfuFiles(opt?: {
+  betaFirmware?: boolean;
+}): Promise<DfuFilesInfo | Error> {
   try {
     // Unzip app DFU files
-    const files = await unzipEmbeddedDfuFilesAsync();
+    const files = opt?.betaFirmware
+      ? await unzipEmbeddedDfuBetaFilesAsync()
+      : await unzipEmbeddedDfuFilesAsync();
     // Group them in DFU bundles
     const bundles = await DfuFilesBundle.createMany(
       files.map((p) => getDfuFileInfo(p))
@@ -40,9 +49,12 @@ export function AppDfuFiles({ children }: React.PropsWithChildren) {
   const [dfuFiles, setDfuFiles] = React.useState<DfuFilesStatus>({});
 
   // Load DFU files
+  const betaFirmware = useAppSelector(
+    (state) => state.appSettings.useBetaFirmware
+  );
   React.useEffect(() => {
     // Load DFU files (not interrupted if a fast refresh happens)
-    loadDfuFiles().then((result) => {
+    loadDfuFiles({ betaFirmware }).then((result) => {
       setDfuFiles((dfuInfo) => {
         const dfuFilesInfo = result instanceof Error ? undefined : result;
         const dfuFilesError = result instanceof Error ? result : undefined;
@@ -53,7 +65,7 @@ export function AppDfuFiles({ children }: React.PropsWithChildren) {
         };
       });
     });
-  }, []);
+  }, [betaFirmware]);
 
   return (
     <DfuFilesContext.Provider value={dfuFiles}>
