@@ -31,10 +31,11 @@ export interface AppSettingsState {
   diceBrightnessFactor: number;
   rollerCardsSizeRatio: number;
   disablePlayingAnimations: boolean;
-  enableDebugMode: boolean;
+  screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
+  showAdvancedSettings: boolean;
+  debugMode: boolean;
   forceUpdateFirmware: boolean;
   useBetaFirmware: boolean;
-  screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
 }
 
 const initialState: AppSettingsState = {
@@ -55,9 +56,6 @@ const initialState: AppSettingsState = {
   diceBrightnessFactor: 1,
   rollerCardsSizeRatio: 0.5,
   disablePlayingAnimations: false,
-  enableDebugMode: false,
-  forceUpdateFirmware: false,
-  useBetaFirmware: false,
   screensTheme: {
     onboarding: "blue",
     home: "blue",
@@ -65,6 +63,10 @@ const initialState: AppSettingsState = {
     animations: "yellow",
     settings: "orange",
   },
+  showAdvancedSettings: false,
+  debugMode: false,
+  forceUpdateFirmware: false,
+  useBetaFirmware: false,
 };
 
 // Redux slice that stores app settings
@@ -144,21 +146,6 @@ const appSettingsSlice = createSlice({
       state.disablePlayingAnimations = action.payload;
     },
 
-    switchEnableDebugMode(state) {
-      state.enableDebugMode = !state.enableDebugMode;
-      console.log(
-        `Debug mode ${state.enableDebugMode ? "enabled" : "disabled"}`
-      );
-    },
-
-    setForceUpdateFirmware(state, action: PayloadAction<boolean>) {
-      state.forceUpdateFirmware = action.payload;
-    },
-
-    setUseBetaFirmware(state, action: PayloadAction<boolean>) {
-      state.useBetaFirmware = action.payload;
-    },
-
     setScreenTheme(
       state,
       action: PayloadAction<{
@@ -167,6 +154,29 @@ const appSettingsSlice = createSlice({
       }>
     ) {
       state.screensTheme[action.payload.screen] = action.payload.themeKey;
+    },
+
+    setShowAdvancedSettings(state, action: PayloadAction<boolean>) {
+      state.showAdvancedSettings = action.payload;
+      if (!action.payload) {
+        // Reset advanced settings when hiding them
+        state.debugMode = false;
+        state.updateBootloader = false;
+        state.forceUpdateFirmware = false;
+        state.useBetaFirmware = false;
+      }
+    },
+
+    setDebugMode(state, action: PayloadAction<boolean>) {
+      state.debugMode = action.payload;
+    },
+
+    setForceUpdateFirmware(state, action: PayloadAction<boolean>) {
+      state.forceUpdateFirmware = action.payload;
+    },
+
+    setUseBetaFirmware(state, action: PayloadAction<boolean>) {
+      state.useBetaFirmware = action.payload;
     },
   },
 });
@@ -190,9 +200,10 @@ export const {
   setDiceBrightnessFactor,
   setRollerCardsSizeRatio,
   setDisablePlayingAnimations,
-  switchEnableDebugMode,
+  setScreenTheme,
+  setShowAdvancedSettings,
+  setDebugMode,
   setForceUpdateFirmware,
   setUseBetaFirmware,
-  setScreenTheme,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

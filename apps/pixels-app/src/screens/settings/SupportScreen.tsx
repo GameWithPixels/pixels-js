@@ -1,7 +1,8 @@
 import * as Linking from "expo-linking";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { Text as PaperText, TextProps } from "react-native-paper";
+
+import { Body } from "./components/text";
 
 import { SupportScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
@@ -9,10 +10,6 @@ import { PageHeader } from "~/components/PageHeader";
 import { OutlineButton } from "~/components/buttons";
 
 const supportEmail = "Luna@GameWithPixels.com";
-
-function Text(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="bodyLarge" {...props} />;
-}
 
 type OpenURLButtonProps = Required<React.PropsWithChildren> & {
   url: string;
@@ -53,7 +50,7 @@ function SupportPage({
           gap: 20,
         }}
       >
-        <Text>To send suggestions:</Text>
+        <Body>To send suggestions:</Body>
         {/* <URLButton
           url="https://gamewithpixels.com/contact-us/"
           sentry-label="contact-us"
@@ -63,11 +60,11 @@ function SupportPage({
         <URLButton url={createURL("Suggestion")} sentry-label="send-email">
           Email Us at {supportEmail}
         </URLButton>
-        <Text>To report issues:</Text>
+        <Body>To report issues:</Body>
         <URLButton url={createURL("Issue")} sentry-label="send-email">
           Email Us at {supportEmail}
         </URLButton>
-        <Text style={{ marginTop: 20 }}>Or join us on our Discord server:</Text>
+        <Body style={{ marginTop: 20 }}>Or join us on our Discord server:</Body>
         <URLButton
           url="https://discord.com/invite/9ghxBYQFYA"
           sentry-label="discord-server"

@@ -9,10 +9,10 @@ import { useDebugMode } from "~/hooks";
 
 export function DebugPerfMetrics({ disabled }: { disabled?: boolean }) {
   const { top } = useSafeAreaInsets();
-  const devMode = useDebugMode();
+  const debugMode = useDebugMode();
   const [stats, setStats] = React.useState<PerformanceStatsData>();
   React.useEffect(() => {
-    if (devMode) {
+    if (debugMode) {
       const listener = PerformanceStats.addListener(setStats);
       PerformanceStats.start();
       return () => {
@@ -20,9 +20,9 @@ export function DebugPerfMetrics({ disabled }: { disabled?: boolean }) {
         PerformanceStats.stop();
       };
     }
-  }, [devMode]);
+  }, [debugMode]);
   return (
-    devMode &&
+    debugMode &&
     !disabled &&
     stats && (
       <View

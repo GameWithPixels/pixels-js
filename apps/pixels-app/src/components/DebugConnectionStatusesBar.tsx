@@ -148,9 +148,9 @@ function ConnectQueueStatusBar() {
 }
 
 export function DebugConnectionStatusesBar() {
-  const devMode = useDebugMode();
+  const debugMode = useDebugMode();
   return (
-    devMode && (
+    debugMode && (
       <>
         <ConnectionStatusBar />
         <ConnectQueueStatusBar />

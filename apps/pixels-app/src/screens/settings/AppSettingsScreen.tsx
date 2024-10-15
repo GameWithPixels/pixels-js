@@ -1,21 +1,16 @@
 import React from "react";
 import { ScrollView, useWindowDimensions, View } from "react-native";
 import { FileLogger } from "react-native-file-logger";
-import {
-  Divider,
-  Text as PaperText,
-  Switch,
-  TextProps,
-  useTheme,
-} from "react-native-paper";
-import Toast from "react-native-root-toast";
+import { Divider, Switch, useTheme } from "react-native-paper";
+
+import { SettingsSwitch } from "./components/SettingsSwitch";
+import { Body, Remark } from "./components/text";
 
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import {
   AppSettingsScreenProps,
   SettingsMenuScreenProps,
 } from "~/app/navigation";
-import { ToastSettings } from "~/app/themes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
@@ -27,22 +22,13 @@ import {
   resetAppTransientState,
   resetDiceStats,
   resetPairedDice,
+  setDebugMode,
   setDiceBrightnessFactor,
   setDisablePlayingAnimations,
-  setForceUpdateFirmware,
-  setUpdateBootloader,
-  switchEnableDebugMode,
+  setShowAdvancedSettings,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
-import { useConfirmActionSheet, useDebugMode } from "~/hooks";
-
-function Text(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText variant="bodyLarge" {...props} />;
-}
-
-function TextSmall(props: Omit<TextProps<never>, "variant">) {
-  return <PaperText {...props} />;
-}
+import { useConfirmActionSheet } from "~/hooks";
 
 function AppSettingsPage({
   navigation,
@@ -51,13 +37,12 @@ function AppSettingsPage({
 }) {
   const appDispatch = useAppDispatch();
 
-  const brightness = useAppSelector(
-    (state) => state.appSettings.diceBrightnessFactor
-  );
-  const disablePlayingAnimations = useAppSelector(
-    (state) => state.appSettings.disablePlayingAnimations
-  );
-  const debugMode = useDebugMode();
+  const {
+    diceBrightnessFactor: brightness,
+    disablePlayingAnimations: disablePlayAnims,
+    showAdvancedSettings,
+    debugMode,
+  } = useAppSelector((state) => state.appSettings);
   const showConfirmReset = useConfirmActionSheet<"keepProfiles">(
     "Reset App Settings",
     (data) => {
@@ -93,18 +78,12 @@ function AppSettingsPage({
         );
       } else {
         secretToggleRef.current.counter = 0;
-        appDispatch(switchEnableDebugMode());
-        const debugMode = store.getState().appSettings.enableDebugMode;
-        Toast.show(`Debug Mode ${debugMode ? "On" : "Off"}`, ToastSettings);
-        if (!debugMode) {
-          appDispatch(setUpdateBootloader(false));
-          appDispatch(setForceUpdateFirmware(false));
-        }
+        const { showAdvancedSettings: old } = store.getState().appSettings;
+        const showAdvancedSettings = !old;
+        appDispatch(setShowAdvancedSettings(showAdvancedSettings));
       }
     }
   };
-
-  const [exportResult, setExportResult] = React.useState("");
 
   const { colors } = useTheme();
   return (
@@ -130,14 +109,14 @@ function AppSettingsPage({
           {isDevApp() && (
             <>
               <Divider style={{ marginVertical: 10 }} />
-              <Text style={{ alignSelf: "center" }}>
+              <Body style={{ alignSelf: "center" }}>
                 DEV APP!{debugMode ? " - Debug Mode Active" : ""}
-              </Text>
+              </Body>
               <Divider style={{ marginVertical: 10 }} />
             </>
           )}
-          <Text>Global Dice Brightness</Text>
-          <TextSmall>(Combined with each Profile's own brightness)</TextSmall>
+          <Body>Global Dice Brightness</Body>
+          <Remark>(Combined with each Profile's own brightness)</Remark>
           <SliderWithValue
             percentage
             value={brightness}
@@ -147,7 +126,7 @@ function AppSettingsPage({
         <Divider style={{ marginVertical: 10 }} />
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <Switch
-            value={disablePlayingAnimations}
+            value={disablePlayAnims}
             onValueChange={(v) => {
               appDispatch(setDisablePlayingAnimations(v));
             }}
@@ -156,7 +135,7 @@ function AppSettingsPage({
               true: colors.primary,
             }}
           />
-          <Text>Disable Playing Animations In App</Text>
+          <Body>Disable Playing Animations In App</Body>
         </View>
         <Divider style={{ marginVertical: 10 }} />
         <OutlineButton
@@ -170,27 +149,45 @@ function AppSettingsPage({
         >
           Reset All App Settings
         </OutlineButton>
-        <Divider style={{ marginVertical: 10 }} />
-        <OutlineButton
-          onPress={() => {
-            setExportResult("");
-            FileLogger.getLogFilePaths().then((logFiles) =>
-              console.log("Log files: " + logFiles.join(", "))
-            );
-            FileLogger.sendLogFilesByEmail({
-              to: "olivier@gamewithpixels.com",
-              subject: "Pixels App Logs",
-            })
-              .then(() => setExportResult("Success!"))
-              .catch((e) => {
-                console.log("Error exporting logs: " + String(e));
-                setExportResult(e.message);
-              });
-          }}
-        >
-          Export Logs
-        </OutlineButton>
-        <Text>Export Result: {exportResult}</Text>
+        {showAdvancedSettings && (
+          <>
+            <Divider style={{ marginVertical: 10 }} />
+            <SettingsSwitch
+              value={showAdvancedSettings}
+              onValueChange={(v) => {
+                appDispatch(setShowAdvancedSettings(v));
+              }}
+            >
+              Show Advanced Settings
+            </SettingsSwitch>
+            <SettingsSwitch
+              value={debugMode}
+              onValueChange={(v) => {
+                appDispatch(setDebugMode(v));
+              }}
+            >
+              Debug Mode
+            </SettingsSwitch>
+            <Divider style={{ marginVertical: 10 }} />
+            <OutlineButton
+              onPress={() => {
+                if (__DEV__) {
+                  FileLogger.getLogFilePaths().then((logFiles) =>
+                    console.log("Log files:\n" + logFiles.join("\n"))
+                  );
+                }
+                FileLogger.sendLogFilesByEmail({
+                  to: "olivier@gamewithpixels.com",
+                  subject: "Pixels App Logs",
+                }).catch((e) =>
+                  console.error("Error exporting logs: " + String(e))
+                );
+              }}
+            >
+              Export Logs
+            </OutlineButton>
+          </>
+        )}
       </ScrollView>
     </View>
   );

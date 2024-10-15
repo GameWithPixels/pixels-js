@@ -11,9 +11,9 @@ export function DebugPixelID({ pixelId }: { pixelId: number }) {
     setQueue(central.connectQueue);
     return central.addListener("connectQueue", setQueue);
   }, [central]);
-  const devMode = useDebugMode();
+  const debugMode = useDebugMode();
   return (
-    devMode && (
+    debugMode && (
       <Text
         numberOfLines={1}
         variant="titleSmall"
