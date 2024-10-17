@@ -34,8 +34,8 @@ export interface AppSettingsState {
   screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
   showAdvancedSettings: boolean;
   debugMode: boolean;
-  forceUpdateFirmware: boolean;
   useBetaFirmware: boolean;
+  appFirmwareTimestampOverride: number;
 }
 
 const initialState: AppSettingsState = {
@@ -65,8 +65,8 @@ const initialState: AppSettingsState = {
   },
   showAdvancedSettings: false,
   debugMode: false,
-  forceUpdateFirmware: false,
   useBetaFirmware: false,
+  appFirmwareTimestampOverride: 0,
 };
 
 // Redux slice that stores app settings
@@ -162,8 +162,8 @@ const appSettingsSlice = createSlice({
         // Reset advanced settings when hiding them
         state.debugMode = false;
         state.updateBootloader = false;
-        state.forceUpdateFirmware = false;
         state.useBetaFirmware = false;
+        state.appFirmwareTimestampOverride = 0;
       }
     },
 
@@ -171,12 +171,12 @@ const appSettingsSlice = createSlice({
       state.debugMode = action.payload;
     },
 
-    setForceUpdateFirmware(state, action: PayloadAction<boolean>) {
-      state.forceUpdateFirmware = action.payload;
-    },
-
     setUseBetaFirmware(state, action: PayloadAction<boolean>) {
       state.useBetaFirmware = action.payload;
+    },
+
+    setAppFirmwareTimestampOverride(state, action: PayloadAction<number>) {
+      state.appFirmwareTimestampOverride = action.payload;
     },
   },
 });
@@ -203,7 +203,7 @@ export const {
   setScreenTheme,
   setShowAdvancedSettings,
   setDebugMode,
-  setForceUpdateFirmware,
   setUseBetaFirmware,
+  setAppFirmwareTimestampOverride,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

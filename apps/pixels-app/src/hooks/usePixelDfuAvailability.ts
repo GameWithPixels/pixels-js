@@ -27,9 +27,6 @@ export function useHasFirmwareUpdate(
 
 export function useOutdatedPixelsCount(): number {
   const { dfuFilesInfo } = useAppDfuFiles();
-  const forceUpdate = useAppSelector(
-    (state) => state.appSettings.forceUpdateFirmware
-  );
   const count = useAppSelector((state) =>
     state.pairedDice.paired
       .map(
@@ -41,5 +38,5 @@ export function useOutdatedPixelsCount(): number {
       )
       .reduce((acc, val) => acc + (val ? 1 : 0), 0)
   );
-  return forceUpdate ? 1 : count;
+  return count;
 }

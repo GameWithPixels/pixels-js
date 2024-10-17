@@ -10,8 +10,8 @@ import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import {
   setUseBetaFirmware,
-  setForceUpdateFirmware,
   setUpdateBootloader,
+  setAppFirmwareTimestampOverride,
 } from "~/features/store";
 import { useAppDfuFiles } from "~/hooks";
 
@@ -24,7 +24,7 @@ function FirmwareInfoPage({
   const {
     showAdvancedSettings,
     updateBootloader,
-    forceUpdateFirmware,
+    appFirmwareTimestampOverride: fwTimestampOvr,
     useBetaFirmware: betaFirmware,
   } = useAppSelector((state) => state.appSettings);
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
@@ -69,9 +69,11 @@ function FirmwareInfoPage({
                   Use Beta Firmware
                 </SettingsSwitch>
                 <SettingsSwitch
-                  value={forceUpdateFirmware}
+                  value={!!fwTimestampOvr}
                   onValueChange={(v) => {
-                    appDispatch(setForceUpdateFirmware(v));
+                    appDispatch(
+                      setAppFirmwareTimestampOverride(v ? Date.now() : 0)
+                    );
                   }}
                 >
                   Always Update Firmware
