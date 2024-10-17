@@ -19,8 +19,11 @@ export function getScannedPixel(
   peripheral: ScannedPeripheral
 ): ScannedPixel | undefined {
   const advData = peripheral.advertisementData;
+  const customPixelService = !!advData.services?.includes(
+    PixelsBluetoothIds.die.service
+  );
   if (
-    !advData.services?.includes(PixelsBluetoothIds.die.service) &&
+    !customPixelService &&
     !advData.services?.includes(PixelsBluetoothIds.legacyDie.service)
   ) {
     // Not a Pixels die
@@ -130,7 +133,10 @@ export function getScannedPixel(
         currentFaceIndex: faceIndex,
         timestamp: new Date(advData.timestamp),
       };
-      ScannedDevicesRegistry.register(scannedPixel);
+      ScannedDevicesRegistry.register(
+        scannedPixel,
+        customPixelService ? "custom" : "legacy"
+      );
       return scannedPixel;
     } else {
       console.error(
