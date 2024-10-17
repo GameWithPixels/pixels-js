@@ -1,4 +1,5 @@
 import * as Application from "expo-application";
+import * as Device from "expo-device";
 import { useLocales } from "expo-localization";
 import * as Speech from "expo-speech";
 import * as Updates from "expo-updates";
@@ -59,7 +60,10 @@ function SystemInfoPage({
         <Title style={{ marginTop: 20 }}>System Information</Title>
         <View style={{ marginLeft: 10, gap: 10 }}>
           <Body>OS: {Platform.OS}</Body>
-          <Body>Version: {Platform.Version}</Body>
+          <Body>Version: {Device.osVersion}</Body>
+          {Device.platformApiLevel && (
+            <Body>API Level: {Device.platformApiLevel}</Body>
+          )}
           <Body>
             {`Display Size: ${Math.round(window.width)}x${Math.round(
               window.height
@@ -82,6 +86,20 @@ function SystemInfoPage({
             <Body>Voices:</Body>
             {voices ? <Body>{voices.length}</Body> : <ActivityIndicator />}
           </View>
+        </View>
+        <Title style={{ marginTop: 20 }}>Device</Title>
+        <View style={{ marginLeft: 10, gap: 10 }}>
+          <Body>Brand: {Device.brand}</Body>
+          <Body>Model: {Device.modelName}</Body>
+          {Device.productName && <Body>Product: {Device.productName}</Body>}
+          {Device.designName && Device.designName !== Device.productName && (
+            <Body>Design: {Device.designName}</Body>
+          )}
+          {Device.totalMemory && (
+            <Body>
+              Memory: {Math.round(Device.totalMemory / 1024 / 1024 / 1024)} GB
+            </Body>
+          )}
         </View>
       </ScrollView>
     </View>
