@@ -9,6 +9,7 @@ import {
 import * as Sentry from "@sentry/react-native";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
 import Constants from "expo-constants";
+import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -80,9 +81,16 @@ LogBox.ignoreLogs([
 // Configure the file logger
 // Note: we don't wait for the promise to resolve,
 // it's okay if the first few logs are not saved
-FileLogger.configure().catch((error) => {
-  console.error(`Failed to configure file logger: ${error}`);
-});
+FileLogger.configure()
+  .then(() => {
+    if (Device.isDevice) {
+      const { DeviceType: _, ...dev } = Device;
+      console.log(`Device: ${JSON.stringify(dev)}`);
+    }
+  })
+  .catch((error) => {
+    console.error(`Failed to configure file logger: ${error}`);
+  });
 
 const routingInstrumentation = !__DEV__
   ? Sentry.reactNavigationIntegration()
