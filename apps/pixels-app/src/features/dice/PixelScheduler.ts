@@ -156,7 +156,7 @@ export class PixelScheduler {
       this._allSchedulers.set(pixelId, scheduler);
     }
     if (!scheduler._pixel) {
-      scheduler._pixel = getPixel(pixelId, { legacyService: true });
+      scheduler._pixel = getPixel(pixelId);
       scheduler._pixel && scheduler._triggerProcessPromise?.();
     }
     return scheduler;

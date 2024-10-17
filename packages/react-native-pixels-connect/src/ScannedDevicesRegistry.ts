@@ -2,11 +2,20 @@ import { ScannedCharger } from "./ScannedCharger";
 import { ScannedPixel } from "./ScannedPixel";
 
 const _pixelIdMap = new Map<number, ScannedPixel | ScannedCharger>();
+const _legacyDevices = new Set<number>();
 
 // For internal use only
 export const ScannedDevicesRegistry = {
-  register(scannedDevice: ScannedPixel | ScannedCharger): void {
+  register(
+    scannedDevice: ScannedPixel | ScannedCharger,
+    service: "custom" | "legacy" = "custom"
+  ): void {
     _pixelIdMap.set(scannedDevice.pixelId, scannedDevice);
+    if (service === "legacy") {
+      _legacyDevices.add(scannedDevice.pixelId);
+    } else {
+      _legacyDevices.delete(scannedDevice.pixelId);
+    }
   },
 
   find(id: string | number): ScannedPixel | ScannedCharger | undefined {
@@ -29,5 +38,9 @@ export const ScannedDevicesRegistry = {
   findCharger(id: string | number): ScannedCharger | undefined {
     const scannedDevice = ScannedDevicesRegistry.find(id);
     return scannedDevice?.type === "charger" ? scannedDevice : undefined;
+  },
+
+  hasLegacyService(id: number): boolean {
+    return _legacyDevices.has(id);
   },
 } as const;
