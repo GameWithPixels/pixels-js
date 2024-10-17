@@ -13,6 +13,7 @@ import { DfuFilesStatus, DfuFilesContext, DfuFilesInfo } from "~/hooks";
 // Never throws
 async function loadDfuFiles(opt?: {
   betaFirmware?: boolean;
+  timestampOverride?: number;
 }): Promise<DfuFilesInfo | Error> {
   try {
     // Unzip app DFU files
@@ -32,7 +33,7 @@ async function loadDfuFiles(opt?: {
     );
     if (selected?.firmware) {
       return {
-        timestamp: selected.date.getTime(),
+        timestamp: opt?.timestampOverride ?? selected.date.getTime(),
         bootloaderPath: selected.bootloader?.pathname,
         firmwarePath: selected.firmware.pathname,
       };
@@ -49,12 +50,17 @@ export function AppDfuFiles({ children }: React.PropsWithChildren) {
   const [dfuFiles, setDfuFiles] = React.useState<DfuFilesStatus>({});
 
   // Load DFU files
-  const betaFirmware = useAppSelector(
-    (state) => state.appSettings.useBetaFirmware
-  );
+  const {
+    useBetaFirmware: betaFirmware,
+    appFirmwareTimestampOverride: timestamp,
+  } = useAppSelector((state) => state.appSettings);
   React.useEffect(() => {
     // Load DFU files (not interrupted if a fast refresh happens)
     loadDfuFiles({ betaFirmware }).then((result) => {
+      if (timestamp) {
+        // Override timestamp for testing
+        result = { ...result, timestamp };
+      }
       setDfuFiles((dfuInfo) => {
         const dfuFilesInfo = result instanceof Error ? undefined : result;
         const dfuFilesError = result instanceof Error ? result : undefined;
@@ -65,7 +71,7 @@ export function AppDfuFiles({ children }: React.PropsWithChildren) {
         };
       });
     });
-  }, [betaFirmware]);
+  }, [betaFirmware, timestamp]);
 
   return (
     <DfuFilesContext.Provider value={dfuFiles}>
