@@ -213,10 +213,8 @@ export async function startDfu(
 
   // Start DFU
   try {
-    notifyState({
-      targetId,
-      state: "initializing",
-    });
+    // Notify initializing
+    notifyState({ targetId, state: "initializing" });
     // Remove file URI scheme
     if (filePath.startsWith("file://")) {
       if (Platform.OS === "android") {
@@ -266,10 +264,9 @@ export async function startDfu(
       throw new Error("Platform not supported (not Android or iOS)");
     }
   } catch (error: any) {
-    notifyState({
-      targetId,
-      state: "errored",
-    });
+    // Notify error
+    notifyState({ targetId, state: "errored" });
+    // Throw a DFU error
     const msg = error.message;
     switch (msg) {
       case "DFU FILE NOT FOUND":
@@ -302,7 +299,10 @@ export async function startDfu(
           case "E_DFU_BUSY":
             throw new DfuBusyError(targetId, msg);
           case "E_CONNECTION":
-            throw new DfuConnectionError(targetId, msg);
+            throw new DfuConnectionError(
+              targetId,
+              msg === "UNKNOWN (257)" ? "GATT FAILURE (257)" : msg
+            );
           case "E_COMMUNICATION":
             throw new DfuCommunicationError(targetId, msg);
           case "E_DFU_REMOTE":
