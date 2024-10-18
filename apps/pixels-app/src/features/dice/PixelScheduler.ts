@@ -1,6 +1,7 @@
 import {
   assertNever,
   createTypedEventEmitter,
+  delay,
   EventReceiver,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
@@ -27,7 +28,6 @@ export type PixelOperationParams = Readonly<
     }
   | {
       type: "connect";
-      // mode?: "default" | "reconnect";
     }
   | {
       type: "disconnect";
@@ -276,12 +276,10 @@ export class PixelScheduler {
     this._log(`Scheduling operation ${type}`);
     switch (type) {
       case "connect":
-        // if (this._currentOperation?.type !== "connect") {
-        //   // No need to queue a new connect operation if already connecting
-        this._operations.set(type, {}); // mode: operation.mode
-        // }
         // Clear any pending disconnect operation
         this._operations.delete("disconnect");
+        // Schedule connect operation
+        this._operations.set(type, {});
         break;
       case "updateFirmware":
         this._operations.set(type, {
@@ -315,7 +313,9 @@ export class PixelScheduler {
 
   scheduleAndWaitAsync(
     operation: PixelOperationParams,
-    opt?: { onStart?: () => void }
+    statusListener?: (
+      status: PixelSchedulerEventMap["onOperationStatus"]["status"]
+    ) => void
   ): Promise<"succeeded" | "dropped" | "failed"> {
     const opType = operation.type;
     return new Promise<"succeeded" | "dropped" | "failed">((resolve) => {
@@ -324,15 +324,17 @@ export class PixelScheduler {
         status,
       }: PixelSchedulerEventMap["onOperationStatus"]) => {
         if (type === opType) {
-          if (status === "starting") {
-            opt?.onStart?.();
-          } else if (
-            status === "succeeded" ||
-            status === "dropped" ||
-            status === "failed"
-          ) {
-            this.removeListener("onOperationStatus", onOperation);
-            resolve(status);
+          try {
+            statusListener?.(status);
+          } finally {
+            if (
+              status === "succeeded" ||
+              status === "dropped" ||
+              status === "failed"
+            ) {
+              this.removeListener("onOperationStatus", onOperation);
+              resolve(status);
+            }
           }
         }
       };
@@ -445,26 +447,7 @@ export class PixelScheduler {
     const { type } = op;
     switch (type) {
       case "connect":
-        // if (op.mode === "reconnect") {
-        //   try {
-        //     await pixel.disconnect();
-        //     // TODO Temp fix: connecting immediately after a disconnect causes issues
-        //     // on Android: the device is never actually disconnected, but the MTU
-        //     // is reset to 23 as far as the native code is concerned.
-        //     await delay(300);
-        //   } catch (e) {
-        //     this._log(
-        //       `Disconnect error before reconnecting to die ${pixel.name}: ${e}`
-        //     );
-        //   }
-        // }
-        // Check if already connected
-        // if (pixel.status !== "ready") {
-        //   if (pixel.status === "connecting" || pixel.status === "identifying") {
-        //     this._log(`Trying to connect while already connecting`);
-        //   }
         await pixel.connect();
-        // }
         break;
       case "turnOff":
         await pixel.turnOff();
@@ -553,6 +536,8 @@ export class PixelScheduler {
           // Throw the original error if what we got is a connection error
           throw e instanceof DfuConnectionError ? firstError : e;
         }
+        // Wait just a bit before retrying
+        await delay(1000);
       }
     }
   }

@@ -341,10 +341,18 @@ export class PixelsCentral {
               case "scanned": {
                 // Always update notifier
                 const notifier = ScannedPixelNotifier.getInstance(op.item);
+                this._connectQueue.includes(op.item.pixelId) &&
+                  console.log(
+                    `>> SCANNED Pixel ${unsigned32ToHex(op.item.pixelId)} delay=${Date.now() - op.item.timestamp.getTime()}`
+                  );
                 this._onScannedPixel(notifier);
                 break;
               }
               case "lost": {
+                this._connectQueue.includes(op.item.pixelId) &&
+                  console.log(
+                    `>> LOST SCANNED Pixel ${unsigned32ToHex(op.item.pixelId)}`
+                  );
                 const notifier = ScannedPixelNotifier.findInstance(
                   op.item.pixelId
                 );
@@ -447,11 +455,13 @@ export class PixelsCentral {
     }
   }
 
-  stopTryConnecting(priority: "low" | "high" = "low"): void {
+  stopTryConnecting(priority: "low" | "high" | "all"): void {
     const ids =
-      priority === "low"
-        ? this._connectQueue.lowPriorityIds
-        : this._connectQueue.highPriorityIds;
+      priority === "all"
+        ? this._connectQueue.allIds
+        : priority === "low"
+          ? this._connectQueue.lowPriorityIds
+          : this._connectQueue.highPriorityIds;
     for (const id of ids) {
       if (getScheduler(id).cancelConnecting()) {
         console.warn(`>> CANCEL connecting Pixel ${unsigned32ToHex(id)}`);
@@ -521,13 +531,12 @@ export class PixelsCentral {
     this._emitEvent("pixelInDFU", this._pixelInDfu);
 
     try {
+      console.log(`DFU request for Pixel ${unsigned32ToHex(pixelId)}`);
+
       // Get timestamp from scan if Pixel is not connected
       const scannedFwDate = !isConnected(getPixel(pixelId)?.status)
         ? (await this.waitForScannedPixelAsync(pixelId))?.firmwareDate
         : undefined;
-      console.log(
-        `Got scanned timestamp ${scannedFwDate?.getTime()} for Pixel ${unsigned32ToHex(pixelId)}`
-      );
 
       // Get Pixel instance again as it might have been discovered during the scan
       // (and it also checks if it's still registered)
@@ -542,7 +551,8 @@ export class PixelsCentral {
         throw new Error("DFU Pixel not found " + unsigned32ToHex(pixelId));
       }
       console.log(
-        `Got timestamp ${timestamp} for Pixel ${unsigned32ToHex(pixelId)}`
+        `Got timestamp ${timestamp} for${scannedFwDate ? " (scanned)" : ""}` +
+          ` Pixel ${unsigned32ToHex(pixelId)} with status ${pixel.status}`
       );
 
       // Check if we need to update the firmware
@@ -550,6 +560,10 @@ export class PixelsCentral {
         !!opt.force ||
         getDieDfuAvailability(timestamp, filesInfo.timestamp) === "outdated"
       ) {
+        // Stop try connecting so other dice won't take the last available
+        // connection when this die attempts to reconnect during DFU
+        this.stopTryConnecting("all");
+
         // Connect to Pixel if not already connected
         if (!isConnected(pixel.status)) {
           console.warn("WAIT CONNECT Pixel " + unsigned32ToHex(pixelId));
@@ -572,16 +586,21 @@ export class PixelsCentral {
               : undefined,
             firmwarePath: filesInfo.firmwarePath,
           },
-          // Don't reconnect until after DFU has finished
-          { onStart: () => this._connectQueue.dequeue(pixelId) }
+          (status) => {
+            if (status === "starting") {
+              // Prevent automatic reconnection to happen during DFU
+              this._connectQueue.dequeue(pixelId);
+              // But we also don't want to schedule a disconnect
+              // that will happen after the DFU is finished
+              getScheduler(pixelId).unschedule("disconnect");
+            }
+          }
         );
         console.log(
-          `DFU done with status=${status} for ${unsigned32ToHex(pixelId)}`
+          `DFU finished with status=${status} for ${unsigned32ToHex(pixelId)}`
         );
 
-        // Reconnect after DFU
-        this.tryConnect(pixelId, { priority: "high" });
-
+        // Check DFU operation status
         if (status !== "succeeded") {
           throw new Error("DFU " + status);
         }
@@ -590,7 +609,16 @@ export class PixelsCentral {
         const FW_2024_03_25 = 1711398391000;
         if (timestamp <= FW_2024_03_25 && pixel.ledCount <= 6) {
           console.warn(`Resetting settings for die ${pixel.name}`);
-          getScheduler(pixelId).schedule({ type: "resetSettings" });
+          // Reconnect
+          this.tryConnect(pixelId, { priority: "high" });
+          if (await waitConnectedAsync(pixel)) {
+            // Reset settings
+            getScheduler(pixelId).schedule({ type: "resetSettings" });
+          } else {
+            // What should really do is store the fact that we need to reset
+            // the settings and let the app handle the reset on the next connection
+            logError("Failed to reconnect after DFU");
+          }
         }
         return true;
       } else {
@@ -627,8 +655,6 @@ export class PixelsCentral {
         // Try to connect if queued for connection
         this._scheduleConnectIfQueued(pixelId);
       } else {
-        this._connectQueue.includes(pixelId) &&
-          console.log(">> SCANNED Pixel " + unsigned32ToHex(pixelId));
         // Track time of last scan
         const scanTime = notifier.timestamp.getTime();
         if (
@@ -942,7 +968,7 @@ export class PixelsCentral {
     }
     // Remove all low priority connections that are not yet connected
     // so they don't take up our spot
-    this.stopTryConnecting();
+    this.stopTryConnecting("low");
     // Find out if a lower priority connection can be released
     const idToDisco = ids.find(
       (id, i) => i < index && isConnected(getPixel(id)?.status)
