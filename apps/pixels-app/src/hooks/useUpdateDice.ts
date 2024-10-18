@@ -46,6 +46,7 @@ export function useUpdateDice(): (
               );
             }
           } catch (error) {
+            console.warn(`Failed updating die: ${error}`);
             failedPixelsIds.push(pixelId);
           }
           // Remove id

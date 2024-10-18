@@ -144,8 +144,13 @@ function FirmwareUpdatePage({
                     pairedDice.map((d) => d.pixelId),
                     dfuFilesInfo,
                     () => stop
-                  ).finally(() => setStopUpdating(undefined));
-                  // No error should be thrown
+                  ).finally(() => {
+                    setStopUpdating(undefined);
+                    // Reconnect to dice
+                    for (const d of pairedDice) {
+                      central.tryConnect(d.pixelId);
+                    }
+                  });
                 }
               }}
             >

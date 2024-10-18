@@ -100,6 +100,15 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         // Clean up previous event listeners
         disposers.get(pixel.pixelId)?.();
 
+        // // Skip if die not paired
+        // if (
+        //   !store
+        //     .getState()
+        //     .pairedDice.paired.some((d) => d.pixelId === pixel.pixelId)
+        // ) {
+        //   return;
+        // }
+
         // Die name
         const onRename = ({ pixelId, name }: PixelMutableProps) =>
           store.dispatch(updatePairedDieName({ pixelId, name }));
@@ -136,6 +145,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
                 .getState()
                 .pairedDice.paired.some((d) => d.pixelId === pixel.pixelId)
             ) {
+              // Only update this die
               setCheckProfiles();
             }
           }
