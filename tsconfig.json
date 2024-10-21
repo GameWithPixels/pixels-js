@@ -51,6 +51,9 @@
       "path": "./packages/react-native-pixels-connect"
     },
     {
+      "path": "./packages/react-native-pusher-server"
+    },
+    {
       "path": "./packages/react-native-zpl-print"
     },
     // Apps

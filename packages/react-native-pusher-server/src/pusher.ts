@@ -58,7 +58,7 @@ function validateUserData(userData: { [key: string]: string }): void {
  * @param {Integer} [options.timeout] request timeout in milliseconds
  * @param {Agent} [options.agent] http agent to use
  */
-export class Pusher {
+export class PusherServer {
   private readonly _config: PusherConfig;
 
   /** Exported {@link Token} constructor. */

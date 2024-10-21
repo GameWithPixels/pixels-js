@@ -44,6 +44,7 @@
     "@systemic-games/react-native-bluetooth-le": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
     "@systemic-games/react-native-pixels-connect": "*",
+    "@systemic-games/react-native-pusher-server": "*",
     "base64-js": "^1.5.1",
     "color": "^4.2.3",
     "events": "^3.3.0",

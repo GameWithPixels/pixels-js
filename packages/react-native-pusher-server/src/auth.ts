@@ -1,6 +1,6 @@
 import { Buffer } from "@craftzdog/react-native-buffer";
 
-import { Pusher } from "./pusher";
+import { PusherServer } from "./pusher";
 import { Token } from "./token";
 import * as util from "./util";
 
@@ -21,7 +21,7 @@ export function getSocketSignatureForUser(
 }
 
 export function getSocketSignature(
-  pusher: Pusher,
+  pusher: PusherServer,
   token: Token,
   channel: string,
   socketID: string,
