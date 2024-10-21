@@ -142,7 +142,7 @@ export function ProfileCard({
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dieViewCornersStyle = {
     borderTopLeftRadius: squaredTopBorder ? 0 : borderRadius,
-    borderTopRightRadius: !vertical ?? squaredTopBorder ? 0 : borderRadius,
+    borderTopRightRadius: !vertical || squaredTopBorder ? 0 : borderRadius,
     borderBottomLeftRadius:
       !!vertical || squaredBottomBorder ? 0 : borderRadius,
   };
@@ -170,10 +170,10 @@ export function ProfileCard({
             width: die3dWidth,
             // Borders (having issues on iOS with those borders applied on the LinearGradient)
             borderWidth: noBorder ? 0 : 1,
-            borderRightWidth: noBorder ?? vertical ? 1 : 0,
-            borderTopWidth: noBorder ?? noTopBorder ? 0 : undefined,
+            borderRightWidth: noBorder || vertical ? 1 : 0,
+            borderTopWidth: noBorder || noTopBorder ? 0 : undefined,
             borderBottomWidth:
-              noBorder ?? noBottomBorder ?? vertical ? 0 : undefined,
+              noBorder || noBottomBorder || vertical ? 0 : undefined,
             borderColor: getBorderColor(colors, selected),
             // Corners
             ...dieViewCornersStyle,
@@ -200,14 +200,14 @@ export function ProfileCard({
             paddingTop: vertical ? 0 : 5,
             // Borders
             borderWidth: noBorder ? 0 : 1,
-            borderLeftWidth: noBorder ?? vertical ? 1 : 0,
-            borderTopWidth: noBorder ?? noTopBorder ?? vertical ? 0 : 1,
+            borderLeftWidth: noBorder || vertical ? 1 : 0,
+            borderTopWidth: noBorder || noTopBorder || vertical ? 0 : 1,
             borderColor: getBorderColor(colors, selected),
             // Corners
             borderTopRightRadius:
               !!vertical || squaredTopBorder ? 0 : borderRadius,
             borderBottomLeftRadius:
-              !vertical ?? squaredBottomBorder ? 0 : borderRadius,
+              !vertical || squaredBottomBorder ? 0 : borderRadius,
             borderBottomRightRadius: squaredBottomBorder ? 0 : borderRadius,
           }}
         >

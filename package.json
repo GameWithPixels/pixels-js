@@ -50,23 +50,23 @@
     "docs": "yarn types && yarn typedoc"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0",
-    "@babel/eslint-parser": "^7.24.5",
-    "@babel/preset-env": "^7.20.0",
-    "@commitlint/cli": "^19.3.0",
-    "@commitlint/config-conventional": "^19.2.2",
-    "@evilmartians/lefthook": "^1.6.11",
+    "@babel/core": "7.25.8",
+    "@babel/eslint-parser": "7.25.8",
+    "@babel/preset-env": "7.25.8",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@evilmartians/lefthook": "^1.7.22",
     "@types/node": "^18.0.0",
-    "eslint": "^8.57.0",
-    "eslint-config-universe": "^12.1.0",
-    "eslint-plugin-jest": "^28.5.0",
-    "expo": "~51.0.36",
+    "eslint": "^8.57.1",
+    "eslint-config-universe": "^13.0.0",
+    "eslint-plugin-jest": "^28.8.3",
+    "expo": "~51.0.38",
     "find-yarn-workspace-root": "^2.0.0",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
-    "prettier": "^3.2.5",
-    "typedoc": "^0.26.5",
-    "typescript": "^5.2.2"
+    "prettier": "^3.3.3",
+    "typedoc": "^0.26.10",
+    "typescript": "~5.6.3"
   },
   "resolutions": {
     "@types/react": "18.2.79"
