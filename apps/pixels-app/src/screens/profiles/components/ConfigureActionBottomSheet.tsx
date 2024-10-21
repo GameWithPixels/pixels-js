@@ -56,7 +56,11 @@ import {
 } from "~/features/profiles";
 import { AnimationUtils } from "~/features/store/library";
 import { TrailingSpaceFix } from "~/fixes";
-import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
+import {
+  useAppDfuFiles,
+  useBottomSheetBackHandler,
+  useBottomSheetPadding,
+} from "~/hooks";
 
 function TextInput({
   value,
@@ -731,8 +735,26 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   dieType: PixelDieType;
   currentFace: number;
 }) {
-  const pixel = { name: "Pixels " + getDieTypeLabel(dieType), currentFace };
-  const payload = getWebRequestPayload(pixel, profileName, action.value);
+  const fwTimestamp = useAppDfuFiles().dfuFilesInfo?.timestamp ?? 0;
+  const payload = getWebRequestPayload(
+    // Fake PixelInfo for the payload
+    {
+      name: "Pixels " + getDieTypeLabel(dieType),
+      currentFace,
+      currentFaceIndex: DiceUtils.indexFromFace(currentFace, dieType),
+      pixelId: 12345678,
+      ledCount: DiceUtils.getLEDCount(dieType),
+      colorway: "onyxBlack",
+      dieType,
+      firmwareDate: new Date(fwTimestamp),
+      rssi: -60,
+      batteryLevel: 0.5,
+      isCharging: false,
+      rollState: "onFace",
+    },
+    profileName,
+    action.value
+  );
   const isParams = !action.format || action.format === "parameters"; // Format is undefined in actions from v2.1
   const { colors } = useTheme();
   return (
