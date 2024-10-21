@@ -86,7 +86,7 @@ export function TouchableCard({
           ? 0.2
           : 1;
   const animStyle = useFlashAnimationStyle(
-    flash ?? false,
+    !!flash,
     gradientBorder && !selected
       ? selectable
         ? "mid-tone"
@@ -110,10 +110,10 @@ export function TouchableCard({
             margin: gradientBorder ? (thinBorder ? 2 : 3) : 0,
             padding: gradientBorder ? 3 : 5,
             // Borders (having issues on iOS with those borders applied on the LinearGradient)
-            borderWidth: noBorder ?? gradientBorder ? 0 : 1,
-            borderTopWidth: noBorder ?? gradientBorder ?? noTopBorder ? 0 : 1,
+            borderWidth: noBorder || gradientBorder ? 0 : 1,
+            borderTopWidth: noBorder || gradientBorder || noTopBorder ? 0 : 1,
             borderBottomWidth:
-              noBorder ?? gradientBorder ?? noBottomBorder ? 0 : 1,
+              noBorder || gradientBorder || noBottomBorder ? 0 : 1,
             borderColor: getBorderColor(colors, selected),
             // Corners
             ...innerCornersStyle,

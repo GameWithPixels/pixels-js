@@ -133,9 +133,7 @@ export function usePixelScannerNotify<T>(
   );
 
   // Init & clean up effect
-  const [autoStart] = React.useState(
-    opt?.autoStart === undefined ?? opt?.autoStart
-  );
+  const [autoStart] = React.useState(opt?.autoStart);
   React.useEffect(
     () => {
       if (autoStart) {

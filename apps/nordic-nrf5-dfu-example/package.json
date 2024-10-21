@@ -24,11 +24,10 @@
     "react-native-document-picker": "^9.3.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.0",
-    "@babel/preset-env": "^7.20.0",
-    "@babel/runtime": "^7.20.0",
-    "@react-native/metro-config": "^0.74.2",
-    "@types/react": "18.2.79",
+    "@babel/core": "7.25.8",
+    "@babel/preset-env": "7.25.8",
+    "@babel/runtime": "^7.25.7",
+    "@react-native/metro-config": "^0.74.82",
     "metro-react-native-babel-preset": "~0.77.0"
   },
   "private": true

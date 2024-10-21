@@ -2,8 +2,8 @@
   "name": "@systemic-games/vision-camera-rgb-averages",
   "version": "1.3.0",
   "description": "Vision Camera Frame Processor computing RGB averages.",
-  "main": "dist/commonjs/index.cjs",
-  "module": "dist/module/index.mjs",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/module/index.js",
   "types": "dist/typescript/index.d.ts",
   "react-native": "src/index",
   "source": "src/index",
@@ -52,15 +52,13 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/vision-camera-rgb-averages",
   "devDependencies": {
+    "@types/react": "18.2.79",
     "react": "18.2.0",
     "react-native": "0.74.5",
-    "react-native-builder-bob": "^0.25.0",
+    "react-native-builder-bob": "^0.30.2",
     "react-native-vision-camera": "4.5.3",
     "react-native-worklets-core": "^1.3.3",
     "release-it": "^17.2.0"
-  },
-  "resolutions": {
-    "@types/react": "^18.2.44"
   },
   "peerDependencies": {
     "react": "*",

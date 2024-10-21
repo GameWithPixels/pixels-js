@@ -51,12 +51,12 @@
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-three",
   "dependencies": {},
   "devDependencies": {
-    "@types/jest": "^29.1.2",
+    "@types/jest": "^29.5.13",
     "@types/three": "0.146.0",
-    "jest": "^29.1.2",
+    "jest": "^29.7.0",
     "three": "^0.166.0",
-    "ts-jest": "^29.0.3",
-    "ts-loader": "^9.4.1",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.1",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },
