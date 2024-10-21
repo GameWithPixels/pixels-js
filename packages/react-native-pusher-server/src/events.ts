@@ -1,10 +1,14 @@
 // import nacl from "tweetnacl";
 // import naclUtil from "tweetnacl-util";
 
-import { Pusher } from "./pusher";
+import { PusherServer } from "./pusher";
 import * as util from "./util";
 
-function encrypt(_pusher: Pusher, _channel: string, _data?: unknown): string {
+function encrypt(
+  _pusher: PusherServer,
+  _channel: string,
+  _data?: unknown
+): string {
   throw new Error("Encryption not supported (encrypt)");
   // if (pusher.config.encryptionMasterKey === undefined) {
   //   throw new Error(
@@ -27,7 +31,7 @@ function encrypt(_pusher: Pusher, _channel: string, _data?: unknown): string {
 }
 
 export function trigger(
-  pusher: Pusher,
+  pusher: PusherServer,
   channels: string[],
   eventName: string,
   data?: unknown,
@@ -63,7 +67,7 @@ export function trigger(
 }
 
 export function triggerBatch(
-  pusher: Pusher,
+  pusher: PusherServer,
   batch: { channel: string; data?: string }[]
 ): Promise<Response> {
   for (let i = 0; i < batch.length; i++) {
