@@ -224,7 +224,7 @@ function _updateScanStatus(status: ScanStatus, reason?: ScanStopReason): void {
     );
 
     _scanStatus = status;
-    const stopReason = status !== "stopped" ? undefined : reason ?? "success";
+    const stopReason = status !== "stopped" ? undefined : (reason ?? "success");
     _emitEvent("scanStatus", {
       status,
       stopReason,
@@ -323,8 +323,8 @@ export const Central = {
             if (reason !== "success") {
               // Log reason for unexpected disconnection
               console.warn(
-                `[BLE ${name}] Connection state ${connectionStatus} reason ${reason}` +
-                  ` (state was ${pInf.state})`
+                `[BLE ${name}] Got connection status ${connectionStatus}` +
+                  ` with reason ${reason} (state was ${pInf.state})`
               );
             }
             // The ready status is notified once the MTU has been set
@@ -704,9 +704,6 @@ export const Central = {
     } catch (error) {
       // Log error
       console.log(`[BLE ${name}] Connection error: ${errToStr(error)}`);
-      // Give a chance to pending native events for being processed
-      // so the connection status is updated before throwing the error
-      await delay(0);
       // Get error code and throw a more specific error
       const code = getNativeErrorCode(error);
       switch (code) {
@@ -716,6 +713,9 @@ export const Central = {
           throw new Errors.ConnectError(name, "timeout");
         case "ERROR_CANCELLED":
           throw new Errors.ConnectError(name, "cancelled");
+        case "ERROR_GATT_FAILURE":
+          // We usually get this error when we've reached the maximum number of connections
+          throw new Errors.ConnectError(name, "gattFailure");
         case "ERROR_BLUETOOTH_DISABLED":
           if (pInf.state === "connecting") {
             // If BLE is off on initiating connection, we get here without
