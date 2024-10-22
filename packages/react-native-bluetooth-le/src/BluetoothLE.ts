@@ -37,6 +37,7 @@ export type ServiceData = Readonly<{
 }>;
 
 export type AdvertisementData = Readonly<{
+  localName?: string; // iOS only
   isConnectable: boolean;
   rssi: number;
   txPowerLevel: number;

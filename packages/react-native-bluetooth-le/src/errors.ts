@@ -68,6 +68,7 @@ export type ConnectErrorType =
   | "timeout"
   | "bluetoothUnavailable"
   | "cancelled"
+  | "gattFailure" // Android only, usually means maximum number of connections reached
   | "error";
 
 function getErrorMessage(name: string, type: ConnectErrorType): string {
@@ -82,15 +83,17 @@ function getErrorMessage(name: string, type: ConnectErrorType): string {
       return `Bluetooth unavailable while connecting to peripheral ${name}`;
     case "cancelled":
       return `Connection cancelled for peripheral ${name}`;
+    case "gattFailure":
+      return `GATT failure while trying to connect to peripheral ${name}, possibly because maximum number of connections reached`;
     case "error":
-      return `Connection errored for peripheral ${name}`;
+      return `Failed to connect to peripheral ${name}`;
   }
 }
 
 export class ConnectError extends BluetoothLEError {
   readonly type: ConnectErrorType;
   readonly nativeCode?: string;
-  constructor(name: string, type: ConnectError["type"], code?: string) {
+  constructor(name: string, type: ConnectErrorType, code?: string) {
     super(getErrorMessage(name, type) + (code ? ` (${code})` : ""));
     this.name = "ConnectError";
     this.type = type;

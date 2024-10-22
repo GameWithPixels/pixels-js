@@ -114,12 +114,14 @@ inline NSDictionary *advertisementToDict(NSDictionary<NSString *,id> *advertisem
     NSData *manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey];
     NSDictionary<CBUUID *, NSData *> *serviceData = advertisementData[CBAdvertisementDataServiceDataKey];
     NSArray<CBUUID *> *serviceUUIDs = advertisementData[CBAdvertisementDataServiceUUIDsKey];
+    NSString *localName = advertisementData[CBAdvertisementDataLocalNameKey];
     NSNumber *txPowerLevel = advertisementData[CBAdvertisementDataTxPowerLevelKey];
     NSNumber *isConnectable = advertisementData[CBAdvertisementDataIsConnectable];
     NSArray<CBUUID *> *solicitedServiceUUIDs = advertisementData[CBAdvertisementDataSolicitedServiceUUIDsKey];
     NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
 
     NSMutableDictionary<NSString *, id> *dict = [NSMutableDictionary dictionary];
+    [dict setValue:localName forKey:@"localName"];
     [dict setValue:@([isConnectable boolValue]) forKey:@"isConnectable"];
     [dict setValue:rssi forKey:@"rssi"];
     [dict setValue:txPowerLevel forKey:@"txPowerLevel"];
