@@ -2,7 +2,6 @@ import React from "react";
 import { ScrollView, useWindowDimensions, View } from "react-native";
 import { FileLogger } from "react-native-file-logger";
 import { Divider, Switch, useTheme } from "react-native-paper";
-import Toast from "react-native-root-toast";
 
 import { SettingsSwitch } from "./components/SettingsSwitch";
 import { Body, Remark } from "./components/text";
@@ -12,7 +11,6 @@ import {
   AppSettingsScreenProps,
   SettingsMenuScreenProps,
 } from "~/app/navigation";
-import { ToastSettings } from "~/app/themes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
@@ -83,10 +81,6 @@ function AppSettingsPage({
         const { showAdvancedSettings: old } = store.getState().appSettings;
         const showAdvancedSettings = !old;
         appDispatch(setShowAdvancedSettings(showAdvancedSettings));
-        Toast.show(
-          `Debug Mode ${showAdvancedSettings ? "On" : "Off"}`,
-          ToastSettings
-        );
       }
     }
   };
@@ -179,7 +173,7 @@ function AppSettingsPage({
               onPress={() => {
                 if (__DEV__) {
                   FileLogger.getLogFilePaths().then((logFiles) =>
-                    console.log("Log files: " + logFiles.join(", "))
+                    console.log("Log files:\n" + logFiles.join("\n"))
                   );
                 }
                 FileLogger.sendLogFilesByEmail({
