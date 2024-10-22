@@ -108,10 +108,16 @@ export abstract class PixelInfoNotifier<
   protected emitPropertyEvent<K extends string & keyof MutableProps>(
     propertyName: K
   ): void {
-    this._infoEvEmitter.emit(
-      propertyName,
-      //@ts-ignore 'this' is assignable to the constraint of type 'Type', but 'Type' could be instantiated with a different subtype of constraint 'PixelInfo'.ts(2345)
-      this
-    );
+    try {
+      this._infoEvEmitter.emit(
+        propertyName,
+        //@ts-ignore 'this' is assignable to the constraint of type 'Type', but 'Type' could be instantiated with a different subtype of constraint 'PixelInfo'.ts(2345)
+        this
+      );
+    } catch (e) {
+      console.error(
+        `PixelInfoNotifier: Uncaught error in "${name}" event listener: ${e}`
+      );
+    }
   }
 }

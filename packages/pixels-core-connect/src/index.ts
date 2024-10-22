@@ -1,4 +1,4 @@
-export * from "./advertisedNames";
+export * from "./PixelsName";
 export * from "./Charger";
 export * as ChargerMessages from "./ChargerMessages";
 export * from "./Constants";

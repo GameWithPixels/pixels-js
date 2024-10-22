@@ -2,7 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Central,
-  isBootloaderName,
+  isPixelBootloaderName,
   ScannedPeripheral,
   ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -101,7 +101,8 @@ function FirmwareUpdatePage({ navigation }: FirmwareUpdateScreenProps) {
         dfuTarget,
         bundle.bootloader?.pathname,
         bundle.firmware?.pathname,
-        isBootloaderName(dfuTarget.name)
+        isPixelBootloaderName(dfuTarget.name) ||
+          dfuTarget.name.startsWith("Dfu")
       );
     }
   }, [bundle, dfuTarget, updateFirmware]);
