@@ -30,7 +30,11 @@ import {
 } from "./ChargerMessages";
 import { deserializeChunkedMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
-import { PixelConnect, PixelConnectMutableProps } from "./PixelConnect";
+import {
+  PixelConnect,
+  PixelConnectMutableProps,
+  PixelStatusEvent,
+} from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
 import { PixelMessage } from "./PixelMessage";
 import { PixelRollState } from "./PixelRollState";
@@ -52,6 +56,8 @@ import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
  * @category Pixels
  */
 export type ChargerEventMap = Readonly<{
+  /** Charger status changed notification. */
+  statusChanged: PixelStatusEvent;
   /** Message received notification. */
   messageReceived: ChargerMessageOrType;
   /** Message send notification. */
@@ -128,7 +134,7 @@ export class Charger
     // The name from the session may be outdated
     return this._info.name.length
       ? this._info.name
-      : this.sessionDeviceName ?? "";
+      : (this.sessionDeviceName ?? "");
   }
 
   /** Gets the number of LEDs for the Charger, may be 0 until connected to device. */
@@ -232,7 +238,7 @@ export class Charger
     const statusListener = ({ status }: ChargerMutableProps) => {
       // Notify battery state
       if (status === "ready") {
-        this._evEmitter.emit("battery", {
+        this._emitEvent("battery", {
           level: this._info.batteryLevel,
           isCharging: this._info.isCharging,
         });
@@ -411,7 +417,7 @@ export class Charger
       );
     }
     await this._internalSendMessage(msgOrType, withoutAck);
-    this._evEmitter.emit("messageSend", msgOrType);
+    this._emitEvent("messageSend", msgOrType);
   }
 
   /**
@@ -536,6 +542,10 @@ export class Charger
     await this.sendAndWaitForResponse(blinkMsg, "blinkAck");
   }
 
+  protected _onStatusChanged(ev: PixelStatusEvent): void {
+    this._emitEvent("statusChanged", ev);
+  }
+
   protected async _internalSetup(): Promise<void> {
     // Reset version numbers
     let verProp: keyof typeof this._versions;
@@ -629,9 +639,22 @@ export class Charger
     }
     if (msgOrType) {
       // Notify
-      this._evEmitter.emit("messageReceived", msgOrType);
+      this._emitEvent("messageReceived", msgOrType);
     }
     return msgOrType;
+  }
+
+  private _emitEvent<T extends keyof ChargerEventMap>(
+    name: T,
+    ev: ChargerEventMap[T]
+  ): void {
+    try {
+      this._evEmitter.emit(name, ev);
+    } catch (e) {
+      console.error(
+        this._tagLogString(`Uncaught error in "${name}" event listener: ${e}`)
+      );
+    }
   }
 
   private _updateName(name: string) {
@@ -676,7 +699,7 @@ export class Charger
       this.emitPropertyEvent("isCharging");
     }
     if (levelChanged || chargingChanged) {
-      this._evEmitter.emit("battery", {
+      this._emitEvent("battery", {
         level: level ?? this.batteryLevel,
         isCharging: isCharging ?? this.isCharging,
       });

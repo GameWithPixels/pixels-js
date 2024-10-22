@@ -32,6 +32,12 @@ export type PixelStatus =
   | "ready"
   | "disconnecting";
 
+export type PixelStatusEvent = Readonly<{
+  status: PixelStatus;
+  lastStatus: PixelStatus;
+  reason?: PixelSessionConnectionEventReason;
+}>;
+
 /**
  * The mutable properties of {@link PixelConnect} not inherited from parent
  * class {@link PixelInfoNotifier}.
@@ -78,7 +84,6 @@ export abstract class PixelConnect<
   // Connection data
   private readonly _session: PixelSession;
   private _status: PixelStatus;
-  private _lastDisconnectReason: PixelSessionConnectionEventReason = "success";
 
   /** Toggle logging information about each send and received message. */
   get logMessages(): boolean {
@@ -107,11 +112,6 @@ export abstract class PixelConnect<
   /** Gets the Pixel last known connection status. */
   get status(): PixelStatus {
     return this._status;
-  }
-
-  /** Reason for the last disconnection event. */
-  get lastDisconnectReason(): PixelSessionConnectionEventReason {
-    return this._lastDisconnectReason;
   }
 
   protected get sessionDeviceName(): string | undefined {
@@ -175,6 +175,7 @@ export abstract class PixelConnect<
   }
 
   protected abstract _internalDispose(): void;
+  protected abstract _onStatusChanged(ev: PixelStatusEvent): void;
   protected abstract _internalSetup(): Promise<void>;
   protected abstract _internalDeserializeMessage(
     dataView: DataView
@@ -404,11 +405,10 @@ export abstract class PixelConnect<
     reason?: PixelSessionConnectionEventReason
   ): void {
     if (status !== this._status) {
+      const lastStatus = this._status;
       this._status = status;
       this._log(`Status changed to ${status} with reason: ${reason}`);
-      if (reason) {
-        this._lastDisconnectReason = reason;
-      }
+      this._onStatusChanged({ status, lastStatus, reason });
       this.emitPropertyEvent("status");
     }
   }

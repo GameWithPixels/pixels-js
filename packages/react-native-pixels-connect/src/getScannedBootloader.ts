@@ -1,4 +1,5 @@
 import {
+  getPixelIdFromName,
   PixelsBluetoothIds,
   toFullUuid,
 } from "@systemic-games/pixels-core-connect";
@@ -17,10 +18,8 @@ export function getScannedBootloader(
   }
 
   const pixelId =
-    peripheral.name.length === 11 && peripheral.name.startsWith("PXL")
-      ? parseInt(peripheral.name.slice(3), 16)
-      : 0;
-
+    getPixelIdFromName(peripheral.name) ??
+    (advData.localName && getPixelIdFromName(advData.localName));
   if (pixelId) {
     return {
       type: "bootloader",

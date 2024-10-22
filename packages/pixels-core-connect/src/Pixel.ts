@@ -50,13 +50,17 @@ import {
   TransferTestAnimationSetAck,
   VersionInfoChunk,
 } from "./DieMessages";
-import { PixelConnect, PixelConnectMutableProps } from "./PixelConnect";
+import {
+  PixelConnect,
+  PixelConnectMutableProps,
+  PixelStatusEvent,
+} from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
 import { PixelMessage } from "./PixelMessage";
 import { PixelRollState, PixelRollStateValues } from "./PixelRollState";
 import { PixelSession } from "./PixelSession";
+import { getDefaultPixelDeviceName } from "./PixelsName";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
-import { getDefaultPixelName } from "./advertisedNames";
 import {
   PixelConnectError,
   PixelConnectIdMismatchError,
@@ -131,6 +135,8 @@ export type DataTransferProgress = Readonly<{
  * @category Pixels
  */
 export type PixelEventMap = Readonly<{
+  /** Pixel status changed notification. */
+  statusChanged: PixelStatusEvent;
   /** Message received notification. */
   messageReceived: MessageOrType;
   /** Message send notification. */
@@ -234,7 +240,7 @@ export class Pixel
     // The name from the session may be outdated
     return this._info.name.length
       ? this._info.name
-      : this.sessionDeviceName ?? "";
+      : (this.sessionDeviceName ?? "");
   }
 
   /** Gets the number of LEDs for the Pixel, may be 0 until connected to device. */
@@ -387,7 +393,7 @@ export class Pixel
       }
       // Notify battery state
       if (status === "ready") {
-        this._evEmitter.emit("battery", {
+        this._emitEvent("battery", {
           level: this._info.batteryLevel,
           isCharging: this._info.isCharging,
         });
@@ -425,7 +431,7 @@ export class Pixel
       // Reset profile hash
       this._updateHash(Constants.factoryProfileHashes[this.dieType] ?? 0);
       // Reset name
-      this._updateName(getDefaultPixelName(this._info.pixelId));
+      this._updateName(getDefaultPixelDeviceName(this._info.pixelId));
     };
     this.addMessageListener("clearSettingsAck", resetListener);
     this.addMessageListener("programDefaultParametersFinished", resetListener);
@@ -433,7 +439,7 @@ export class Pixel
     // Subscribe to user message requests
     const notifyUserListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as NotifyUser;
-      this._evEmitter.emit("userMessage", {
+      this._emitEvent("userMessage", {
         message: msg.message,
         withCancel: msg.cancel,
         response: (okCancel: boolean) => {
@@ -450,7 +456,7 @@ export class Pixel
     // Subscribe to remote action requests
     const remoteActionListener = (msgOrType: MessageOrType) => {
       const msg = msgOrType as RemoteAction;
-      this._evEmitter.emit("remoteAction", msg.actionId);
+      this._emitEvent("remoteAction", msg.actionId);
     };
     this.addMessageListener("remoteAction", remoteActionListener);
 
@@ -620,7 +626,7 @@ export class Pixel
       );
     }
     await this._internalSendMessage(msgOrType, withoutAck);
-    this._evEmitter.emit("messageSend", msgOrType);
+    this._emitEvent("messageSend", msgOrType);
   }
 
   /**
@@ -937,6 +943,10 @@ export class Pixel
     );
   }
 
+  protected _onStatusChanged(ev: PixelStatusEvent): void {
+    this._emitEvent("statusChanged", ev);
+  }
+
   protected async _internalSetup(): Promise<void> {
     // Reset version numbers
     let verProp: keyof typeof this._versions;
@@ -1048,9 +1058,22 @@ export class Pixel
     }
     if (msgOrType) {
       // Notify
-      this._evEmitter.emit("messageReceived", msgOrType);
+      this._emitEvent("messageReceived", msgOrType);
     }
     return msgOrType;
+  }
+
+  private _emitEvent<T extends keyof PixelEventMap>(
+    name: T,
+    ev: PixelEventMap[T]
+  ): void {
+    try {
+      this._evEmitter.emit(name, ev);
+    } catch (e) {
+      console.error(
+        this._tagLogString(`Uncaught error in "${name}" event listener: ${e}`)
+      );
+    }
   }
 
   private _updateName(name: string) {
@@ -1109,7 +1132,7 @@ export class Pixel
       this.emitPropertyEvent("isCharging");
     }
     if (levelChanged || chargingChanged) {
-      this._evEmitter.emit("battery", {
+      this._emitEvent("battery", {
         level: level ?? this.batteryLevel,
         isCharging: isCharging ?? this.isCharging,
       });
@@ -1167,9 +1190,9 @@ export class Pixel
     // Notify all die roll events
     if (!opt?.skipEvents) {
       const emitRoll = ev.state === "onFace" ? ev.face : undefined;
-      this._evEmitter.emit("rollState", ev);
+      this._emitEvent("rollState", ev);
       if (emitRoll !== undefined) {
-        this._evEmitter.emit("roll", emitRoll);
+        this._emitEvent("roll", emitRoll);
       }
     }
   }
@@ -1201,7 +1224,7 @@ export class Pixel
     this._transferProgress = progress;
 
     // Send events
-    this._evEmitter.emit("dataTransfer", ev);
+    this._emitEvent("dataTransfer", ev);
     if (progressChanged) {
       this.emitPropertyEvent("transferProgress");
     }

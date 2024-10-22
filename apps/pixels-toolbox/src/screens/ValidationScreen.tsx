@@ -2,8 +2,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { range } from "@systemic-games/pixels-core-utils";
 import {
   DiceUtils,
+  getPixelIdFromName,
   Pixel,
   PixelDieType,
+  PixelsNamePrefixes,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useKeepAwake } from "expo-keep-awake";
@@ -474,10 +476,11 @@ function InputPixelIdPage({
   onBack?: () => void;
 }) {
   const { t } = useTranslation();
-  const [text, setText] = React.useState("PXL");
-  const hex = text.startsWith("PXL") ? text.substring(3) : text;
-  const pixelId = hex.length !== 8 ? NaN : Number("0x" + hex);
-  const validate = () => !isNaN(pixelId) && onEnterPixelId(pixelId);
+  const [text, setText] = React.useState<string>(
+    PixelsNamePrefixes.die.bootloader
+  );
+  const pixelId = getPixelIdFromName(text);
+  const validate = () => pixelId && onEnterPixelId(pixelId);
   return (
     <BaseBox w="100%" h="100%">
       <BaseVStack w="100%" h="100%" px={5} gap={20}>
@@ -502,7 +505,7 @@ function InputPixelIdPage({
           />
           <Button
             mode="contained-tonal"
-            disabled={isNaN(pixelId)}
+            disabled={!pixelId}
             onPress={validate}
             style={{ alignSelf: "center" }}
           >
@@ -510,9 +513,9 @@ function InputPixelIdPage({
           </Button>
         </BaseHStack>
         <Text>
-          {text === "PXL"
+          {text === PixelsNamePrefixes.die.bootloader
             ? t("numberMadeOf8CharactersNoCase")
-            : isNaN(pixelId)
+            : !pixelId
               ? t("invalidSN")
               : t("pressOkOrReturnToValidate")}
           .
