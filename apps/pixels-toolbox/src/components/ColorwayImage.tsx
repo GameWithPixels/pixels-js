@@ -19,9 +19,6 @@ export function ColorwayImage({
     case "auroraSky":
       source = require("!images/colorways/auroraSky.png");
       break;
-    case "whiteAurora":
-      source = require("!images/colorways/whiteAurora.png");
-      break;
     case "clear":
       source = require("!images/colorways/clear.png");
       break;
