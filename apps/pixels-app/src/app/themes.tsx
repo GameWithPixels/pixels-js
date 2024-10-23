@@ -7,6 +7,7 @@ import {
   DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from "@react-navigation/native";
+import { Platform } from "react-native";
 import {
   adaptNavigationTheme,
   MD3DarkTheme,
@@ -249,11 +250,13 @@ export function getBottomSheetProps(
   | "backgroundStyle"
   | "handleIndicatorStyle"
   | "backdropComponent"
+  | "accessible"
 > {
   return {
     animationConfigs: bottomSheetAnimationConfigFix,
     backgroundStyle: bottomSheetBackgroundStyle,
     handleIndicatorStyle: { backgroundColor: colors.primary },
     backdropComponent: BottomSheetBackdropComponent,
+    accessible: Platform.OS !== "ios", // This is a workaround to have Voice Over focus on the   content
   };
 }
