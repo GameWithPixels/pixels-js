@@ -5,14 +5,14 @@ import { useErrorBoundary } from "react-error-boundary";
 import { AppPage } from "~/components/AppPage";
 import { PixelDetails } from "~/components/PixelDetails";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
-import { getPixelDispatcher } from "~/features/pixels/dispatchers";
+import { getDispatcher } from "~/features/pixels/dispatchers";
 import { usePrintDieLabel } from "~/hooks/usePrintDieLabel";
 import { DieDetailsScreenProps } from "~/navigation";
 
 export function DieDetailsScreen({ navigation, route }: DieDetailsScreenProps) {
   const { showBoundary } = useErrorBoundary();
   const { pixelId } = route.params;
-  const dispatcher = getPixelDispatcher(pixelId);
+  const dispatcher = getDispatcher(pixelId);
   React.useEffect(() => {
     if (!dispatcher) {
       showBoundary(

@@ -41,3 +41,9 @@ export function getChargerDispatcher(
   }
   assert(!dispatcher, "Dispatcher is not of charger type");
 }
+
+export function getDispatcher(
+  pixelId: number
+): PixelDispatcher | ChargerDispatcher | undefined {
+  return DeviceDispatcherStatic.instances.get(pixelId);
+}
