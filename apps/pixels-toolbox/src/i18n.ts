@@ -52,6 +52,7 @@ i18n
           d00: "D00",
           d12: "D12",
           d20: "D20",
+          charger: "Charger",
           colonSeparator: ": ",
           commaSeparator: ", ",
           // Connection statuses
@@ -169,8 +170,8 @@ i18n
           playAnimation: "Play Animation",
           setDieType: "Set Die Type",
           setDieColorway: "Set Colorway",
-          charger: "Charger",
           index: "index",
+          voltageMV: "Voltage (mV)",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",

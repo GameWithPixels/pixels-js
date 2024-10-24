@@ -37,7 +37,7 @@ import { getDatedFilename } from "~/features/files/getDatedFilename";
 export interface ChargerDispatcherActionMap {
   connect: undefined;
   disconnect: undefined;
-  reportRssi: undefined;
+  reportRssi: boolean;
   rename: string;
   queueDFU: undefined;
   dequeueDFU: undefined;
@@ -309,7 +309,7 @@ export class ChargerDispatcher
             this.emitPropertyEvent("lastScanUpdate");
             this._updateLastActivity();
           } else if (prop === "firmwareDate") {
-            this._updateIsDFUAvailable();
+            // this._updateIsDFUAvailable();
           }
         }
       });
@@ -337,8 +337,8 @@ export class ChargerDispatcher
       this._updateLastActivity();
     });
     // Selected firmware
-    this._updateIsDFUAvailable();
-    store.subscribe(() => this._updateIsDFUAvailable());
+    // this._updateIsDFUAvailable();
+    // store.subscribe(() => this._updateIsDFUAvailable());
     // Setup checking if around
     this._updateLastActivity();
   }
@@ -369,7 +369,10 @@ export class ChargerDispatcher
         this._guard(this._disconnect(), action);
         break;
       case "reportRssi":
-        this._guard(this._charger.reportRssi(true), action);
+        this._guard(
+          this._charger.reportRssi((params as boolean) ?? true),
+          action
+        );
         break;
       case "rename":
         this._guard(

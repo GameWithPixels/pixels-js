@@ -70,7 +70,7 @@ import { getPixelValidationName } from "~/features/validation";
 export interface PixelDispatcherActionMap {
   connect: undefined;
   disconnect: undefined;
-  reportRssi: undefined;
+  reportRssi: boolean;
   blink: undefined;
   blinkId: undefined;
   playAnimation: EditAnimation;
@@ -437,7 +437,10 @@ export class PixelDispatcher
         this._guard(this._disconnect(), action);
         break;
       case "reportRssi":
-        this._guard(this._pixel.reportRssi(true), action);
+        this._guard(
+          this._pixel.reportRssi((params as boolean) ?? true),
+          action
+        );
         break;
       case "blink":
         this._guard(this._pixel.blink(Color.dimOrange), action);
