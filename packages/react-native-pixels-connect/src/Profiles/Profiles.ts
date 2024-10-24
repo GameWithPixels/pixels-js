@@ -45,7 +45,6 @@ export {
   EditConditionBatteryState as ConditionBattery,
   EditConditionConnectionState as ConditionConnection,
   EditConditionCrooked as ConditionCrooked,
-  EditConditionFaceCompare as ConditionFaceCompare,
   EditConditionHandling as ConditionHandling,
   EditConditionHelloGoodbye as ConditionHelloGoodbye,
   EditConditionIdle as ConditionIdle,
