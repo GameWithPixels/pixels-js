@@ -8,30 +8,33 @@ import {
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import AppDataSet from "./AppDataSet";
-import { ColorModeValues } from "./edit/ColorMode";
-import EditAction from "./edit/EditAction";
-import EditActionPlayAnimation from "./edit/EditActionPlayAnimation";
-import EditAnimation from "./edit/EditAnimation";
-import EditAnimationGradient from "./edit/EditAnimationGradient";
-import EditAnimationGradientPattern from "./edit/EditAnimationGradientPattern";
-import EditAnimationKeyframed from "./edit/EditAnimationKeyframed";
-import EditAnimationRainbow from "./edit/EditAnimationRainbow";
-import EditAnimationSimple from "./edit/EditAnimationSimple";
-import EditColor from "./edit/EditColor";
-import EditCondition from "./edit/EditCondition";
-import EditConditionBatteryState from "./edit/EditConditionBatteryState";
-import EditConditionConnectionState from "./edit/EditConditionConnectionState";
-import EditConditionCrooked from "./edit/EditConditionCrooked";
-import EditConditionFaceCompare from "./edit/EditConditionFaceCompare";
-import EditConditionHandling from "./edit/EditConditionHandling";
-import EditConditionHelloGoodbye from "./edit/EditConditionHelloGoodbye";
-import EditConditionIdle from "./edit/EditConditionIdle";
-import EditConditionRolling from "./edit/EditConditionRolling";
-import EditPattern from "./edit/EditPattern";
-import EditProfile from "./edit/EditProfile";
-import EditRgbGradient from "./edit/EditRgbGradient";
-import EditRgbKeyframe from "./edit/EditRgbKeyframe";
-import EditRule from "./edit/EditRule";
+import {
+  ColorModeValues,
+  EditAction,
+  EditActionPlayAnimation,
+  EditActionPlayAudioClip,
+  EditAnimation,
+  EditAnimationGradient,
+  EditAnimationGradientPattern,
+  EditAnimationKeyframed,
+  EditAnimationRainbow,
+  EditAnimationSimple,
+  EditColor,
+  EditCondition,
+  EditConditionBatteryState,
+  EditConditionConnectionState,
+  EditConditionCrooked,
+  EditConditionFaceCompare,
+  EditConditionHandling,
+  EditConditionHelloGoodbye,
+  EditConditionIdle,
+  EditConditionRolling,
+  EditPattern,
+  EditProfile,
+  EditRgbGradient,
+  EditRgbKeyframe,
+  EditRule,
+} from "./edit";
 import * as Json from "./jsonTypes";
 
 function toRgbColor(color?: Readonly<Json.RgbColor>): Color {
@@ -141,6 +144,8 @@ function toActions(
               (data.faceIndex > 0 ? data.faceIndex + 1 : data.faceIndex),
             loopCount: data.loopCount,
           });
+        case ActionTypeValues.playAudioClip:
+          return new EditActionPlayAudioClip();
         default:
           throw Error(`Unsupported action type ${act.type}`);
       }
