@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { assert } from "@systemic-games/pixels-core-utils";
+import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import {
   DiceUtils,
   PixelDieType,
@@ -51,7 +51,11 @@ import { PageHeader } from "~/components/PageHeader";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { getActionTypeIcon } from "~/components/actions";
 import { AnimatedText } from "~/components/animated";
-import { FloatingAddButton, GradientIconButton } from "~/components/buttons";
+import {
+  FloatingAddButton,
+  GradientIconButton,
+  OutlineButton,
+} from "~/components/buttons";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   EditorActionTypes,
@@ -65,6 +69,29 @@ import { makeObservable } from "~/features/utils";
 import { withAnimated } from "~/features/withAnimated";
 import { fixForScrollViewPadding } from "~/fixes";
 import { useEditableProfile } from "~/hooks";
+
+function assignDefaultSpeakText(profile: Profiles.Profile): void {
+  const rolledRules = profile.rules.filter(
+    (r) => r.condition.type === "rolled"
+  );
+  for (const face of DiceUtils.getDieFaces(profile.dieType)) {
+    const existingRule = rolledRules.find((r) => {
+      const faces = (r.condition as Profiles.ConditionRolled).faces;
+      return (
+        r.actions[0]?.type === "speakText" &&
+        faces?.length === 1 &&
+        faces.includes(face)
+      );
+    });
+    const rule =
+      existingRule ??
+      createObservableRolledRule([face], profile.dieType, "speakText");
+    (rule.actions[0] as Profiles.ActionSpeakText).text = face.toString();
+    if (!existingRule) {
+      profile.rules.push(rule);
+    }
+  }
+}
 
 interface InnerScrollViewHandle {
   addPadding: (padding: number) => void;
@@ -230,24 +257,42 @@ function RemainingFacesText({
   availableCount,
   hasActions,
   dieFacesCount,
+  actionType,
   ...props
 }: {
   availableCount: number;
   hasActions: boolean;
   dieFacesCount: number;
+  actionType: Profiles.ActionType;
 } & Omit<TextProps<never>, "children">) {
+  const getText = () => {
+    switch (actionType) {
+      case "none":
+        throw new Error("No text for action type 'none'");
+      case "playAnimation":
+        return "an animation";
+      case "playAudioClip":
+        return "an audio clip";
+      case "makeWebRequest":
+        return "a web request";
+      case "speakText":
+        return "a text to speak";
+      default:
+        assertNever(actionType, `Unsupported action type: ${actionType}`);
+    }
+  };
   return (
     <AnimatedText
       layout={CurvedTransition.easingY(Easing.linear).delay(200)}
       {...props}
     >
       {!availableCount
-        ? "All faces have an animation :)"
+        ? `All faces have ${getText()} :)`
         : hasActions
           ? `${availableCount} face${
               availableCount > 1 ? "s" : ""
-            } out of ${dieFacesCount} without an animation.`
-          : "Tap on the (+) button at the bottom to assign an animation to one or more faces."}
+            } out of ${dieFacesCount} without ${getText()}.`
+          : `Tap on the (+) button at the bottom to assign ${getText()} to one or more faces.`}
     </AnimatedText>
   );
 }
@@ -474,8 +519,18 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
                   availableCount={availCount}
                   hasActions={!!actionRules.length}
                   dieFacesCount={dieFaces.length}
+                  actionType={t}
                   style={{ alignSelf: "center", color: colors.onSurface }}
                 />
+                {availCount > 0 && t === "speakText" && (
+                  <OutlineButton
+                    onPress={() =>
+                      runInAction(() => assignDefaultSpeakText(profile))
+                    }
+                  >
+                    Create actions to speak face value on rolls
+                  </OutlineButton>
+                )}
               </InnerScrollView>
             );
           })}
