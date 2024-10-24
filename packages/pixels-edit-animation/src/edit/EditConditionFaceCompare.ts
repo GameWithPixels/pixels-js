@@ -10,6 +10,9 @@ import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
 import { name, observable, range, values, widget } from "./decorators";
 
+/**
+ * @deprecated Use {@link EditConditionRolled} instead.
+ */
 export default class EditConditionFaceCompare extends EditCondition {
   readonly type = "faceCompare";
 

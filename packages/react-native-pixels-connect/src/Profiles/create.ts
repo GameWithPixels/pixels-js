@@ -38,9 +38,7 @@ export function createCondition<K extends string & keyof CreateConditionFlags>(
     case "rolling":
       return new Profiles.ConditionRolling();
     case "faceCompare":
-      return new Profiles.ConditionFaceCompare({
-        flags: getFlag(flagName, Profiles.FaceCompareFlagsValues),
-      });
+      throw new Error("Condition of type 'faceCompare' is deprecated");
     case "crooked":
       return new Profiles.ConditionCrooked();
     case "idle":

@@ -24,6 +24,7 @@ export type FaceCompareFlags = keyof typeof FaceCompareFlagsValues;
 
 /**
  * Condition that triggers when the Pixel has landed on a face.
+ * @deprecated Use {@link ConditionRolled} instead.
  * @category Profile Condition
  */
 export default class ConditionFaceCompare implements Condition {
