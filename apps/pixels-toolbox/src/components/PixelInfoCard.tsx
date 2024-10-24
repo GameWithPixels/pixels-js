@@ -128,7 +128,10 @@ function PixelRollState({ pixel, t }: PixelAndTranslation) {
       pixel.removePropertyListener("currentFace", listener);
     };
   }, [pixel, forceUpdate]);
-  return (
+  // TODO until we have a better support for chargers
+  return pixel.dieType === "unknown" ? (
+    <Text>{t("charger")}</Text>
+  ) : (
     <Text>
       <Text>{`${t(pixel.dieType)} 🎲 ${pixel.currentFace} `}</Text>
       <Text style={AppStyles.italic}>{`(${t(pixel.rollState)})`}</Text>

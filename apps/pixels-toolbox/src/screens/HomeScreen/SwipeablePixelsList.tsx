@@ -136,7 +136,9 @@ export const SwipeablePixelsList = React.memo(function ({
         key={dispatcher.pixelId}
         pixelDispatcher={dispatcher as PixelDispatcher} // TODO hack until this component is updated
         onShowDetails={onShowDetails}
-        onPrintLabel={onPrintLabel}
+        onPrintLabel={
+          dispatcher instanceof ChargerDispatcher ? undefined : onPrintLabel
+        }
       />
     ),
     [onPrintLabel, onShowDetails]

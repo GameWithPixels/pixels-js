@@ -12,6 +12,7 @@ import {
   PrebuildProfilesNames,
 } from "@systemic-games/pixels-edit-animation";
 import {
+  ChargerMessages,
   DiceUtils,
   Pixel,
   PixelBatteryControllerMode,
@@ -103,14 +104,13 @@ function Button({ ...props }: Omit<ButtonProps, "style">) {
 function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
-    const listener = () => forceUpdate();
-    pixel.addPropertyListener("dieType", listener);
-    pixel.addPropertyListener("colorway", listener);
-    pixel.addPropertyListener("firmwareDate", listener);
+    pixel.addPropertyListener("dieType", forceUpdate);
+    pixel.addPropertyListener("colorway", forceUpdate);
+    pixel.addPropertyListener("firmwareDate", forceUpdate);
     return () => {
-      pixel.removePropertyListener("dieType", listener);
-      pixel.removePropertyListener("colorway", listener);
-      pixel.removePropertyListener("firmwareDate", listener);
+      pixel.removePropertyListener("dieType", forceUpdate);
+      pixel.removePropertyListener("colorway", forceUpdate);
+      pixel.removePropertyListener("firmwareDate", forceUpdate);
     };
   }, [pixel, forceUpdate]);
   const { t } = useTranslation();
@@ -139,30 +139,61 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
   );
 }
 
-function ChargerInfo({ charger }: { charger: PixelInfoNotifier }) {
+function ChargerInfo({ charger }: { charger: PixelDispatcher }) {
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
-    const listener = () => forceUpdate();
-    charger.addPropertyListener("firmwareDate", listener);
+    charger.addPropertyListener("firmwareDate", forceUpdate);
     return () => {
-      charger.removePropertyListener("firmwareDate", listener);
+      charger.removePropertyListener("firmwareDate", forceUpdate);
     };
   }, [charger, forceUpdate]);
+  const status = usePixelStatus(charger.pixel);
+  const rssi = usePixelProp(charger.pixel, "rssi");
+  const [battery, setBattery] = React.useState<ChargerMessages.BatteryLevel>();
+  React.useEffect(() => {
+    if (status === "ready") {
+      const id = setInterval(
+        () =>
+          charger.pixel
+            .sendAndWaitForResponse("requestBatteryLevel", "batteryLevel")
+            .then((msg) => setBattery(msg as ChargerMessages.BatteryLevel))
+            .catch((e) =>
+              console.log(`Error requesting charger battery level: ${e}`)
+            ),
+        200
+      ); // Fast updates
+      return () => {
+        clearInterval(id);
+      };
+    }
+  }, [charger, status]);
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
     <>
-      <TextEntry title={t("charger")}>{t("yes")}</TextEntry>
       <TextEntry title={t("pixelId")}>
         {unsigned32ToHex(charger.pixelId)}
       </TextEntry>
       <TextEntry title={t("descriptionShort")}>
-        {charger.ledCount} {t("leds")}
+        {t("charger")}, {charger.ledCount} {t("leds")}
       </TextEntry>
       <TextEntry title={t("firmware")}>
         {charger.firmwareDate.toLocaleDateString()}
         {t("commaSeparator")}
         {charger.firmwareDate.toLocaleTimeString()}
+      </TextEntry>
+      <TextEntry title={t("battery")}>
+        {t("percentWithValue", {
+          value: battery?.levelPercent ?? 0,
+        })}
+      </TextEntry>
+      <TextEntry title={t("chargingState")}>
+        {t(
+          getValueKeyName(battery?.state, PixelBatteryStateValues) ?? "unknown"
+        )}
+      </TextEntry>
+      <TextEntry title={t("rssi")}>
+        {t("dBmWithValue", { value: rssi ?? 0 })}
       </TextEntry>
     </>
   );
@@ -172,13 +203,11 @@ function TelemetryModal({
   pixelDispatcher: pd,
   startTime,
   onSetStartTime,
-  linesInfo,
   ...props
 }: {
   pixelDispatcher: PixelDispatcher;
   startTime: number;
   onSetStartTime?: (timestamp: number) => void;
-  linesInfo: DynamicLinesChartProps["linesInfo"];
 } & Omit<ModalProps, "children">) {
   const chartRef = React.useRef<DynamicLinesChartHandle>(null);
   const getValues = React.useCallback(
@@ -222,6 +251,7 @@ function TelemetryModal({
   const window = useWindowDimensions();
   const modalStyle = useModalStyle();
   const { t } = useTranslation();
+  const linesInfo = React.useMemo(() => buildTelemetryLinesInfo(t), [t]);
   return (
     <Portal>
       <Modal contentContainerStyle={modalStyle} {...props}>
@@ -267,26 +297,33 @@ function TelemetryModal({
   );
 }
 
-const TelemetryLinesInfo = [
-  {
-    title: "RSSI",
-    color: "tomato",
-    min: -100,
-    max: 0,
-  },
-  {
-    title: "Battery",
-    color: "teal",
-    min: 0,
-    max: 100,
-  },
-  {
-    title: "Voltage (mV)",
-    color: "mediumpurple",
-    min: 0,
-    max: 5000,
-  },
-] as const;
+function buildTelemetryLinesInfo(t: ReturnType<typeof useTranslation>["t"]): {
+  title: string;
+  color: string;
+  min: number;
+  max: number;
+}[] {
+  return [
+    {
+      title: t("rssi"),
+      color: "tomato",
+      min: -100,
+      max: 0,
+    },
+    {
+      title: t("Battery"),
+      color: "teal",
+      min: 0,
+      max: 100,
+    },
+    {
+      title: t("voltageMV"),
+      color: "mediumpurple",
+      min: 0,
+      max: 5000,
+    },
+  ];
+}
 
 function TelemetryInfo({ pixel }: { pixel: Pixel }) {
   const [telemetry, dispatch] = usePixelEvent(pixel, "telemetry", {
@@ -579,8 +616,8 @@ function BottomButtons({
               </Menu>
               <Button
                 onPress={() =>
-                  playKeyframes(pd).catch((error) =>
-                    console.log("Error loading gradient", error)
+                  playKeyframes(pd).catch((e) =>
+                    console.log("Error loading gradient", e)
                   )
                 }
               >
@@ -798,7 +835,7 @@ export function PixelDetails({
   const changeStartTime = React.useCallback(
     (t: number) =>
       setStartTime(
-        t >= 0 ? t : pd.telemetryData[0]?.appTimestamp ?? Date.now()
+        t >= 0 ? t : (pd.telemetryData[0]?.appTimestamp ?? Date.now())
       ),
     [pd]
   );
@@ -905,7 +942,6 @@ export function PixelDetails({
 
       <TelemetryModal
         pixelDispatcher={pd}
-        linesInfo={TelemetryLinesInfo}
         startTime={startTime}
         onSetStartTime={changeStartTime}
         visible={telemetryVisible}
