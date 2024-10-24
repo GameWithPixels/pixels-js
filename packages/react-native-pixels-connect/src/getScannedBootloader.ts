@@ -1,5 +1,6 @@
 import {
   getPixelIdFromName,
+  isPixelBootloaderName,
   PixelsBluetoothIds,
   toFullUuid,
 } from "@systemic-games/pixels-core-connect";
@@ -17,14 +18,17 @@ export function getScannedBootloader(
     return;
   }
 
-  const pixelId =
-    getPixelIdFromName(peripheral.name) ??
-    (advData.localName && getPixelIdFromName(advData.localName));
+  // Use local name if available (which is the most up-to-date)
+  const name = advData.localName ?? peripheral.name;
+
+  // Infer the Pixel ID from the name
+  const pixelId = getPixelIdFromName(name);
   if (pixelId) {
     return {
       type: "bootloader",
+      deviceType: isPixelBootloaderName(name, "charger") ? "charger" : "die",
       systemId: peripheral.systemId,
-      name: peripheral.name,
+      name,
       pixelId,
       address: peripheral.address,
       rssi: advData.rssi,

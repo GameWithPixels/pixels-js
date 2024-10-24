@@ -126,7 +126,7 @@ export class PixelScanner {
   }
 
   /**
-   * A copy of the list of scanned Pixels (cleared on loosing Bluetooth access
+   * A copy of the list of scanned dice (cleared on loosing Bluetooth access
    * if {@link PixelScanner.keepAliveDuration} is greater than zero).
    * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
    */
@@ -135,7 +135,7 @@ export class PixelScanner {
   }
 
   /**
-   * A copy of the list of scanned Chargers (cleared on loosing Bluetooth access
+   * A copy of the list of scanned chargers (cleared on loosing Bluetooth access
    * if {@link PixelScanner.keepAliveDuration} is greater than zero).
    */
   get scannedChargers(): ScannedCharger[] {
@@ -143,7 +143,7 @@ export class PixelScanner {
   }
 
   /**
-   * A copy of the list of scanned Bootloaders (cleared on loosing Bluetooth access
+   * A copy of the list of scanned dice bootloaders (cleared on loosing Bluetooth access
    * if {@link PixelScanner.keepAliveDuration} is greater than zero).
    */
   get scannedBootloaders(): ScannedBootloader[] {

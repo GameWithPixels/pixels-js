@@ -30,6 +30,9 @@ export function getScannedPixel(
     return;
   }
 
+  // Use local name if available (which is the most up-to-date)
+  const name = advData.localName ?? peripheral.name;
+
   // Get the first manufacturer and service data
   const manufacturerData = advData.manufacturersData?.[0];
   const serviceData = advData.servicesData?.[0];
@@ -106,7 +109,7 @@ export function getScannedPixel(
       const colorway =
         getValueKeyName(colorwayValue, PixelColorwayValues) ?? "unknown";
       const dieType = dieTypeValue
-        ? getValueKeyName(dieTypeValue, PixelDieTypeValues) ?? "unknown"
+        ? (getValueKeyName(dieTypeValue, PixelDieTypeValues) ?? "unknown")
         : DiceUtils.estimateDieType(ledCount);
       const rollState =
         getValueKeyName(rollStateValue, PixelRollStateValues) ?? "unknown";
@@ -120,7 +123,7 @@ export function getScannedPixel(
         systemId,
         pixelId,
         address: peripheral.address,
-        name: peripheral.name,
+        name,
         ledCount,
         colorway,
         dieType,
@@ -139,15 +142,13 @@ export function getScannedPixel(
       );
       return scannedPixel;
     } else {
-      console.error(
-        `Pixel ${peripheral.name}: Received invalid advertising data`
-      );
+      console.error(`Pixel ${name}: Received invalid advertising data`);
     }
   } else if (!hasServiceData) {
     // After a reboot we may receive a onetime advertisement payload without the manufacturer data
     console.error(
       `Pixel ${
-        peripheral.name
+        name
       }: Received unsupported advertising data (manufacturerData: ${
         manufacturerData?.data.length ?? -1
       } bytes, serviceData: ${serviceData?.data.length ?? -1} bytes)`

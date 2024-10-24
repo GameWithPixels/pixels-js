@@ -2,6 +2,9 @@ export interface ScannedBootloader {
   /** Device type is Bootloader. */
   type: "bootloader";
 
+  /** The type of Pixels device. */
+  deviceType: "die" | "charger";
+
   /** The unique id assigned by the system to the Bluetooth peripheral. */
   systemId: string;
 

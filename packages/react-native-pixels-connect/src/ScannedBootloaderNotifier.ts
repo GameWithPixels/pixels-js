@@ -43,6 +43,10 @@ export class ScannedBootloaderNotifier<
   // Device type
   readonly type = "bootloader";
 
+  get deviceType(): ScannedBootloader["deviceType"] {
+    return this._data.deviceType;
+  }
+
   // PixelInfo props
   get systemId(): string {
     return this._data.systemId;

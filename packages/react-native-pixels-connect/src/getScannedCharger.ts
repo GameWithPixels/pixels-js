@@ -15,6 +15,9 @@ export function getScannedCharger(
     return;
   }
 
+  // Use local name if available (which is the most up-to-date)
+  const name = advData.localName ?? peripheral.name;
+
   // Get the first manufacturer and service data
   const manufacturerData = advData.manufacturersData?.[0];
   const serviceData = advData.servicesData?.[0];
@@ -56,7 +59,7 @@ export function getScannedCharger(
         systemId,
         pixelId,
         address: peripheral.address,
-        name: peripheral.name,
+        name,
         ledCount,
         firmwareDate,
         rssi: advData.rssi,
@@ -67,15 +70,13 @@ export function getScannedCharger(
       ScannedDevicesRegistry.register(scannedCharger);
       return scannedCharger;
     } else {
-      console.error(
-        `Pixel ${peripheral.name}: Received invalid advertising data`
-      );
+      console.error(`Pixel ${name}: Received invalid advertising data`);
     }
   } else {
     //if (!hasServiceData) {
     console.error(
       `Charger ${
-        peripheral.name
+        name
       }: Received unsupported advertising data (manufacturerData: ${
         manufacturerData?.data.length ?? -1
       } bytes, serviceData: ${serviceData?.data.length ?? -1} bytes)`
