@@ -101,9 +101,9 @@ export class PixelScanner {
   private _startPromise?: Promise<void>;
   private _status: ScanStatus = "stopped";
   private _scanFilter: PixelScannerFilter;
-  private _minNotifyInterval = 200;
+  private _minNotifyInterval = 300;
   private _notifyTimeoutId?: ReturnType<typeof setTimeout>;
-  private _keepAliveDuration = 5000;
+  private _keepAliveDuration = 7000;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdateMs = 0;
   private readonly _touched = new Map<number, ScannedDevice["type"]>();
@@ -167,7 +167,7 @@ export class PixelScanner {
    * notifications.
    * (calls to {@link PixelScanner.scanListener}).
    * A value of 0 will generate a notification on every scan event.
-   * @default 200.
+   * @default 300.
    */
   get minNotifyInterval(): number {
     return this._minNotifyInterval;
@@ -181,7 +181,7 @@ export class PixelScanner {
         const now = Date.now();
         const nextUpdate = Math.max(now, this._lastUpdateMs + interval);
         this._notifyTimeoutId = setTimeout(
-          () => this._notify(nextUpdate),
+          () => this._notify(),
           nextUpdate - now
         );
       }
@@ -197,7 +197,7 @@ export class PixelScanner {
    * of {@link minNotifyInterval}.
    *  - For a value greater than 0, Scanned Pixels are all immediately
    *    removed when Bluetooth becomes unavailable.
-   * @default 5000.
+   * @default 7000.
    */
   get keepAliveDuration(): number {
     return this._keepAliveDuration;
@@ -278,7 +278,7 @@ export class PixelScanner {
       // Remove outdated advertisements
       this._pruneOutdated();
       // Flush pending operations
-      this._notify(Date.now());
+      this._notify();
       // Start scanning
       if (this._status === "stopped" && !this._startPromise) {
         Central.addListener("scannedPeripheral", this._onScannedCb);
@@ -337,7 +337,7 @@ export class PixelScanner {
       this._notifyTimeoutId = undefined;
     }
     if (this._pruneTimeoutId) {
-      clearInterval(this._pruneTimeoutId);
+      clearTimeout(this._pruneTimeoutId);
       this._pruneTimeoutId = undefined;
     }
   }
@@ -407,7 +407,7 @@ export class PixelScanner {
           this._devices.length = 0;
         }
         // Flush pending operations on stop
-        this._notify(Date.now());
+        this._notify();
     }
 
     // Update status
@@ -453,23 +453,28 @@ export class PixelScanner {
     const nextUpdate = this._lastUpdateMs + this._minNotifyInterval;
     if (now >= nextUpdate) {
       // Yes, notify immediately
-      this._notify(now);
+      this._notify();
     } else if (!this._notifyTimeoutId) {
       // Otherwise schedule the notification for later if not already done
       this._notifyTimeoutId = setTimeout(
-        () => this._notify(nextUpdate),
+        () => this._notify(),
         nextUpdate - now
       );
     }
   }
 
-  private _notify(now: number): void {
+  private _notify(): void {
     if (this._notifyTimeoutId) {
       clearTimeout(this._notifyTimeoutId);
       this._notifyTimeoutId = undefined;
     }
     if (this._touched.size) {
-      this._lastUpdateMs = now;
+      // Keep track of the last notification time
+      // Note: we get here much later than scheduled if the event loop is busy
+      // which will cause the next notification to be delayed. That's actually
+      // fine as we don't want to flood the event loop with notifications.
+      this._lastUpdateMs = Date.now();
+
       const ops: PixelScannerListOperation[] = [];
       for (const [pixelId, type] of this._touched) {
         const item = this._devices.find(
@@ -497,7 +502,7 @@ export class PixelScanner {
 
   private _pruneOutdated(): void {
     if (this._pruneTimeoutId) {
-      clearInterval(this._pruneTimeoutId);
+      clearTimeout(this._pruneTimeoutId);
       this._pruneTimeoutId = undefined;
     }
     if (this._keepAliveDuration > 0) {
@@ -521,12 +526,10 @@ export class PixelScanner {
           (prev, curr) => Math.min(prev, curr.timestamp.getTime()),
           now
         );
-        if (older < now) {
-          this._pruneTimeoutId = setInterval(
-            () => this._pruneOutdated(),
-            older + this._keepAliveDuration - now
-          );
-        }
+        this._pruneTimeoutId = setTimeout(
+          () => this._pruneOutdated(),
+          older + this._keepAliveDuration - now
+        );
       }
     }
   }
