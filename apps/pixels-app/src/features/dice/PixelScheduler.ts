@@ -5,10 +5,6 @@ import {
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import {
-  DfuConnectionError,
-  DfuState,
-} from "@systemic-games/react-native-nordic-nrf5-dfu";
-import {
   Color,
   DataSet,
   getPixel,
@@ -19,15 +15,18 @@ import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { logError } from "~/features/utils";
 import { hackGetDieBrightness, isSameBrightness } from "~/hackGetDieBrightness";
 
+type UpdateFirmwareParams = Parameters<typeof updateFirmware>[0];
+
 export type PixelOperationParams = Readonly<
   | {
       type: "updateFirmware";
       firmwarePath: string;
       bootloaderPath?: string;
+      dfuStateCallback?: UpdateFirmwareParams["dfuStateCallback"];
+      dfuProgressCallback?: UpdateFirmwareParams["dfuProgressCallback"];
     }
   | {
       type: "connect";
-      // mode?: "default" | "reconnect";
     }
   | {
       type: "disconnect";
@@ -68,9 +67,6 @@ export type PixelSchedulerEventMap = Readonly<{
           error: Error;
         }
     >;
-  // DFU events
-  onDfuState: { pixel: Pixel; state: DfuState; error?: Error };
-  onDfuProgress: { pixel: Pixel; progress: number };
 }>;
 
 type OperationsParams = Readonly<{
@@ -276,17 +272,17 @@ export class PixelScheduler {
     this._log(`Scheduling operation ${type}`);
     switch (type) {
       case "connect":
-        // if (this._currentOperation?.type !== "connect") {
-        //   // No need to queue a new connect operation if already connecting
-        this._operations.set(type, {}); // mode: operation.mode
-        // }
         // Clear any pending disconnect operation
         this._operations.delete("disconnect");
+        // Schedule connect operation
+        this._operations.set(type, {});
         break;
       case "updateFirmware":
         this._operations.set(type, {
           firmwarePath: operation.firmwarePath,
           bootloaderPath: operation.bootloaderPath,
+          dfuStateCallback: operation.dfuStateCallback,
+          dfuProgressCallback: operation.dfuProgressCallback,
         });
         break;
       case "disconnect":
@@ -313,26 +309,37 @@ export class PixelScheduler {
     this._triggerProcessPromise?.();
   }
 
+  // Schedules an operation and waits for it to complete.
+  // Returns true if the operation was successful, false if it was dropped
+  // and throws an error if it failed.
   scheduleAndWaitAsync(
     operation: PixelOperationParams,
-    opt?: { onStart?: () => void }
-  ): Promise<"succeeded" | "dropped" | "failed"> {
+    statusListener?: (
+      status: PixelSchedulerEventMap["onOperationStatus"]["status"],
+      error?: Error
+    ) => void
+  ): Promise<boolean> {
     const opType = operation.type;
-    return new Promise<"succeeded" | "dropped" | "failed">((resolve) => {
-      const onOperation = ({
-        operation: { type },
-        status,
-      }: PixelSchedulerEventMap["onOperationStatus"]) => {
-        if (type === opType) {
-          if (status === "starting") {
-            opt?.onStart?.();
-          } else if (
-            status === "succeeded" ||
-            status === "dropped" ||
-            status === "failed"
-          ) {
-            this.removeListener("onOperationStatus", onOperation);
-            resolve(status);
+    return new Promise<boolean>((resolve, reject) => {
+      const onOperation = (ev: PixelSchedulerEventMap["onOperationStatus"]) => {
+        if (ev.operation.type === opType) {
+          const status = ev.status;
+          const error = status === "failed" ? ev.error : undefined;
+          try {
+            statusListener?.(status, error);
+          } finally {
+            if (
+              status === "succeeded" ||
+              status === "dropped" ||
+              status === "failed"
+            ) {
+              this.removeListener("onOperationStatus", onOperation);
+              if (error) {
+                reject(error);
+              } else {
+                resolve(status === "succeeded");
+              }
+            }
           }
         }
       };
@@ -402,10 +409,20 @@ export class PixelScheduler {
       return { type: "connect" };
     } else if (this._operations.has("updateFirmware")) {
       // Update firmware before running other operations
-      const { firmwarePath, bootloaderPath } =
-        this._operations.get("updateFirmware")!;
+      const {
+        firmwarePath,
+        bootloaderPath,
+        dfuStateCallback,
+        dfuProgressCallback,
+      } = this._operations.get("updateFirmware")!;
       this._operations.delete("updateFirmware");
-      return { type: "updateFirmware", firmwarePath, bootloaderPath };
+      return {
+        type: "updateFirmware",
+        firmwarePath,
+        bootloaderPath,
+        dfuStateCallback,
+        dfuProgressCallback,
+      };
     } else if (this._operations.has("resetSettings")) {
       // Reset settings before running other operations
       this._operations.delete("resetSettings");
@@ -445,26 +462,7 @@ export class PixelScheduler {
     const { type } = op;
     switch (type) {
       case "connect":
-        // if (op.mode === "reconnect") {
-        //   try {
-        //     await pixel.disconnect();
-        //     // TODO Temp fix: connecting immediately after a disconnect causes issues
-        //     // on Android: the device is never actually disconnected, but the MTU
-        //     // is reset to 23 as far as the native code is concerned.
-        //     await delay(300);
-        //   } catch (e) {
-        //     this._log(
-        //       `Disconnect error before reconnecting to die ${pixel.name}: ${e}`
-        //     );
-        //   }
-        // }
-        // Check if already connected
-        // if (pixel.status !== "ready") {
-        //   if (pixel.status === "connecting" || pixel.status === "identifying") {
-        //     this._log(`Trying to connect while already connecting`);
-        //   }
         await pixel.connect();
-        // }
         break;
       case "turnOff":
         await pixel.turnOff();
@@ -472,13 +470,17 @@ export class PixelScheduler {
       case "disconnect":
         await pixel.disconnect();
         break;
-      case "updateFirmware":
-        await this._updateFirmwareAsync(
-          pixel,
-          op.firmwarePath,
-          op.bootloaderPath
-        );
+      case "updateFirmware": {
+        await updateFirmware({
+          systemId: pixel.systemId,
+          pixelId: pixel.pixelId,
+          bootloaderPath: op.bootloaderPath,
+          firmwarePath: op.firmwarePath,
+          dfuStateCallback: op.dfuStateCallback,
+          dfuProgressCallback: op.dfuProgressCallback,
+        });
         break;
+      }
       case "resetSettings":
         await pixel.sendAndWaitForResponse("clearSettings", "clearSettingsAck");
         break;
@@ -513,47 +515,6 @@ export class PixelScheduler {
         break;
       default:
         assertNever(type);
-    }
-  }
-
-  async _updateFirmwareAsync(
-    pixel: Pixel,
-    firmwarePath: string,
-    bootloaderPath?: string
-  ): Promise<void> {
-    let attemptsCount = 0;
-    let uploadStarted = false;
-    let firstError: unknown | undefined;
-    while (true) {
-      try {
-        const recoverFromUploadError = uploadStarted;
-        ++attemptsCount;
-        await updateFirmware({
-          systemId: pixel.systemId,
-          pixelId: pixel.pixelId,
-          bootloaderPath,
-          firmwarePath,
-          recoverFromUploadError,
-          dfuStateCallback: (state) => {
-            uploadStarted ||= state === "uploading";
-            this._emitEvent("onDfuState", { pixel, state });
-          },
-          dfuProgressCallback: (progress) =>
-            this._emitEvent("onDfuProgress", { pixel, progress }),
-        });
-        break;
-      } catch (e) {
-        logError(
-          `DFU${uploadStarted ? " update" : ""} error #${attemptsCount} ${e}`
-        );
-        if (!firstError) {
-          firstError = e;
-        }
-        if (attemptsCount >= 3) {
-          // Throw the original error if what we got is a connection error
-          throw e instanceof DfuConnectionError ? firstError : e;
-        }
-      }
     }
   }
 }

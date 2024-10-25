@@ -142,14 +142,11 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         };
         pixel.addPropertyListener("status", onStatus);
 
-        const onOperationDisposer = central.addSchedulerListener(
+        const onProgramProfileDisposer = central.addOperationStatusListener(
           pixel.pixelId,
-          "onOperationStatus",
+          "programProfile",
           (ev) => {
-            if (
-              ev.status === "succeeded" &&
-              ev.operation.type === "programProfile"
-            ) {
+            if (ev.status === "succeeded") {
               // Update paired die brightness
               store.dispatch(
                 updatePairedDieBrightness({
@@ -157,20 +154,20 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
                   brightness: ev.operation.dataSet.brightness / 255,
                 })
               );
-            } else if (ev.status === "failed") {
+            }
+          }
+        );
+        const onRenameDisposer = central.addOperationStatusListener(
+          pixel.pixelId,
+          "rename",
+          (ev) => {
+            if (ev.status === "failed") {
               // Show dialog on rename error
-              if (ev.operation.type === "rename") {
-                Alert.alert(
-                  "Failed to Rename Die",
-                  "An error occurred while renaming the die\n" +
-                    String(ev.error),
-                  [{ text: "OK", style: "default" }]
-                );
-              }
-            } else if (ev.status === "dropped") {
-              if (ev.operation.type !== "connect") {
-                logError(`Pixel Scheduler operation ${ev.operation} dropped`);
-              }
+              Alert.alert(
+                "Failed to Rename Die",
+                "An error occurred while renaming the die\n" + String(ev.error),
+                [{ text: "OK", style: "default" }]
+              );
             }
           }
         );
@@ -227,7 +224,8 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           pixel.removePropertyListener("profileHash", onProfileHash);
           pixel.removeEventListener("roll", onRoll);
           pixel.removeEventListener("remoteAction", onRemoteAction);
-          onOperationDisposer();
+          onProgramProfileDisposer();
+          onRenameDisposer();
         });
       }
     );

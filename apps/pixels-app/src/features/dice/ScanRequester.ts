@@ -84,9 +84,18 @@ export class ScanRequester {
     return this._scanner.scannedPixels;
   }
 
-  constructor(stopDelay = 0) {
-    this._scanner.minNotifyInterval = 200;
-    this._scanner.keepAliveDuration = 5000;
+  constructor(opt?: {
+    stopScanDelay?: number;
+    minNotifyInterval?: number;
+    keepAliveDuration?: number;
+  }) {
+    if (opt?.minNotifyInterval) {
+      this._scanner.minNotifyInterval = opt?.minNotifyInterval;
+    }
+    if (opt?.keepAliveDuration) {
+      this._scanner.keepAliveDuration = opt?.keepAliveDuration;
+    }
+    const stopDelay = opt?.stopScanDelay ?? 0;
     // Start scan function
     const startScan = () => {
       this._scanner

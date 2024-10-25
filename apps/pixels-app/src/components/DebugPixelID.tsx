@@ -6,22 +6,41 @@ import { useDebugMode, usePixelsCentral } from "~/hooks";
 
 export function DebugPixelID({ pixelId }: { pixelId: number }) {
   const central = usePixelsCentral();
-  const [queue, setQueue] = React.useState(central.connectQueue);
+  const [priority, setPriority] = React.useState<"high" | "low">();
   React.useEffect(() => {
-    setQueue(central.connectQueue);
-    return central.addListener("connectQueue", setQueue);
+    const update = () =>
+      setPriority(
+        central.connectQueue.highPriority.includes(pixelId)
+          ? "high"
+          : central.connectQueue.lowPriority.includes(pixelId)
+            ? "low"
+            : undefined
+      );
+    update();
+    return central.addListener("connectQueue", update);
+  }, [central, pixelId]);
+  const [limit, setLimit] = React.useState<{ disconnectId?: number }>();
+  React.useEffect(() => {
+    setLimit(undefined);
+    return central.addListener(
+      "onConnectionLimitReached",
+      ({ disconnectId }) => {
+        setLimit({ disconnectId });
+      }
+    );
   }, [central]);
   const debugMode = useDebugMode();
   return (
     debugMode && (
       <Text
-        numberOfLines={1}
         variant="titleSmall"
         style={{ position: "absolute", top: -10, alignSelf: "center" }}
       >
         ID: {unsigned32ToHex(pixelId)}
-        {queue.highPriority.includes(pixelId) ? " (High)" : ""}
-        {queue.lowPriority.includes(pixelId) ? " (Low)" : ""}
+        {priority ? ` (${priority})` : ""}
+        {limit?.disconnectId
+          ? `\ndisco ${unsigned32ToHex(limit.disconnectId)}`
+          : ""}
       </Text>
     )
   );

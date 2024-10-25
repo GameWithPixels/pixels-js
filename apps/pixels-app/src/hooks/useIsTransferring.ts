@@ -16,24 +16,26 @@ export function useIsTransferring({
     setIsTransferring(
       central.getCurrentOperation(pixelId)?.type === "programProfile"
     );
-    return central.addSchedulerListener(pixelId, "onOperationStatus", (op) => {
-      const { type: opType } = op.operation;
-      const status = op.status;
-      switch (status) {
-        case "queued":
-          break;
-        case "starting":
-          setIsTransferring(opType === "programProfile");
-          break;
-        case "succeeded":
-        case "failed":
-        case "dropped":
-          setIsTransferring(false);
-          break;
-        default:
-          assertNever(status);
+    return central.addOperationStatusListener(
+      pixelId,
+      "programProfile",
+      ({ status }) => {
+        switch (status) {
+          case "queued":
+            break;
+          case "starting":
+            setIsTransferring(true);
+            break;
+          case "succeeded":
+          case "failed":
+          case "dropped":
+            setIsTransferring(false);
+            break;
+          default:
+            assertNever(status);
+        }
       }
-    });
+    );
   }, [central, pixelId]);
   return transferring;
 }

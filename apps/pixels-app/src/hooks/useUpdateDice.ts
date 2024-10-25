@@ -6,11 +6,15 @@ import { usePixelsCentral } from "./usePixelsCentral";
 
 import { useAppStore } from "~/app/hooks";
 import { updatePairedDieFirmwareTimestamp } from "~/features/store";
+import { logError } from "~/features/utils";
 
 export function useUpdateDice(): (
   pixelsIds: readonly number[],
   filesInfo: DfuFilesInfo,
-  stopRequested?: () => boolean
+  opt?: {
+    maxAttempts?: number;
+    stopRequested?: () => boolean;
+  }
 ) => Promise<number[]> {
   const store = useAppStore();
   const central = usePixelsCentral();
@@ -18,41 +22,48 @@ export function useUpdateDice(): (
     async (
       pixelsIds: readonly number[],
       filesInfo: DfuFilesInfo,
-      stopRequested?: () => boolean
+      opt?: {
+        maxAttempts?: number;
+        stopRequested?: () => boolean;
+      }
     ) => {
       const failedPixelsIds: number[] = [];
       const idsToProcess = [...new Set(pixelsIds)];
-      // First try to update connected Pixels
-      let stopScan: (() => void) | undefined;
-      try {
-        while (idsToProcess.length) {
-          if (stopRequested?.()) {
-            break;
-          }
-          const pixelId = idsToProcess[0];
-          try {
-            const bootloader = store.getState().appSettings.updateBootloader;
-            if (
-              await central.tryUpdateFirmware(pixelId, filesInfo, {
-                bootloader,
-              })
-            ) {
-              // Update stored timestamp
-              store.dispatch(
-                updatePairedDieFirmwareTimestamp({
-                  pixelId,
-                  timestamp: filesInfo.timestamp,
-                })
-              );
-            }
-          } catch (error) {
-            failedPixelsIds.push(pixelId);
-          }
-          // Remove id
-          idsToProcess.shift();
+      while (idsToProcess.length) {
+        if (opt?.stopRequested?.()) {
+          break;
         }
-      } finally {
-        stopScan?.();
+        const pixelId = idsToProcess[0];
+        let updated = false;
+        let attemptsCount = 0;
+        while (true) {
+          ++attemptsCount;
+          try {
+            const opt = {
+              bootloader: store.getState().appSettings.updateBootloader,
+            };
+            updated = await central.tryUpdateFirmware(pixelId, filesInfo, opt);
+            break;
+          } catch (e) {
+            logError(`DFU error #${attemptsCount}: ${e}`);
+            if (attemptsCount >= (opt?.maxAttempts ?? 3)) {
+              failedPixelsIds.push(pixelId);
+              break;
+            }
+          }
+        }
+
+        if (updated) {
+          // Update stored timestamp
+          store.dispatch(
+            updatePairedDieFirmwareTimestamp({
+              pixelId,
+              timestamp: filesInfo.timestamp,
+            })
+          );
+        }
+        // Remove id
+        idsToProcess.shift();
       }
       if (failedPixelsIds.length) {
         console.warn(

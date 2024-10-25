@@ -12,7 +12,7 @@ import { getBootloaderAdvertisedName } from "@systemic-games/react-native-pixels
 
 function idToString(targetId: DfuTargetId): string {
   return typeof targetId === "number"
-    ? targetId.toString(16).match(/.{2}/g)?.join(":") ?? ""
+    ? (targetId.toString(16).match(/.{2}/g)?.join(":") ?? "")
     : `${targetId}`;
 }
 
@@ -30,7 +30,6 @@ export async function updateFirmware({
   dfuStateCallback,
   dfuProgressCallback,
   isBootloaderMacAddress,
-  recoverFromUploadError,
 }: {
   systemId: string;
   pixelId?: number; // iOS only
@@ -39,7 +38,6 @@ export async function updateFirmware({
   dfuStateCallback?: (state: DfuState) => void;
   dfuProgressCallback?: (progress: number) => void;
   isBootloaderMacAddress?: boolean;
-  recoverFromUploadError?: boolean;
 }): Promise<void> {
   const hasFirmware = !!firmwarePath?.length;
   const hasBootloader = !!bootloaderPath?.length;
@@ -116,8 +114,7 @@ export async function updateFirmware({
       try {
         // After attempting to update the bootloader, device stays in bootloader mode
         // Bootloader address = firmware address + 1 on Android
-        const useBlAddress =
-          (hasBootloader || recoverFromUploadError) && !isBootloaderMacAddress;
+        const useBlAddress = hasBootloader && !isBootloaderMacAddress;
         const fwTargetId =
           typeof targetId === "number"
             ? targetId + (useBlAddress ? 1 : 0)

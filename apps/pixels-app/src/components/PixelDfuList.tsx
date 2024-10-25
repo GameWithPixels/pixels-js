@@ -3,7 +3,6 @@ import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Pixel,
   PixelInfo,
-  PixelInfoNotifier,
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -43,7 +42,7 @@ function TextStatus({
   ...props
 }: {
   pixel: Pixel;
-  state?: DfuState;
+  state?: DfuState | "scanning";
   progress?: number;
 } & Omit<TextProps<string>, "children">) {
   const status = usePixelStatus(pixel);
@@ -100,14 +99,10 @@ function PixelDfuItem({
   const availability = usePixelDfuAvailability(pairedDie.pixelId);
   const { state, progress, error } = usePixelDfuState(pairedDie.pixelId);
   const uploading = state === "starting" || state === "uploading";
-  // state &&
-  // state !== "completed" &&
-  // state !== "errored" &&
-  // state !== "aborted";
   const updating = useIsDieUpdatingFirmware(pairedDie.pixelId);
   // Scanning
   const central = usePixelsCentral();
-  const [scanned, setScanned] = React.useState<PixelInfoNotifier>();
+  const [scanned, setScanned] = React.useState(false);
   const [scanning, setScanning] = React.useState(
     central.scanStatus === "scanning"
   );
@@ -119,16 +114,15 @@ function PixelDfuItem({
         lastScannedRef.current = false;
       } else if (status === "stopped" && !lastScannedRef.current) {
         // Mark as not scanned
-        setScanned(undefined);
+        setScanned(false);
       }
     });
   }, [central, pairedDie]);
   React.useEffect(() => {
     return central.addListener("onPixelScanned", ({ status, notifier }) => {
       if (notifier.pixelId === pairedDie.pixelId) {
-        const scanned = status === "scanned";
-        setScanned(scanned ? notifier : undefined);
-        lastScannedRef.current = scanned;
+        lastScannedRef.current = status === "scanned";
+        setScanned(lastScannedRef.current);
       }
     });
   }, [central, pairedDie]);

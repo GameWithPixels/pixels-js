@@ -4,6 +4,7 @@ import {
   EventReceiver,
   unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
+import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
   ConnectError,
@@ -11,6 +12,7 @@ import {
   PixelMutableProps,
   PixelScannerEventMap,
   PixelStatusEvent,
+  ScannedBootloaderNotifier,
   ScannedPixel,
   ScannedPixelNotifier,
   ScanStatus,
@@ -25,6 +27,7 @@ import { PriorityQueue } from "./PriorityQueue";
 import { ScanRequester } from "./ScanRequester";
 import { getDieDfuAvailability } from "./getDieDfuAvailability";
 
+import { updateFirmware } from "~/features/dfu/updateFirmware";
 import { logError } from "~/features/utils";
 import { DfuFilesInfo } from "~/hooks";
 
@@ -34,8 +37,8 @@ import { DfuFilesInfo } from "~/hooks";
 
 // Connection release parameters
 const connectionRelease = {
-  interval: 5000, // We hope it's enough time to connect to a Pixel
-  window: 20000, // 4 times the above interval, should allow for 3 connection releases
+  interval: 7000, // We hope it's enough time to connect to a Pixel
+  window: 20000, // Should allow for at least 2 connection releases
   maxScanDelta: 1500, // Release connection if scanned twice within this time
   gracePeriod: 5000, // Time after scan to still allow for connection release
   connectGattFailureDelta: 5000, // Maximum delay between 2 GATT failures to trigger a connection release
@@ -93,6 +96,17 @@ async function waitConnectedAsync(
   }
 }
 
+type OperationsParams = Readonly<{
+  // connect: Extract<PixelOperationParams, { type: "connect" }>;
+  // disconnect: Extract<PixelOperationParams, { type: "disconnect" }>;
+  turnOff: Extract<PixelOperationParams, { type: "turnOff" }>;
+  updateFirmware: Extract<PixelOperationParams, { type: "updateFirmware" }>;
+  resetSettings: Extract<PixelOperationParams, { type: "resetSettings" }>;
+  rename: Extract<PixelOperationParams, { type: "rename" }>;
+  blink: Extract<PixelOperationParams, { type: "blink" }>;
+  programProfile: Extract<PixelOperationParams, { type: "programProfile" }>;
+}>;
+
 /**
  * Connect queue for Pixels.
  */
@@ -123,8 +137,18 @@ export type PixelsCentralEventMap = Readonly<{
     status: "scanned" | "lost";
     notifier: ScannedPixelNotifier;
   }>;
+  onInBootloader: Readonly<{
+    status: "scanned" | "lost";
+    notifier: ScannedBootloaderNotifier;
+  }>;
   onPixelFound: Readonly<{ pixel: Pixel }>; // Registered Pixel was found (scanned)
-  onConnectionLimitReached: Readonly<{ pixel: Pixel; disconnectedId?: number }>; // Failed to connect Pixel because connection limit was reached
+  onConnectionLimitReached: Readonly<{
+    pixelId: number;
+    disconnectId?: number;
+  }>; // Failed to connect Pixel because connection limit was reached
+  // DFU events
+  onDfuState: { pixelId: number; state: DfuState | "scanning"; error?: Error };
+  onDfuProgress: { pixelId: number; progress: number };
 }>;
 
 // Registered Pixels are added to the "pixels" list whenever they are found (= scanned)
@@ -133,7 +157,11 @@ export class PixelsCentral {
     createTypedEventEmitter<PixelsCentralEventMap>();
 
   // Scanner for discovering Pixels
-  private readonly _scanner = new ScanRequester(stopScanDelay);
+  private readonly _scanner = new ScanRequester({
+    minNotifyInterval: 300,
+    keepAliveDuration: 7000,
+    stopScanDelay,
+  });
   private readonly _onScanReady: () => void;
 
   // Registered Pixels
@@ -147,6 +175,8 @@ export class PixelsCentral {
       cancelScan?: () => void;
       cancelNextConnect?: () => void;
       disposer?: () => void;
+      // Bootloader
+      lastBootloaderScanTime?: number; // Timestamp of last bootloader scan, reset on Pixel scan or connection
     }
   >();
 
@@ -154,7 +184,7 @@ export class PixelsCentral {
   private readonly _connectQueue = new PriorityQueue();
 
   // DFU
-  private _pixelInDfu: number | undefined;
+  private _pixelInDFU: number | undefined;
 
   get isReady(): boolean {
     return this._scanner.isReady;
@@ -187,7 +217,7 @@ export class PixelsCentral {
   }
 
   get pixelInDFU(): number | undefined {
-    return this._pixelInDfu;
+    return this._pixelInDFU;
   }
 
   constructor() {
@@ -352,7 +382,7 @@ export class PixelsCentral {
               case "scanned": {
                 this._pixels.has(pixelId) &&
                   console.log(
-                    `>> SCANNED Pixel ${unsigned32ToHex(pixelId)} delay=${Date.now() - op.item.timestamp.getTime()} connect=${this._connectQueue.includes(pixelId)}`
+                    `[PixelsCentral] Scanned Pixel ${unsigned32ToHex(pixelId)} delay=${Date.now() - op.item.timestamp.getTime()} connect=${this._connectQueue.includes(pixelId)}`
                   );
                 // Always update notifier
                 this._onScannedPixel(ScannedPixelNotifier.getInstance(op.item));
@@ -361,7 +391,7 @@ export class PixelsCentral {
               case "lost": {
                 this._pixels.has(pixelId) &&
                   console.log(
-                    `>> LOST Pixel ${unsigned32ToHex(pixelId)} connect=${this._connectQueue.includes(pixelId)}`
+                    `[PixelsCentral] Lost Pixel ${unsigned32ToHex(pixelId)} connect=${this._connectQueue.includes(pixelId)}`
                   );
                 const notifier = ScannedPixelNotifier.findInstance(pixelId);
                 notifier &&
@@ -378,6 +408,27 @@ export class PixelsCentral {
               }
               default:
                 assertNever(scanStatus);
+            }
+          } else if (
+            op.status === "scanned" &&
+            op.item.type === "bootloader" &&
+            this._pixels.has(op.item.pixelId)
+          ) {
+            // Always update notifier
+            const notifier = ScannedBootloaderNotifier.getInstance(op.item);
+            const data = this._pixels.get(op.item.pixelId);
+            if (data) {
+              !data.lastBootloaderScanTime &&
+                console.log(
+                  `[PixelsCentral] Scanned Bootloader ${unsigned32ToHex(op.item.pixelId)} delay=${Date.now() - op.item.timestamp.getTime()}`
+                );
+              // Track time of last bootloader scan
+              data.lastBootloaderScanTime = notifier.timestamp.getTime();
+              // Notify
+              this._emitEvent("onInBootloader", {
+                status: "scanned",
+                notifier,
+              });
             }
           }
         }
@@ -397,9 +448,11 @@ export class PixelsCentral {
 
   async waitForScannedPixelAsync(
     pixelId: number,
-    timeout = 10000
+    timeout = 20000
   ): Promise<ScannedPixel | undefined> {
-    console.log(`WAIT FOR Pixel ${unsigned32ToHex(pixelId)}`);
+    console.log(
+      `[PixelsCentral] Wait for scanning Pixel ${unsigned32ToHex(pixelId)}`
+    );
 
     // Create a promise that resolves when the Pixel is scanned
     let resolver: (value: ScannedPixel | undefined) => void;
@@ -447,7 +500,7 @@ export class PixelsCentral {
       (!!opt?.priority || !this._connectQueue.includes(pixelId))
     ) {
       console.log(
-        `>> TRY CONNECT Pixel ${unsigned32ToHex(pixelId)} with priority=${opt?.priority}`
+        `[PixelsCentral] Try connect Pixel ${unsigned32ToHex(pixelId)} with priority=${opt?.priority}`
       );
       // Subscribe to priority queue events
       this._subscribeToConnectQueueEvents();
@@ -471,14 +524,27 @@ export class PixelsCentral {
     return getScheduler(pixelId).currentOperation;
   }
 
-  addSchedulerListener<K extends keyof PixelSchedulerEventMap>(
+  addOperationStatusListener<T extends keyof OperationsParams>(
     pixelId: number,
-    type: K,
-    listener: EventReceiver<PixelSchedulerEventMap[K]>
+    operationType: T,
+    listener: EventReceiver<
+      Exclude<PixelSchedulerEventMap["onOperationStatus"], "operation"> & {
+        operation: OperationsParams[T]; // Specify operation type
+      }
+    >
   ): () => void {
     const scheduler = getScheduler(pixelId);
-    scheduler.addListener(type, listener);
-    return () => scheduler.removeListener(type, listener);
+    const onOperationStatus = (
+      ev: PixelSchedulerEventMap["onOperationStatus"]
+    ) => {
+      if (ev.operation.type === operationType) {
+        // @ts-ignore
+        listener(ev);
+      }
+    };
+    scheduler.addListener("onOperationStatus", onOperationStatus);
+    return () =>
+      scheduler.removeListener("onOperationStatus", onOperationStatus);
   }
 
   // Connect and disconnect are managed internally
@@ -502,26 +568,39 @@ export class PixelsCentral {
       force?: boolean;
     }
   ): Promise<boolean> {
-    if (this._pixelInDfu) {
+    if (this._pixelInDFU) {
       throw new Error("A firmware update is already in progress");
     }
     if (!this._pixels.has(pixelId)) {
-      throw new Error("Pixel not registered: " + unsigned32ToHex(pixelId));
+      throw new Error("Pixel not registered");
     }
-    this._pixelInDfu = pixelId;
-    this._emitEvent("pixelInDFU", this._pixelInDfu);
+
+    console.log(
+      `[PixelsCentral] Try update firmware for Pixel ${unsigned32ToHex(pixelId)}`
+    );
+
+    this._pixelInDFU = pixelId;
+    this._emitEvent("pixelInDFU", this._pixelInDFU);
+
+    // DFU events callbacks
+    const dfuStateCallback = (state: DfuState) =>
+      this._emitEvent("onDfuState", { pixelId, state });
+    const dfuProgressCallback = (progress: number) =>
+      this._emitEvent("onDfuProgress", { pixelId, progress });
 
     try {
+      const startTime = Date.now();
+      const bootloaderPath = opt?.bootloader
+        ? filesInfo.bootloaderPath
+        : undefined;
+      const firmwarePath = filesInfo.firmwarePath;
+
       // Get timestamp from scan if Pixel is not connected
       const scannedFwDate = !isConnected(getPixel(pixelId)?.status)
         ? (await this.waitForScannedPixelAsync(pixelId))?.firmwareDate
         : undefined;
-      console.log(
-        `Got scanned timestamp ${scannedFwDate?.getTime()} for Pixel ${unsigned32ToHex(pixelId)}`
-      );
 
       // Get Pixel instance again as it might have been discovered during the scan
-      // (and it also checks if it's still registered)
       const pixel = this.getPixel(pixelId);
       // We also might have connected during the scan
       const timestamp = (
@@ -529,68 +608,142 @@ export class PixelsCentral {
           ? pixel.firmwareDate
           : scannedFwDate
       )?.getTime();
-      if (!pixel || !timestamp) {
-        throw new Error("DFU Pixel not found " + unsigned32ToHex(pixelId));
-      }
-      console.log(
-        `Got timestamp ${timestamp} for Pixel ${unsigned32ToHex(pixelId)}`
-      );
 
-      // Check if we need to update the firmware
+      // Are we in bootloader?
+      const bootloaderLastScan =
+        this._pixels.get(pixelId)?.lastBootloaderScanTime ?? 0;
+      if (bootloaderLastScan >= startTime) {
+        const bootloader = ScannedBootloaderNotifier.findInstance(pixelId);
+        if (!bootloader) {
+          throw new Error("Pixel not available");
+        }
+
+        // Log some info
+        console.log(
+          `[PixelsCentral] ❗❗❗ DFU: Pixel ${unsigned32ToHex(pixelId)} in bootloader, RSSI=${bootloader?.rssi}, last scanned ${bootloaderLastScan - startTime}ms ago`
+        );
+
+        // Start DFU and wait for completion
+        await updateFirmware({
+          systemId: bootloader.systemId,
+          pixelId,
+          bootloaderPath,
+          firmwarePath,
+          dfuStateCallback,
+          dfuProgressCallback,
+          isBootloaderMacAddress: true,
+        });
+        return true;
+      }
+
+      // Check that we got a timestamp
+      if (!pixel || !timestamp) {
+        throw new Error("Pixel not available");
+      }
+
+      // Do we need to update the firmware?
       if (
         !!opt.force ||
         getDieDfuAvailability(timestamp, filesInfo.timestamp) === "outdated"
       ) {
+        // Log some info
+        console.log(
+          `[PixelsCentral] DFU: Pixel ${unsigned32ToHex(pixelId)} FW timestamp=${timestamp}, status=${pixel.status}, ${(() => {
+            const px = isConnected(pixel.status)
+              ? pixel
+              : (ScannedPixelNotifier.findInstance(pixelId) ?? pixel);
+            return `RSSI=${px?.rssi}, battery=${px?.batteryLevel}, charging=${px?.isCharging}`;
+          })()}, scanned=${!!scannedFwDate}`
+        );
+
+        // Disconnect all other dice to improve our chances
+        for (const id of this._connectQueue.allIds) {
+          if (id !== pixelId) {
+            this._connectQueue.dequeue(id);
+          }
+        }
+
         // Connect to Pixel if not already connected
         if (!isConnected(pixel.status)) {
-          console.warn("WAIT CONNECT Pixel " + unsigned32ToHex(pixelId));
-          this.tryConnect(pixelId, { priority: "high" });
+          console.warn(`WAIT CONNECT Pixel ${unsigned32ToHex(pixelId)}`);
+          this.tryConnect(pixelId);
           if (!(await waitConnectedAsync(pixel))) {
             // Stop connecting
-            getScheduler(pixelId).cancelConnecting();
             this._connectQueue.dequeue(pixelId);
-            throw new Error("Connect Timeout");
+            throw new Error("Connection Timeout");
           }
         }
 
         // Start DFU and wait for completion
-        console.warn("UPDATE PIXEL " + unsigned32ToHex(pixelId));
-        const status = await getScheduler(pixelId).scheduleAndWaitAsync(
+        const success = await getScheduler(pixelId).scheduleAndWaitAsync(
           {
             type: "updateFirmware",
-            bootloaderPath: opt?.bootloader
-              ? filesInfo.bootloaderPath
-              : undefined,
-            firmwarePath: filesInfo.firmwarePath,
+            bootloaderPath,
+            firmwarePath,
+            dfuStateCallback,
+            dfuProgressCallback,
           },
-          // Don't reconnect until after DFU has finished
-          { onStart: () => this._connectQueue.dequeue(pixelId) }
-        );
-        console.log(
-          `DFU done with status=${status} for ${unsigned32ToHex(pixelId)}`
+          (status) => {
+            if (status === "starting") {
+              // Prevent automatic reconnection to happen during DFU
+              this._connectQueue.dequeue(pixelId);
+            }
+          }
         );
 
-        // Reconnect after DFU
-        this.tryConnect(pixelId, { priority: "high" });
-
-        if (status !== "succeeded") {
-          throw new Error("DFU " + status);
+        // Check if operation was dropped
+        if (!success) {
+          throw new Error("Firmware update operation dropped");
         }
 
         // Check if we need to reset die settings to reprogram the normals
+        // TODO: What we should really do is store the fact that we need to reset
+        // the settings and let the app handle the reset on the next connection
         const FW_2024_03_25 = 1711398391000;
         if (timestamp <= FW_2024_03_25 && pixel.ledCount <= 6) {
-          console.warn(`Resetting settings for die ${pixel.name}`);
-          getScheduler(pixelId).schedule({ type: "resetSettings" });
+          try {
+            console.warn(
+              `[PixelsCentral] DFU: Resetting settings for die ${pixel.name}`
+            );
+            await this._reprogramNormals(pixel);
+          } catch (e) {
+            logError(`[PixelsCentral] DFU: Failed to reset settings: ${e}`);
+          }
         }
+
+        // Return success even if we failed to reset settings
         return true;
       } else {
-        console.warn("Skipping update for Pixel " + unsigned32ToHex(pixelId));
+        console.log(
+          `[PixelsCentral] DFU: Pixel ${unsigned32ToHex(pixelId)} already up-to-date`
+        );
         return false;
       }
     } finally {
-      this._pixelInDfu = undefined;
+      this._pixelInDFU = undefined;
       this._emitEvent("pixelInDFU", undefined);
+    }
+  }
+
+  private async _reprogramNormals(pixel: Pixel): Promise<void> {
+    try {
+      // Reconnect
+      this.tryConnect(pixel.pixelId, { priority: "high" });
+      if (!(await waitConnectedAsync(pixel))) {
+        throw new Error("Failed to reconnect after DFU");
+      }
+      // Reset settings
+      const success = await getScheduler(pixel.pixelId).scheduleAndWaitAsync({
+        type: "resetSettings",
+      });
+      if (!success) {
+        throw new Error("Reset settings operation dropped");
+      }
+    } finally {
+      // Hack to make sure we disconnect
+      this._pixelInDFU = undefined;
+      // Disconnect
+      this._connectQueue.dequeue(pixel.pixelId);
     }
   }
 
@@ -611,6 +764,8 @@ export class PixelsCentral {
     const pixelId = notifier.pixelId;
     const data = this._pixels.get(pixelId);
     if (data) {
+      // Not in bootloader if getting scanned
+      this._notifyNotInBootloader(pixelId, data);
       // Report Pixel as available
       this._emitEvent("onPixelScanned", { status: "scanned", notifier });
       // Emit event if Pixel registered and scanned for the first time
@@ -635,27 +790,18 @@ export class PixelsCentral {
         ) {
           // We might end up here while being disconnected but still in the connect queue
           // (meaning a reconnection is or will be scheduled)
-          const pixel = getPixel(pixelId);
-          if (pixel?.status === "connecting") {
-            // We've probably reach the maximum number of connections, attempt to disconnect one die
-            const disconnectedId = this._tryReleaseOneConnection(pixelId);
+          if (getPixel(pixelId)?.status === "connecting") {
             // Set new connection release time
             data.nextDiscoOnScan = Date.now() + connectionRelease.interval;
-            // Notify
-            this._emitEvent("onConnectionLimitReached", {
-              pixel,
-              disconnectedId,
-            });
+            // We've probably reach the maximum number of connections, attempt to disconnect one die
+            this._tryReleaseOneConnection(pixelId);
           } else {
             data.nextDiscoOnScan += reconnectionDelay;
           }
           // Schedule new scan
-          this._scheduleScan(pixelId);
+          this._scheduleScan(pixelId, data);
         } else {
           data.lastScanTime = scanTime;
-          // console.log(
-          //   `>> SCANNED Pixel ${unsigned32ToHex(pixelId)} ${notifier.name} delay=${Date.now() - notifier.timestamp.getTime()}`
-          // );
         }
       }
     } else {
@@ -695,7 +841,6 @@ export class PixelsCentral {
         // Notify Pixels list changed
         this._emitEvent("pixels", this.pixels);
         // Notify Pixel found
-        console.log(`>> FOUND Pixel ${unsigned32ToHex(pixelId)}`);
         this._emitEvent("onPixelFound", { pixel });
         return true;
       }
@@ -712,9 +857,11 @@ export class PixelsCentral {
       // Keep timestamp of first connection attempt
       if (status === "connecting") {
         // Schedule scan
-        this._scheduleScan(pixelId);
+        this._scheduleScan(pixelId, data);
       } else {
         if (isConnected(status)) {
+          // Not in bootloader if connected
+          this._notifyNotInBootloader(pixelId, data);
           // Reset connection error
           data.lastConnectError = undefined;
           // Prevent any further connection release attempt
@@ -739,19 +886,32 @@ export class PixelsCentral {
     }
   }
 
+  private _notifyNotInBootloader(
+    pixelId: number,
+    data: NonNullable<ReturnType<typeof this._pixels.get>>
+  ): void {
+    if (data.lastBootloaderScanTime) {
+      data.lastBootloaderScanTime = undefined;
+      const notifier = ScannedBootloaderNotifier.findInstance(pixelId);
+      notifier &&
+        this._emitEvent("onInBootloader", { status: "lost", notifier });
+    }
+  }
+
   _onConnectOperationFailed(pixel: Pixel, error: Error) {
     const data = this._pixels.get(pixel.pixelId);
     if (!data) {
       return;
     }
 
+    // Check if we got 2 errors in a short time
     const now = Date.now();
     const last = data.lastConnectError;
     const tooManyErrors =
       last && now - last.time < reconnectionDelayTooManyErrors;
     tooManyErrors &&
       console.log(
-        `>> TOO MANY CONNECTION ERRORS for Pixel ${unsigned32ToHex(
+        `[PixelsCentral] ⚠️ Too many connection errors for Pixel ${unsigned32ToHex(
           pixel.pixelId
         )}`
       );
@@ -777,7 +937,7 @@ export class PixelsCentral {
     // Assumes GATT failure is caused by the connection limit being reached
     if (tooManyErrors && isGattFailure(last.error) && isGattFailure(error)) {
       console.log(
-        `>> DOUBLE GATT FAILURE for Pixel ${unsigned32ToHex(
+        `[PixelsCentral] ⚠️ Double gatt failure for Pixel ${unsigned32ToHex(
           pixel.pixelId
         )} => ${JSON.stringify({
           now,
@@ -796,16 +956,11 @@ export class PixelsCentral {
         this._connectQueue.isHighPriority(pixel.pixelId)
       ) {
         data.lastConnectError = undefined;
-        // Try to disconnect another Pixel
-        const disconnectedId = this._tryReleaseOneConnection(pixel.pixelId);
         // Set new connection release time
         // data.nextDiscoOnScan = now + connectionRelease.interval;
+        // Try to disconnect another Pixel
+        const disconnectedId = this._tryReleaseOneConnection(pixel.pixelId);
         // Notify
-        this._emitEvent("onConnectionLimitReached", {
-          pixel,
-          disconnectedId,
-        });
-
         if (disconnectedId) {
           this._scheduleConnectIfQueued(pixel.pixelId);
         }
@@ -838,12 +993,11 @@ export class PixelsCentral {
 
   // Starts a scan if next connection release time is reached,
   // otherwise schedules a scan
-  // Do nothing if we're past scanEndTime
-  private _scheduleScan(pixelId: number): void {
-    const data = this._pixels.get(pixelId);
-    if (!data) {
-      return;
-    }
+  // Do nothing if we're past scanEndTime pr not a high priority connection
+  private _scheduleScan(
+    pixelId: number,
+    data: NonNullable<ReturnType<typeof this._pixels.get>>
+  ): void {
     const now = Date.now();
     // Cancel any previous scan request
     data.cancelScan?.();
@@ -856,6 +1010,7 @@ export class PixelsCentral {
         data.nextDiscoOnScan = undefined;
       }
     }
+
     // Set time to attempt a connection release if connecting
     const connecting = getPixel(pixelId)?.status === "connecting";
     if (!data.nextDiscoOnScan && connecting) {
@@ -898,7 +1053,10 @@ export class PixelsCentral {
         console.warn(
           `>> SCAN in ${startDelay}ms for Pixel ${unsigned32ToHex(pixelId)}`
         );
-        const id = setTimeout(() => this._scheduleScan(pixelId), startDelay);
+        const id = setTimeout(
+          () => this._scheduleScan(pixelId, data),
+          startDelay
+        );
         data.cancelScan = () => {
           console.warn(
             `>> CANCEL SCHEDULED SCAN TIMEOUT for Pixel ${unsigned32ToHex(pixelId)}`
@@ -949,15 +1107,12 @@ export class PixelsCentral {
       (id, i) => i < index && isConnected(getPixel(id)?.status)
     );
     if (idToDisco) {
-      console.warn(
-        `>> RELEASING connected Pixel ${unsigned32ToHex(idToDisco)} for Pixel ${unsigned32ToHex(pixelId)}`
+      console.log(
+        `[PixelsCentral] ⚠️ Disconnecting Pixel ${unsigned32ToHex(
+          idToDisco
+        )} on behalf of Pixel ${unsigned32ToHex(pixelId)}`
       );
       this._connectQueue.dequeue(idToDisco);
-      return idToDisco;
-    } else {
-      console.log(
-        `>> NO CONN TO RELEASE for Pixel ${unsigned32ToHex(pixelId)}`
-      );
     }
     // Notify
     this._emitEvent("onConnectionLimitReached", {
@@ -990,7 +1145,7 @@ export class PixelsCentral {
         // Allow again for scanning to release a connection
         // (or extend the current scan time window)
         data.scanEndTime = 0;
-        this._scheduleScan(pixelId);
+        this._scheduleScan(pixelId, data);
       }
     } else {
       // Need to first discover dice to access its Pixel instance,
@@ -1016,12 +1171,19 @@ export class PixelsCentral {
         this._emitEvent("connectQueue", this.connectQueue);
       });
       this._connectQueue.addListener("dequeued", (pixelId) => {
+        console.log(
+          `[PixelsCentral] Pixel ${unsigned32ToHex(pixelId)} with status=${getPixel(pixelId)?.status} removed from connect queue`
+        );
         // Cancel any pending connection attempt and scan request
         const data = this._pixels.get(pixelId);
         data?.cancelNextConnect?.();
         data?.cancelScan?.();
         // Disconnect
-        if (!getScheduler(pixelId).cancelConnecting()) {
+        if (
+          !getScheduler(pixelId).cancelConnecting() &&
+          // If doing a DFU, let it take care of disconnecting
+          this._pixelInDFU !== pixelId
+        ) {
           getScheduler(pixelId).schedule({ type: "disconnect" });
         }
         this._emitEvent("connectQueue", this.connectQueue);
