@@ -69,8 +69,8 @@ function SystemInfoPage({
               window.height
             )}`}
           </Body>
-          <Body>Pixel Ratio: {PixelRatio.get()}</Body>
-          <Body>Font Scale: {PixelRatio.getFontScale()}</Body>
+          <Body>Pixel Ratio: {PixelRatio.get().toFixed(1)}</Body>
+          <Body>Font Scale: {PixelRatio.getFontScale().toFixed(1)}</Body>
           <Body>Reduced Motion: {reducedMotion ? "yes" : "no"}</Body>
           <Body>
             Locales:{" "}
