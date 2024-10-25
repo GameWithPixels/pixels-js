@@ -136,7 +136,7 @@ export function getScannedPixel(
         currentFaceIndex: faceIndex,
         timestamp: new Date(advData.timestamp),
       };
-      ScannedDevicesRegistry.register(
+      ScannedDevicesRegistry.store(
         scannedPixel,
         customPixelService ? "custom" : "legacy"
       );

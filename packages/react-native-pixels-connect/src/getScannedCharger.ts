@@ -67,7 +67,7 @@ export function getScannedCharger(
         isCharging,
         timestamp: new Date(advData.timestamp),
       };
-      ScannedDevicesRegistry.register(scannedCharger);
+      ScannedDevicesRegistry.store(scannedCharger);
       return scannedCharger;
     } else {
       console.error(`Pixel ${name}: Received invalid advertising data`);

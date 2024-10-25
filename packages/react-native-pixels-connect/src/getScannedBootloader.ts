@@ -7,6 +7,7 @@ import {
 import { ScannedPeripheral } from "@systemic-games/react-native-bluetooth-le";
 
 import { ScannedBootloader } from "./ScannedBootloader";
+import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
 
 // Function processing scan events from Central and returning a ScannedPixel
 export function getScannedBootloader(
@@ -24,7 +25,7 @@ export function getScannedBootloader(
   // Infer the Pixel ID from the name
   const pixelId = getPixelIdFromName(name);
   if (pixelId) {
-    return {
+    const scannedBootloader = {
       type: "bootloader",
       deviceType: isPixelBootloaderName(name, "charger") ? "charger" : "die",
       systemId: peripheral.systemId,
@@ -33,6 +34,8 @@ export function getScannedBootloader(
       address: peripheral.address,
       rssi: advData.rssi,
       timestamp: new Date(advData.timestamp),
-    };
+    } as const;
+    ScannedDevicesRegistry.store(scannedBootloader);
+    return scannedBootloader;
   }
 }
