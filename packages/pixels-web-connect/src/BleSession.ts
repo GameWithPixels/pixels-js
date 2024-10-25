@@ -81,7 +81,8 @@ export default class BleSession extends PixelSession {
       //     ? ConnectionEventReasonValues.LinkLoss
       //     : ConnectionEventReasonValues.Timeout;
       // }
-
+      const name = device.name;
+      name && this._setName(name);
       // Notify disconnection
       this._notifyConnectionEvent("disconnected");
     };
@@ -97,10 +98,6 @@ export default class BleSession extends PixelSession {
   }
 
   async connect(timeoutMs: number): Promise<void> {
-    // Update name
-    const name = this._device.name;
-    name && this._setName(name);
-
     const server = this._device.gatt;
     if (!server) {
       throw new BluetoothError("Gatt server not available");
