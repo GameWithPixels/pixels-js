@@ -1,4 +1,3 @@
-import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Color,
   ColorUtils,
@@ -10,8 +9,14 @@ import { reaction } from "mobx";
 import React from "react";
 import { Alert } from "react-native";
 
+import { PairedDie } from "./PairedDie";
 import { useAppSelector, useAppStore } from "./hooks";
-import { AppStore, pairedDiceSelectors } from "./store";
+import {
+  AppStore,
+  pairedDiceSelectors,
+  RootState,
+  startAppListening,
+} from "./store";
 
 import { PixelsCentral } from "~/features/dice";
 import {
@@ -24,12 +29,14 @@ import {
 import {
   addDieRoll,
   addRollerEntry,
+  Library,
   readProfile,
   updatePairedDieBrightness,
   updatePairedDieFirmwareTimestamp,
   updatePairedDieName,
   updatePairedDieProfileHash,
 } from "~/features/store";
+import { AppProfileData } from "~/features/store/library";
 import { logError } from "~/features/utils";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
@@ -85,6 +92,35 @@ function remoteActionListener(
   }
 }
 
+function programProfileIfNeeded(
+  pairedDie: PairedDie,
+  central: PixelsCentral,
+  getState: () => RootState
+): void {
+  const {
+    library,
+    appSettings: { diceBrightnessFactor },
+  } = getState();
+  const profileData = library.profiles.entities[pairedDie.profileUuid];
+  if (
+    profileData &&
+    (pairedDie.profileHash !== profileData.hash ||
+      !isSameBrightness(
+        pairedDie.brightness,
+        profileData.brightness * diceBrightnessFactor
+      ))
+  ) {
+    const dataSet = createProfileDataSetWithOverrides(
+      readProfile(pairedDie.profileUuid, library),
+      diceBrightnessFactor
+    );
+    central.scheduleOperation(pairedDie.pixelId, {
+      type: "programProfile",
+      dataSet,
+    });
+  }
+}
+
 export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   const store = useAppStore();
   const [central] = React.useState(() => new PixelsCentral());
@@ -101,9 +137,32 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         disposers.get(pixel.pixelId)?.();
 
         // Die name
-        const onRename = ({ pixelId, name }: PixelMutableProps) =>
-          store.dispatch(updatePairedDieName({ pixelId, name }));
+        const onRename = ({ pixelId, name }: PixelMutableProps) => {
+          const pairedDie = pairedDiceSelectors.selectByPixelId(
+            store.getState(),
+            pixelId
+          );
+          if (pairedDie && pairedDie.name !== name) {
+            store.dispatch(updatePairedDieName({ pixelId, name }));
+          }
+        };
         pixel.addPropertyListener("name", onRename);
+
+        // Show dialog on rename error
+        const onRenameDisposer = central.addOperationStatusListener(
+          pixel.pixelId,
+          "rename",
+          (ev) => {
+            if (ev.status === "failed") {
+              // Show dialog on rename error
+              Alert.alert(
+                "Failed to Rename Die",
+                "An error occurred while renaming the die\n" + String(ev.error),
+                [{ text: "OK", style: "default" }]
+              );
+            }
+          }
+        );
 
         // Firmware date
         const onFwDate = ({ pixelId, firmwareDate }: PixelMutableProps) => {
@@ -125,90 +184,66 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         };
         pixel.addPropertyListener("firmwareDate", onFwDate);
 
-        // Update name and firmware timestamp on connection
-        const onStatus = ({ status }: PixelMutableProps) => {
-          if (status === "ready") {
-            onRename(pixel);
-            onFwDate(pixel);
-            onProfileHash(pixel);
-            if (
-              store
-                .getState()
-                .pairedDice.paired.some((d) => d.pixelId === pixel.pixelId)
-            ) {
-              setCheckProfiles();
-            }
-          }
-        };
-        pixel.addPropertyListener("status", onStatus);
-
-        const onProgramProfileDisposer = central.addOperationStatusListener(
-          pixel.pixelId,
-          "programProfile",
-          (ev) => {
-            if (ev.status === "succeeded") {
-              // Update paired die brightness
-              store.dispatch(
-                updatePairedDieBrightness({
-                  pixelId: pixel.pixelId,
-                  brightness: ev.operation.dataSet.brightness / 255,
-                })
-              );
-            }
-          }
-        );
-        const onRenameDisposer = central.addOperationStatusListener(
-          pixel.pixelId,
-          "rename",
-          (ev) => {
-            if (ev.status === "failed") {
-              // Show dialog on rename error
-              Alert.alert(
-                "Failed to Rename Die",
-                "An error occurred while renaming the die\n" + String(ev.error),
-                [{ text: "OK", style: "default" }]
-              );
-            }
-          }
-        );
-
         // Profile
-        const onProfileHash = ({
-          pixelId,
-          name,
-          profileHash: hash,
-        }: PixelMutableProps) => {
+        const onProfileHash = ({ pixelId, profileHash }: PixelMutableProps) => {
           const pairedDie = pairedDiceSelectors.selectByPixelId(
             store.getState(),
             pixelId
           );
           if (pairedDie) {
-            console.log(
-              `[Pixel ${name}] Got profile hash ${unsigned32ToHex(hash)} ` +
-                `(stored hash ${unsigned32ToHex(pairedDie.profileHash)})`
-            );
-            if (pairedDie.profileHash !== hash) {
+            if (pairedDie.profileHash !== profileHash) {
               store.dispatch(
                 updatePairedDieProfileHash({
                   pixelId: pixel.pixelId,
-                  hash,
+                  hash: profileHash,
                 })
               );
             }
+            // Update paired die brightness if profile is being programmed
+            const op = central.getCurrentOperation(pixelId);
+            if (op?.type === "programProfile") {
+              // Note: if the die has restarted during programming, and reconnected
+              //       before the operation has failed, the brightness will still be updated
+              // Update paired die brightness
+              store.dispatch(
+                updatePairedDieBrightness({
+                  pixelId: pixel.pixelId,
+                  brightness: op.dataSet.brightness / 255,
+                })
+              );
+            }
+            // Always check if profile needs to be programmed
+            programProfileIfNeeded(pairedDie, central, store.getState);
           }
         };
         pixel.addPropertyListener("profileHash", onProfileHash);
 
+        // Update name, firmware timestamp and profile hash on connection
+        const onStatus = ({ status }: PixelMutableProps) => {
+          if (status === "ready") {
+            onRename(pixel);
+            onFwDate(pixel);
+            onProfileHash(pixel);
+          }
+        };
+        pixel.addPropertyListener("status", onStatus);
+
         // Rolls
         const onRoll = (roll: number) => {
-          store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
-          store.dispatch(
-            addRollerEntry({
-              pixelId: pixel.pixelId,
-              dieType: pixel.dieType,
-              value: roll,
-            })
+          const pairedDie = pairedDiceSelectors.selectByPixelId(
+            store.getState(),
+            pixel.pixelId
           );
+          if (pairedDie) {
+            store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
+            store.dispatch(
+              addRollerEntry({
+                pixelId: pixel.pixelId,
+                dieType: pixel.dieType,
+                value: roll,
+              })
+            );
+          }
         };
         pixel.addEventListener("roll", onRoll);
 
@@ -224,7 +259,6 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           pixel.removePropertyListener("profileHash", onProfileHash);
           pixel.removeEventListener("roll", onRoll);
           pixel.removeEventListener("remoteAction", onRemoteAction);
-          onProgramProfileDisposer();
           onRenameDisposer();
         });
       }
@@ -274,15 +308,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   }, [central, store]);
 
   // Monitor paired dice
-  const [checkProfiles, setCheckProfiles] = React.useReducer(
-    (x) => (x + 1) & 0xffff, // See useForceUpdate()
-    0
-  );
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
-  const profiles = useAppSelector((state) => state.library.profiles);
-  const appBrightness = useAppSelector(
-    (state) => state.appSettings.diceBrightnessFactor
-  );
   React.useEffect(() => {
     // Paired dice may have changed since the last render
     const newPairedDice = store.getState().pairedDice.paired;
@@ -306,46 +332,37 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     }
     // Keep pairedDice in dependencies!
   }, [central, pairedDice, store]);
+
+  // Re-program profiles when app brightness changes
+  const appBrightness = useAppSelector(
+    (state) => state.appSettings.diceBrightnessFactor
+  );
   React.useEffect(() => {
-    // Paired dice may have changed since the last render
-    const newPairedDice = store.getState().pairedDice.paired;
-    // Check if on-dice profile matches the expected hash
-    for (const d of newPairedDice) {
-      const { diceBrightnessFactor } = store.getState().appSettings;
-      const { library } = store.getState();
-      // Check profile
-      const { profileUuid } = d;
-      const profileData = library.profiles.entities[profileUuid];
-      const profileHash = profileData?.hash;
-      if (
-        profileHash &&
-        (profileHash !== d.profileHash ||
-          !isSameBrightness(
-            profileData.brightness * diceBrightnessFactor,
-            d.brightness
-          ))
-      ) {
-        const dataSet = createProfileDataSetWithOverrides(
-          readProfile(profileUuid, library),
-          diceBrightnessFactor
-        );
-        central.scheduleOperation(d.pixelId, {
-          type: "programProfile",
-          dataSet,
-        });
-      }
+    for (const d of store.getState().pairedDice.paired) {
+      programProfileIfNeeded(d, central, store.getState);
     }
-  }, [
-    central,
-    store,
-    // Keep to update profiles on app brightness change
-    appBrightness,
-    // Keep to update profiles on-dice change
-    checkProfiles,
-    pairedDice,
-    // Keep to update profiles on profile data change
-    profiles,
-  ]);
+  }, [central, store, appBrightness]);
+
+  // Watch profiles changes
+  React.useEffect(() => {
+    // Using the proper 'addAppListener' displays a Redux 'non serializable' error check
+    // const unsubscribe = store.dispatch(addAppListener({
+    return startAppListening({
+      predicate: (action) => {
+        return Library.Profiles.update.match(action);
+      },
+      effect: (action, listenerApi) => {
+        const { uuid } = action.payload as AppProfileData;
+        const pairedDie = pairedDiceSelectors.selectByProfileUuid(
+          listenerApi.getState(),
+          uuid
+        );
+        pairedDie &&
+          programProfileIfNeeded(pairedDie, central, listenerApi.getState);
+      },
+    });
+    // return () => unsubscribe.payload.unsubscribe(); // For some reason unsubscribe is undefined
+  }, [central, store]);
 
   // Profiles edition
   const [editableProfileStoresMap] = React.useState(

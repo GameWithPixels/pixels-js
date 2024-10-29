@@ -74,9 +74,9 @@ const PairedDiceSlice = createSlice({
 
     removePairedDie(state, action: PayloadAction<number>) {
       const { payload } = action;
-      log("removePairedDie", payload);
       const index = state.paired.findIndex((i) => i.pixelId === payload);
       if (index >= 0) {
+        log("removePairedDie", payload);
         const die = state.paired[index];
         state.paired.splice(index, 1);
         const uIndex = state.unpaired.findIndex(
@@ -84,9 +84,7 @@ const PairedDiceSlice = createSlice({
         );
         if (uIndex >= 0) {
           logError(
-            `PairedDiceSlice.removePairedDie: die was both paired and unpaired, pixelId is ${unsigned32ToHex(
-              payload
-            )}`
+            `removePairedDie: die ${unsigned32ToHex(payload)} was both paired and unpaired`
           );
           state.unpaired[uIndex] = die;
         } else {
@@ -103,9 +101,9 @@ const PairedDiceSlice = createSlice({
       }>
     ) {
       const { payload } = action;
-      log("updatePairedDieName", payload);
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
-      if (die) {
+      if (die && die.name !== payload.name) {
+        log("updatePairedDieName", payload);
         die.name = payload.name;
       }
     },

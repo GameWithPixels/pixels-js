@@ -1,10 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Action,
+  addListener,
   combineReducers,
   configureStore,
+  createListenerMiddleware,
   Reducer,
   ThunkAction,
+  TypedAddListener,
+  TypedStartListening,
 } from "@reduxjs/toolkit";
 import {
   createMigrate,
@@ -132,6 +136,9 @@ const rootReducer = combineReducers({
   appTransient: appTransientReducer,
 });
 
+// Create the middleware instance and methods
+const listenerMiddleware = createListenerMiddleware();
+
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) => {
@@ -142,7 +149,9 @@ export const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     });
-    return middleware;
+    const withListener = middleware.prepend(listenerMiddleware.middleware);
+    // @ts-ignore
+    return withListener as typeof middleware;
   },
 });
 
@@ -159,6 +168,16 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 >;
 
 export type LibraryState = RootState["library"];
+
+export const startAppListening =
+  listenerMiddleware.startListening as TypedStartListening<
+    RootState,
+    AppDispatch
+  >;
+export const addAppListener = addListener as TypedAddListener<
+  RootState,
+  AppDispatch
+>;
 
 export const profilesSelectors = Object.freeze(
   profilesAdapter.getSelectors<RootState>((state) => state.library.profiles)
