@@ -9,7 +9,6 @@ import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
 import { RollsHistoryScreen } from "./RollsHistoryScreen";
 
-import { PairedDie } from "~/app/PairedDie";
 import {
   getStackNavigationOptions,
   HomeStackParamList,
@@ -25,9 +24,9 @@ function SelectedPairedDieProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [pairedDie, setPairedDie] = React.useState<PairedDie>();
+  const [pairedDieId, setPairedDieId] = React.useState<number>();
   return (
-    <SelectedPairedDieContext.Provider value={{ pairedDie, setPairedDie }}>
+    <SelectedPairedDieContext.Provider value={{ pairedDieId, setPairedDieId }}>
       {children}
     </SelectedPairedDieContext.Provider>
   );

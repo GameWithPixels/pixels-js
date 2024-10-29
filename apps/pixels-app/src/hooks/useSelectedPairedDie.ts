@@ -5,26 +5,28 @@ import { useAppSelector } from "~/app/hooks";
 import { pairedDiceSelectors } from "~/app/store";
 
 export interface SelectedPairedDieState {
-  pairedDie?: PairedDie;
-  setPairedDie: (pairedDie?: PairedDie) => void;
+  pairedDieId?: number;
+  setPairedDieId: (pairedDieId?: number) => void;
 }
 
 export const SelectedPairedDieContext =
   React.createContext<SelectedPairedDieState>({
-    setPairedDie: () => {},
+    setPairedDieId: () => {},
   });
 
 export function useSelectedPairedDie(): PairedDie | undefined {
-  return React.useContext(SelectedPairedDieContext).pairedDie;
+  const pixelId = React.useContext(SelectedPairedDieContext).pairedDieId;
+  return useAppSelector((state) =>
+    pixelId ? pairedDiceSelectors.selectByPixelId(state, pixelId) : undefined
+  );
 }
 
 export function useSetSelectedPairedDie(
   pixelId: number
 ): PairedDie | undefined {
-  const pairedDie = useAppSelector((state) =>
-    pairedDiceSelectors.selectByPixelId(state, pixelId)
+  const { setPairedDieId } = React.useContext(SelectedPairedDieContext);
+  React.useEffect(() => setPairedDieId(pixelId), [pixelId, setPairedDieId]);
+  return useAppSelector((state) =>
+    pixelId ? pairedDiceSelectors.selectByPixelId(state, pixelId) : undefined
   );
-  const { setPairedDie } = React.useContext(SelectedPairedDieContext);
-  React.useEffect(() => setPairedDie(pairedDie), [pairedDie, setPairedDie]);
-  return pairedDie;
 }
