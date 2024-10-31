@@ -19,15 +19,21 @@ export function fixForScrollViewPadding(padding: number): void {
 
 // https://github.com/gorhom/react-native-bottom-sheet/issues/372#issuecomment-808793366
 export const androidBottomSheetSliderFix = {
-  activeOffsetY: Platform.OS === "android" ? [-1, 1] : undefined,
-  failOffsetX: Platform.OS === "android" ? [-5, 5] : undefined,
-};
+  activeOffsetY:
+    Platform.OS === "android"
+      ? ([-1, 1] as [activeOffsetYStart: number, activeOffsetYEnd: number])
+      : undefined,
+  failOffsetX:
+    Platform.OS === "android"
+      ? ([-5, 5] as [failOffsetXStart: number, failOffsetXEnd: number])
+      : undefined,
+} as const;
 
 // https://github.com/gorhom/react-native-bottom-sheet/issues/1674#issuecomment-1959923945
 export const bottomSheetAnimationConfigFix = {
   ...ANIMATION_CONFIGS,
   reduceMotion: ReduceMotion.Never,
-};
+} as const;
 
 export function isErrorNoUpdatePublished(error?: string): boolean {
   // We get this error is there is no published update for this build

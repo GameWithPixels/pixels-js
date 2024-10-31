@@ -140,7 +140,7 @@ export function SliderWithValue({
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <View
-      style={[{ flexDirection: "row", alignItems: "center", gap: 10 }, style]}
+      style={[{ flexDirection: "row", alignItems: "center", gap: 20 }, style]}
     >
       <View style={{ flexGrow: 1 }}>
         <SliderWrapper
@@ -177,7 +177,7 @@ export function SliderWithValue({
           setTimeout(() => inputRef.current?.focus(), 0);
         }}
       >
-        <Text>{inputValue + (percentage ? "%" : unit ?? "")}</Text>
+        <Text>{inputValue + (percentage ? "%" : (unit ?? ""))}</Text>
       </TouchableRipple>
       <Portal>
         <Dialog

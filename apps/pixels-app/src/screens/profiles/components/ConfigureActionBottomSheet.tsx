@@ -55,7 +55,7 @@ import {
   playActionSpeakText,
 } from "~/features/profiles";
 import { AnimationUtils } from "~/features/store/library";
-import { TrailingSpaceFix } from "~/fixes";
+import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import {
   useAppDfuFiles,
   useBottomSheetBackHandler,
@@ -363,7 +363,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   );
 });
 
-const PlayAnimationSlider = observer(function Slider({
+const PlayAnimationSlider = observer(function PlayAnimationSlider({
   children,
   value,
   isDefault,
@@ -595,8 +595,8 @@ const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
     <>
       <Text variant="titleMedium">Play</Text>
       <GradientButton
-        outline
         sentry-label="select-audio-clip"
+        style={{ marginHorizontal: 10 }}
         onPress={() => setClipPickerVisible(true)}
       >
         {clipName ?? "Select Audio Clip"}
@@ -850,7 +850,7 @@ export const ConfigureActionBottomSheet = observer(
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
         {...getBottomSheetProps(colors)}
-        // {...androidBottomSheetSliderFix}
+        {...androidBottomSheetSliderFix}
       >
         <RootSiblingParent>
           <ThemeProvider theme={theme}>
