@@ -25,19 +25,17 @@ const audioClipsSlice = createSlice({
 
     // Add only if new clip
     add(state, action: PayloadAction<AudioClipAsset>) {
-      console.log("ADD CLIP " + JSON.stringify(action.payload));
       const audioClip = action.payload;
+      logWrite("add", "audioClip", audioClip.uuid, audioClip.name);
       assert(audioClip.uuid.length, "AudioClipAsset must have a uuid");
       audioClipsAdapter.addOne(state, audioClip);
-      logWrite("add", "audioClip", audioClip.uuid, audioClip.name);
-      console.log("ADD CLIP OK");
     },
 
     // Remove existing clip
     remove(state, action: PayloadAction<string>) {
       const uuid = action.payload;
-      audioClipsAdapter.removeOne(state, uuid);
       logWrite("remove", "audioClip", uuid);
+      audioClipsAdapter.removeOne(state, uuid);
     },
   },
 });

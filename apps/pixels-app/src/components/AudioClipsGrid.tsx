@@ -1,7 +1,8 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
 import React from "react";
-import { View, ViewProps } from "react-native";
-import { Text } from "react-native-paper";
+import { StyleSheet, View, ViewProps } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
@@ -9,14 +10,32 @@ import { AudioClipAsset } from "~/features/store/libraryAssets";
 
 export function AudioClipCard({
   name,
+  fileType,
   ...props
-}: { name: string } & Omit<TouchableCardProps, "children">) {
+}: { name: string; fileType: string } & Omit<
+  TouchableCardProps,
+  "children" | "contentStyle"
+>) {
+  const { colors } = useTheme();
   return (
-    <TouchableCard {...props}>
-      <Text>{name}</Text>
+    <TouchableCard contentStyle={{ paddingVertical: 20 }} {...props}>
+      <View style={{ alignItems: "center", gap: 20 }}>
+        <MaterialCommunityIcons
+          name="waveform"
+          size={48}
+          color={colors.onSurface}
+        />
+        <Text variant="titleMedium" numberOfLines={1} style={styles.cardText}>
+          {name}
+        </Text>
+      </View>
+      <Text variant="bodySmall" numberOfLines={1} style={styles.cardText}>
+        ({fileType})
+      </Text>
     </TouchableCard>
   );
 }
+
 function AudioClipsColumn({
   clips,
   selected,
@@ -30,6 +49,7 @@ function AudioClipsColumn({
         <AudioClipCard
           key={c.uuid}
           name={c.name}
+          fileType={c.type}
           selected={c.uuid === selected}
           onPress={() => onSelectClip?.(c.uuid)}
         />
@@ -67,3 +87,7 @@ export function AudioClipsGrid({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  cardText: { width: "100%", textAlign: "center" },
+});

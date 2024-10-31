@@ -46,13 +46,8 @@ async function importAudioClip(store: AppStore): Promise<void> {
       });
       const typeIndex = file.name.lastIndexOf(".");
       const type = typeIndex >= 0 ? file.name.slice(typeIndex + 1) : "";
-      store.dispatch(
-        LibraryAssets.AudioClips.add({
-          uuid,
-          name: file.name,
-          type,
-        })
-      );
+      const name = typeIndex >= 0 ? file.name.slice(0, typeIndex) : file.name;
+      store.dispatch(LibraryAssets.AudioClips.add({ uuid, name, type }));
     }
   } catch (e: any) {
     logError(`Failed to import audio clip: ${e?.message ?? e}`);
@@ -100,17 +95,17 @@ export function PickAudioClipBottomSheet({
           <BottomSheetView
             style={{
               flex: 1,
-              paddingHorizontal: 10,
+              paddingHorizontal: 20,
               paddingBottom,
               gap: 10,
             }}
           >
-            <OutlineButton onPress={() => importAudioClip(store)}>
-              Import Audio Clip
-            </OutlineButton>
             <Text variant="titleMedium" style={AppStyles.selfCentered}>
               Select Audio Clip
             </Text>
+            <OutlineButton onPress={() => importAudioClip(store)}>
+              Import Audio Clip
+            </OutlineButton>
             <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 10 }}>
               <AudioClipsGrid
                 clips={allClips}
