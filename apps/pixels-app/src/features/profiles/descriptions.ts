@@ -203,8 +203,10 @@ export function getDieTypeAndColorwayLabel({
 }
 
 export function getFacesAsText(faces: number[]): string {
-  if (faces.length <= 1) {
-    return faces[0]?.toString() ?? "?";
+  if (!faces.length) {
+    return "(non specified)";
+  } else if (faces.length === 1) {
+    return String(faces[0]);
   } else {
     const sorted = [...faces].sort((a, b) => a - b).reverse();
     if (

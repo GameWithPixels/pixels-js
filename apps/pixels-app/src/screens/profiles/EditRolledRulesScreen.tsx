@@ -489,11 +489,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
         >
           {EditorActionTypes.map((t, i) => {
             const actionRules = rolledRules
-              .filter(
-                (r) =>
-                  (r.condition as Profiles.ConditionRolled).faces?.length &&
-                  r.actions.find((a) => a.type === t)
-              )
+              .filter((r) => r.actions.find((a) => a.type === t))
               .sort(rolledConditionComparator);
             return (
               <InnerScrollView key={t} ref={scrollViewRefs[i]}>
