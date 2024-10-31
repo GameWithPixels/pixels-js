@@ -1,7 +1,6 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
 import React from "react";
+import { Alert } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
@@ -10,49 +9,14 @@ import { AudioClipsGrid } from "./AudioClipsGrid";
 import { OutlineButton } from "./buttons";
 
 import { useAppStore } from "~/app/hooks";
-import { AppStore } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
-import { LibraryAssets } from "~/features/store";
-import { generateUuid, logError } from "~/features/utils";
+import { importAudioClip, removeAudioClip } from "~/features/audio";
 import {
   useAudioClipsList,
   useBottomSheetBackHandler,
   useBottomSheetPadding,
 } from "~/hooks";
-
-async function importAudioClip(store: AppStore): Promise<void> {
-  try {
-    const files = await DocumentPicker.getDocumentAsync({
-      type: "audio/*",
-      copyToCacheDirectory: true,
-      multiple: true,
-    });
-    for (const file of files.assets ?? []) {
-      let uuid = generateUuid();
-      while (store.getState().libraryAssets.audioClips.entities[uuid]) {
-        uuid = generateUuid();
-      }
-      const audioDir = FileSystem.documentDirectory + "audioClips/";
-      const pathname = audioDir + uuid;
-      if ((await FileSystem.getInfoAsync(audioDir)).exists) {
-        await FileSystem.deleteAsync(pathname, { idempotent: true });
-      } else {
-        await FileSystem.makeDirectoryAsync(audioDir);
-      }
-      await FileSystem.moveAsync({
-        from: file.uri,
-        to: pathname,
-      });
-      const typeIndex = file.name.lastIndexOf(".");
-      const type = typeIndex >= 0 ? file.name.slice(typeIndex + 1) : "";
-      const name = typeIndex >= 0 ? file.name.slice(0, typeIndex) : file.name;
-      store.dispatch(LibraryAssets.AudioClips.add({ uuid, name, type }));
-    }
-  } catch (e: any) {
-    logError(`Failed to import audio clip: ${e?.message ?? e}`);
-  }
-}
 
 export function PickAudioClipBottomSheet({
   audioClipUuid,
@@ -104,16 +68,33 @@ export function PickAudioClipBottomSheet({
               Select Audio Clip
             </Text>
             <OutlineButton onPress={() => importAudioClip(store)}>
-              Import Audio Clip
+              Import Audio File
             </OutlineButton>
             <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 10 }}>
               <AudioClipsGrid
                 clips={allClips}
                 numColumns={2}
                 selected={audioClipUuid}
-                onSelectClip={onSelectAudioClip}
+                onPressClip={onSelectAudioClip}
+                onLongPressClip={(uuid) =>
+                  Alert.alert(
+                    "Remove Audio Clip?",
+                    "This will remove the audio clip from the app, but it won't delete the original file.",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Remove",
+                        style: "destructive",
+                        onPress: () => removeAudioClip(uuid, store),
+                      },
+                    ]
+                  )
+                }
               />
             </GHScrollView>
+            <Text variant="bodySmall" style={AppStyles.selfCentered}>
+              Long press on Audio Clip to remove it.
+            </Text>
           </BottomSheetView>
           <IconButton
             icon="close"
