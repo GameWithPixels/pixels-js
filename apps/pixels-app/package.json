@@ -38,7 +38,7 @@
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
-    "@reduxjs/toolkit": "~1.9.5",
+    "@reduxjs/toolkit": "~1.9.7",
     "@sentry/react-native": "~5.33.1",
     "@systemic-games/pixels-three": "*",
     "@systemic-games/react-native-bluetooth-le": "*",
