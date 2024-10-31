@@ -131,7 +131,11 @@ export class PriorityQueue {
    * @param type A case-sensitive string representing the event type.
    */
   removeAllListeners<K extends keyof PriorityQueueEventMap>(type?: K): void {
-    this._evEmitter.removeAllListeners(type);
+    if (type === undefined) {
+      this._evEmitter.removeAllListeners();
+    } else {
+      this._evEmitter.removeAllListeners(type);
+    }
   }
 
   private _emitEvent<T extends keyof PriorityQueueEventMap>(
