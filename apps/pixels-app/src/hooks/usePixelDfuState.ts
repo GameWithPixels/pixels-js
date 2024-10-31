@@ -6,12 +6,10 @@ import { usePixelsCentral } from "./usePixelsCentral";
 export function usePixelDfuState(pixelId?: number): {
   state?: DfuState | "scanning";
   progress?: number;
-  error?: Error;
 } {
   const central = usePixelsCentral();
   const [state, setState] = React.useState<DfuState | "scanning">();
   const [progress, setProgress] = React.useState<number>();
-  const [error, setError] = React.useState<Error>();
   React.useEffect(() => {
     setState(undefined);
     setProgress(undefined);
@@ -21,9 +19,6 @@ export function usePixelDfuState(pixelId?: number): {
         ({ pixelId: id, state }) => {
           if (id === pixelId) {
             setState(state);
-            if (state !== "errored") {
-              setError(undefined);
-            }
           }
         }
       );
@@ -31,17 +26,11 @@ export function usePixelDfuState(pixelId?: number): {
         "onDfuProgress",
         ({ pixelId: id, progress }) => id === pixelId && setProgress(progress)
       );
-      const removeOnError = central.addOperationStatusListener(
-        pixelId,
-        "updateFirmware",
-        (op) => op.status === "failed" && setError(op.error)
-      );
       return () => {
         removeOnState();
         removeOnProgress();
-        removeOnError();
       };
     }
   }, [central, pixelId]);
-  return { state, progress, error };
+  return { state, progress };
 }

@@ -3,6 +3,8 @@ import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Pixel,
   PixelInfo,
+  PixelInfoNotifier,
+  usePixelInfoProp,
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -24,7 +26,6 @@ import Animated, {
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 import { DieWireframe } from "./icons";
 
-import { getPixelStatusLabel } from "~/features/profiles";
 import {
   useBatteryStateLabel,
   useIsDieUpdatingFirmware,
@@ -35,30 +36,55 @@ import {
   useRegisteredPixel,
 } from "~/hooks";
 
-function TextStatus({
-  pixel,
+function usePixelRssiLabel(pixel?: PixelInfoNotifier) {
+  const rssi = usePixelInfoProp(pixel, "rssi");
+  return rssi !== undefined ? `  📶 ${rssi} dBm` : undefined;
+}
+
+function TextDfuState({
   state,
   progress,
   ...props
-}: {
-  pixel: Pixel;
-  state?: DfuState | "scanning";
-  progress?: number;
-} & Omit<TextProps<string>, "children">) {
-  const status = usePixelStatus(pixel);
-  const rollLabel = useRollStateLabel(pixel);
-  const batteryLabel = useBatteryStateLabel(pixel);
+}: { state: DfuState | "scanning"; progress?: number } & Omit<
+  TextProps<string>,
+  "children"
+>) {
   return (
     <Text {...props}>
-      {state
-        ? `Updating: ${
-            state === "uploading" ? `uploading ${progress ?? 0}%` : state
-          }`
-        : status === "ready"
-          ? (batteryLabel ?? "") +
-            (batteryLabel && rollLabel ? ", " : "") +
-            (rollLabel ?? "")
-          : getPixelStatusLabel(status)}
+      {`Updating: ${state === "uploading" ? `uploading ${progress ?? 0}%` : state}`}
+    </Text>
+  );
+}
+
+function TextStatus({
+  pixel,
+  ...props
+}: {
+  pixel: Pixel;
+} & Omit<TextProps<string>, "children">) {
+  const rollLabel = useRollStateLabel(pixel);
+  const batteryLabel = useBatteryStateLabel(pixel);
+  const rssiLabel = usePixelRssiLabel(pixel);
+  return (
+    <Text {...props}>
+      {(batteryLabel ?? "") +
+        (rssiLabel ?? "") +
+        ((rssiLabel ?? batteryLabel) && rollLabel ? " - " : "") +
+        (rollLabel ?? "")}
+    </Text>
+  );
+}
+
+function TextAvailability({
+  notifier,
+  ...props
+}: {
+  notifier?: PixelInfoNotifier;
+} & Omit<TextProps<string>, "children">) {
+  const rssiLabel = usePixelRssiLabel(notifier);
+  return (
+    <Text {...props}>
+      {notifier ? `Available ${rssiLabel ?? ""}` : "Unavailable"}
     </Text>
   );
 }
@@ -95,26 +121,23 @@ function PixelDfuItem({
   const pixel = useRegisteredPixel(pairedDie.pixelId);
   const status = usePixelStatus(pixel);
   const rollState = usePixelProp(pixel, "rollState");
+
   // DFU
   const availability = usePixelDfuAvailability(pairedDie.pixelId);
-  const { state, progress, error } = usePixelDfuState(pairedDie.pixelId);
-  const uploading = state === "starting" || state === "uploading";
+  const { state, progress } = usePixelDfuState(pairedDie.pixelId);
   const updating = useIsDieUpdatingFirmware(pairedDie.pixelId);
-  // Scanning
+
+  // Scanning, we want a reference to the notifier
   const central = usePixelsCentral();
-  const [scanned, setScanned] = React.useState(false);
-  const [scanning, setScanning] = React.useState(
-    central.scanStatus === "scanning"
-  );
+  const [notifier, setNotifier] = React.useState<PixelInfoNotifier>();
   const lastScannedRef = React.useRef(false);
   React.useEffect(() => {
     return central.addListener("scanStatus", (status) => {
-      setScanning(status === "scanning");
       if (status === "starting") {
         lastScannedRef.current = false;
       } else if (status === "stopped" && !lastScannedRef.current) {
-        // Mark as not scanned
-        setScanned(false);
+        // Remove notifier if not found during this last scan
+        setNotifier(undefined);
       }
     });
   }, [central, pairedDie]);
@@ -122,13 +145,13 @@ function PixelDfuItem({
     return central.addListener("onPixelScanned", ({ status, notifier }) => {
       if (notifier.pixelId === pairedDie.pixelId) {
         lastScannedRef.current = status === "scanned";
-        setScanned(lastScannedRef.current);
+        setNotifier(lastScannedRef.current ? notifier : undefined);
       }
     });
   }, [central, pairedDie]);
 
   const connected = status === "ready" || status === "identifying";
-  const unavailable = !connected && !state && !scanned;
+  const unavailable = !connected && !state && !notifier;
   const { colors } = useTheme();
   const color = unavailable ? colors.onSurfaceDisabled : colors.onSurface;
   return (
@@ -139,6 +162,7 @@ function PixelDfuItem({
       }
       thinBorder
       flash={
+        !updating &&
         status === "ready" &&
         (rollState === "rolling" || rollState === "handling")
       }
@@ -148,7 +172,7 @@ function PixelDfuItem({
           alignItems: "stretch",
           paddingHorizontal: 20,
           paddingVertical: 5,
-          gap: 20,
+          gap: 10,
         },
         contentStyle,
       ]}
@@ -164,26 +188,34 @@ function PixelDfuItem({
           {pairedDie.name}
         </Text>
         {/* This view makes sure the text properly wraps and leave space for the icon */}
-        <View style={{ flexDirection: "row" }}>
-          {pixel && (connected || state) && !error ? (
-            <TextStatus pixel={pixel} state={state} progress={progress} />
+        <View style={{ flexDirection: "row", flexShrink: 1 }}>
+          {state ? (
+            <TextDfuState
+              state={state}
+              progress={progress}
+              numberOfLines={1}
+              style={{ flex: 1, color }}
+            />
+          ) : pixel && connected ? (
+            <TextStatus
+              pixel={pixel}
+              numberOfLines={1}
+              style={{ flex: 1, color }}
+            />
           ) : (
-            <Text style={{ flex: 1, color }}>
-              {error
-                ? String(error)
-                : scanned
-                  ? "Available"
-                  : scanning && updating
-                    ? "Looking for die..."
-                    : "Unavailable"}
-            </Text>
+            <TextAvailability
+              notifier={notifier}
+              numberOfLines={1}
+              style={{ flex: 1, color }}
+            />
           )}
         </View>
       </View>
       <View style={{ alignSelf: "center" }}>
-        {error ? (
+        {state === "errored" && !updating ? (
+          // Show error when done updating
           <FontAwesome5 name="exclamation-triangle" size={24} color="red" />
-        ) : uploading ? (
+        ) : state === "uploading" ? (
           <BouncingView>
             <FontAwesome5 name="download" size={24} color={colors.primary} />
           </BouncingView>
