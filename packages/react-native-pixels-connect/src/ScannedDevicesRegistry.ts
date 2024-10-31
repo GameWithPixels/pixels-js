@@ -3,8 +3,22 @@ import { ScannedBootloader } from "./ScannedBootloader";
 import { ScannedCharger } from "./ScannedCharger";
 import { ScannedPixel } from "./ScannedPixel";
 
-const _pixelIdMap = new Map<number, ScannedDevice>();
-const _legacyDevices = new Set<number>();
+const _devicesMap = new Map<
+  number, // pixelId
+  {
+    dieOrCharger?: ScannedPixel | ScannedCharger;
+    bootloader?: ScannedBootloader;
+    legacyService?: boolean;
+  }
+>();
+
+function createEmptyItem(
+  pixelId: number
+): NonNullable<ReturnType<typeof _devicesMap.get>> {
+  const item = {};
+  _devicesMap.set(pixelId, item);
+  return item;
+}
 
 // For internal use only
 export const ScannedDevicesRegistry = {
@@ -12,21 +26,27 @@ export const ScannedDevicesRegistry = {
     scannedDevice: ScannedDevice,
     service: "custom" | "legacy" = "custom"
   ): void {
-    _pixelIdMap.set(scannedDevice.pixelId, scannedDevice);
-    if (service === "legacy") {
-      _legacyDevices.add(scannedDevice.pixelId);
+    const item =
+      _devicesMap.get(scannedDevice.pixelId) ??
+      createEmptyItem(scannedDevice.pixelId);
+    if (scannedDevice.type === "pixel" || scannedDevice.type === "charger") {
+      item.dieOrCharger = scannedDevice;
     } else {
-      _legacyDevices.delete(scannedDevice.pixelId);
+      item.bootloader = scannedDevice;
     }
+    item.legacyService = service === "legacy";
   },
 
   find(id: string | number): ScannedDevice | undefined {
     if (typeof id === "number") {
-      return _pixelIdMap.get(id);
+      const item = _devicesMap.get(id);
+      return item?.dieOrCharger ?? item?.bootloader;
     } else {
-      for (const entry of _pixelIdMap.values()) {
-        if (entry.systemId === id) {
-          return entry;
+      for (const item of _devicesMap.values()) {
+        if (item.dieOrCharger?.systemId === id) {
+          return item.dieOrCharger;
+        } else if (item.bootloader?.systemId === id) {
+          return item.bootloader;
         }
       }
     }
@@ -47,7 +67,19 @@ export const ScannedDevicesRegistry = {
     return scannedDevice?.type === "bootloader" ? scannedDevice : undefined;
   },
 
-  hasLegacyService(id: number): boolean {
-    return _legacyDevices.has(id);
+  hasLegacyService(id: string | number): boolean {
+    if (typeof id === "number") {
+      const item = _devicesMap.get(id);
+      return !!item?.legacyService;
+    } else {
+      for (const item of _devicesMap.values()) {
+        if (item.dieOrCharger?.systemId === id) {
+          return !!item?.legacyService;
+        } else if (item.bootloader?.systemId === id) {
+          return !!item?.legacyService;
+        }
+      }
+    }
+    return false;
   },
 } as const;
