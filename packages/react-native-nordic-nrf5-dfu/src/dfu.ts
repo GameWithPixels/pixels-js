@@ -138,6 +138,14 @@ export interface StartDfuOptions {
    * @remarks iOS only.
    */
   disableResume?: boolean;
+  /**
+   * Requested MTU size to use during the DFU process.
+   * By default 517 will be used, which is the highest supported
+   * by Android.
+   * @default 257.
+   * @remarks Android only.
+   */
+  requestedMtu?: number;
 }
 
 /**
@@ -223,12 +231,18 @@ export async function startDfu(
     }
     // Can't have any other URI scheme
     else if (filePath.indexOf(":/") >= 0) {
-      throw new Error("Paths with URI scheme are not supported: " + filePath);
+      throw new DfuInvalidArgumentError(
+        targetId,
+        "Paths with URI scheme are not supported: " + filePath
+      );
     }
     // Check platform
     if (Platform.OS === "ios") {
       if (typeof targetId !== "string") {
-        throw new Error(`targetId should be a string UUID`);
+        throw new DfuInvalidArgumentError(
+          targetId,
+          `targetId should be a string UUID on iOS bug got a ${typeof targetId}`
+        );
       }
       await DfuModule.startDfu(
         targetId,
@@ -243,7 +257,10 @@ export async function startDfu(
       );
     } else if (Platform.OS === "android") {
       if (typeof targetId !== "number") {
-        throw new Error(`targetId should be a number`);
+        throw new DfuInvalidArgumentError(
+          targetId,
+          `targetId should be a string UUID on Android bug got a ${typeof targetId}`
+        );
       }
       await DfuModule.startDfu(
         targetId,
@@ -258,10 +275,14 @@ export async function startDfu(
         options?.bootloaderScanTimeout ?? 0,
         options?.disallowForegroundService ?? false,
         options?.keepBond ?? false,
-        options?.restoreBond ?? false
+        options?.restoreBond ?? false,
+        options?.requestedMtu ?? -1
       );
     } else {
-      throw new Error("Platform not supported (not Android or iOS)");
+      throw new DfuError(
+        targetId,
+        "Platform not supported (neither Android nor iOS)"
+      );
     }
   } catch (error: any) {
     // Notify error

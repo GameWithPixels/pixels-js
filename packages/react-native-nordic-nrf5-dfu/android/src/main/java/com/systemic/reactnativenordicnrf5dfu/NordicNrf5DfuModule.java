@@ -89,6 +89,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             final boolean disallowForegroundService,
             final boolean keepBond,
             final boolean restoreBond,
+            final int requestedMtu,
             final Promise promise) {
         if (address == 0) {
             promise.reject(E_INVALID_ARGUMENT, "address must be different than zero");
@@ -142,13 +143,16 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
             // Default is 0 but a good value is 400 according to Nordic docs
             init.setPrepareDataObjectDelay(prepareDataObjectDelay == 0 ? 400 : prepareDataObjectDelay);
             init.setNumberOfRetries(numberOfRetries);
-            init.setRebootTime(rebootTime); //  Default is 0
+            init.setRebootTime(rebootTime); // Default is 0
             if (bootloaderScanTimeout > 0) {
-                init.setScanTimeout(bootloaderScanTimeout); //  Default is 5000
+                init.setScanTimeout(bootloaderScanTimeout); // Default is 5000
             }
             init.setForeground(!disallowForegroundService);
             init.setKeepBond(keepBond);
             init.setRestoreBond(restoreBond);
+            if (requestedMtu >= 0) {
+                init.setMtu(requestedMtu); // Default is 257, 0 will disable MTU request
+            }
 
             _dfuController = init.start(_reactContext, DfuService.class);
             _startDfuPromise = promise;
@@ -193,6 +197,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
     }
 
     private void sendStateUpdate(final String state, final String deviceAddress) {
+        Log.d(TAG, "DFU: Sending state " + state + " for " + deviceAddress);
         if (_listenerCount > 0) {
             WritableMap map = new WritableNativeMap();
             putTargetIdentifier(map, deviceAddress);
@@ -287,6 +292,7 @@ public class NordicNrf5DfuModule extends ReactContextBaseJavaModule implements L
 
         @Override
         public void onError(@NonNull final String deviceAddress, final int error, final int errorType, final String message) {
+            Log.e(TAG, "DFU: Error " + error + ", type=" + errorType + ", message=" + message + " for " + deviceAddress);
             String errorCode = E_DFU_ERROR;
             switch (errorType) {
                 case DfuBaseService.ERROR_TYPE_COMMUNICATION_STATE:
