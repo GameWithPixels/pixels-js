@@ -1,7 +1,9 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { usePixelStatus } from "@systemic-games/pixels-react";
+import { useForceUpdate, usePixelStatus } from "@systemic-games/pixels-react";
 import {
   Pixel,
+  PixelEventMap,
+  PixelRollState,
   PixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
 import { observer } from "mobx-react-lite";
@@ -49,30 +51,59 @@ const CardLabels = observer(function CardLabels({
   compact?: boolean;
 } & ViewProps) {
   const profile = useProfile(pairedDie.profileUuid);
-  const status = usePixelStatus(pixel);
-  const isReady = pixel && status === "ready";
-  // This hooks triggers a re-render on each roll event
-  const rolling = useIsPixelRolling(pixel, status);
-  // So we can use the rollState without needing another hook
-  const rolled = isReady && pixel.rollState === "rolled";
-  const [showRoll, setShowRoll] = React.useState(false);
   const modifiedProfile = useIsModifiedDieProfile(
     pairedDie.profileUuid,
     pairedDie.dieType
   );
 
-  // Show rolling/rolled message for a few seconds
+  // Ignore crooked and onFace roll states
+  const [rollState, setRollState] = React.useState<{
+    state: PixelRollState;
+    face: number;
+  }>();
+  const previousRollState = React.useRef<PixelRollState>();
+  const clearTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+  const forceUpdate = useForceUpdate();
   React.useEffect(() => {
-    let id: ReturnType<typeof setTimeout>;
-    if (!isReady) {
-      setShowRoll(false);
-    } else if (rolling) {
-      setShowRoll(true);
-    } else if (rolled) {
-      id = setTimeout(() => setShowRoll(false), 3000);
+    if (pixel) {
+      const rollListener = ({ state, face }: PixelEventMap["rollState"]) => {
+        if (state === "handling" || state === "rolling" || state === "rolled") {
+          clearTimeout(clearTimeoutRef.current);
+          setRollState({ state, face });
+          if (state === "rolled") {
+            clearTimeoutRef.current = setTimeout(
+              () => setRollState(undefined),
+              3000
+            );
+          }
+        } else if (
+          state === "crooked" ||
+          previousRollState.current !== "rolled"
+        ) {
+          setRollState(undefined);
+        }
+        previousRollState.current = state;
+        // Re-render on each roll state change
+        if (!compact) {
+          forceUpdate();
+        }
+      };
+      pixel.addEventListener("rollState", rollListener);
+      const statusListener = ({ status }: PixelEventMap["statusChanged"]) => {
+        status !== "ready" && setRollState(undefined);
+        // Re-render on each status change
+        forceUpdate();
+      };
+      pixel.addEventListener("statusChanged", statusListener);
+      return () => {
+        pixel.removeEventListener("rollState", rollListener);
+        pixel.removeEventListener("statusChanged", statusListener);
+        previousRollState.current = undefined;
+        clearTimeout(clearTimeoutRef.current);
+        clearTimeoutRef.current = undefined;
+      };
     }
-    return () => clearTimeout(id);
-  }, [isReady, rolled, rolling]);
+  }, [compact, forceUpdate, pixel]);
 
   // Animate roll results
   const animValue = useSharedValue(1);
@@ -80,7 +111,7 @@ const CardLabels = observer(function CardLabels({
     transform: [{ scale: animValue.value }],
   }));
   React.useEffect(() => {
-    if (rolled) {
+    if (rollState?.state === "rolled") {
       animValue.value = withSequence(
         withTiming(1.2, {
           duration: 400,
@@ -88,8 +119,11 @@ const CardLabels = observer(function CardLabels({
         }),
         withTiming(1, { duration: 200, easing: Easing.in(Easing.ease) })
       );
+      return () => {
+        animValue.value = 1;
+      };
     }
-  }, [animValue, rolled]);
+  }, [animValue, rollState?.state]);
 
   const { colors } = useTheme();
   return (
@@ -127,12 +161,14 @@ const CardLabels = observer(function CardLabels({
             variant="labelSmall"
             style={modifiedProfile ? { paddingRight: 18 } : undefined}
           >
-            {compact && !showRoll
-              ? profile.name
-              : (getRollStateAndFaceLabel(
+            {!compact
+              ? (getRollStateAndFaceLabel(
                   pixel?.rollState,
                   pixel?.currentFace
-                ) ?? "")}
+                ) ?? "")
+              : rollState
+                ? getRollStateAndFaceLabel(rollState.state, rollState.face)
+                : profile.name}
           </Text>
           {compact && modifiedProfile && (
             <View>
