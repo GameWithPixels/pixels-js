@@ -1,14 +1,15 @@
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import React from "react";
 
 import { usePixelsCentral } from "./usePixelsCentral";
 
+import { PixelsCentralDfuState } from "~/features/dice";
+
 export function usePixelDfuState(pixelId?: number): {
-  state?: DfuState | "scanning";
+  state?: PixelsCentralDfuState;
   progress?: number;
 } {
   const central = usePixelsCentral();
-  const [state, setState] = React.useState<DfuState | "scanning">();
+  const [state, setState] = React.useState<PixelsCentralDfuState>();
   const [progress, setProgress] = React.useState<number>();
   React.useEffect(() => {
     setState(undefined);

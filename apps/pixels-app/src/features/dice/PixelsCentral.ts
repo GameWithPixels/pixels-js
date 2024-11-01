@@ -116,6 +116,15 @@ type OperationsParams = Readonly<{
 export type ConnectQueue = { highPriority: number[]; lowPriority: number[] };
 
 /**
+ * DFU states emitted by the {@link PixelsCentral} class.
+ */
+export type PixelsCentralDfuState =
+  | DfuState
+  | "scanning"
+  | "up-to-date"
+  | "unavailable";
+
+/**
  * Event map for {@link PixelsCentral} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
@@ -150,7 +159,7 @@ export type PixelsCentralEventMap = Readonly<{
     disconnectId?: number;
   }>; // Failed to connect Pixel because connection limit was reached
   // DFU events
-  onDfuState: { pixelId: number; state: DfuState | "scanning"; error?: Error };
+  onDfuState: { pixelId: number; state: PixelsCentralDfuState };
   onDfuProgress: { pixelId: number; progress: number };
 }>;
 
@@ -585,8 +594,8 @@ export class PixelsCentral {
     this._emitEvent("pixelInDFU", this._pixelInDFU);
 
     // DFU events callbacks
-    const dfuStateCallback = (state: DfuState | "scanning", error?: Error) =>
-      this._emitEvent("onDfuState", { pixelId, state, error });
+    const dfuStateCallback = (state: PixelsCentralDfuState) =>
+      this._emitEvent("onDfuState", { pixelId, state });
     const dfuProgressCallback = (progress: number) =>
       this._emitEvent("onDfuProgress", { pixelId, progress });
 
@@ -622,7 +631,9 @@ export class PixelsCentral {
       if (bootloaderLastScan >= startTime) {
         const bootloader = ScannedBootloaderNotifier.findInstance(pixelId);
         if (!bootloader) {
-          throw new Error("Pixel not available");
+          // Skip firmware update
+          dfuStateCallback("unavailable");
+          return false;
         }
 
         // Start DFU and wait for completion
@@ -643,7 +654,9 @@ export class PixelsCentral {
 
       // Check that we got a timestamp
       if (!pixel || !timestamp) {
-        throw new Error("Pixel not available");
+        // Skip firmware update
+        dfuStateCallback("unavailable");
+        return false;
       }
 
       // Do we need to update the firmware?
@@ -679,7 +692,9 @@ export class PixelsCentral {
           if (!(await waitConnectedAsync(pixel))) {
             // Stop connecting
             this._connectQueue.dequeue(pixelId);
-            throw new Error("Connection Timeout");
+            // Skip firmware update
+            dfuStateCallback("unavailable");
+            return false;
           }
         }
 
@@ -702,6 +717,7 @@ export class PixelsCentral {
 
         // Check if operation was dropped
         if (!success) {
+          // This should not happen
           throw new Error("Firmware update operation dropped");
         }
 
@@ -724,14 +740,13 @@ export class PixelsCentral {
         console.log(
           `[PixelsCentral] 🔄 DFU: Pixel ${unsigned32ToHex(pixelId)} already up-to-date`
         );
-        dfuStateCallback("completed");
+        dfuStateCallback("up-to-date");
         return false;
       }
     } catch (e) {
       if (!(e instanceof DfuError)) {
         // Update state if not a DFU error
-        const error = e instanceof Error ? e : new Error(String(e));
-        dfuStateCallback("errored", error);
+        dfuStateCallback("errored");
       }
       throw e;
     } finally {

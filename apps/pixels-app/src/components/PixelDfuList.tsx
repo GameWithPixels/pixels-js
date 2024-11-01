@@ -1,5 +1,4 @@
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
-import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Pixel,
   PixelInfo,
@@ -26,6 +25,7 @@ import Animated, {
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 import { DieWireframe } from "./icons";
 
+import { PixelsCentralDfuState } from "~/features/dice";
 import {
   useBatteryStateLabel,
   useIsDieUpdatingFirmware,
@@ -45,7 +45,7 @@ function TextDfuState({
   state,
   progress,
   ...props
-}: { state: DfuState | "scanning"; progress?: number } & Omit<
+}: { state: PixelsCentralDfuState; progress?: number } & Omit<
   TextProps<string>,
   "children"
 >) {
