@@ -28,9 +28,9 @@ async function loadDfuFiles(opt?: {
     const getTime = (b: DfuFilesBundle) =>
       // Make sdk17 FW top choice
       b.date.getTime() + (b.firmware?.comment !== "sdk17" ? -Date.now() : 0);
-    const selected = bundles.reduce((a, b) =>
-      getTime(a) >= getTime(b) ? a : b
-    );
+    const selected = bundles.length
+      ? bundles.reduce((a, b) => (getTime(a) >= getTime(b) ? a : b))
+      : undefined;
     if (selected?.firmware) {
       return {
         timestamp: opt?.timestampOverride ?? selected.date.getTime(),

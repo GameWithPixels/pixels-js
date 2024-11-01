@@ -53,46 +53,45 @@ function FirmwareInfoPage({
                 Bootloader: {dfuFilesInfo.bootloaderPath ? "yes" : "no"}
               </Body>
             </View>
-            {showAdvancedSettings && (
-              <>
-                <Divider style={{ marginVertical: 10 }} />
-                <Remark style={{ marginLeft: 10 }}>
-                  Don't turn on these settings unless you know what you're doing
-                  ;)
-                </Remark>
-                <SettingsSwitch
-                  value={betaFirmware}
-                  onValueChange={(v) => {
-                    appDispatch(setUseBetaFirmware(v));
-                  }}
-                >
-                  Use Beta Firmware
-                </SettingsSwitch>
-                <SettingsSwitch
-                  value={!!fwTimestampOvr}
-                  onValueChange={(v) => {
-                    appDispatch(
-                      setAppFirmwareTimestampOverride(v ? Date.now() : 0)
-                    );
-                  }}
-                >
-                  Always Update Firmware
-                </SettingsSwitch>
-                <SettingsSwitch
-                  value={updateBootloader}
-                  onValueChange={(v) => {
-                    appDispatch(setUpdateBootloader(v));
-                  }}
-                >
-                  Also Update Bootloader
-                </SettingsSwitch>
-              </>
-            )}
           </>
         ) : dfuFilesError ? (
           <Body>Error reading firmware files: {String(dfuFilesError)}</Body>
         ) : (
           <Body>Preparing firmware files...</Body>
+        )}
+        {showAdvancedSettings && (
+          <>
+            <Divider style={{ marginVertical: 10 }} />
+            <Remark style={{ marginLeft: 10 }}>
+              Don't turn on these settings unless you know what you're doing ;)
+            </Remark>
+            <SettingsSwitch
+              value={betaFirmware}
+              onValueChange={(v) => {
+                appDispatch(setUseBetaFirmware(v));
+              }}
+            >
+              Use Beta Firmware
+            </SettingsSwitch>
+            <SettingsSwitch
+              value={!!fwTimestampOvr}
+              onValueChange={(v) => {
+                appDispatch(
+                  setAppFirmwareTimestampOverride(v ? Date.now() : 0)
+                );
+              }}
+            >
+              Always Update Firmware
+            </SettingsSwitch>
+            <SettingsSwitch
+              value={updateBootloader}
+              onValueChange={(v) => {
+                appDispatch(setUpdateBootloader(v));
+              }}
+            >
+              Also Update Bootloader
+            </SettingsSwitch>
+          </>
         )}
       </ScrollView>
     </View>
