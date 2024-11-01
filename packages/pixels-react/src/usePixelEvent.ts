@@ -155,11 +155,11 @@ export function usePixelEvent<T extends keyof UsePixelValueNamesMap>(
               const timeLeft =
                 minInterval - (Date.now() - stateRef.current.lastTime);
               // Immediately update the value if we have a state change,
-              // or the state is onFace (we don't to miss any of those)
+              // or the state is rolled (we don't to miss any of those)
               // or if we are passed the given refresh interval
               if (
                 timeLeft <= 0 ||
-                rollState.state === "onFace" ||
+                rollState.state === "rolled" ||
                 (prevValue as any)?.state !== rollState.state
               ) {
                 stateRef.current.lastTime = now;

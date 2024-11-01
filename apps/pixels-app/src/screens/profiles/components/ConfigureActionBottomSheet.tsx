@@ -750,7 +750,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
       rssi: -60,
       batteryLevel: 0.5,
       isCharging: false,
-      rollState: "onFace",
+      rollState: "rolled",
     },
     profileName,
     action.value

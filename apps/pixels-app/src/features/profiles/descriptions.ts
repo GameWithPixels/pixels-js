@@ -242,13 +242,15 @@ export function getRollStateLabel(state?: PixelRollState): string {
     case undefined:
     case "unknown":
       return "";
-    case "onFace":
-      return "On Face";
+    case "rolled":
+      return "Rolled";
     case "handling":
     case "rolling":
       return "Rolling";
     case "crooked":
       return "Crooked";
+    case "onFace":
+      return "On Face";
     default:
       assertNever(state);
   }
@@ -259,11 +261,13 @@ export function getRollStateAndFaceLabel(
   face?: number
 ): string | undefined {
   return face !== undefined && state && state !== "unknown"
-    ? state === "onFace"
-      ? `On face ${face}`
-      : state === "rolling" || state === "handling"
-        ? "Rolling..."
-        : getRollStateLabel(state)
+    ? state === "rolled"
+      ? `Rolled a ${face}`
+      : state === "onFace"
+        ? `On face ${face}`
+        : state === "rolling" || state === "handling"
+          ? "Rolling..."
+          : getRollStateLabel(state)
     : undefined;
 }
 

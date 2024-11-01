@@ -1,25 +1,31 @@
 import { enumValue } from "@systemic-games/pixels-core-utils";
 
 /**
- * Pixel roll states.
+ * Pixels dice roll states.
  * @enum
  * @category Message
  */
 export const PixelRollStateValues = {
-  /** The Pixel roll state could not be determined. */
+  /** The die roll state could not be determined. */
   unknown: enumValue(0),
 
-  /** The Pixel is resting in a position with a face up. */
-  onFace: enumValue(),
+  /** The die finished rolling and is now on a face, and it looked like a proper roll. */
+  rolled: enumValue(),
 
-  /** The Pixel is being handled. */
+  /** The die is being handled. */
   handling: enumValue(),
 
-  /** The Pixel is rolling. */
+  /** The die is rolling. */
   rolling: enumValue(),
 
-  /** The Pixel is resting in a crooked position. */
+  /** The die finished rolling but is not on a valid face. */
   crooked: enumValue(),
+
+  /**
+   * The dis is not moving and, as far as we know, it has either
+   * never moved or it didn't move enough to trigger a roll.
+   */
+  onFace: enumValue(),
 } as const;
 
 /**

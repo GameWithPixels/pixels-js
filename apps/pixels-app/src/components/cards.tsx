@@ -54,7 +54,7 @@ const CardLabels = observer(function CardLabels({
   // This hooks triggers a re-render on each roll event
   const rolling = useIsPixelRolling(pixel, status);
   // So we can use the rollState without needing another hook
-  const onFace = isReady && pixel.rollState === "onFace";
+  const rolled = isReady && pixel.rollState === "rolled";
   const [showRoll, setShowRoll] = React.useState(false);
   const modifiedProfile = useIsModifiedDieProfile(
     pairedDie.profileUuid,
@@ -68,11 +68,11 @@ const CardLabels = observer(function CardLabels({
       setShowRoll(false);
     } else if (rolling) {
       setShowRoll(true);
-    } else if (onFace) {
+    } else if (rolled) {
       id = setTimeout(() => setShowRoll(false), 3000);
     }
     return () => clearTimeout(id);
-  }, [isReady, onFace, rolling]);
+  }, [isReady, rolled, rolling]);
 
   // Animate roll results
   const animValue = useSharedValue(1);
@@ -80,7 +80,7 @@ const CardLabels = observer(function CardLabels({
     transform: [{ scale: animValue.value }],
   }));
   React.useEffect(() => {
-    if (onFace) {
+    if (rolled) {
       animValue.value = withSequence(
         withTiming(1.2, {
           duration: 400,
@@ -89,7 +89,7 @@ const CardLabels = observer(function CardLabels({
         withTiming(1, { duration: 200, easing: Easing.in(Easing.ease) })
       );
     }
-  }, [animValue, onFace]);
+  }, [animValue, rolled]);
 
   const { colors } = useTheme();
   return (
@@ -129,10 +129,10 @@ const CardLabels = observer(function CardLabels({
           >
             {compact && !showRoll
               ? profile.name
-              : getRollStateAndFaceLabel(
+              : (getRollStateAndFaceLabel(
                   pixel?.rollState,
                   pixel?.currentFace
-                ) ?? ""}
+                ) ?? "")}
           </Text>
           {compact && modifiedProfile && (
             <View>

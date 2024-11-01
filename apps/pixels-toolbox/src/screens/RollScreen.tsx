@@ -29,7 +29,7 @@ function RollPage() {
       ? "yellow"
       : status !== "ready"
         ? "red"
-        : rollEv?.state !== "onFace"
+        : rollEv?.state !== "rolled"
           ? "blue"
           : "green";
   return (

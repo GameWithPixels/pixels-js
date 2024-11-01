@@ -341,7 +341,10 @@ export const ValidationTests = {
                       dieType,
                       pixel.firmwareDate.getTime()
                     );
-                    if (state === "onFace" && currentFace === face) {
+                    if (
+                      (state === "onFace" || state === "rolled") &&
+                      currentFace === face
+                    ) {
                       // Required face is up, start hold timer
                       console.log(`Die rolled on required face ${face}`);
                       setHoldTimeout();
@@ -359,7 +362,8 @@ export const ValidationTests = {
                   pixel.addEventListener("rollState", rollListener);
                   // Check current face
                   if (
-                    pixel.rollState === "onFace" &&
+                    (pixel.rollState === "onFace" ||
+                      pixel.rollState === "rolled") &&
                     face ===
                       // Remap face based on the user selected die type
                       DiceUtils.faceFromIndex(

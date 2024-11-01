@@ -1165,7 +1165,7 @@ export class Pixel
       this._info.firmwareDate.getTime() < FW_2024_05_22 &&
       state === "crooked"
     ) {
-      state = "onFace";
+      state = "rolled";
     }
 
     const ev = this._createRollEvent(state, faceIndex);
@@ -1189,7 +1189,7 @@ export class Pixel
 
     // Notify all die roll events
     if (!opt?.skipEvents) {
-      const emitRoll = ev.state === "onFace" ? ev.face : undefined;
+      const emitRoll = ev.state === "rolled" ? ev.face : undefined;
       this._emitEvent("rollState", ev);
       if (emitRoll !== undefined) {
         this._emitEvent("roll", emitRoll);
