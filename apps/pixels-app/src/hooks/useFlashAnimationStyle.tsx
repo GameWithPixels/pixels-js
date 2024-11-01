@@ -23,20 +23,27 @@ export function useFlashAnimationStyle(
   mode: "greyedOut" | "mid-tone" | "transparent" = "transparent"
 ) {
   const { colors } = useTheme();
-  const colorRange = React.useMemo(
-    () => [
+  const colorRange = useSharedValue([colors.background, colors.background]);
+  React.useEffect(() => {
+    colorRange.value = [
       makeTransparent(
         colors.background,
         mode === "greyedOut" ? 0.85 : mode === "mid-tone" ? 0.6 : 0
       ),
       makeTransparent(colors.background, 0.3),
-    ],
-    [colors, mode]
-  );
+    ];
+  }, [colorRange, colors, mode]);
   const animValue = useSharedValue(0);
-  const animStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(animValue.value, [0, 1], colorRange),
-  }));
+  const animStyle = useAnimatedStyle(
+    () => ({
+      backgroundColor: interpolateColor(
+        animValue.value,
+        [0, 1],
+        colorRange.value
+      ),
+    }),
+    [flash, mode]
+  );
   React.useEffect(() => {
     const pingPong = (x0: number, x1: number) =>
       withSequence(
