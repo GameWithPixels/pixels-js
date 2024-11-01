@@ -80,13 +80,15 @@ import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
  * @category Pixels
  */
 export type RollEvent = Readonly<{
-  /** The roll state of the Pixel when this event was raised. */
+  /** The roll state of the Pixels die when this event was raised. */
   state: PixelRollState;
+
   /**
    * The value of the die face that is currently facing up.
    * @remarks Fudge die will return -1, 0 or 1.
    **/
   face: number;
+
   /**
    * The 0-based index of the die face that is currently facing up.
    * @see {@link PixelInfo.currentFaceIndex} for more details.
@@ -1139,19 +1141,6 @@ export class Pixel
     }
   }
 
-  private _createRollEvent(
-    state: PixelRollState,
-    faceIndex: number
-  ): RollEvent {
-    // Convert face index to face value
-    const face = DiceUtils.faceFromIndex(
-      faceIndex,
-      this.dieType,
-      this.firmwareDate.getTime()
-    );
-    return { state, face, faceIndex };
-  }
-
   private _updateRoll(
     state: PixelRollState,
     faceIndex: number,
@@ -1168,7 +1157,16 @@ export class Pixel
       state = "rolled";
     }
 
-    const ev = this._createRollEvent(state, faceIndex);
+    // Roll event
+    const ev = {
+      state,
+      faceIndex,
+      face: DiceUtils.faceFromIndex(
+        faceIndex,
+        this.dieType,
+        this.firmwareDate.getTime()
+      ),
+    } as const;
     const stateChanged = this._info.rollState !== ev.state;
     const indexChanged = this._info.currentFaceIndex !== ev.faceIndex;
     const faceChanged = this._info.currentFace !== ev.face;
