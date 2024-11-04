@@ -46,33 +46,51 @@ function errToStr(error: unknown): string {
   }
 }
 
-export type BluetoothStateEvent = Readonly<{
-  state: BluetoothState;
-}>;
+function toScanStartError(error: string): ScanStartErrorCode {
+  switch (error) {
+    case "ALREADY_STARTED":
+      return "alreadyStarted";
+    case "APPLICATION_REGISTRATION_FAILED":
+      return "registrationFailed";
+    case "FEATURE_UNSUPPORTED":
+      return "unsupported";
+    case "OUT_OF_HARDWARE_RESOURCES":
+      return "outOfHardwareResources";
+    default:
+      return "internalError";
+  }
+}
 
+/**
+ * The possible statuses of the scanner.
+ */
 export type ScanStatus = "stopped" | "starting" | "scanning";
 
+/**
+ * Reason why the scan was stopped.
+ */
 export type ScanStopReason =
   | Exclude<BluetoothState, "ready">
   | "failedToStart"
   | "success"; // Scan was stopped by a call to stopScan() or shutdown()
 
-export type ScanStatusEvent = Readonly<{
-  status: ScanStatus;
-  stopReason?: ScanStopReason;
-  context?: unknown;
-}>;
+/**
+ * Possible errors that prevented the scan to start (Android only).
+ */
+export type ScanStartErrorCode =
+  | "alreadyStarted"
+  | "registrationFailed"
+  | "internalError"
+  | "unsupported"
+  | "outOfHardwareResources";
 
-// A scanned peripheral is BLE device and its advertisement data
+/**
+ * A scanned peripheral is BLE device and its advertisement data.
+ */
 export type ScannedPeripheral = Device &
   Readonly<{
     advertisementData: AdvertisementData;
   }>;
-
-export type ScannedPeripheralEvent = Readonly<{
-  peripheral: ScannedPeripheral;
-  context?: unknown;
-}>;
 
 /**
  * Event map for {@link Central} class.
@@ -84,6 +102,7 @@ export type CentralEventMap = Readonly<{
   scanStatus: Readonly<{
     status: ScanStatus;
     stopReason?: ScanStopReason;
+    startError?: ScanStartErrorCode; // Android only, for `failedToStart` stop reason
     context?: unknown;
   }>;
   scannedPeripheral: Readonly<{
@@ -97,6 +116,9 @@ export type CentralEventMap = Readonly<{
   }>;
 }>;
 
+/**
+ * Event emitted when a peripheral characteristic value has changed.
+ */
 export type PeripheralCharacteristicValueChangedEvent = Readonly<{
   peripheral: ScannedPeripheral;
   service: string;
@@ -207,7 +229,11 @@ function _updateBluetoothState(state: BluetoothState): void {
   }
 }
 
-function _updateScanStatus(status: ScanStatus, reason?: ScanStopReason): void {
+function _updateScanStatus(
+  status: ScanStatus,
+  reason?: ScanStopReason,
+  startError?: ScanStartErrorCode
+): void {
   const context = _scanToken?.context;
 
   // Clear token and remove callback if scan is not running
@@ -225,11 +251,7 @@ function _updateScanStatus(status: ScanStatus, reason?: ScanStopReason): void {
 
     _scanStatus = status;
     const stopReason = status !== "stopped" ? undefined : (reason ?? "success");
-    _emitEvent("scanStatus", {
-      status,
-      stopReason,
-      context,
-    });
+    _emitEvent("scanStatus", { status, stopReason, startError, context });
   }
 }
 
@@ -475,7 +497,7 @@ export const Central = {
           ? // In rare edge case where several Bluetooth state changes occurred
             // before we had chance to run this code or if the scan failed to start
             // for some other reason
-            new Errors.ScanStartFailed(_bluetoothState)
+            new Errors.ScanStartError(_bluetoothState)
           : _bluetoothState === "unauthorized"
             ? new Errors.BluetoothNotAuthorizedError()
             : new Errors.BluetoothUnavailableError(_bluetoothState);
@@ -530,8 +552,12 @@ export const Central = {
     _scanResultSubs = _addNativeListener("scanResult", (ev) => {
       if ("error" in ev) {
         // Scan failed to start, Android only
-        console.warn(`[BLE] Scan failed: ${ev.error}`);
-        _updateScanStatus("stopped", "failedToStart");
+        console.warn(`[BLE] Scan failed to start with error ${ev.error}`);
+        _updateScanStatus(
+          "stopped",
+          "failedToStart",
+          toScanStartError(ev.error)
+        );
       } else if (_scanStatus !== "stopped") {
         // Forward event
         const peripheral = {

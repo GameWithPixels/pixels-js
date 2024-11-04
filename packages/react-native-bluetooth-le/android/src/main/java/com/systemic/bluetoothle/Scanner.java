@@ -42,9 +42,9 @@ public final class Scanner
         /**
          * @brief A callback invoked when the scan fails.
          *
-         * @param error A string with the error that caused the scan to fail.
+         * @param error An error code for the reason that caused the scan to fail.
          */
-        public void onScanFailed(String error);
+        public void onScanFailed(int errorCode);
     }
 
     private static String TAG = "SystemicGames";
@@ -190,7 +190,7 @@ public final class Scanner
         	public void onScanFailed(final int errorCode)
             {
                 Log.e(TAG, "Scan failed with error " + errorCode);
-                callback.onScanFailed(errorToString(errorCode));
+                callback.onScanFailed(errorCode);
             }
 
             private void NotifyScanResult(@NonNull final ScanResult scanResult)
@@ -205,24 +205,5 @@ public final class Scanner
                 }
             }
         };
-    }
-
-    @NonNull
-    private static String errorToString(final int errorCode)
-    {
-        switch (errorCode)
-        {
-            case ScanCallback.SCAN_FAILED_ALREADY_STARTED:
-                return "Already started";
-            case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
-                return "Application registration failed";
-            case ScanCallback.SCAN_FAILED_INTERNAL_ERROR:
-                return "Internal error";
-            case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED:
-                return "Feature unsupported";
-            case ScanCallback.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
-                return "Out of hardware resources";
-        }
-        return "Unknown error";
     }
 }

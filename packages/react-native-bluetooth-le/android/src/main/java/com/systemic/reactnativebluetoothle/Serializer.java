@@ -22,12 +22,13 @@ import no.nordicsemi.android.ble.annotation.DisconnectionReason;
 import no.nordicsemi.android.ble.callback.FailCallback;
 import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.ble.observer.ConnectionObserver;
+import no.nordicsemi.android.support.v18.scanner.ScanCallback;
 import no.nordicsemi.android.support.v18.scanner.ScanRecord;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
 
 public final class Serializer {
     @NonNull
-    public static String toErrorCode(int status) {
+    public static String statusToString(int status) {
         // Many error constants are missing in Java, see C++ errors here:
         // https://android.googlesource.com/platform/external/bluetooth/bluedroid/+/adc9f28ad418356cb81640059b59eee4d862e6b4/stack/include/gatt_api.h#54
         switch (status) {
@@ -83,8 +84,49 @@ public final class Serializer {
                 return "ERROR_GATT_CONNECTION_CONGESTED";
             case BluetoothGatt.GATT_FAILURE: // 257
                 return "ERROR_GATT_FAILURE";
+            default:
+                return "ERROR_" + status;
         }
-        return "ERROR_" + status;
+    }
+
+    @NonNull
+    public static String reasonToString(@DisconnectionReason int reason) {
+        switch (reason) {
+            case ConnectionObserver.REASON_SUCCESS:
+                return "success";
+            case ConnectionObserver.REASON_TERMINATE_LOCAL_HOST:
+                return "host"; // We get this reason when Bluetooth is turned off
+            case ConnectionObserver.REASON_TERMINATE_PEER_USER:
+                return "peripheral";
+            case ConnectionObserver.REASON_LINK_LOSS:
+                return "linkLoss";
+            case ConnectionObserver.REASON_NOT_SUPPORTED:
+                return "notSupported";
+            case ConnectionObserver.REASON_CANCELLED:
+                return "canceled";
+            case ConnectionObserver.REASON_TIMEOUT:
+                return "timeout";
+            default:
+                return "unknown";
+        }
+    }
+
+    @NonNull
+    public static String scanErrorToString(int error) {
+        switch (error) {
+            case ScanCallback.SCAN_FAILED_ALREADY_STARTED:
+                return "ALREADY_STARTED";
+            case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
+                return "APPLICATION_REGISTRATION_FAILED";
+            case ScanCallback.SCAN_FAILED_INTERNAL_ERROR:
+                return "INTERNAL_ERROR";
+            case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED:
+                return "FEATURE_UNSUPPORTED";
+            case ScanCallback.SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES:
+                return "OUT_OF_HARDWARE_RESOURCES";
+            default:
+                return "SCAN_FAILED_" + error;
+        }
     }
 
     @NonNull
@@ -177,30 +219,8 @@ public final class Serializer {
         WritableMap map = Arguments.createMap();
         map.putMap("device", toJS(peripheral));
         map.putString("connectionStatus", connEv.getName());
-        map.putString("reason", toJS(reason));
+        map.putString("reason", reasonToString(reason));
         return map;
-    }
-
-    @NonNull
-    public static String toJS(@DisconnectionReason int reason) {
-        switch (reason) {
-            case ConnectionObserver.REASON_SUCCESS:
-                return "success";
-            case ConnectionObserver.REASON_TERMINATE_LOCAL_HOST:
-                return "host"; // We get this reason when Bluetooth is turned off
-            case ConnectionObserver.REASON_TERMINATE_PEER_USER:
-                return "peripheral";
-            case ConnectionObserver.REASON_LINK_LOSS:
-                return "linkLoss";
-            case ConnectionObserver.REASON_NOT_SUPPORTED:
-                return "notSupported";
-            case ConnectionObserver.REASON_CANCELLED:
-                return "canceled";
-            case ConnectionObserver.REASON_TIMEOUT:
-                return "timeout";
-            default:
-                return "unknown";
-        }
     }
 
     @NonNull

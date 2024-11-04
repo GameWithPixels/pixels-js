@@ -1,8 +1,7 @@
 import {
   Central,
+  CentralEventMap,
   ScannedPeripheral,
-  ScannedPeripheralEvent,
-  ScanStatusEvent,
 } from "@systemic-games/react-native-bluetooth-le";
 import {
   DfuError,
@@ -37,7 +36,7 @@ function getFilename(uri: string): string {
 
 function idToString(targetId: DfuTargetId): string {
   return typeof targetId === "number"
-    ? targetId.toString(16).match(/.{2}/g)?.join(":") ?? ""
+    ? (targetId.toString(16).match(/.{2}/g)?.join(":") ?? "")
     : `{${targetId}}`;
 }
 
@@ -83,13 +82,15 @@ export default function App() {
     // Clear any pending error
     setLastError(undefined);
     // Set up Central event listeners
-    const onScanStatus = ({ status }: ScanStatusEvent) => {
+    const onScanStatus = ({ status }: CentralEventMap["scanStatus"]) => {
       console.log(`Scan status ${status}`);
       if (status !== "stopped") {
         setIsScanning(false);
       }
     };
-    const onScannedPeripheral = ({ peripheral: p }: ScannedPeripheralEvent) => {
+    const onScannedPeripheral = ({
+      peripheral: p,
+    }: CentralEventMap["scannedPeripheral"]) => {
       // Only show connectable peripherals with a name
       if (p.name.length && p.advertisementData.isConnectable) {
         updatePeripherals(p);

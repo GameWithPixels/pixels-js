@@ -10,10 +10,8 @@ import {
 import {
   BluetoothState,
   Central,
-  ScannedPeripheralEvent,
+  CentralEventMap,
   ScanStatus,
-  ScanStatusEvent,
-  ScanStopReason,
 } from "@systemic-games/react-native-bluetooth-le";
 
 import { ScannedBootloader } from "./ScannedBootloader";
@@ -55,10 +53,10 @@ export type PixelScannerEventMap = Readonly<{
   scannedChargers: readonly ScannedCharger[];
   scannedBootloaders: readonly ScannedBootloader[];
   // Events
-  onStatusChange: Readonly<{
-    status: ScanStatus;
-    stopReason?: ScanStopReason;
-  }>;
+  onStatusChange: Pick<
+    CentralEventMap["scanStatus"],
+    "status" | "stopReason" | "startError"
+  >;
   onScanListChange: Readonly<{ ops: readonly PixelScannerListOperation[] }>;
 }>;
 
@@ -345,7 +343,7 @@ export class PixelScanner {
   private _onScannedPeripheral({
     peripheral,
     context,
-  }: ScannedPeripheralEvent): void {
+  }: CentralEventMap["scannedPeripheral"]): void {
     // Ignore events from a scan that was not started by this instance
     if (context !== this) {
       return;
@@ -369,8 +367,9 @@ export class PixelScanner {
   private _onScanStatus({
     status,
     stopReason,
+    startError,
     context,
-  }: ScanStatusEvent): void {
+  }: CentralEventMap["scanStatus"]): void {
     // Ignore events from a scan that was not started by this instance
     if (context !== this) {
       return;
@@ -413,7 +412,7 @@ export class PixelScanner {
     // Update status
     const changed = this._status !== status;
     this._status = status;
-    this._emitEvent("onStatusChange", { status, stopReason });
+    this._emitEvent("onStatusChange", { status, stopReason, startError });
     if (changed) {
       this._emitEvent("status", status);
     }
@@ -463,6 +462,7 @@ export class PixelScanner {
     }
   }
 
+  // TODO We may notify when scanning is stopped or Bluetooth off (from startAsync and _scheduleNotify)
   private _notify(): void {
     if (this._notifyTimeoutId) {
       clearTimeout(this._notifyTimeoutId);

@@ -29,26 +29,26 @@ export class ScanAlreadyInProgressError extends ScanError {
   }
 }
 
-export class ScanStartFailed extends ScanError {
+export class ScanStartError extends ScanError {
   readonly bluetoothState: BluetoothState;
   constructor(bluetoothState: BluetoothState, message?: string) {
     super(
       message ??
         `Scan failed to start for unknown reason, Bluetooth state is ${bluetoothState}`
     );
-    this.name = "ScanStartFailed";
+    this.name = "ScanStartError";
     this.bluetoothState = bluetoothState;
   }
 }
 
-export class BluetoothNotAuthorizedError extends ScanStartFailed {
+export class BluetoothNotAuthorizedError extends ScanStartError {
   constructor() {
     super("unauthorized", "Bluetooth not authorized or denied by user");
     this.name = "BluetoothNotAuthorizedError";
   }
 }
 
-export class BluetoothUnavailableError extends ScanStartFailed {
+export class BluetoothUnavailableError extends ScanStartError {
   constructor(state: "off" | "resetting" | "unknown") {
     super(state, `Bluetooth unavailable, state is ${state}`);
     this.name = "BluetoothUnavailableError";

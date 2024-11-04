@@ -208,7 +208,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
 
                 public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
                     promise.reject(
-                        Serializer.toErrorCode(status),
+                        Serializer.statusToString(status),
                         String.format("Failed to %s", requestName),
                         Serializer.toJS(device));
                 }
@@ -268,9 +268,8 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
                         sendEvent(BleEvent.ScanResult,
                             Serializer.toJS(device, scanResult));
                     }
-
-                    public void onScanFailed(String error) {
-                        sendEvent(BleEvent.ScanResult, "error", error);
+                    public void onScanFailed(int errorCode) {
+                        sendEvent(BleEvent.ScanResult, "error", Serializer.scanErrorToString(errorCode));
                     }
                 });
             promise.resolve(null);
@@ -451,7 +450,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
                     public void onRequestFailed(@NonNull BluetoothDevice device,
                                                 int status) {
                         promise.reject(
-                            Serializer.toErrorCode(status),
+                            Serializer.statusToString(status),
                             String.format("Failed to %s", requestName),
                             Serializer.toJS(device));
                     }
@@ -482,7 +481,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
                     public void onRequestFailed(@NonNull BluetoothDevice device,
                                                 int status) {
                         promise.reject(
-                            Serializer.toErrorCode(status),
+                            Serializer.statusToString(status),
                             String.format("Failed to %s", requestName),
                             Serializer.toJS(device));
                     }
@@ -572,7 +571,7 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
 
                         public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
                             promise.reject(
-                                Serializer.toErrorCode(status),
+                                Serializer.statusToString(status),
                                 String.format("Failed to %s", requestName),
                                 Serializer.toJS(device));
                         }
