@@ -13,7 +13,6 @@ import {
   ConnectError,
   Pixel,
   PixelMutableProps,
-  PixelScannerEventMap,
   PixelStatusEvent,
   ScannedBootloaderNotifier,
   ScannedPixel,
@@ -27,7 +26,11 @@ import {
   PixelSchedulerEventMap,
 } from "./PixelScheduler";
 import { PriorityQueue } from "./PriorityQueue";
-import { ScanRequester } from "./ScanRequester";
+import {
+  ScanRequesterEventMap,
+  ScanRequester,
+  ScanStartFailedError,
+} from "./ScanRequester";
 import { getDieDfuAvailability } from "./getDieDfuAvailability";
 
 import { updateFirmware } from "~/features/dfu/updateFirmware";
@@ -44,15 +47,16 @@ const connectionRelease = {
   window: 20000, // Should allow for at least 2 connection releases
   maxScanDelta: 1500, // Release connection if scanned twice within this time
   gracePeriod: 5000, // Time after scan to still allow for connection release
-  connectGattFailureInterval: 5000, // Maximum delay between 2 GATT failures to trigger a connection release
+  connectGattErrorInterval: 5000, // Maximum delay between 2 GATT errors to trigger a connection release
 } as const;
 
 // This delay is to avoid stopping/starting scanner too often
 const stopScanDelay = connectionRelease.interval + 2000;
+const keepAliveDuration = 8000; // On Android, we can get very few advertising packets when connected to a lot of dice
 
 // Delay before trying to reconnect after a disconnect
 const reconnectionDelay = 1000;
-const reconnectionDelayTooManyErrors = 30000;
+const reconnectionDelayTooManyErrors = 30000; // 30s, equals to Android connection timeout
 
 //
 // Helper functions
@@ -62,8 +66,8 @@ function getScheduler(pixelId: number): PixelScheduler {
   return PixelScheduler.getScheduler(pixelId);
 }
 
-function getPixel(pixelId: number): Pixel | undefined {
-  return PixelScheduler.getScheduler(pixelId).pixel;
+function getPixel(pixelId?: number): Pixel | undefined {
+  return pixelId ? PixelScheduler.getScheduler(pixelId).pixel : undefined;
 }
 
 function isConnected(
@@ -170,9 +174,9 @@ export class PixelsCentral {
 
   // Scanner for discovering Pixels
   private readonly _scanner = new ScanRequester({
-    minNotifyInterval: 300,
-    keepAliveDuration: 7000,
+    keepAliveDuration,
     stopScanDelay,
+    onRequestReleaseConnection: this._tryReleaseOneConnectionAndWait.bind(this),
   });
   private readonly _onScanReady: () => void;
 
@@ -384,7 +388,7 @@ export class PixelsCentral {
     // Register scan list listener on first requested scans
     if (!this._scanner.isScanRequested) {
       const onScanListChange = (
-        ev: PixelScannerEventMap["onScanListChange"]
+        ev: ScanRequesterEventMap["onScanListChange"]
       ) => {
         for (const op of ev.ops) {
           if (op.item.type === "pixel") {
@@ -445,15 +449,27 @@ export class PixelsCentral {
           }
         }
       };
+      // Handle scan errors
+      const onScanError = ({ error }: ScanRequesterEventMap["onScanError"]) => {
+        if (
+          error instanceof ScanStartFailedError &&
+          error.startError === "registrationFailed"
+        ) {
+          const id = this._tryReleaseOneConnection(0);
+          console.error("registrationFailed " + id);
+        }
+      };
       // Unregister scan list listener when no longer scanning
       const onScanReq = (scan: boolean) => {
         if (!scan) {
           this._scanner.removeListener("isScanRequested", onScanReq);
           this._scanner.removeListener("onScanListChange", onScanListChange);
+          this._scanner.removeListener("onScanError", onScanError);
         }
       };
       this._scanner.addListener("isScanRequested", onScanReq);
       this._scanner.addListener("onScanListChange", onScanListChange);
+      this._scanner.addListener("onScanError", onScanError);
     }
     return this._scanner.requestScan();
   }
@@ -473,7 +489,9 @@ export class PixelsCentral {
     );
 
     // Listen for scan events
-    const onScanListChange = (ev: PixelScannerEventMap["onScanListChange"]) => {
+    const onScanListChange = (
+      ev: ScanRequesterEventMap["onScanListChange"]
+    ) => {
       for (const op of ev.ops) {
         if (
           op.status === "scanned" &&
@@ -511,13 +529,14 @@ export class PixelsCentral {
       this._pixels.has(pixelId) &&
       (!!opt?.priority || !this._connectQueue.includes(pixelId))
     ) {
+      const priority = opt?.priority ?? "low";
       console.log(
-        `[PixelsCentral] Try connect Pixel ${unsigned32ToHex(pixelId)} with priority=${opt?.priority}`
+        `[PixelsCentral] Try connect Pixel ${unsigned32ToHex(pixelId)} with priority=${priority}`
       );
       // Subscribe to priority queue events
       this._subscribeToConnectQueueEvents();
       // Queue item
-      this._connectQueue.queue(pixelId, opt?.priority ?? "low");
+      this._connectQueue.queue(pixelId, priority);
     }
   }
 
@@ -526,6 +545,10 @@ export class PixelsCentral {
     for (const id of this._connectQueue.allIds) {
       this._connect(id, { keepConnectionReleaseTimings: true });
     }
+  }
+
+  stopConnecting(pixelId: number): void {
+    this._connectQueue.dequeue(pixelId);
   }
 
   setBlinkColor(color: Readonly<Color>): void {
@@ -966,7 +989,7 @@ export class PixelsCentral {
       isGattError(last.error) &&
       isGattError(error) &&
       // Check that the last GATT failure was recent enough
-      now - last.time < connectionRelease.connectGattFailureInterval &&
+      now - last.time < connectionRelease.connectGattErrorInterval &&
       // And that we are past the time to attempt to release a connection
       // data.nextDisco &&
       // now > data.nextDisco &&
@@ -1009,6 +1032,12 @@ export class PixelsCentral {
       }
     };
     if (delay) {
+      if (data.nextDiscoOnScan) {
+        data.nextDiscoOnScan += delay;
+      }
+      if (data.scanEndTime) {
+        data.scanEndTime += delay;
+      }
       const id = setTimeout(connect, delay);
       data.cancelNextConnect = () => {
         clearTimeout(id);
@@ -1111,7 +1140,7 @@ export class PixelsCentral {
     }
   }
 
-  private _tryReleaseOneConnection(pixelId: number): number | undefined {
+  private _tryReleaseOneConnection(pixelId?: number): number | undefined {
     // Remove all low priority connections that are not yet connected
     // so they don't take up our spot
     for (const id of this._connectQueue.lowPriorityIds) {
@@ -1121,8 +1150,8 @@ export class PixelsCentral {
     }
     // Get all queued connections, from low to high priority
     const ids = this._connectQueue.allIds;
-    const index = ids.indexOf(pixelId);
-    if (index < 0) {
+    const index = pixelId ? ids.indexOf(pixelId) : Number.MAX_VALUE;
+    if (pixelId && index < 0) {
       logError(
         `PixelsCentral: Connection release request for not connecting Pixel ${unsigned32ToHex(
           pixelId
@@ -1138,16 +1167,37 @@ export class PixelsCentral {
       console.log(
         `[PixelsCentral] ⚠️ Disconnecting Pixel ${unsigned32ToHex(
           idToDisco
-        )} on behalf of Pixel ${unsigned32ToHex(pixelId)}`
+        )}${pixelId ? `on behalf of Pixel ${unsigned32ToHex(pixelId)}` : ""}`
       );
       this._connectQueue.dequeue(idToDisco);
     }
     // Notify
-    this._emitEvent("onConnectionLimitReached", {
-      pixelId,
-      disconnectId: idToDisco,
-    });
+    if (pixelId) {
+      this._emitEvent("onConnectionLimitReached", {
+        pixelId,
+        disconnectId: idToDisco,
+      });
+    }
     return idToDisco;
+  }
+
+  private async _tryReleaseOneConnectionAndWait(): Promise<boolean> {
+    const pixelId = this._tryReleaseOneConnection();
+    const pixel = getPixel(pixelId);
+    if (!pixel) {
+      return false;
+    } else if (pixel.status === "disconnected") {
+      return true;
+    }
+    return new Promise<boolean>((resolve) => {
+      const onStatus = ({ status }: PixelMutableProps) => {
+        if (status !== "disconnecting") {
+          pixel.removePropertyListener("status", onStatus);
+          resolve(status === "disconnected");
+        }
+      };
+      pixel.addPropertyListener("status", onStatus);
+    });
   }
 
   private _connect(

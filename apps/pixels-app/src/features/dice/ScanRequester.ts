@@ -4,12 +4,14 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import {
   BluetoothNotAuthorizedError,
+  BluetoothState,
   BluetoothUnavailableError,
   Central,
   PixelScanner,
   PixelScannerEventMap,
   ScannedPixel,
-  ScanStartFailed,
+  ScanStartError,
+  ScanStartErrorCode,
   ScanStatus,
 } from "@systemic-games/react-native-pixels-connect";
 
@@ -36,7 +38,7 @@ class ManagedResource {
     const releaseAsync = () => {
       // Remove token
       if (this._tokens.delete(releaseAsync)) {
-        // Signal that the resource is released
+        // Signal that the resource is no longer needed by this consumer
         this._onRelease();
       }
     };
@@ -46,12 +48,24 @@ class ManagedResource {
   }
 }
 
+export class ScanStartFailedError extends ScanStartError {
+  readonly startError: ScanStartErrorCode;
+  constructor(bluetoothState: BluetoothState, startError: ScanStartErrorCode) {
+    super(
+      bluetoothState,
+      `Scan failed to start with error ${startError ?? "unspecified"}, Bluetooth state is ${Central.getBluetoothState()}`
+    );
+    this.name = "ScanStartFailedError";
+    this.startError = startError;
+  }
+}
+
 /**
  * Event map for {@link ScanRequester} class.
  * This is the list of supported events where the property name
  * is the event name and the property type the event data type.
  */
-export type ManagedScannerEventMap = PixelScannerEventMap &
+export type ScanRequesterEventMap = PixelScannerEventMap &
   Readonly<{
     isScanRequested: boolean;
     onScanError: Readonly<{ error: Error }>;
@@ -59,7 +73,7 @@ export type ManagedScannerEventMap = PixelScannerEventMap &
 
 export class ScanRequester {
   private readonly _evEmitter =
-    createTypedEventEmitter<ManagedScannerEventMap>();
+    createTypedEventEmitter<ScanRequesterEventMap>();
 
   private readonly _scanner = new PixelScanner();
   private readonly _scanMan;
@@ -88,6 +102,7 @@ export class ScanRequester {
     stopScanDelay?: number;
     minNotifyInterval?: number;
     keepAliveDuration?: number;
+    onRequestReleaseConnection?: () => Promise<boolean>;
   }) {
     if (opt?.minNotifyInterval) {
       this._scanner.minNotifyInterval = opt?.minNotifyInterval;
@@ -96,6 +111,8 @@ export class ScanRequester {
       this._scanner.keepAliveDuration = opt?.keepAliveDuration;
     }
     const stopDelay = opt?.stopScanDelay ?? 0;
+    const releaseConnection = opt?.onRequestReleaseConnection;
+    let stopTimeout: ReturnType<typeof setTimeout> | undefined;
     // Start scan function
     const startScan = () => {
       this._scanner
@@ -116,38 +133,85 @@ export class ScanRequester {
     this._onStatusCb = ({
       status,
       stopReason,
+      startError,
     }: PixelScannerEventMap["onStatusChange"]) => {
       if (status === "stopped" && stopReason && stopReason !== "success") {
-        console.log(`[PixelsCentral] Scan stopped with reason ${stopReason}`);
-        // Convert stop reason to error
-        this._emitEvent("onScanError", {
-          error:
-            stopReason === "failedToStart"
-              ? new ScanStartFailed(Central.getBluetoothState())
-              : stopReason === "unauthorized"
-                ? new BluetoothNotAuthorizedError()
-                : new BluetoothUnavailableError(stopReason),
-        });
+        if (startError === "registrationFailed" && releaseConnection) {
+          // On Samsung devices (and may be others), the scanner may stop with this error
+          // if there are too many connections, in which case we try to restart scanning
+          // after releasing a connection
+          console.log(
+            `[ScanRequester] ⚠️ Releasing connection to restart scan after registration failure`
+          );
+          releaseConnection()
+            .then((retry) => {
+              // It's possible that by the time we release the connection,
+              // the scanner is not taken anymore or has been restarted already
+              const shouldRetry =
+                this._scanner.status === "stopped" &&
+                this._scanMan.isTaken &&
+                this.isReady;
+              if (retry && shouldRetry) {
+                console.log(
+                  "[ScanRequester] ⚠️ Restarting scan after releasing connection"
+                );
+                startScan();
+              } else {
+                console.log(
+                  `[ScanRequester] ⚠️ Not restarting scan, status=${this._scanner.status} retry=${retry}, taken=${this._scanMan.isTaken}, ready=${this.isReady}`
+                );
+                if (shouldRetry) {
+                  this._emitEvent("onScanError", {
+                    error: new ScanStartFailedError(
+                      Central.getBluetoothState(),
+                      startError
+                    ),
+                  });
+                }
+              }
+            })
+            .catch((e) =>
+              console.error(
+                `[ScanRequester] Error releasing connection, not restarting scan: ${e}`
+              )
+            );
+        } else {
+          // Convert stop reason to error
+          this._emitEvent("onScanError", {
+            error:
+              stopReason === "failedToStart"
+                ? new ScanStartFailedError(
+                    Central.getBluetoothState(),
+                    startError! // We always have a start error on "failedToStart"
+                  )
+                : stopReason === "unauthorized"
+                  ? new BluetoothNotAuthorizedError()
+                  : new BluetoothUnavailableError(stopReason),
+          });
+        }
       }
     };
     // Create managed resource for the scanner
     this._scanMan = new ManagedResource(
-      // Take
+      // Take (called every time a scan is requested)
       () => {
         // Subscribe to BLE state changes once
         if (!this._isScanRequested) {
+          console.log("[ScanRequester] Scanner taken");
           this._scanner.addListener("isReady", onReady);
           this._updateScanRequested(true);
         }
         // And always try to start scanning
         startScan();
+        // Clear stop timeout
+        clearTimeout(stopTimeout);
       },
-      // Release
+      // Release (called once when no more scan are needed)
       () => {
         // Stop scanning if not needed anymore
         if (!this._scanMan.isTaken) {
           console.log(
-            `[ManagedScanner] Scanner released, waiting ${stopDelay}ms before stopping`
+            `[ScanRequester] Scanner released, waiting ${stopDelay}ms before stopping`
           );
           // We wait a bit to avoid starting and stopping scanning too often
           // as Android won't accept more than 5 scans per minute
@@ -159,12 +223,16 @@ export class ScanRequester {
             }
             // Stop scanning
             this._scanner.stopAsync().catch((e) => {
-              console.error(`[ManagedScanner] Error stopping scan: ${e}`);
+              console.error(`[ScanRequester] Error stopping scan: ${e}`);
             });
           };
+          clearTimeout(stopTimeout);
           if (stopDelay) {
             // Stop after a delay if scanner not "retaken" in the meantime
-            setTimeout(() => !this._scanMan.isTaken && stop(), stopDelay);
+            stopTimeout = setTimeout(
+              () => !this._scanMan.isTaken && stop(),
+              stopDelay
+            );
           } else {
             stop();
           }
@@ -176,14 +244,14 @@ export class ScanRequester {
   /**
    * Registers a listener function that will be called when the specified
    * event is raised.
-   * See {@link ManagedScannerEventMap} for the list of events and their
+   * See {@link ScanRequesterEventMap} for the list of events and their
    * associated data.
    * @param type A case-sensitive string representing the event type to listen for.
    * @param listener The callback function.
    */
-  addListener<K extends keyof ManagedScannerEventMap>(
+  addListener<K extends keyof ScanRequesterEventMap>(
     type: K,
-    listener: EventReceiver<ManagedScannerEventMap[K]>
+    listener: EventReceiver<ScanRequesterEventMap[K]>
   ): void {
     if (type === "isScanRequested") {
       this._evEmitter.addListener(type, listener);
@@ -204,14 +272,14 @@ export class ScanRequester {
   /**
    * Unregisters a listener from receiving events identified by
    * the given event name.
-   * See {@link ManagedScannerEventMap} for the list of events and their
+   * See {@link ScanRequesterEventMap} for the list of events and their
    * associated data.
    * @param type A case-sensitive string representing the event type.
    * @param listener The callback function to unregister.
    */
-  removeListener<K extends keyof ManagedScannerEventMap>(
+  removeListener<K extends keyof ScanRequesterEventMap>(
     type: K,
-    listener: EventReceiver<ManagedScannerEventMap[K]>
+    listener: EventReceiver<ScanRequesterEventMap[K]>
   ): void {
     if (type === "isScanRequested") {
       this._evEmitter.removeListener(type, listener);
@@ -234,15 +302,15 @@ export class ScanRequester {
     return this._scanMan.take();
   }
 
-  private _emitEvent<T extends keyof ManagedScannerEventMap>(
+  private _emitEvent<T extends keyof ScanRequesterEventMap>(
     name: T,
-    ev: ManagedScannerEventMap[T]
+    ev: ScanRequesterEventMap[T]
   ): void {
     try {
       this._evEmitter.emit(name, ev);
     } catch (e) {
       console.error(
-        `[ManagedScanner] Uncaught error in "${name}" event listener: ${e}`
+        `[ScanRequester] Uncaught error in "${name}" event listener: ${e}`
       );
     }
   }
