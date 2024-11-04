@@ -45,7 +45,6 @@ import { DfuFilesInfo } from "~/hooks";
 const connectionRelease = {
   interval: 7000, // We hope it's enough time to connect to a Pixel
   window: 20000, // Should allow for at least 2 connection releases
-  maxScanDelta: 1500, // Release connection if scanned twice within this time
   gracePeriod: 5000, // Time after scan to still allow for connection release
   connectGattErrorInterval: 5000, // Maximum delay between 2 GATT errors to trigger a connection release
 } as const;
@@ -193,7 +192,6 @@ export class PixelsCentral {
   private readonly _pixels = new Map<
     number,
     {
-      lastScanTime?: number; // Timestamp of last scan
       nextDiscoOnScan?: number; // Timestamp for next connection release attempt on scanning, undefined if not scheduled
       scanEndTime?: number; // Timestamp for end of scan window
       lastConnectError?: { time: number; error: Error }; // Timestamp of last connection error
@@ -841,12 +839,9 @@ export class PixelsCentral {
           // Check that we are still scanning for this Pixel
           data.scanEndTime &&
           scanTime < data.scanEndTime + connectionRelease.gracePeriod &&
-          // Check if scanned twice recently
-          data.lastScanTime &&
-          scanTime - data.lastScanTime < connectionRelease.maxScanDelta &&
           // And that we are past the time to attempt to release a connection
           data.nextDiscoOnScan &&
-          data.lastScanTime > data.nextDiscoOnScan && // Use last scan time to be sure we're not using a scan that occurred while disconnected
+          scanTime > data.nextDiscoOnScan && // Use last scan time to be sure we're not using a scan that occurred while disconnected
           // Only for dice connecting as high priority
           this._connectQueue.isHighPriority(pixelId)
         ) {
@@ -862,8 +857,6 @@ export class PixelsCentral {
           }
           // Schedule new scan
           this._scheduleScan(pixelId, data);
-        } else {
-          data.lastScanTime = scanTime;
         }
       }
     } else {
@@ -1064,8 +1057,7 @@ export class PixelsCentral {
     const now = Date.now();
     // Cancel any previous scan request
     data.cancelScan?.();
-    // Reset scan parameters
-    data.lastScanTime = 0;
+    // Set parameters
     if (!data.scanEndTime) {
       data.scanEndTime = now + connectionRelease.window;
       // Also reset next connection release time if we are past it
@@ -1073,7 +1065,6 @@ export class PixelsCentral {
         data.nextDiscoOnScan = undefined;
       }
     }
-
     // Set time to attempt a connection release if connecting
     const connecting = getPixel(pixelId)?.status === "connecting";
     if (!data.nextDiscoOnScan && connecting) {
