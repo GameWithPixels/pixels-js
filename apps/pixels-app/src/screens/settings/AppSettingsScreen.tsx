@@ -1,6 +1,5 @@
 import React from "react";
 import { ScrollView, useWindowDimensions, View } from "react-native";
-import { FileLogger } from "react-native-file-logger";
 import { Divider, Switch, useTheme } from "react-native-paper";
 
 import { SettingsSwitch } from "./components/SettingsSwitch";
@@ -168,24 +167,6 @@ function AppSettingsPage({
             >
               Debug Mode
             </SettingsSwitch>
-            <Divider style={{ marginVertical: 10 }} />
-            <OutlineButton
-              onPress={() => {
-                if (__DEV__) {
-                  FileLogger.getLogFilePaths().then((logFiles) =>
-                    console.log("Log files:\n" + logFiles.join("\n"))
-                  );
-                }
-                FileLogger.sendLogFilesByEmail({
-                  to: "olivier@gamewithpixels.com",
-                  subject: "Pixels App Logs",
-                }).catch((e) =>
-                  console.error("Error exporting logs: " + String(e))
-                );
-              }}
-            >
-              Export Logs
-            </OutlineButton>
           </>
         )}
       </ScrollView>

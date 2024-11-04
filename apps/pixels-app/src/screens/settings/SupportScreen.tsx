@@ -1,6 +1,7 @@
 import * as Linking from "expo-linking";
 import React from "react";
 import { ScrollView, View } from "react-native";
+import { FileLogger } from "react-native-file-logger";
 
 import { Body } from "./components/text";
 
@@ -50,7 +51,7 @@ function SupportPage({
           gap: 20,
         }}
       >
-        <Body>To send suggestions:</Body>
+        <Body>To send a suggestion:</Body>
         {/* <URLButton
           url="https://gamewithpixels.com/contact-us/"
           sentry-label="contact-us"
@@ -60,7 +61,7 @@ function SupportPage({
         <URLButton url={createURL("Suggestion")} sentry-label="send-email">
           Email Us at {supportEmail}
         </URLButton>
-        <Body>To report issues:</Body>
+        <Body>To report an issue:</Body>
         <URLButton url={createURL("Issue")} sentry-label="send-email">
           Email Us at {supportEmail}
         </URLButton>
@@ -71,6 +72,24 @@ function SupportPage({
         >
           Join Pixels Discord Server
         </URLButton>
+        <Body>App logs:</Body>
+        <OutlineButton
+          onPress={() => {
+            if (__DEV__) {
+              FileLogger.getLogFilePaths().then((logFiles) =>
+                console.log("Log files:\n" + logFiles.join("\n"))
+              );
+            }
+            FileLogger.sendLogFilesByEmail({
+              to: supportEmail,
+              subject: "Pixels App Logs",
+            }).catch((e) =>
+              console.error("Error exporting logs: " + String(e))
+            );
+          }}
+        >
+          Export Logs
+        </OutlineButton>
       </ScrollView>
     </View>
   );

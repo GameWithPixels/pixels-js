@@ -12,7 +12,6 @@ import { MenuButton } from "~/components/buttons";
 const pages = [
   // "Audio Clips",
   // "Import Profiles",
-  // "Export Logs",
   // "Export Settings",
   // "Import Settings",
   // "Shop",
