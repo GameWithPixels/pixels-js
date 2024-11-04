@@ -44,7 +44,7 @@ const connectionRelease = {
   window: 20000, // Should allow for at least 2 connection releases
   maxScanDelta: 1500, // Release connection if scanned twice within this time
   gracePeriod: 5000, // Time after scan to still allow for connection release
-  connectGattFailureDelta: 5000, // Maximum delay between 2 GATT failures to trigger a connection release
+  connectGattFailureInterval: 5000, // Maximum delay between 2 GATT failures to trigger a connection release
 } as const;
 
 // This delay is to avoid stopping/starting scanner too often
@@ -72,9 +72,9 @@ function isConnected(
   return status === "identifying" || status === "ready";
 }
 
-function isGattFailure(error: Error): boolean {
+function isGattError(error: Error): boolean {
   return (
-    error?.cause instanceof ConnectError && error.cause.type === "gattFailure"
+    error?.cause instanceof ConnectError && error.cause.type === "gattError"
   );
 }
 
@@ -946,7 +946,7 @@ export class PixelsCentral {
       console.log(
         `[PixelsCentral] ⚠️ Too many connection errors for Pixel ${unsigned32ToHex(
           pixel.pixelId
-        )}`
+        )}${isGattError(last.error) && isGattError(error) ? " with double GATT error" : ""} (interval=${now - last.time})`
       );
 
     // Connection failed, try to connect again
@@ -961,35 +961,26 @@ export class PixelsCentral {
 
     // Special case: double GATT failure
     // Assumes GATT failure is caused by the connection limit being reached
-    if (tooManyErrors && isGattFailure(last.error) && isGattFailure(error)) {
-      console.log(
-        `[PixelsCentral] ⚠️ Double gatt failure for Pixel ${unsigned32ToHex(
-          pixel.pixelId
-        )} => ${JSON.stringify({
-          now,
-          lastConnectionLimitErrorRelative: now - last.time,
-          // nextDiscoRelative: data.nextDisco && data.nextDisco - now,
-          // canDisco: data.nextDisco && now > data.nextDisco,
-        })}`
-      );
-      if (
-        // Check that the last GATT failure was recent enough
-        now - last.time < connectionRelease.connectGattFailureDelta &&
-        // And that we are past the time to attempt to release a connection
-        // data.nextDisco &&
-        // now > data.nextDisco &&
-        // Only for dice connecting as high priority
-        this._connectQueue.isHighPriority(pixel.pixelId)
-      ) {
-        data.lastConnectError = undefined;
-        // Set new connection release time
-        // data.nextDiscoOnScan = now + connectionRelease.interval;
-        // Try to disconnect another Pixel
-        const disconnectedId = this._tryReleaseOneConnection(pixel.pixelId);
-        // Notify
-        if (disconnectedId) {
-          this._scheduleConnectIfQueued(pixel.pixelId, data, reconnectionDelay);
-        }
+    if (
+      tooManyErrors &&
+      isGattError(last.error) &&
+      isGattError(error) &&
+      // Check that the last GATT failure was recent enough
+      now - last.time < connectionRelease.connectGattFailureInterval &&
+      // And that we are past the time to attempt to release a connection
+      // data.nextDisco &&
+      // now > data.nextDisco &&
+      // Only for dice connecting as high priority
+      this._connectQueue.isHighPriority(pixel.pixelId)
+    ) {
+      data.lastConnectError = undefined;
+      // Set new connection release time
+      // data.nextDiscoOnScan = now + connectionRelease.interval;
+      // Try to disconnect another Pixel
+      const disconnectedId = this._tryReleaseOneConnection(pixel.pixelId);
+      // Notify
+      if (disconnectedId) {
+        this._scheduleConnectIfQueued(pixel.pixelId, data, reconnectionDelay);
       }
     }
   }

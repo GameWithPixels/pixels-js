@@ -740,8 +740,11 @@ export const Central = {
         case "ERROR_CANCELLED":
           throw new Errors.ConnectError(name, "cancelled");
         case "ERROR_GATT_FAILURE":
-          // We usually get this error when we've reached the maximum number of connections
-          throw new Errors.ConnectError(name, "gattFailure");
+        // We usually get this error when we've reached the maximum number of connections
+        // eslint-disable-next-line no-fallthrough
+        case "ERROR_GATT_ERROR":
+          // We also get this error
+          throw new Errors.ConnectError(name, "gattError");
         case "ERROR_BLUETOOTH_DISABLED":
           if (pInf.state === "connecting") {
             // If BLE is off on initiating connection, we get here without
