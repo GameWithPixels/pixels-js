@@ -19,11 +19,7 @@ export function useConfirmActionSheet<T = undefined>(
 }) => void {
   const { showActionSheetWithOptions } = useActionSheet();
   const { colors } = useTheme();
-  return (myOpt?: {
-    actionName?: string;
-    onConfirm?: (data?: T) => void;
-    data?: T;
-  }) => {
+  return (myOpt) => {
     showActionSheetWithOptions(
       {
         title: opt?.title,

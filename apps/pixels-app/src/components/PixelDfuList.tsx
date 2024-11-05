@@ -18,13 +18,8 @@ import {
   TextProps,
   useTheme,
 } from "react-native-paper";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSpring,
-} from "react-native-reanimated";
 
+import { BouncingView } from "./BouncingView";
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 import { DieWireframe } from "./icons";
 
@@ -125,31 +120,8 @@ function TextAvailability({
   );
 }
 
-function BouncingView({ children }: { children: React.ReactNode }) {
-  const translateY = useSharedValue(0);
-  // Start bouncing animation
-  React.useEffect(() => {
-    translateY.value = withRepeat(
-      withSpring(1, {
-        duration: 1500,
-        dampingRatio: 0.2,
-      }),
-      -1 // true
-    );
-  }, [translateY]);
-  const animStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateY: (translateY.value - 0.5) * 10 }, // 10 pixels
-      ],
-    };
-  });
-  return <Animated.View style={animStyle}>{children}</Animated.View>;
-}
-
 function PixelDfuItem({
   pairedDie,
-  contentStyle,
   ...props
 }: {
   pairedDie: Pick<PixelInfo, "pixelId" | "name" | "dieType">;
@@ -202,16 +174,13 @@ function PixelDfuItem({
         status === "ready" &&
         (rollState === "rolling" || rollState === "handling")
       }
-      contentStyle={[
-        {
-          flexDirection: "row",
-          alignItems: "stretch",
-          paddingHorizontal: 20,
-          paddingVertical: 5,
-          gap: 10,
-        },
-        contentStyle,
-      ]}
+      contentStyle={{
+        flexDirection: "row",
+        alignItems: "stretch",
+        paddingHorizontal: 20,
+        paddingVertical: 5,
+        gap: 10,
+      }}
       {...props}
     >
       <DieWireframe

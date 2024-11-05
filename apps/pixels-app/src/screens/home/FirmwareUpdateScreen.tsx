@@ -6,6 +6,7 @@ import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 import { useAppSelector } from "~/app/hooks";
 import { FirmwareUpdateScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
+import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { DebugConnectionStatusesBar } from "~/components/DebugConnectionStatusesBar";
 import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
@@ -34,14 +35,15 @@ export function useConfirmStopUpdatingActionSheet(
   return () => {
     showActionSheetWithOptions(
       {
-        title:
-          "Stop updating dice?\nWe still need to finish updating the current one.",
-        titleTextStyle: { color: colors.onSurface },
+        title: "Stop updating dice?",
+        message:
+          "The update process will stop after the current dice is finished updating.",
         options: ["Stop", "Continue"],
         destructiveButtonIndex: 0,
         cancelButtonIndex: 1,
         destructiveColor: colors.error,
         containerStyle: { backgroundColor: colors.background },
+        titleTextStyle: { color: colors.onSurface },
         textStyle: { color: colors.onBackground },
       },
       (selectedIndex?: number) => {
@@ -92,7 +94,7 @@ function FirmwareUpdatePage({
   const updating = useIsAppUpdatingFirmware();
   const updateDice = useUpdateDice();
   const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
-  const [stopRequester, setStopUpdating] = React.useState<() => void>();
+  const [stopRequester, setStopRequester] = React.useState<() => void>();
   const cancelUpdating = useConfirmStopUpdatingActionSheet(() =>
     stopRequester?.()
   );
@@ -119,51 +121,56 @@ function FirmwareUpdatePage({
         style={{ flex: 1, marginHorizontal: 20 }}
         contentContainerStyle={{ paddingBottom: bottom, gap: 20 }}
       >
-        <Text variant="bodyLarge">{getKeepAllDiceUpToDate()}</Text>
-        <Text variant="bodyLarge">
-          {getKeepDiceNearDevice(pairedDice.length)}
-        </Text>
-        <DfuFilesGate dfuFilesInfo={dfuFilesInfo} dfuFilesError={dfuFilesError}>
-          {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
-            <GradientButton
-              outline={updating}
-              disabled={!outdatedCount || (updating && !stopRequester)}
-              icon={() =>
-                updating && !stopRequester ? <ActivityIndicator /> : undefined
-              }
-              onPress={() => {
-                stopScan?.();
-                if (updating) {
-                  cancelUpdating();
-                } else if (outdatedCount) {
-                  let stop = false;
-                  setStopUpdating(() => () => {
-                    stop = true;
-                    setStopUpdating(undefined);
-                  });
-                  updateDice(
-                    pairedDice.map((d) => d.pixelId),
-                    dfuFilesInfo,
-                    { stopRequested: () => stop }
-                  ).finally(() => {
-                    setStopUpdating(undefined);
-                    // Reconnect to dice
-                    for (const d of pairedDice) {
-                      central.tryConnect(d.pixelId);
-                    }
-                  });
+        <BluetoothStateWarning>
+          <Text variant="bodyLarge">{getKeepAllDiceUpToDate()}</Text>
+          <Text variant="bodyLarge">
+            {getKeepDiceNearDevice(pairedDice.length)}
+          </Text>
+          <DfuFilesGate
+            dfuFilesInfo={dfuFilesInfo}
+            dfuFilesError={dfuFilesError}
+          >
+            {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
+              <GradientButton
+                outline={updating}
+                disabled={!outdatedCount || (updating && !stopRequester)}
+                icon={() =>
+                  updating && !stopRequester ? <ActivityIndicator /> : undefined
                 }
-              }}
-            >
-              {updating
-                ? "Stop Updating"
-                : outdatedCount
-                  ? `Start Updating`
-                  : "All Dice Up-to-date"}
-            </GradientButton>
-          )}
-        </DfuFilesGate>
-        <PixelDfuList pairedDice={pairedDice} />
+                onPress={() => {
+                  stopScan?.();
+                  if (updating) {
+                    cancelUpdating();
+                  } else if (outdatedCount) {
+                    let stop = false;
+                    setStopRequester(() => () => {
+                      stop = true;
+                      setStopRequester(undefined);
+                    });
+                    updateDice(
+                      pairedDice.map((d) => d.pixelId),
+                      dfuFilesInfo,
+                      { stopRequested: () => stop }
+                    ).finally(() => {
+                      setStopRequester(undefined);
+                      // Reconnect to dice
+                      for (const d of pairedDice) {
+                        central.tryConnect(d.pixelId);
+                      }
+                    });
+                  }
+                }}
+              >
+                {updating
+                  ? "Stop Updating"
+                  : outdatedCount
+                    ? `Start Updating`
+                    : "All Dice Up-to-date"}
+              </GradientButton>
+            )}
+          </DfuFilesGate>
+          <PixelDfuList pairedDice={pairedDice} />
+        </BluetoothStateWarning>
       </ScrollView>
     </View>
   );

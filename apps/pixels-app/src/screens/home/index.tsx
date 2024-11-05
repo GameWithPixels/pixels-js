@@ -7,6 +7,7 @@ import { DieDetailsScreen } from "./DieDetailsScreen";
 import { DieFocusScreen } from "./DieFocusScreen";
 import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
+import { RestoreFirmwareScreen } from "./RestoreFirmwareScreen";
 import { RollsHistoryScreen } from "./RollsHistoryScreen";
 
 import {
@@ -64,6 +65,14 @@ export function HomeStack({ route }: HomeStackProps) {
           <Stack.Screen
             name="firmwareUpdate"
             component={FirmwareUpdateScreen}
+            options={{
+              ...getStackNavigationOptions("bottom-sheet"),
+              gestureEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="restoreFirmware"
+            component={RestoreFirmwareScreen}
             options={{
               ...getStackNavigationOptions("bottom-sheet"),
               gestureEnabled: false,

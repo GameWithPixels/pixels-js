@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ScrollView, StyleProp, View, ViewStyle } from "react-native";
+import { Alert, ScrollView, StyleProp, View, ViewStyle } from "react-native";
 import { Icon, Text, TouchableRipple, useTheme } from "react-native-paper";
 
 import { PairDiceBottomSheet } from "./components/PairDiceBottomSheet";
@@ -221,6 +221,47 @@ function FirmwareUpdateBanner({
   );
 }
 
+function useCheckForDiceInBootloader(
+  enabled: boolean,
+  onRestoreDice: () => void
+) {
+  const central = usePixelsCentral();
+  const alertShownRef = React.useRef(false);
+  React.useEffect(() => {
+    if (enabled) {
+      alertShownRef.current = false;
+      return central.addListener(
+        "onPixelBootloader",
+        ({ status, notifier: { pixelId } }) => {
+          if (
+            !alertShownRef.current &&
+            !central.isRegistered(pixelId) &&
+            status === "scanned"
+          ) {
+            alertShownRef.current = true;
+            Alert.alert(
+              "Unpaired die with invalid firmware",
+              "One or more unpaired Pixels dice were found to be programmed with an incomplete or invalid firmware.\n\n" +
+                "Would you like to try restore their firmware now?",
+              [
+                {
+                  text: "No",
+                  style: "cancel",
+                },
+                {
+                  text: "Yes",
+                  onPress: onRestoreDice,
+                },
+              ]
+            );
+          }
+        }
+      );
+    }
+  }, [central, enabled, onRestoreDice]);
+  return null;
+}
+
 function DiceListPage({
   navigation,
 }: {
@@ -235,8 +276,17 @@ function DiceListPage({
   // Scan for missing dice on showing page
   const central = usePixelsCentral();
   useFocusEffect(
-    React.useCallback(() => central.tryReconnectDice(), [central])
+    React.useCallback(() => {
+      central.tryReconnectDice();
+      return () => setShowPairDice(false);
+    }, [central])
   );
+
+  // Show restore firmware dialog for unpaired dice in bootloader
+  useCheckForDiceInBootloader(showPairDice, () => {
+    setShowPairDice(false);
+    navigation.navigate("restoreFirmware");
+  });
 
   // Firmware update
   const outdatedCount = useOutdatedPixelsCount();

@@ -117,11 +117,7 @@ const PairedDiceSlice = createSlice({
     ) {
       const { payload } = action;
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
-      if (
-        die &&
-        payload.timestamp > 0 &&
-        die.firmwareTimestamp !== payload.timestamp
-      ) {
+      if (die && die.firmwareTimestamp !== payload.timestamp) {
         log("updatePairedDieFirmwareTimestamp", payload);
         die.firmwareTimestamp = payload.timestamp;
       }

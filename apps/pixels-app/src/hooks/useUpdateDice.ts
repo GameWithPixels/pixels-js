@@ -19,15 +19,8 @@ export function useUpdateDice(): (
   const store = useAppStore();
   const central = usePixelsCentral();
   return React.useCallback(
-    async (
-      pixelsIds: readonly number[],
-      filesInfo: DfuFilesInfo,
-      opt?: {
-        maxAttempts?: number;
-        stopRequested?: () => boolean;
-      }
-    ) => {
-      const failedPixelsIds: number[] = [];
+    async (pixelsIds, filesInfo, opt) => {
+      const failedIds: number[] = [];
       const idsToProcess = [...new Set(pixelsIds)];
       while (idsToProcess.length) {
         if (opt?.stopRequested?.()) {
@@ -39,15 +32,14 @@ export function useUpdateDice(): (
         while (true) {
           ++attemptsCount;
           try {
-            const opt = {
+            updated = await central.tryUpdateFirmware(pixelId, filesInfo, {
               bootloader: store.getState().appSettings.updateBootloader,
-            };
-            updated = await central.tryUpdateFirmware(pixelId, filesInfo, opt);
+            });
             break;
           } catch (e) {
             logError(`DFU error #${attemptsCount}: ${e}`);
             if (attemptsCount >= (opt?.maxAttempts ?? 3)) {
-              failedPixelsIds.push(pixelId);
+              failedIds.push(pixelId);
               break;
             }
           }
@@ -65,13 +57,12 @@ export function useUpdateDice(): (
         // Remove id
         idsToProcess.shift();
       }
-      if (failedPixelsIds.length) {
+      if (failedIds.length) {
         console.warn(
-          "Failed updating dice: " +
-            failedPixelsIds.map(unsigned32ToHex).join(", ")
+          "Failed updating dice: " + failedIds.map(unsigned32ToHex).join(", ")
         );
       }
-      return failedPixelsIds;
+      return failedIds;
     },
     [central, store]
   );

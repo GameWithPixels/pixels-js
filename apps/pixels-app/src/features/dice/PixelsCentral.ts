@@ -59,6 +59,9 @@ const reconnectionDelay = {
   long: 30000, // 30s, equals to Android connection timeout
 } as const;
 
+// Bootloader
+const bootloaderScanTimeSpan = 5000; // 5s
+
 //
 // Helper functions
 //
@@ -161,18 +164,18 @@ export type PixelsCentralEventMap = Readonly<{
     status: "scanned" | "lost";
     notifier: ScannedPixelNotifier;
   }>;
-  onInBootloader: Readonly<{
+  onPixelFound: Readonly<{ pixel: Pixel }>; // Registered Pixel was found (scanned)
+  onPixelBootloader: Readonly<{
     status: "scanned" | "lost";
     notifier: ScannedBootloaderNotifier;
   }>;
-  onPixelFound: Readonly<{ pixel: Pixel }>; // Registered Pixel was found (scanned)
   onConnectionLimitReached: Readonly<{
     pixelId: number;
     disconnectId?: number;
   }>; // Failed to connect Pixel because connection limit was reached
   // DFU events
-  onDfuState: { pixelId: number; state: PixelsCentralDfuState };
-  onDfuProgress: { pixelId: number; progress: number };
+  onDfuState: Readonly<{ pixelId: number; state: PixelsCentralDfuState }>;
+  onDfuProgress: Readonly<{ pixelId: number; progress: number }>;
 }>;
 
 // Registered Pixels are added to the "pixels" list whenever they are found (= scanned)
@@ -198,8 +201,15 @@ export class PixelsCentral {
       cancelScan?: () => void;
       cancelNextConnect?: () => void;
       disposer?: () => void;
-      // Bootloader
-      lastBootloaderScanTime?: number; // Timestamp of last bootloader scan, reset on Pixel scan or connection
+    }
+  >();
+
+  // Dice in bootloader mode
+  private readonly _bootloaderDice = new Map<
+    number,
+    {
+      firstScan: number; // Timestamp of first bootloader scan since the last connection or "normal" scan
+      lastScan: number;
     }
   >();
 
@@ -252,6 +262,14 @@ export class PixelsCentral {
         for (const id of ids) {
           this._scheduleConnectOrScan(id);
         }
+      } else {
+        for (const data of this._pixels.values()) {
+          data.cancelNextConnect?.();
+          data.cancelScan?.();
+          data.nextDiscoOnScan = undefined;
+          data.lastConnectError = undefined;
+        }
+        this._bootloaderDice.clear();
       }
     };
   }
@@ -432,26 +450,33 @@ export class PixelsCentral {
               default:
                 assertNever(scanStatus);
             }
-          } else if (
-            op.status === "scanned" &&
-            op.item.type === "bootloader" &&
-            this._pixels.has(op.item.pixelId)
-          ) {
-            // Always update notifier
-            const notifier = ScannedBootloaderNotifier.getInstance(op.item);
-            const data = this._pixels.get(op.item.pixelId);
-            if (data) {
-              !data.lastBootloaderScanTime &&
+          } else if (op.item.type === "bootloader") {
+            if (op.status === "scanned") {
+              // Always update notifier
+              const notifier = ScannedBootloaderNotifier.getInstance(op.item);
+              const { pixelId } = notifier;
+              // Track time of first & last bootloader scan
+              const data = this._bootloaderDice.get(pixelId);
+              if (!data) {
                 console.log(
-                  `[PixelsCentral] Scanned Bootloader ${unsigned32ToHex(op.item.pixelId)} delay=${Date.now() - op.item.timestamp.getTime()}`
+                  `[PixelsCentral] Scanned Bootloader ${unsigned32ToHex(pixelId)} delay=${Date.now() - op.item.timestamp.getTime()}`
                 );
-              // Track time of last bootloader scan
-              data.lastBootloaderScanTime = notifier.timestamp.getTime();
-              // Notify
-              this._emitEvent("onInBootloader", {
-                status: "scanned",
-                notifier,
-              });
+                this._bootloaderDice.set(pixelId, {
+                  firstScan: notifier.timestamp.getTime(),
+                  lastScan: notifier.timestamp.getTime(),
+                });
+              } else {
+                data.lastScan = notifier.timestamp.getTime();
+                // Notify
+                if (data.lastScan - data.firstScan > bootloaderScanTimeSpan) {
+                  this._emitEvent("onPixelBootloader", {
+                    status: "scanned",
+                    notifier,
+                  });
+                }
+              }
+            } else {
+              this._notifyNotInBootloader(op.item.pixelId);
             }
           }
         }
@@ -657,7 +682,7 @@ export class PixelsCentral {
 
       // Are we in bootloader?
       const bootloaderLastScan =
-        this._pixels.get(pixelId)?.lastBootloaderScanTime ?? 0;
+        this._bootloaderDice.get(pixelId)?.lastScan ?? 0;
       if (bootloaderLastScan >= startTime) {
         const bootloader = ScannedBootloaderNotifier.findInstance(pixelId);
         if (!bootloader) {
@@ -822,10 +847,11 @@ export class PixelsCentral {
 
   private _onScannedPixel(notifier: ScannedPixelNotifier): void {
     const pixelId = notifier.pixelId;
+    // Not in bootloader if getting scanned
+    this._notifyNotInBootloader(pixelId);
+    // Check if Pixel is registered
     const data = this._pixels.get(pixelId);
     if (data) {
-      // Not in bootloader if getting scanned
-      this._notifyNotInBootloader(pixelId, data);
       // Report Pixel as available
       this._emitEvent("onPixelScanned", { status: "scanned", notifier });
       // Emit event if Pixel registered and scanned for the first time
@@ -906,6 +932,10 @@ export class PixelsCentral {
     pixelId: number,
     { status, lastStatus, reason }: PixelStatusEvent
   ): void {
+    if (isConnected(status)) {
+      // Not in bootloader if connected
+      this._notifyNotInBootloader(pixelId);
+    }
     const data = this._pixels.get(pixelId);
     if (data) {
       // Keep timestamp of first connection attempt
@@ -914,8 +944,6 @@ export class PixelsCentral {
         this._scheduleScan(pixelId, data);
       } else {
         if (isConnected(status)) {
-          // Not in bootloader if connected
-          this._notifyNotInBootloader(pixelId, data);
           // Reset connection error
           data.lastConnectError = undefined;
           // Prevent any further connection release attempt
@@ -945,15 +973,11 @@ export class PixelsCentral {
     }
   }
 
-  private _notifyNotInBootloader(
-    pixelId: number,
-    data: NonNullable<ReturnType<typeof this._pixels.get>>
-  ): void {
-    if (data.lastBootloaderScanTime) {
-      data.lastBootloaderScanTime = undefined;
+  _notifyNotInBootloader(pixelId: number): void {
+    if (this._bootloaderDice.delete(pixelId)) {
       const notifier = ScannedBootloaderNotifier.findInstance(pixelId);
       notifier &&
-        this._emitEvent("onInBootloader", { status: "lost", notifier });
+        this._emitEvent("onPixelBootloader", { status: "lost", notifier });
     }
   }
 

@@ -75,6 +75,7 @@ export type HomeStackParamList = {
   dieRollsHistory: { pixelId: number };
   editDieProfileStack: NavigatorScreenParams<EditDieProfileStackParamList>;
   firmwareUpdate: undefined;
+  restoreFirmware: undefined;
   diceRoller: undefined;
 };
 
@@ -106,6 +107,11 @@ export type EditDieProfileStackProps = NativeStackScreenProps<
 export type FirmwareUpdateScreenProps = NativeStackScreenProps<
   HomeStackParamList,
   "firmwareUpdate"
+>;
+
+export type RestoreFirmwareScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "restoreFirmware"
 >;
 
 export type DiceRollerScreenProps = NativeStackScreenProps<
