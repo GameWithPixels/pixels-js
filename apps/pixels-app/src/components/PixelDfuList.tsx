@@ -1,9 +1,12 @@
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import {
+  FontAwesome5,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import {
   Pixel,
   PixelInfo,
   PixelInfoNotifier,
-  usePixelInfoProp,
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -35,11 +38,7 @@ import {
   useRollStateLabel,
   useRegisteredPixel,
 } from "~/hooks";
-
-function usePixelRssiLabel(pixel?: PixelInfoNotifier) {
-  const rssi = usePixelInfoProp(pixel, "rssi");
-  return rssi !== undefined ? `  📶 ${rssi} dBm` : undefined;
-}
+import { usePixelRssiLabel } from "~/hooks/usePixelRssiLabel";
 
 function TextDfuState({
   state,
@@ -65,11 +64,30 @@ function TextStatus({
   const rollLabel = useRollStateLabel(pixel);
   const batteryLabel = useBatteryStateLabel(pixel);
   const rssiLabel = usePixelRssiLabel(pixel);
+  const { colors } = useTheme();
   return (
     <Text {...props}>
-      {(batteryLabel ?? "") +
-        (rssiLabel ?? "") +
-        ((rssiLabel ?? batteryLabel) && rollLabel ? " - " : "") +
+      {batteryLabel && (
+        <>
+          <MaterialCommunityIcons
+            name="battery"
+            size={16}
+            color={colors.onSurface}
+          />{" "}
+          {batteryLabel}
+        </>
+      )}
+      {rssiLabel && (
+        <>
+          <MaterialCommunityIcons
+            name="signal"
+            size={16}
+            color={colors.onSurface}
+          />{" "}
+          {rssiLabel}
+        </>
+      )}
+      {((rssiLabel ?? batteryLabel) && rollLabel ? ", " : "") +
         (rollLabel ?? "")}
     </Text>
   );
@@ -82,9 +100,27 @@ function TextAvailability({
   notifier?: PixelInfoNotifier;
 } & Omit<TextProps<string>, "children">) {
   const rssiLabel = usePixelRssiLabel(notifier);
+  const { colors } = useTheme();
   return (
     <Text {...props}>
-      {notifier ? `Available ${rssiLabel ?? ""}` : "Unavailable"}
+      {notifier ? (
+        <>
+          Available
+          {rssiLabel && (
+            <>
+              {" "}
+              <MaterialCommunityIcons
+                name="signal"
+                size={16}
+                color={colors.onSurface}
+              />{" "}
+              {rssiLabel}
+            </>
+          )}
+        </>
+      ) : (
+        "Unavailable"
+      )}
     </Text>
   );
 }

@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
@@ -15,12 +16,13 @@ import {
   ViewStyle,
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { Text } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 
 import { PairedDie } from "~/app/PairedDie";
 import { DieDetailsScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
+import { PixelConnectionStatus } from "~/components/PixelConnectionStatus";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { ProfileUsage } from "~/components/ProfileUsage";
 import { Banner } from "~/components/banners";
@@ -59,20 +61,47 @@ export function DieStatus({
   const currentFace = usePixelProp(pixel, "currentFace");
   const transferProgress =
     usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
+  const { colors } = useTheme();
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
       <SectionTitle>General</SectionTitle>
       <View style={styles.paragraph}>
         <Text>
-          {status
-            ? `Connection Status: ${getPixelStatusLabel(status)}`
-            : "Die not found so far"}
+          {status ? (
+            <>
+              {"Connection Status: "}
+              <PixelConnectionStatus
+                status={status}
+                size={16}
+                color={colors.onSurface}
+              />
+              {` ${getPixelStatusLabel(status)}`}
+            </>
+          ) : (
+            "Die not found so far"
+          )}
         </Text>
         {pixel?.status === "ready" && (
           <>
-            <Text>RSSI: {rssi ?? pixel.rssi} dBm</Text>
-            <Text>Battery: {batteryLevel}%</Text>
-            <Text>Charging: {isCharging ? "yes" : "no"}</Text>
+            <Text>
+              RSSI:{" "}
+              <MaterialCommunityIcons
+                name="signal"
+                size={16}
+                color={colors.onSurface}
+              />{" "}
+              {rssi ?? pixel.rssi} dBm
+            </Text>
+            <Text>
+              Battery:{" "}
+              <MaterialCommunityIcons
+                name="battery"
+                size={16}
+                color={colors.onSurface}
+              />{" "}
+              {batteryLevel}%
+            </Text>
+            <Text>Charging: {isCharging ? "yes ⚡" : "no"}</Text>
             <Text>
               Roll Status: {getRollStateLabel(rollState).toLocaleLowerCase()}
             </Text>

@@ -8,6 +8,6 @@ export function useBatteryStateLabel(pixel: Pixel): string | undefined {
   const battery = usePixelProp(pixel, "batteryLevel");
   const charging = usePixelProp(pixel, "isCharging");
   return battery !== undefined
-    ? `🔋 ${battery}%${charging ? "⚡" : ""}`
+    ? `${battery}%${charging ? "⚡" : ""}`
     : undefined;
 }

@@ -83,6 +83,7 @@ import {
   useRollStateLabel,
   useUpdateDice,
 } from "~/hooks";
+import { usePixelRssiLabel } from "~/hooks/usePixelRssiLabel";
 
 function LightUpYourGameImage({
   height = 80,
@@ -383,8 +384,10 @@ function PixelItem({
   const name = usePixelProp(pixel, "name");
   const dieType = usePixelProp(pixel, "dieType");
   const batteryLabel = useBatteryStateLabel(pixel);
+  const rssiLabel = usePixelRssiLabel(pixel);
   const rollLabel = useRollStateLabel(pixel);
   const animStyle = useFlashAnimationStyleOnRoll(pixel);
+  const { colors } = useTheme();
   return (
     <AnimatedDieWireframeCard
       entering={FadeIn.duration(300)}
@@ -398,11 +401,34 @@ function PixelItem({
         {getDieTypeAndColorwayLabel(status === "ready" ? pixel : scannedPixel)}
       </SmallText>
       <SmallText>
-        {status === "ready"
-          ? (batteryLabel ?? "") +
-            (batteryLabel && rollLabel ? ", " : "") +
-            (rollLabel ?? "")
-          : getPixelStatusLabel(status)}
+        {status === "ready" ? (
+          <>
+            {batteryLabel && (
+              <>
+                <MaterialCommunityIcons
+                  name="battery"
+                  size={16}
+                  color={colors.onSurface}
+                />{" "}
+                {batteryLabel}
+              </>
+            )}
+            {rssiLabel && (
+              <>
+                <MaterialCommunityIcons
+                  name="signal"
+                  size={16}
+                  color={colors.onSurface}
+                />{" "}
+                {rssiLabel}
+              </>
+            )}
+            {((rssiLabel ?? batteryLabel) && rollLabel ? ", " : "") +
+              (rollLabel ?? "")}
+          </>
+        ) : (
+          getPixelStatusLabel(status)
+        )}
       </SmallText>
     </AnimatedDieWireframeCard>
   );
