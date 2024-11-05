@@ -21,7 +21,10 @@ function PickColorDesignPage({
       <PageHeader mode="chevron-down" onGoBack={() => navigation.goBack()}>
         Select Color Design
       </PageHeader>
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        alwaysBounceVertical={false}
+      >
         <ColorDesignPicker
           pattern={pattern}
           onSelectPattern={onSelectPattern}

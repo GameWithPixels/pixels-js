@@ -202,8 +202,8 @@ function EditDieProfilePage({
       </PageHeader>
       <GHScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ paddingBottom: 10 }}
         automaticallyAdjustKeyboardInsets
+        contentContainerStyle={{ paddingBottom: 10 }}
       >
         <EditProfile
           profileUuid={pairedDie.profileUuid}

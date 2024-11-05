@@ -89,6 +89,7 @@ function DieFocusPage({
         />
       </PageHeader>
       <ScrollView
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           padding: 10,
           paddingBottom: 20,

@@ -115,6 +115,7 @@ function FirmwareUpdatePage({
       </PageHeader>
       <DebugConnectionStatusesBar />
       <ScrollView
+        alwaysBounceVertical={false}
         style={{ flex: 1, marginHorizontal: 20 }}
         contentContainerStyle={{ paddingBottom: bottom, gap: 20 }}
       >

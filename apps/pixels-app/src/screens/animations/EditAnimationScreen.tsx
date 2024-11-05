@@ -83,6 +83,7 @@ function EditAnimationPage({
       <View style={{ flex: 1 }}>
         <Header animation={animation} onGoBack={goBack} />
         <ScrollView
+          alwaysBounceVertical={false}
           contentContainerStyle={{
             gap: 10,
             paddingHorizontal: 10,

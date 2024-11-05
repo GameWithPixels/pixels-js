@@ -31,6 +31,7 @@ function EditAdvancedSettingsPage({
       </PageHeader>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
+        alwaysBounceVertical={false}
         contentContainerStyle={{
           paddingHorizontal: 10,
           paddingBottom: 10,

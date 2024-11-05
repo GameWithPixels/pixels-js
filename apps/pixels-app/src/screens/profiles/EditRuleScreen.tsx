@@ -27,6 +27,7 @@ function EditRulePage({
           {getConditionTypeLabel(conditionType)}
         </PageHeader>
         <ScrollView
+          alwaysBounceVertical={false}
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{
             padding: 10,
