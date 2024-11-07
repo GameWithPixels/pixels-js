@@ -14,6 +14,7 @@ import { AnimationsCategories } from "~/app/displayNames";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
 import { TabsHeaders } from "~/components/TabsHeaders";
+import { toProfileDieType } from "~/features/profiles";
 import {
   useAnimationsList,
   useBottomSheetBackHandler,
@@ -41,6 +42,7 @@ export function PickAnimationBottomSheet({
   visible: boolean;
 }) {
   const allAnimations = useAnimationsList();
+  const profileDieType = dieType ? toProfileDieType(dieType) : undefined;
   const sortedAnimations = React.useMemo(
     () =>
       categories.map((category) =>
@@ -48,7 +50,9 @@ export function PickAnimationBottomSheet({
           .filter(
             (a) =>
               a.category === category &&
-              (!dieType || a.dieType === "unknown" || a.dieType === dieType)
+              (!profileDieType ||
+                a.dieType === "unknown" ||
+                a.dieType === profileDieType)
           )
           .sort((a, b) => a.name.localeCompare(b.name))
           // Remove duplicates
@@ -62,7 +66,7 @@ export function PickAnimationBottomSheet({
               ) <= 1
           )
       ),
-    [allAnimations, dieType]
+    [allAnimations, profileDieType]
   );
   const [tab, setTab] = React.useState(categories[0]);
   const sheetRef = React.useRef<BottomSheetModal>(null);

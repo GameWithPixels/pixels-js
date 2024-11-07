@@ -29,3 +29,16 @@ export function getCompatibleDieTypes(
       return [profileDieType];
   }
 }
+
+// Returns a die type listed in ProfileDieTypes that is compatible with the given die type
+export function toProfileDieType(dieType: PixelDieType): PixelDieType {
+  switch (dieType) {
+    case "d6pipped":
+    case "d6fudge":
+      return "d6";
+    case "d00":
+      return "d10";
+    default:
+      return dieType;
+  }
+}
