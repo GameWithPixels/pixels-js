@@ -193,6 +193,7 @@ function updateAction(
         action.duration = data.duration;
         action.fade = data.fade;
         action.intensity = data.intensity;
+        action.faceMask = data.faceMask;
         const colorsCount = data.colors.length;
         action.colors.length = colorsCount;
         for (let i = 0; i < colorsCount; ++i) {
@@ -223,6 +224,7 @@ function updateAction(
       if (action instanceof Profiles.ActionSpeakText) {
         const data = actionSetData[type][index];
         action.text = data.text;
+        action.volume = data.volume;
         action.pitch = data.pitch;
         action.rate = data.rate;
       }

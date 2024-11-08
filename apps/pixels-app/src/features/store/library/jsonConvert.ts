@@ -31,7 +31,7 @@ function checkUuid(uuid?: string): string {
   return uuid!;
 }
 
-function toKeyframesBase64(keyframes?: Readonly<Json.Keyframe[]>): string {
+function toKeyframesBase64(keyframes?: readonly Json.Keyframe[]): string {
   const array = new Uint8Array(8 * (keyframes?.length ?? 0));
   const dataView = new DataView(array.buffer);
   let byteOffset = 0;
@@ -88,8 +88,8 @@ function toPattern(pattern: Readonly<Json.Pattern>): Serializable.PatternData {
 }
 
 function toAnimationsAndGradients(
-  animations: Readonly<Json.Animation[]> | undefined,
-  patterns: Readonly<Serializable.PatternData[]>
+  animations: readonly Json.Animation[] | undefined,
+  patterns: readonly Serializable.PatternData[]
 ): {
   animations: Serializable.AnimationSetData;
   animationUuids: string[];
@@ -189,7 +189,7 @@ function toAnimationsAndGradients(
   return { animations: animSet, animationUuids, gradients };
 }
 
-function toAudioClips(audioClips?: Readonly<Json.AudioClip[]>): {
+function toAudioClips(audioClips?: readonly Json.AudioClip[]): {
   audioClips: Serializable.AudioClipData[];
   audioClipsUuidsMap: Map<number, string>;
 } {

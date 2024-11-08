@@ -23,17 +23,17 @@ export default class EditAnimationGradient extends EditAnimation {
   @widget("faceMask")
   @name("Face Mask")
   @observable
-  faces: number;
+  faceMask: number;
 
   constructor(
     opt?: EditAnimationParams & {
-      faces?: number;
       gradient?: EditRgbGradient;
+      faceMask?: number;
     }
   ) {
     super(opt);
-    this.faces = opt?.faces ?? AnimConstants.faceMaskAll;
     this.gradient = opt?.gradient;
+    this.faceMask = opt?.faceMask ?? AnimConstants.faceMaskAll;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
@@ -47,7 +47,7 @@ export default class EditAnimationGradient extends EditAnimation {
 
     return safeAssign(new AnimationGradient(), {
       duration: this.duration * 1000,
-      faceMask: this.faces,
+      faceMask: this.faceMask,
       gradientTrackOffset,
     });
   }

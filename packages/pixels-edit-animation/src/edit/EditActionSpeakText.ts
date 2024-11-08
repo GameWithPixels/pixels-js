@@ -20,14 +20,23 @@ export default class EditActionSpeakText extends EditActionRunOnDevice {
   text: string;
 
   @observable
+  volume: number;
+
+  @observable
   pitch: number;
 
   @observable
   rate: number;
 
-  constructor(opt?: { text?: string; volume?: number }) {
+  constructor(opt?: {
+    text?: string;
+    volume?: number;
+    pitch?: number;
+    rate?: number;
+  }) {
     super();
     this.text = opt?.text ?? "";
+    this.volume = opt?.volume ?? 1;
     this.pitch = opt?.volume ?? 1;
     this.rate = opt?.volume ?? 1;
   }

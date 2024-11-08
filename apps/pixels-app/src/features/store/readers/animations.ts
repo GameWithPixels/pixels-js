@@ -96,7 +96,7 @@ function updateAnimation(
       updateColor(anim.color, flashesData.color);
       anim.count = flashesData.count;
       anim.fade = flashesData.fade;
-      anim.faces = flashesData.faces;
+      anim.faceMask = flashesData.faces;
       return;
     }
   }
@@ -108,7 +108,7 @@ function updateAnimation(
       anim.cycles = rainbowData.cycles;
       anim.fade = rainbowData.fade;
       anim.intensity = rainbowData.intensity;
-      anim.faces = rainbowData.faces;
+      anim.faceMask = rainbowData.faces;
       return;
     }
   }
@@ -143,7 +143,7 @@ function updateAnimation(
       anim.gradient = gradientData.gradientUuid
         ? readGradient(gradientData.gradientUuid, library)
         : undefined;
-      anim.faces = gradientData.faces;
+      anim.faceMask = gradientData.faces;
       return;
     }
   }
@@ -202,7 +202,7 @@ function updateAnimation(
       anim.cycles = cycleData.cycles;
       anim.fade = cycleData.fade;
       anim.intensity = cycleData.intensity;
-      anim.faces = cycleData.faces;
+      anim.faceMask = cycleData.faces;
       return;
     }
   }

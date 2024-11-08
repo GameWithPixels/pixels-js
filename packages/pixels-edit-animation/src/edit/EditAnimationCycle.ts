@@ -39,15 +39,15 @@ export default class EditAnimationCycle extends EditAnimation {
   @observable
   intensity: number;
 
-  @widget("faceMask")
-  @name("Face Mask")
-  @observable
-  faces: number;
-
   @widget("gradient")
   @name("Gradient")
   @observable
   gradient?: EditRgbGradient;
+
+  @widget("faceMask")
+  @name("Face Mask")
+  @observable
+  faceMask: number;
 
   constructor(
     opt?: EditAnimationParams & {
@@ -55,8 +55,8 @@ export default class EditAnimationCycle extends EditAnimation {
       cycles?: number;
       fade?: number;
       intensity?: number;
-      faces?: number;
       gradient?: EditRgbGradient;
+      faceMask?: number;
     }
   ) {
     super(opt);
@@ -64,8 +64,8 @@ export default class EditAnimationCycle extends EditAnimation {
     this.cycles = opt?.cycles ?? 1;
     this.fade = opt?.fade ?? 0;
     this.intensity = opt?.intensity ?? 0.5;
-    this.faces = opt?.faces ?? AnimConstants.faceMaskAll;
     this.gradient = opt?.gradient;
+    this.faceMask = opt?.faceMask ?? AnimConstants.faceMaskAll;
   }
 
   toAnimation(_editSet: EditDataSet, _bits: AnimationBits): AnimationPreset {
@@ -79,7 +79,7 @@ export default class EditAnimationCycle extends EditAnimation {
     return safeAssign(new AnimationCycle(), {
       animFlags: this.animFlags,
       duration: this.duration * 1000,
-      faceMask: this.faces,
+      faceMask: this.faceMask,
       fade: this.fade * 255,
       count: this.count,
       intensity: this.intensity * 255,

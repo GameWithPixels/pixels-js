@@ -43,6 +43,9 @@ export default class EditActionPlayAnimation extends EditAction {
   intensity?: number;
 
   @observable
+  faceMask?: number;
+
+  @observable
   colors: Color[];
 
   constructor(opt?: {
@@ -52,6 +55,7 @@ export default class EditActionPlayAnimation extends EditAction {
     duration?: number;
     fade?: number;
     intensity?: number;
+    faceMask?: number;
     colors?: Color[];
   }) {
     super();
@@ -61,6 +65,7 @@ export default class EditActionPlayAnimation extends EditAction {
     this.duration = opt?.duration;
     this.fade = opt?.fade;
     this.intensity = opt?.intensity;
+    this.faceMask = opt?.faceMask;
     this.colors = opt?.colors ?? [];
   }
 

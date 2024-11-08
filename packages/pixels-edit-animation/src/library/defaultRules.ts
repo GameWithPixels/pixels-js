@@ -95,7 +95,7 @@ function rolling(dieType: PixelDieType) {
     count: 1,
     fade: 0.5,
     color: new EditColor("face"),
-    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
+    faceMask: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -108,7 +108,7 @@ function charging(dieType: PixelDieType) {
     count: 1,
     color: Color.red,
     fade: 0.5,
-    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
+    faceMask: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -121,7 +121,7 @@ function charged(dieType: PixelDieType) {
     count: 1,
     color: Color.green,
     fade: 0.5,
-    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
+    faceMask: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -134,7 +134,7 @@ function chargingError(dieType: PixelDieType) {
     count: 1,
     color: Color.yellow,
     fade: 0.5,
-    faces: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
+    faceMask: getFaceMask(DiceUtils.getHighestFace(dieType), dieType),
   });
 }
 
@@ -146,7 +146,7 @@ export const DefaultRulesAnimations = {
     animFlags:
       AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices,
     duration: 2.0,
-    faces: AnimConstants.faceMaskAll,
+    faceMask: AnimConstants.faceMaskAll,
     count: 2,
     fade: 200 / 255,
     intensity: 0x80 / 255,
@@ -174,7 +174,7 @@ export const DefaultRulesAnimations = {
     duration: 3,
     fade: 0.5,
     color: new EditColor("face"),
-    faces: AnimConstants.faceMaskAll,
+    faceMask: AnimConstants.faceMaskAll,
   }),
 
   connection: new AnimFlashes({
@@ -184,7 +184,7 @@ export const DefaultRulesAnimations = {
     duration: 1,
     fade: 0.5,
     color: Color.blue,
-    faces: AnimConstants.faceMaskAll,
+    faceMask: AnimConstants.faceMaskAll,
   }),
 
   lowBattery: new AnimFlashes({
@@ -193,7 +193,7 @@ export const DefaultRulesAnimations = {
     count: 3,
     duration: 1.5,
     color: Color.red,
-    faces: AnimConstants.faceMaskAll,
+    faceMask: AnimConstants.faceMaskAll,
   }),
 
   charging: {
@@ -229,7 +229,7 @@ export const DefaultRulesAnimations = {
     duration: 2,
     color: Color.red,
     fade: 0.5,
-    faces: AnimConstants.faceMaskAll,
+    faceMask: AnimConstants.faceMaskAll,
   }),
 
   chargingError: {

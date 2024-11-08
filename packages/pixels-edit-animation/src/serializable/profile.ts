@@ -45,6 +45,7 @@ export interface ProfileData extends UniqueNamedData {
       duration?: number;
       fade?: number;
       intensity?: number;
+      faceMask?: number;
       colors: string[];
     }[];
     playAudioClip: {
@@ -59,6 +60,7 @@ export interface ProfileData extends UniqueNamedData {
     }[];
     speakText: {
       text: string;
+      volume: number;
       pitch: number;
       rate: number;
     }[];

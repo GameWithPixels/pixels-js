@@ -190,7 +190,7 @@ export function toAnimation(
       return new EditAnimationSimple({
         name: data.name,
         duration: data.duration,
-        faces: data.faces,
+        faceMask: data.faces,
         color: toColor(data.color),
         count: data.count,
         fade: data.fade,
@@ -202,7 +202,7 @@ export function toAnimation(
         animFlags: data.traveling
           ? AnimationFlagsValues.traveling | AnimationFlagsValues.useLedIndices
           : 0,
-        faces: data.faces,
+        faceMask: data.faces,
         count: data.count,
         fade: data.fade,
         cycles: 1,
@@ -227,7 +227,7 @@ export function toAnimation(
       return new EditAnimationGradient({
         name: data.name,
         duration: data.duration,
-        faces: data.faces,
+        faceMask: data.faces,
         gradient: new EditRgbGradient({
           keyframes: toKeyframes(data.gradient?.keyframes),
         }),

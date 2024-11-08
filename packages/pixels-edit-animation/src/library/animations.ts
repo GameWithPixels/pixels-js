@@ -1186,7 +1186,7 @@ export const PrebuildAnimations = {
     color: Color.brightWhite,
     count: 5,
     fade: 1,
-    faces: getFaceMask([2, 14, 8, 1, 3, 17, 5, 15, 9, 11], "d20"),
+    faceMask: getFaceMask([2, 14, 8, 1, 3, 17, 5, 15, 9, 11], "d20"),
     dieType: "d20",
   }),
 
@@ -1198,7 +1198,7 @@ export const PrebuildAnimations = {
     color: Color.brightWhite,
     count: 5,
     fade: 0.5,
-    faces: getFaceMask([4, 6, 7, 10, 12, 13, 16, 18, 19, 20], "d20"),
+    faceMask: getFaceMask([4, 6, 7, 10, 12, 13, 16, 18, 19, 20], "d20"),
     dieType: "d20",
   }),
 

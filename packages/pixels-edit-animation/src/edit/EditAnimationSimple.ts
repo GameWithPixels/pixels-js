@@ -35,28 +35,28 @@ export default class EditAnimationSimple extends EditAnimation {
   @widget("faceMask")
   @name("Face Mask")
   @observable
-  faces: number;
+  faceMask: number;
 
   constructor(
     opt?: EditAnimationParams & {
-      faces?: number;
       color?: EditColor | Color;
       count?: number;
       fade?: number;
+      faceMask?: number;
     }
   ) {
     super(opt);
     const color = opt?.color ?? Color.blue;
-    this.faces = opt?.faces ?? AnimConstants.faceMaskAll;
     this.color = color instanceof EditColor ? color : new EditColor(color);
     this.count = opt?.count ?? 1;
     this.fade = opt?.fade ?? 0;
+    this.faceMask = opt?.faceMask ?? AnimConstants.faceMaskAll;
   }
 
   toAnimation(editSet: EditDataSet, bits: AnimationBits): AnimationPreset {
     return safeAssign(new AnimationSimple(), {
       duration: this.duration * 1000,
-      faceMask: this.faces,
+      faceMask: this.faceMask,
       colorIndex: this.color.toColorIndex(bits.palette),
       fade: 255 * this.fade,
       count: this.count,

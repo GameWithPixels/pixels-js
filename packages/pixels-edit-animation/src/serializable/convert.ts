@@ -485,6 +485,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
                 duration: act.duration,
                 fade: act.fade,
                 intensity: act.intensity,
+                faceMask: act.faceMask,
                 colors: act.colors.map(ColorUtils.colorToString),
               });
             }
@@ -514,6 +515,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
               const act = action as EditActionSpeakText;
               actions[actType].push({
                 text: act.text,
+                volume: act.volume,
                 pitch: act.pitch,
                 rate: act.rate,
               });
@@ -567,7 +569,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           animFlags,
           category: anim.category,
           dieType: anim.dieType,
-          faces: anim.faces,
+          faces: anim.faceMask,
           color: fromColor(anim.color),
           count: anim.count,
           fade: anim.fade,
@@ -585,7 +587,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           animFlags,
           category: anim.category,
           dieType: anim.dieType,
-          faces: anim.faces,
+          faces: anim.faceMask,
           count: anim.count,
           fade: anim.fade,
           intensity: anim.intensity,
@@ -636,7 +638,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           animFlags,
           category: anim.category,
           dieType: anim.dieType,
-          faces: anim.faces,
+          faces: anim.faceMask,
           gradientUuid: anim.gradient?.uuid,
         },
       };
@@ -708,7 +710,7 @@ export function fromAnimation(animation: Readonly<EditAnimation>): {
           cycles: anim.cycles,
           fade: anim.fade,
           intensity: anim.intensity,
-          faces: anim.faces,
+          faces: anim.faceMask,
           gradientUuid: anim.gradient?.uuid,
         },
       };
