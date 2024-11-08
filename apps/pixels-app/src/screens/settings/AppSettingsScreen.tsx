@@ -21,6 +21,7 @@ import {
   resetAppTransientState,
   resetDiceStats,
   resetPairedDice,
+  setBackgroundAudio,
   setDebugMode,
   setDiceBrightnessFactor,
   setDisablePlayingAnimations,
@@ -39,6 +40,7 @@ function AppSettingsPage({
   const {
     diceBrightnessFactor: brightness,
     disablePlayingAnimations: disablePlayAnims,
+    backgroundAudio,
     showAdvancedSettings,
     debugMode,
   } = useAppSelector((state) => state.appSettings);
@@ -135,6 +137,19 @@ function AppSettingsPage({
             }}
           />
           <Body>Disable Playing Animations In App</Body>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Switch
+            value={backgroundAudio}
+            onValueChange={(v) => {
+              appDispatch(setBackgroundAudio(v));
+            }}
+            trackColor={{
+              false: colors.onSurfaceDisabled,
+              true: colors.primary,
+            }}
+          />
+          <Body>Audio Plays In Background</Body>
         </View>
         <Divider style={{ marginVertical: 10 }} />
         <OutlineButton

@@ -36,6 +36,7 @@ export interface AppSettingsState {
   debugMode: boolean;
   useBetaFirmware: boolean;
   appFirmwareTimestampOverride: number;
+  backgroundAudio: boolean;
 }
 
 const initialState: AppSettingsState = {
@@ -67,6 +68,7 @@ const initialState: AppSettingsState = {
   debugMode: false,
   useBetaFirmware: false,
   appFirmwareTimestampOverride: 0,
+  backgroundAudio: true,
 };
 
 // Redux slice that stores app settings
@@ -178,6 +180,10 @@ const appSettingsSlice = createSlice({
     setAppFirmwareTimestampOverride(state, action: PayloadAction<number>) {
       state.appFirmwareTimestampOverride = action.payload;
     },
+
+    setBackgroundAudio(state, action: PayloadAction<boolean>) {
+      state.backgroundAudio = action.payload;
+    },
   },
 });
 
@@ -205,5 +211,6 @@ export const {
   setDebugMode,
   setUseBetaFirmware,
   setAppFirmwareTimestampOverride,
+  setBackgroundAudio,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

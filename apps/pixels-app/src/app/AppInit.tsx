@@ -7,7 +7,9 @@ import { RootState } from "./store";
 import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
 import { useAppSelector } from "~/app/hooks";
+import { setAudioActiveInBackground } from "~/features/audio";
 import { Library } from "~/features/store";
+import { logError } from "~/features/utils";
 
 export function AppInit({ children }: React.PropsWithChildren) {
   const store = useStore<RootState>();
@@ -70,6 +72,13 @@ export function AppInit({ children }: React.PropsWithChildren) {
       );
     }
   }, [hasUpdate, store]);
+
+  const backgroundAudio = useAppSelector(
+    (state) => state.appSettings.backgroundAudio
+  );
+  React.useEffect(() => {
+    setAudioActiveInBackground(backgroundAudio).catch((e) => logError(e));
+  }, [backgroundAudio]);
 
   return !initialized ? null : <>{children}</>;
 }

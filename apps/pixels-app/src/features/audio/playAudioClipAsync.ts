@@ -34,3 +34,7 @@ export async function playAudioClipAsync(
     logError(`Error playing audio clip ${uri}: ${e}`);
   }
 }
+
+export function setAudioActiveInBackground(active: boolean): Promise<void> {
+  return Audio.setAudioModeAsync({ staysActiveInBackground: active });
+}
