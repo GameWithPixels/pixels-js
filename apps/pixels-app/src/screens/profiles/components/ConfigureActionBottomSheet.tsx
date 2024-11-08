@@ -8,6 +8,7 @@ import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import {
   Color,
   DiceUtils,
+  getFaceMask,
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
@@ -19,6 +20,7 @@ import { Platform, View } from "react-native";
 import {
   Button,
   IconButton,
+  Switch,
   Text,
   ThemeProvider,
   TouchableRipple,
@@ -119,6 +121,48 @@ function SliderWithValueAndTitle({ children, ...props }: SliderWithValueProps) {
       <Text variant="titleMedium">{children}</Text>
       <SliderWithValue {...props} />
     </>
+  );
+}
+
+function PlayAnimationSlider({
+  children,
+  value,
+  isDefault,
+  onReset,
+  onValueChange,
+  ...props
+}: {
+  value: number;
+  isDefault: boolean;
+  onReset: () => void;
+} & Omit<SliderWithValueProps, "onEndEditing">) {
+  const { colors } = useTheme();
+  return (
+    <View>
+      <Text variant="titleMedium">{children}</Text>
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginTop: -5 }}
+      >
+        <TouchableRipple
+          disabled={isDefault}
+          style={{ padding: 10, paddingRight: 20, zIndex: 10 }} // Render on top of scaled slider
+          onPress={() => runInAction(onReset)}
+        >
+          <MaterialCommunityIcons
+            name="refresh"
+            size={20}
+            color={isDefault ? colors.onSurfaceDisabled : colors.onSurface}
+          />
+        </TouchableRipple>
+        <View style={{ flexGrow: 1 }}>
+          <SliderWithValue
+            value={value}
+            onEndEditing={(v) => runInAction(() => onValueChange?.(v))}
+            {...props}
+          />
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -257,12 +301,13 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
   dieType,
 }: {
   action: Profiles.ActionPlayAnimation;
-  dieType?: PixelDieType;
+  dieType: PixelDieType;
 }) {
   const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
   const color = AnimationUtils.getColor(action.animation);
   const fading = AnimationUtils.getFading(action.animation);
   const intensity = AnimationUtils.getIntensity(action.animation);
+  const faceMask = AnimationUtils.getFaceMask(action.animation);
   const keyframes = AnimationUtils.getGradientKeyframes(action.animation);
   const gradientColorType = AnimationUtils.getGradientColorType(
     action.animation
@@ -291,6 +336,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
             action.loopCount = 1;
             action.fade = undefined;
             action.intensity = undefined;
+            action.faceMask = undefined;
             action.colors.length = 0;
           });
           setAnimPickerVisible(false);
@@ -365,49 +411,27 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
           Intensity
         </PlayAnimationSlider>
       )}
-    </>
-  );
-});
-
-const PlayAnimationSlider = observer(function PlayAnimationSlider({
-  children,
-  value,
-  isDefault,
-  onReset,
-  onValueChange,
-  ...props
-}: {
-  value: number;
-  isDefault: boolean;
-  onReset: () => void;
-} & Omit<SliderWithValueProps, "onEndEditing">) {
-  const { colors } = useTheme();
-  return (
-    <View>
-      <Text variant="titleMedium">{children}</Text>
-      <View
-        style={{ flexDirection: "row", alignItems: "center", marginTop: -5 }}
-      >
-        <TouchableRipple
-          disabled={isDefault}
-          style={{ padding: 10, paddingRight: 20, zIndex: 10 }} // Render on top of scaled slider
-          onPress={() => runInAction(onReset)}
-        >
-          <MaterialCommunityIcons
-            name="refresh"
-            size={20}
-            color={isDefault ? colors.onSurfaceDisabled : colors.onSurface}
-          />
-        </TouchableRipple>
-        <View style={{ flexGrow: 1 }}>
-          <SliderWithValue
-            value={value}
-            onEndEditing={(v) => runInAction(() => onValueChange?.(v))}
-            {...props}
+      {faceMask !== undefined && (
+        <View>
+          <Text variant="titleMedium">Highest Face Off</Text>
+          <Switch
+            value={!!action.faceMask}
+            onValueChange={(v) =>
+              runInAction(() => {
+                action.faceMask = v
+                  ? getFaceMask(
+                      DiceUtils.getDieFaces(dieType).filter(
+                        (f) => f !== DiceUtils.getHighestFace(dieType)
+                      ),
+                      dieType
+                    )
+                  : undefined;
+              })
+            }
           />
         </View>
-      </View>
-    </View>
+      )}
+    </>
   );
 });
 

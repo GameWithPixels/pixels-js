@@ -45,6 +45,11 @@ export const AnimationUtils = {
     return AnimationUtils.getIntensity(anim) !== undefined;
   },
 
+  hasEditableFaceMask(anim?: Readonly<Profiles.Animation>): boolean {
+    anim = AnimationUtils.getMainAnimation(anim);
+    return AnimationUtils.getFaceMask(anim) !== undefined;
+  },
+
   hasEditableColor(
     anim?: Readonly<Profiles.Animation>,
     animUuid?: string
@@ -76,6 +81,13 @@ export const AnimationUtils = {
     anim = AnimationUtils.getMainAnimation(anim);
     return anim && "intensity" in anim && typeof anim.intensity === "number"
       ? anim.intensity
+      : undefined;
+  },
+
+  getFaceMask(anim?: Readonly<Profiles.Animation>): number | undefined {
+    anim = AnimationUtils.getMainAnimation(anim);
+    return anim && "faceMask" in anim && typeof anim.faceMask === "number"
+      ? anim.faceMask
       : undefined;
   },
 
@@ -117,9 +129,11 @@ export const AnimationUtils = {
         ? anim.gradientColorType
         : undefined;
     return gct1
-      ? getValueKeyName(gct1, Profiles.NormalsColorOverrideTypeValues) ?? "none"
+      ? (getValueKeyName(gct1, Profiles.NormalsColorOverrideTypeValues) ??
+          "none")
       : gct2
-        ? getValueKeyName(gct2, Profiles.NoiseColorOverrideTypeValues) ?? "none"
+        ? (getValueKeyName(gct2, Profiles.NoiseColorOverrideTypeValues) ??
+          "none")
         : undefined;
   },
 
@@ -161,6 +175,13 @@ export const AnimationUtils = {
     anim = AnimationUtils.getMainEditableAnimation(anim);
     if (anim && "intensity" in anim && typeof anim.intensity === "number") {
       anim.intensity = intensity;
+    }
+  },
+
+  setEditableFaceMask(anim?: Profiles.Animation, faceMask?: number): void {
+    anim = AnimationUtils.getMainEditableAnimation(anim);
+    if (anim && "faceMask" in anim && typeof anim.faceMask === "number") {
+      anim.faceMask = faceMask;
     }
   },
 

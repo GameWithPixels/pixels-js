@@ -42,6 +42,12 @@ export function applyActionOverrides(
     ) {
       AnimationUtils.setEditableIntensity(getEditableAnim(), action.intensity);
     }
+    if (
+      action.faceMask !== undefined &&
+      AnimationUtils.hasEditableFaceMask(anim)
+    ) {
+      AnimationUtils.setEditableFaceMask(getEditableAnim(), action.faceMask);
+    }
     if (action.colors.length) {
       if (AnimationUtils.hasEditableColor(anim, animUuid)) {
         AnimationUtils.setEditableColor(

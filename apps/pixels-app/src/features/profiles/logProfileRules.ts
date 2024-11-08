@@ -23,6 +23,10 @@ export function logProfileRules(profile: Profiles.Profile): void {
         console.log(
           `    * Speak "${action.text}" with volume ${action.volume} pitch ${action.pitch} and rate ${action.rate}`
         );
+      } else if (action instanceof Profiles.ActionPlayAudioClip) {
+        console.log(
+          `    * Clip "${action.clipUuid}" with volume ${action.volume} and loop count ${action.loopCount}`
+        );
       }
     }
   }
