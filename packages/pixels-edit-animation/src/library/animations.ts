@@ -296,6 +296,46 @@ export const PrebuildAnimations = {
     gradientColorVar: 0.1,
   }),
 
+  waterfallGradient: new AnimNormals({
+    uuid: "5f0b1a89-98ec-42b0-a727-4a094dd8bc82",
+    name: "Waterfall Gradient",
+    category: "animated",
+    duration: 2,
+    gradient: new EditRgbGradient({
+      uuid: "9dbcda6a-b41a-45fd-afd4-7695fd4172b1",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.red }),
+        new RgbKf({ time: 0.2, color: Color.orange }),
+        new RgbKf({ time: 0.4, color: Color.yellow }),
+        new RgbKf({ time: 0.6, color: Color.white }),
+        new RgbKf({ time: 0.8, color: Color.cyan }),
+        new RgbKf({ time: 1.0, color: Color.blue }),
+      ],
+    }),
+    axisGradient: new EditRgbGradient({
+      uuid: "2397b825-bc01-48da-a2dd-99c793397956",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.black }),
+        new RgbKf({ time: 0.5, color: Color.brightWhite }),
+        new RgbKf({ time: 1, color: Color.black }),
+      ],
+    }),
+    axisScale: 2,
+    axisOffset: -0.5,
+    axisScrollSpeed: 2,
+    angleGradient: new EditRgbGradient({
+      uuid: "9de5e868-1e31-438d-9cf4-529ccada31fe",
+      keyframes: [
+        new RgbKf({ time: 0.0, color: Color.brightWhite }),
+        new RgbKf({ time: 1.0, color: Color.brightWhite }),
+      ],
+    }),
+    angleScrollSpeed: 0,
+    fade: 0.1,
+    gradientColorType: NormalsType.faceToGradient,
+    gradientColorVar: 0.1,
+  }),
+
   waterfallTopHalf: new AnimNormals({
     uuid: "ebfc1dd5-ec82-45ac-a653-db2fbb96e5c1",
     name: "Waterfall Top Half",

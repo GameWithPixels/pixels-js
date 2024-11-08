@@ -2,6 +2,7 @@ import { getValueKeyName } from "@systemic-games/pixels-core-utils";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
 const mainGradient: readonly string[] = [
+  "5f0b1a89-98ec-42b0-a727-4a094dd8bc82", // Waterfall Gradient
   "3ac00114-1867-4b8f-97d5-86783521c48b", // Waterfall Red Green
   "0488c178-ecbb-4929-a633-e5b5ec27e39c", // Red Green Alarm
 ] as const;
@@ -93,7 +94,7 @@ export const AnimationUtils = {
   getGradientKeyframes(
     anim?: Readonly<Profiles.Animation>,
     animUuid?: string
-  ): Readonly<Readonly<Profiles.RgbKeyframe>[]> | undefined {
+  ): readonly Readonly<Profiles.RgbKeyframe>[] | undefined {
     if (!noGradient.includes(animUuid ?? anim?.uuid ?? "")) {
       anim = AnimationUtils.getMainAnimation(anim);
       return AnimationUtils.getEditableGradient(anim, animUuid)?.keyframes;
