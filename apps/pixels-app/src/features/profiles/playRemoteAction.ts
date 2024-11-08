@@ -3,7 +3,8 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import * as Speech from "expo-speech";
-import Toast from "react-native-root-toast";
+import { AppState } from "react-native";
+import Toast, { ToastOptions } from "react-native-root-toast";
 
 import type {
   DiscordWebhookEmbed,
@@ -20,6 +21,12 @@ import { playAudioClipAsync } from "~/features/audio";
 
 const baseDiceIconUrl =
   "https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes";
+
+function showToast(message: string, options?: ToastOptions): void {
+  if (AppState.currentState === "active") {
+    Toast.show(message, options);
+  }
+}
 
 export function getDiscordWebhookPayload(
   dieType: PixelDieType,
@@ -88,7 +95,7 @@ export function playActionMakeWebRequest(
       console.log(
         `Action web request to ${url} returned with status ${status}`
       );
-      Toast.show(
+      showToast(
         `Web Request Send${forPixelMsg}!${toastMsg}Status: ${status}`,
         ToastSettings
       );
@@ -97,7 +104,7 @@ export function playActionMakeWebRequest(
       console.log(
         `Action web request to ${url} failed with error ${e.message ?? e}`
       );
-      Toast.show(
+      showToast(
         `Failed Sending Web Request${forPixelMsg}!${toastMsg}Error: ${
           e.message ?? e
         }`,
@@ -109,7 +116,7 @@ export function playActionMakeWebRequest(
 export function playActionSpeakText(action: Profiles.ActionSpeakText): void {
   console.log(`Play Speak Text: ${action.text}`);
   if (action.text?.trim()?.length) {
-    Toast.show(
+    showToast(
       `Playing Text to Speak action.\nText: ${action.text}`,
       ToastSettings
     );
@@ -133,7 +140,7 @@ export function playActionAudioClip(
   if (clip) {
     const filename = clip.uuid + "." + clip.type;
     console.log(`Play Audio Clip: ${filename} ${loopCount} time(s)`);
-    Toast.show(`Playing Audio Clip action.\nClip: ${clip.name}`, ToastSettings);
+    showToast(`Playing Audio Clip action.\nClip: ${clip.name}`, ToastSettings);
     const play = async () => {
       for (let i = 0; i < loopCount; i++) {
         await playAudioClipAsync(filename, volume);
