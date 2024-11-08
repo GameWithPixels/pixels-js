@@ -621,6 +621,9 @@ const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
       action.clipUuid &&
       state.libraryAssets.audioClips.entities[action.clipUuid]?.name
   );
+  const audioClips = useAppSelector(
+    (state) => state.libraryAssets.audioClips.entities
+  );
   return (
     <>
       <Text variant="titleMedium">Play</Text>
@@ -663,7 +666,7 @@ const ConfigurePlayAudioClip = observer(function ConfigurePlayAudioClip({
         }}
         onDismiss={() => setClipPickerVisible(false)}
       />
-      <OutlineButton onPress={() => playActionAudioClip(action, clipName)}>
+      <OutlineButton onPress={() => playActionAudioClip(action, audioClips)}>
         Test Audio
       </OutlineButton>
     </>

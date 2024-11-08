@@ -14,6 +14,7 @@ import {
   getWebRequestURL,
 } from "./getWebRequestURL";
 
+import { RootState } from "~/app/store";
 import { ToastSettings } from "~/app/themes";
 import { playAudioClipAsync } from "~/features/audio";
 
@@ -112,7 +113,11 @@ export function playActionSpeakText(action: Profiles.ActionSpeakText): void {
       `Playing Text to Speak action.\nText: ${action.text}`,
       ToastSettings
     );
-    const settings = { pitch: action.pitch, rate: action.rate } as const;
+    const settings = {
+      volume: action.volume,
+      pitch: action.pitch,
+      rate: action.rate,
+    } as const;
     Speech.speak(action.text, settings);
   } else {
     console.log("No text to speak");
@@ -121,22 +126,21 @@ export function playActionSpeakText(action: Profiles.ActionSpeakText): void {
 
 export function playActionAudioClip(
   action: Profiles.ActionPlayAudioClip,
-  clipName?: string
+  assets: RootState["libraryAssets"]["audioClips"]["entities"]
 ): void {
   const { clipUuid, volume, loopCount } = action;
-  console.log(`Play Audio Clip: ${clipUuid}`);
-  if (clipUuid) {
-    Toast.show(
-      `Playing Audio Clip action.\nClip: ${clipName ?? clipUuid}`,
-      ToastSettings
-    );
+  const clip = clipUuid && assets[clipUuid];
+  if (clip) {
+    const filename = clip.uuid + "." + clip.type;
+    console.log(`Play Audio Clip: ${filename} ${loopCount} time(s)`);
+    Toast.show(`Playing Audio Clip action.\nClip: ${clip.name}`, ToastSettings);
     const play = async () => {
       for (let i = 0; i < loopCount; i++) {
-        await playAudioClipAsync(clipUuid, volume);
+        await playAudioClipAsync(filename, volume);
       }
     };
     play();
   } else {
-    console.log("No audio clip");
+    console.log(`Audio clip not found: ${clipUuid}`);
   }
 }

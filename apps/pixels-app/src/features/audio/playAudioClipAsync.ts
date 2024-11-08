@@ -17,10 +17,10 @@ async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
 }
 
 export async function playAudioClipAsync(
-  audioClipUuid: string,
+  filename: string,
   volume = 1
 ): Promise<void> {
-  const uri = getAudioClipPathname(audioClipUuid);
+  const uri = getAudioClipPathname(filename);
   if (!uri) {
     logError("Failed to play audio clip: audio clips directory not valid");
     return;
@@ -29,7 +29,16 @@ export async function playAudioClipAsync(
     const sound = await getSound({ uri });
     await sound.setPositionAsync(0);
     await sound.setVolumeAsync(volume);
-    await sound.playAsync();
+    return new Promise((resolve, reject) => {
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          resolve();
+        } else if (!status.isLoaded) {
+          reject(new Error(status.error));
+        }
+      });
+      sound.playAsync();
+    });
   } catch (e) {
     logError(`Error playing audio clip ${uri}: ${e}`);
   }

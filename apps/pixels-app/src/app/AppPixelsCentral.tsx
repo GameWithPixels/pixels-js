@@ -73,10 +73,7 @@ function remoteActionListener(
       } else if (action instanceof Profiles.ActionSpeakText) {
         playActionSpeakText(action);
       } else if (action instanceof Profiles.ActionPlayAudioClip) {
-        const clipName =
-          action.clipUuid &&
-          state.libraryAssets.audioClips.entities[action.clipUuid]?.name;
-        playActionAudioClip(action, clipName);
+        playActionAudioClip(action, state.libraryAssets.audioClips.entities);
       } else {
         console.log(
           log(`Nothing to do for remote action of type "${action.type}`)

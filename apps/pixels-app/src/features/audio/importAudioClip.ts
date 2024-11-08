@@ -1,14 +1,14 @@
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 
-import { getAudioClipsPath } from "./path";
+import { getAudioClipsDirectory } from "./path";
 
 import { AppStore } from "~/app/store";
 import { LibraryAssets } from "~/features/store";
 import { generateUuid, logError } from "~/features/utils";
 
 export async function importAudioClip(store: AppStore): Promise<void> {
-  const audioDir = getAudioClipsPath();
+  const audioDir = getAudioClipsDirectory();
   if (!audioDir) {
     logError("Failed to import audio clip: audio clips directory not valid");
     return;
@@ -25,7 +25,10 @@ export async function importAudioClip(store: AppStore): Promise<void> {
       while (store.getState().libraryAssets.audioClips.entities[uuid]) {
         uuid = generateUuid();
       }
-      const pathname = audioDir + uuid;
+      const lastDot = file.name.lastIndexOf(".");
+      const type = lastDot >= 0 ? file.name.slice(lastDot + 1) : "";
+      const name = lastDot >= 0 ? file.name.slice(0, lastDot) : file.name;
+      const pathname = audioDir + uuid + "." + type;
       if ((await FileSystem.getInfoAsync(audioDir)).exists) {
         await FileSystem.deleteAsync(pathname, { idempotent: true });
       } else {
@@ -35,9 +38,6 @@ export async function importAudioClip(store: AppStore): Promise<void> {
         from: file.uri,
         to: pathname,
       });
-      const typeIndex = file.name.lastIndexOf(".");
-      const type = typeIndex >= 0 ? file.name.slice(typeIndex + 1) : "";
-      const name = typeIndex >= 0 ? file.name.slice(0, typeIndex) : file.name;
       store.dispatch(LibraryAssets.AudioClips.add({ uuid, name, type }));
     }
   } catch (e: any) {

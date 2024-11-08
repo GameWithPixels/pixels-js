@@ -70,7 +70,7 @@ export function PickAudioClipBottomSheet({
             <OutlineButton onPress={() => importAudioClip(store)}>
               Import Audio File
             </OutlineButton>
-            <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 10 }}>
+            <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 20 }}>
               <AudioClipsGrid
                 clips={allClips}
                 numColumns={2}
@@ -91,10 +91,12 @@ export function PickAudioClipBottomSheet({
                   )
                 }
               />
+              {allClips.length > 0 && (
+                <Text variant="bodySmall" style={AppStyles.selfCentered}>
+                  Long press on Audio Clip to remove it.
+                </Text>
+              )}
             </GHScrollView>
-            <Text variant="bodySmall" style={AppStyles.selfCentered}>
-              Long press on Audio Clip to remove it.
-            </Text>
           </BottomSheetView>
           <IconButton
             icon="close"

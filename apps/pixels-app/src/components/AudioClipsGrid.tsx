@@ -14,7 +14,7 @@ export function AudioClipCard({
   fileType,
   audioClipUuid,
   ...props
-}: { name: string; fileType: string; audioClipUuid?: string } & Omit<
+}: { name: string; fileType: string; audioClipUuid: string } & Omit<
   TouchableCardProps,
   "children" | "contentStyle"
 >) {
@@ -34,15 +34,13 @@ export function AudioClipCard({
       <Text variant="bodySmall" numberOfLines={1} style={styles.cardText}>
         ({fileType})
       </Text>
-      {audioClipUuid && (
-        <MaterialCommunityIcons
-          name="play-circle-outline"
-          size={30}
-          color={colors.onSurface}
-          style={{ position: "absolute", top: 0, right: 0, padding: 5 }}
-          onPress={() => playAudioClipAsync(audioClipUuid)}
-        />
-      )}
+      <MaterialCommunityIcons
+        name="play-circle-outline"
+        size={30}
+        color={colors.onSurface}
+        style={{ position: "absolute", top: 0, right: 0, padding: 5 }}
+        onPress={() => playAudioClipAsync(audioClipUuid + "." + fileType)}
+      />
     </TouchableCard>
   );
 }
