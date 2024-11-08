@@ -62,11 +62,11 @@ function getAudioClipActionText(
 ): string {
   if (action.clipUuid) {
     let msg = `Play "${clipName ?? action.clipUuid}"`;
-    if (action.loopCount > 1) {
-      msg += ` ${getCountAsText(action.loopCount)}`;
-    }
     if (action.volume !== 1) {
       msg += ` at volume ${toPercentText(action.volume)}`;
+    }
+    if (action.loopCount > 1) {
+      msg += ` ${getCountAsText(action.loopCount)}`;
     }
     return msg;
   } else {
@@ -112,6 +112,9 @@ function getUrlShortText(url: string): string {
 function getSpeakActionText(action: Profiles.ActionSpeakText): string {
   if (action.text.length) {
     const parts = [`Speak "${getShortText(action.text)}"`];
+    if (action.volume !== 1) {
+      parts.push(`at volume of ${toPercentText(action.volume)}`);
+    }
     if (action.pitch !== 1) {
       parts.push(`with pitch of ${toPercentText(action.pitch)}`);
     }

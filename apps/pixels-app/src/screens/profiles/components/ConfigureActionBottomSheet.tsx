@@ -113,6 +113,15 @@ function TextInput({
   );
 }
 
+function SliderWithValueAndTitle({ children, ...props }: SliderWithValueProps) {
+  return (
+    <>
+      <Text variant="titleMedium">{children}</Text>
+      <SliderWithValue {...props} />
+    </>
+  );
+}
+
 const ConfigureRolledCondition = observer(function ConfigureRolledCondition({
   condition,
   dieType,
@@ -191,18 +200,17 @@ const ConfigureRollingCondition = observer(function ConfigureRollingCondition({
   condition: Profiles.ConditionRolling;
 }) {
   return (
-    <>
-      <Text variant="titleMedium">Recheck After</Text>
-      <SliderWithValue
-        unit="s"
-        fractionDigits={1}
-        minimumValue={0.1}
-        maximumValue={60}
-        step={0.1}
-        value={condition.recheckAfter}
-        onEndEditing={(v) => runInAction(() => (condition.recheckAfter = v))}
-      />
-    </>
+    <SliderWithValueAndTitle
+      unit="s"
+      fractionDigits={1}
+      minimumValue={0.1}
+      maximumValue={60}
+      step={0.1}
+      value={condition.recheckAfter}
+      onEndEditing={(v) => runInAction(() => (condition.recheckAfter = v))}
+    >
+      Recheck After
+    </SliderWithValueAndTitle>
   );
 });
 
@@ -212,17 +220,16 @@ const ConfigureIdleCondition = observer(function ConfigureIdleCondition({
   condition: Profiles.ConditionIdle;
 }) {
   return (
-    <>
-      <Text variant="titleMedium">Period</Text>
-      <SliderWithValue
-        unit="s"
-        minimumValue={0.5}
-        maximumValue={30}
-        step={0.1}
-        value={condition.period}
-        onEndEditing={(v) => runInAction(() => (condition.period = v))}
-      />
-    </>
+    <SliderWithValueAndTitle
+      unit="s"
+      minimumValue={0.5}
+      maximumValue={30}
+      step={0.1}
+      value={condition.period}
+      onEndEditing={(v) => runInAction(() => (condition.period = v))}
+    >
+      Period
+    </SliderWithValueAndTitle>
   );
 });
 
@@ -232,17 +239,16 @@ const ConfigureBatteryCondition = observer(function ConfigureBatteryCondition({
   condition: Profiles.ConditionBattery;
 }) {
   return (
-    <>
-      <Text variant="titleMedium">Recheck After</Text>
-      <SliderWithValue
-        unit="s"
-        minimumValue={5}
-        maximumValue={60}
-        step={1}
-        value={condition.recheckAfter}
-        onEndEditing={(v) => runInAction(() => (condition.recheckAfter = v))}
-      />
-    </>
+    <SliderWithValueAndTitle
+      unit="s"
+      minimumValue={5}
+      maximumValue={60}
+      step={1}
+      value={condition.recheckAfter}
+      onEndEditing={(v) => runInAction(() => (condition.recheckAfter = v))}
+    >
+      Recheck After
+    </SliderWithValueAndTitle>
   );
 });
 
@@ -653,24 +659,37 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
         value={action.text}
         onChangeText={(t) => runInAction(() => (action.text = t))}
       />
-      <Text variant="titleMedium">Voice Pitch</Text>
-      <SliderWithValue
+      {/* Volume control not yet available in expo-speech 12.0.2
+      <SliderWithValueAndTitle
+        minimumValue={0}
+        maximumValue={1}
+        step={0.01}
+        percentage
+        value={action.volume}
+        onEndEditing={(v) => runInAction(() => (action.volume = v))}
+      >
+        Volume
+      </SliderWithValueAndTitle> */}
+      <SliderWithValueAndTitle
         minimumValue={0}
         maximumValue={2}
         step={0.01}
         percentage
         value={action.pitch}
         onEndEditing={(v) => runInAction(() => (action.pitch = v))}
-      />
-      <Text variant="titleMedium">Voice Rate</Text>
-      <SliderWithValue
+      >
+        Voice Pitch
+      </SliderWithValueAndTitle>
+      <SliderWithValueAndTitle
         minimumValue={0}
         maximumValue={2}
         step={0.01}
         percentage
         value={action.rate}
         onEndEditing={(v) => runInAction(() => (action.rate = v))}
-      />
+      >
+        Voice Rate
+      </SliderWithValueAndTitle>
       <Text style={{ color: colors.onSurfaceDisabled, marginVertical: 5 }}>
         {Platform.OS === "android"
           ? "Only works if you have Google Play on your device."

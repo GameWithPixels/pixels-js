@@ -21,7 +21,7 @@ export function logProfileRules(profile: Profiles.Profile): void {
         );
       } else if (action instanceof Profiles.ActionSpeakText) {
         console.log(
-          `    * Speak "${action.text}" with pitch ${action.pitch} and rate ${action.rate}`
+          `    * Speak "${action.text}" with volume ${action.volume} pitch ${action.pitch} and rate ${action.rate}`
         );
       }
     }

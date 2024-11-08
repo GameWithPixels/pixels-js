@@ -112,7 +112,6 @@ function updateFrom3to4(state: NonNullable<PersistedState>): void {
       );
       state.ids.length = 0;
     } else if (
-      "ids" in state &&
       "entities" in state &&
       state.entities &&
       typeof state.entities === "object"
@@ -148,19 +147,6 @@ function updateFrom3to4(state: NonNullable<PersistedState>): void {
         );
         state.ids = cleanIds;
       }
-    }
-  }
-}
-
-function updateFrom4to5(state: NonNullable<PersistedState>): void {
-  if ("ids" in state && Array.isArray(state.ids)) {
-    const cycleFireGradientId = "16b37bdc-741d-4766-9e33-51c3bf4c2e46";
-    if (state.ids.includes(cycleFireGradientId)) {
-      // Gradients
-      console.warn(
-        "Migrating from version 4 to 5: Deleting gradients (and therefore animations)"
-      );
-      state.ids.length = 0;
     }
   }
 }
@@ -245,6 +231,39 @@ export function updatePairedDiceAndProfilesFrom3to4(store: AppStore): void {
       logError(
         `Error updating pairedDie with profile ${d.profileUuid} (${d.profileHash}): ${e}`
       );
+    }
+  }
+}
+
+function updateFrom4to5(state: NonNullable<PersistedState>): void {
+  if ("ids" in state && Array.isArray(state.ids)) {
+    const cycleFireGradientId = "16b37bdc-741d-4766-9e33-51c3bf4c2e46";
+    if (state.ids.includes(cycleFireGradientId)) {
+      // Gradients
+      console.warn(
+        "Migrating from version 4 to 5: Deleting gradients (and therefore animations)"
+      );
+      state.ids.length = 0;
+    } else if (
+      "entities" in state &&
+      state.entities &&
+      typeof state.entities === "object"
+    ) {
+      const values = Object.values(state.entities);
+      if (values.length && "actions" in values[0]) {
+        // Profiles
+        for (const v of values) {
+          const profile = v as AppProfileData;
+          for (const a of profile.actions.speakText) {
+            if (a.volume === undefined) {
+              console.warn(
+                `Migrating from version 4 to 5: Adding volume to SpeakText action in profile '${profile.name}' (${profile.uuid})`
+              );
+              a.volume = 1;
+            }
+          }
+        }
+      }
     }
   }
 }
