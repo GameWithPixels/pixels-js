@@ -8,8 +8,8 @@ const config = {
     name: prod ? "Pixels Toolbox" : "Dev Toolbox",
     slug: prod ? "pixels-toolbox" : "pixels-toolbox-dev",
     owner: "gamewithpixels",
-    runtimeVersion: "51.3", // Major is Expo version, minor is native code revision
     version: "6.1.0", // Version number must have 3 parts
+    runtimeVersion: "51.4", // Major is Expo version, minor is native code revision
     platforms: ["ios", "android"],
     orientation: "portrait",
     icon: prod ? "./assets/images/icon.png" : "./assets/images/icon-dev.png",
