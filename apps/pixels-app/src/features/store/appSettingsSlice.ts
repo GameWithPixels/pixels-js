@@ -37,6 +37,7 @@ export interface AppSettingsState {
   useBetaFirmware: boolean;
   appFirmwareTimestampOverride: number;
   backgroundAudio: boolean;
+  playAudioInSilentModeIOS: boolean;
 }
 
 const initialState: AppSettingsState = {
@@ -69,6 +70,7 @@ const initialState: AppSettingsState = {
   useBetaFirmware: false,
   appFirmwareTimestampOverride: 0,
   backgroundAudio: true,
+  playAudioInSilentModeIOS: true,
 };
 
 // Redux slice that stores app settings
@@ -184,6 +186,10 @@ const appSettingsSlice = createSlice({
     setBackgroundAudio(state, action: PayloadAction<boolean>) {
       state.backgroundAudio = action.payload;
     },
+
+    setPlayAudioInSilentModeIOS(state, action: PayloadAction<boolean>) {
+      state.playAudioInSilentModeIOS = action.payload;
+    },
   },
 });
 
@@ -212,5 +218,6 @@ export const {
   setUseBetaFirmware,
   setAppFirmwareTimestampOverride,
   setBackgroundAudio,
+  setPlayAudioInSilentModeIOS,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

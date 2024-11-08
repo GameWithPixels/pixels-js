@@ -1,4 +1,4 @@
-import { Audio, AVPlaybackSource } from "expo-av";
+import { Audio, AudioMode, AVPlaybackSource } from "expo-av";
 
 import { getAudioClipPathname } from "./path";
 
@@ -35,6 +35,8 @@ export async function playAudioClipAsync(
   }
 }
 
-export function setAudioActiveInBackground(active: boolean): Promise<void> {
-  return Audio.setAudioModeAsync({ staysActiveInBackground: active });
+export function setAudioSettingsAsync(
+  settings: Pick<AudioMode, "staysActiveInBackground" | "playsInSilentModeIOS">
+): Promise<void> {
+  return Audio.setAudioModeAsync(settings);
 }

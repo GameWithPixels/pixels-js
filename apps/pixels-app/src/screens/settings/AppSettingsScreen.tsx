@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
 import { Divider, Switch, useTheme } from "react-native-paper";
 
 import { SettingsSwitch } from "./components/SettingsSwitch";
@@ -25,6 +25,7 @@ import {
   setDebugMode,
   setDiceBrightnessFactor,
   setDisablePlayingAnimations,
+  setPlayAudioInSilentModeIOS,
   setShowAdvancedSettings,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
@@ -41,6 +42,7 @@ function AppSettingsPage({
     diceBrightnessFactor: brightness,
     disablePlayingAnimations: disablePlayAnims,
     backgroundAudio,
+    playAudioInSilentModeIOS,
     showAdvancedSettings,
     debugMode,
   } = useAppSelector((state) => state.appSettings);
@@ -149,8 +151,23 @@ function AppSettingsPage({
               true: colors.primary,
             }}
           />
-          <Body>Audio Plays In Background</Body>
+          <Body>Play Audio In Background</Body>
         </View>
+        {Platform.OS === "ios" && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Switch
+              value={playAudioInSilentModeIOS}
+              onValueChange={(v) => {
+                appDispatch(setPlayAudioInSilentModeIOS(v));
+              }}
+              trackColor={{
+                false: colors.onSurfaceDisabled,
+                true: colors.primary,
+              }}
+            />
+            <Body>Play Audio In Silent Mode</Body>
+          </View>
+        )}
         <Divider style={{ marginVertical: 10 }} />
         <OutlineButton
           onPress={() => showConfirmReset({ data: "keepProfiles" })}
