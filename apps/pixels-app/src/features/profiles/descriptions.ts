@@ -90,7 +90,7 @@ export function getActionTypeLabel(type: Profiles.ActionType): string {
     case "playAnimation":
       return "Animation";
     case "playAudioClip":
-      return "Sound";
+      return "Audio Clip";
     case "makeWebRequest":
       return "Web Request";
     case "speakText":
@@ -107,7 +107,7 @@ export function getActionTypeDescription(type: Profiles.ActionType): string {
     case "playAnimation":
       return "Play an animation on the Pixel LEDs";
     case "playAudioClip":
-      return "Play a sound file on your device";
+      return "Play an audio clip on your device";
     case "makeWebRequest":
       return "Send a web request through your device";
     case "speakText":
