@@ -623,7 +623,7 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
                 entering={FadeIn.duration(300)}
               >
                 {diceCount ? (
-                  <SmallText>Not all dice are listed above?</SmallText>
+                  <SmallText>Not seeing all your dice?</SmallText>
                 ) : (
                   <AnimatedText
                     variant="bodyLarge"

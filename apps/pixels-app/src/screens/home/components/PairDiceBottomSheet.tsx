@@ -148,14 +148,14 @@ function SelectScannedPixels({
           ))
         ) : (
           <AnimatedText
-            key={showNoDie ? "no-die" : "searching"}
+            key={showNoDie ? "no-die" : "scanning"}
             entering={FadeIn.duration(300)}
             style={{ marginLeft: 10 }}
           >
             {showNoDie
               ? getNoAvailableDiceMessage() +
                 `\n\nFor help about turning on your dice go in the "More" tab`
-              : "Searching for dice..."}
+              : "Scanning for dice..."}
             .
           </AnimatedText>
         )}

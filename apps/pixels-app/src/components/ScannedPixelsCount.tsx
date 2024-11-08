@@ -23,7 +23,7 @@ export function ScannedPixelsCount({
           </Text>
         )}
         <Text variant="bodyLarge">
-          {diceCount > 0 ? "Scanning for more" : "Scanning for Pixels dice"}...
+          Scanning for {diceCount > 0 ? "more" : "Pixels"} dice...
         </Text>
       </View>
       <ActivityIndicator animating={isScanning} />
