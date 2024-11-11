@@ -17,8 +17,6 @@ import {
   getKeepDiceNearDevice,
 } from "~/features/profiles";
 import {
-  DfuFilesInfo,
-  useAppDfuFiles,
   useBottomSheetPadding,
   useIsAppUpdatingFirmware,
   useOutdatedPixelsCount,
@@ -93,7 +91,6 @@ function FirmwareUpdatePage({
 
   const updating = useIsAppUpdatingFirmware();
   const updateDice = useUpdateDice();
-  const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const [stopRequester, setStopRequester] = React.useState<() => void>();
   const cancelUpdating = useConfirmStopUpdatingActionSheet(() =>
     stopRequester?.()
@@ -126,11 +123,8 @@ function FirmwareUpdatePage({
           <Text variant="bodyLarge">
             {getKeepDiceNearDevice(pairedDice.length)}
           </Text>
-          <DfuFilesGate
-            dfuFilesInfo={dfuFilesInfo}
-            dfuFilesError={dfuFilesError}
-          >
-            {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
+          <DfuFilesGate>
+            {({ dfuFilesInfo }) => (
               <GradientButton
                 outline={updating}
                 disabled={!outdatedCount || (updating && !stopRequester)}

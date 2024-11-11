@@ -31,7 +31,6 @@ import { Provider as ReduxProvider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 import { AnimatedSplashScreen } from "./app/AnimatedSplashScreen";
-import { AppDfuFiles } from "./app/AppDfuFiles";
 import { AppInit } from "./app/AppInit";
 import { AppPixelsCentral } from "./app/AppPixelsCentral";
 import { useAppSelector } from "./app/hooks";
@@ -278,19 +277,17 @@ function App() {
                   <PersistGate persistor={persistor}>
                     <AppInit>
                       <AppPixelsCentral>
-                        <AppDfuFiles>
-                          <AnimatedSplashScreen>
-                            <RootSiblingParent>
-                              <ActionSheetProvider>
-                                <BottomSheetModalProvider>
-                                  <UpdateProfileProvider>
-                                    <AppPage />
-                                  </UpdateProfileProvider>
-                                </BottomSheetModalProvider>
-                              </ActionSheetProvider>
-                            </RootSiblingParent>
-                          </AnimatedSplashScreen>
-                        </AppDfuFiles>
+                        <AnimatedSplashScreen>
+                          <RootSiblingParent>
+                            <ActionSheetProvider>
+                              <BottomSheetModalProvider>
+                                <UpdateProfileProvider>
+                                  <AppPage />
+                                </UpdateProfileProvider>
+                              </BottomSheetModalProvider>
+                            </ActionSheetProvider>
+                          </RootSiblingParent>
+                        </AnimatedSplashScreen>
                       </AppPixelsCentral>
                     </AppInit>
                   </PersistGate>

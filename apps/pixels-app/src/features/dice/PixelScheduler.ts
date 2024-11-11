@@ -11,7 +11,7 @@ import {
   Pixel,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { updateFirmware } from "~/features/dfu";
 import { logError } from "~/features/utils";
 import { hackGetDieBrightness, isSameBrightness } from "~/hackGetDieBrightness";
 

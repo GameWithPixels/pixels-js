@@ -2,6 +2,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { logWrite } from "./logWrite";
 
+export type DfuFilesInfo = {
+  timestamp: number;
+  firmwarePath: string;
+  bootloaderPath?: string;
+};
+
 export interface AppTransientState {
   update: {
     gotResponse: boolean;
@@ -11,14 +17,26 @@ export interface AppTransientState {
     };
     error?: string;
   };
+  dfuFilesStatus?: DfuFilesInfo | string; // String is the error message
+  dice: {
+    selectedDieId?: number;
+    transferProgress: {
+      [dieId: number]: number;
+    };
+  };
 }
 
 const initialState: AppTransientState = {
   update: { gotResponse: false },
+  dice: { transferProgress: {} },
 };
 
 function log(
-  action: "resetAppTransientState" | "setAppUpdateResponse",
+  action:
+    | "resetAppTransientState"
+    | "setAppUpdateResponse"
+    | "setDfuFilesStatus"
+    | "setSelectedDieId",
   value?: unknown
 ) {
   logWrite(action + (value !== undefined ? `: ${value}` : ""));
@@ -54,9 +72,23 @@ const appUpdateSlice = createSlice({
         update.manifest = undefined;
       }
     },
+
+    setDfuFilesStatus(state, action: PayloadAction<DfuFilesInfo | string>) {
+      log("setDfuFilesStatus");
+      state.dfuFilesStatus = action.payload;
+    },
+
+    setSelectedDieId(state, action: PayloadAction<number>) {
+      log("setSelectedDieId");
+      state.dice.selectedDieId = action.payload;
+    },
   },
 });
 
-export const { resetAppTransientState, setAppUpdateResponse } =
-  appUpdateSlice.actions;
+export const {
+  resetAppTransientState,
+  setAppUpdateResponse,
+  setDfuFilesStatus,
+  setSelectedDieId,
+} = appUpdateSlice.actions;
 export default appUpdateSlice.reducer;

@@ -71,8 +71,6 @@ import {
 } from "~/features/profiles";
 import { setShowOnboarding } from "~/features/store";
 import {
-  DfuFilesInfo,
-  useAppDfuFiles,
   useBatteryStateLabel,
   useBottomSheetBackHandler,
   useFlashAnimationStyleOnRoll,
@@ -465,7 +463,9 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
   const diceCount = pixels.length;
 
   // On leaving page
-  const { dfuFilesInfo } = useAppDfuFiles();
+  const dfuFilesStatus = useAppSelector(
+    (state) => state.appTransient.dfuFilesStatus
+  );
   const leavePage = (action: "pair" | "skip") => {
     stopScan();
     if (action === "skip") {
@@ -476,9 +476,10 @@ function ScanSlide({ onNext }: { onNext: (update: boolean) => void }) {
         .map(ScannedDevicesRegistry.findPixel)
         .some(
           (p) =>
+            typeof dfuFilesStatus === "object" &&
             getDieDfuAvailability(
               p!.firmwareDate.getTime(),
-              dfuFilesInfo?.timestamp
+              dfuFilesStatus.timestamp
             ) !== "up-to-date"
         );
       onNext(needUpdate);
@@ -679,7 +680,6 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
   const diceStr = pixels.length <= 1 ? "die" : "dice";
 
   // DFU
-  const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const updateDice = useUpdateDice();
   const [step, setStep] = React.useState<"wait" | "update" | "done">("wait");
   return (
@@ -703,11 +703,8 @@ function UpdateDiceSlide({ onNext }: { onNext: () => void }) {
             <Text>{getFirmwareUpdateAvailable(pixels.length)}</Text>
             <Text>{getKeepAllDiceUpToDate()}</Text>
             <Text>{getKeepDiceNearDevice(pixels.length)}</Text>
-            <DfuFilesGate
-              dfuFilesInfo={dfuFilesInfo}
-              dfuFilesError={dfuFilesError}
-            >
-              {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
+            <DfuFilesGate>
+              {({ dfuFilesInfo }) => (
                 <GradientButton
                   style={{ alignItems: "flex-start", alignSelf: "center" }}
                   onPress={() => {

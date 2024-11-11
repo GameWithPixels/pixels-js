@@ -7,13 +7,13 @@ import { Body, Remark, Title } from "./components/text";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { FirmwareInfoScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
+import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
 import {
   setUseBetaFirmware,
   setUpdateBootloader,
   setAppFirmwareTimestampOverride,
 } from "~/features/store";
-import { useAppDfuFiles } from "~/hooks";
 
 function FirmwareInfoPage({
   navigation,
@@ -27,8 +27,6 @@ function FirmwareInfoPage({
     appFirmwareTimestampOverride: fwTimestampOvr,
     useBetaFirmware: betaFirmware,
   } = useAppSelector((state) => state.appSettings);
-  const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
-  const date = new Date(dfuFilesInfo?.timestamp ?? 0);
   return (
     <View style={{ height: "100%" }}>
       <PageHeader onGoBack={() => navigation.goBack()}>
@@ -42,23 +40,26 @@ function FirmwareInfoPage({
           gap: 10,
         }}
       >
-        {dfuFilesInfo ? (
-          <>
-            <Title>Available Dice Firmware</Title>
-            <View style={{ marginLeft: 10, marginTop: 10, gap: 10 }}>
-              <Body>Date: {date.toUTCString()}</Body>
-              <Body>Timestamp: {date.getTime()}</Body>
-              <Body>Firmware: {dfuFilesInfo.firmwarePath ? "yes" : "no"}</Body>
-              <Body>
-                Bootloader: {dfuFilesInfo.bootloaderPath ? "yes" : "no"}
-              </Body>
-            </View>
-          </>
-        ) : dfuFilesError ? (
-          <Body>Error reading firmware files: {String(dfuFilesError)}</Body>
-        ) : (
-          <Body>Preparing firmware files...</Body>
-        )}
+        <DfuFilesGate>
+          {({ dfuFilesInfo }) => {
+            const date = new Date(dfuFilesInfo?.timestamp ?? 0);
+            return (
+              <>
+                <Title>Available Dice Firmware</Title>
+                <View style={{ marginLeft: 10, marginTop: 10, gap: 10 }}>
+                  <Body>Date: {date.toUTCString()}</Body>
+                  <Body>Timestamp: {date.getTime()}</Body>
+                  <Body>
+                    Firmware: {dfuFilesInfo.firmwarePath ? "yes" : "no"}
+                  </Body>
+                  <Body>
+                    Bootloader: {dfuFilesInfo.bootloaderPath ? "yes" : "no"}
+                  </Body>
+                </View>
+              </>
+            );
+          }}
+        </DfuFilesGate>
         {showAdvancedSettings && (
           <>
             <Divider style={{ marginVertical: 10 }} />

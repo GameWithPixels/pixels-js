@@ -8,7 +8,8 @@ import { checkForAppUpdateAsync, installAppUpdateAsync } from "./updates";
 
 import { useAppSelector } from "~/app/hooks";
 import { setAudioSettingsAsync } from "~/features/audio";
-import { Library } from "~/features/store";
+import { loadDfuFilesAsync } from "~/features/dfu/loadDfuFilesAsync";
+import { Library, setDfuFilesStatus } from "~/features/store";
 import { logError } from "~/features/utils";
 
 export function AppInit({ children }: React.PropsWithChildren) {
@@ -85,6 +86,24 @@ export function AppInit({ children }: React.PropsWithChildren) {
       playsInSilentModeIOS: playAudioInSilentModeIOS,
     }).catch((e) => logError(e));
   }, [backgroundAudio, playAudioInSilentModeIOS]);
+
+  // Load DFU files
+  const {
+    useBetaFirmware: betaFirmware,
+    appFirmwareTimestampOverride: timestamp,
+  } = useAppSelector((state) => state.appSettings);
+  React.useEffect(() => {
+    // Load DFU files (not interrupted if a fast refresh happens)
+    loadDfuFilesAsync({ betaFirmware }).then((result) => {
+      if (timestamp) {
+        // Override timestamp for testing
+        result = { ...result, timestamp };
+      }
+      store.dispatch(
+        setDfuFilesStatus(result instanceof Error ? String(result) : result)
+      );
+    });
+  }, [betaFirmware, store, timestamp]);
 
   return !initialized ? null : <>{children}</>;
 }

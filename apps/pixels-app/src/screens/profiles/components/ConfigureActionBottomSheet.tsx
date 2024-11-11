@@ -58,11 +58,7 @@ import {
 } from "~/features/profiles";
 import { AnimationUtils } from "~/features/store/library";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
-import {
-  useAppDfuFiles,
-  useBottomSheetBackHandler,
-  useBottomSheetPadding,
-} from "~/hooks";
+import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 
 function TextInput({
   value,
@@ -781,7 +777,12 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   dieType: PixelDieType;
   currentFace: number;
 }) {
-  const fwTimestamp = useAppDfuFiles().dfuFilesInfo?.timestamp ?? 0;
+  const dfuFilesStatus = useAppSelector(
+    (state) => state.appTransient.dfuFilesStatus
+  );
+
+  const fwTimestamp =
+    typeof dfuFilesStatus === "object" ? dfuFilesStatus.timestamp : 0;
   const payload = getWebRequestPayload(
     // Fake PixelInfo for the payload
     {

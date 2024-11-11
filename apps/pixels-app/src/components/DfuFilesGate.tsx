@@ -1,25 +1,25 @@
 import React from "react";
 import { Text } from "react-native-paper";
 
+import { useAppSelector } from "~/app/hooks";
 import { DfuFilesInfo } from "~/hooks";
 
 export function DfuFilesGate({
   children,
-  dfuFilesInfo,
-  dfuFilesError,
 }: {
   children: (props: { dfuFilesInfo: DfuFilesInfo }) => React.ReactNode;
-  dfuFilesInfo?: DfuFilesInfo;
-  dfuFilesError?: Error;
 }) {
-  return dfuFilesInfo ? (
+  const dfuFilesStatus = useAppSelector(
+    (state) => state.appTransient.dfuFilesStatus
+  );
+  return dfuFilesStatus && typeof dfuFilesStatus === "object" ? (
     children ? (
-      <>{children({ dfuFilesInfo })}</>
+      <>{children({ dfuFilesInfo: dfuFilesStatus })}</>
     ) : null
   ) : (
     <Text variant="bodyLarge">
-      {dfuFilesError
-        ? `Error reading firmware file: ${dfuFilesError}`
+      {dfuFilesStatus
+        ? `Error reading firmware file: ${dfuFilesStatus}`
         : "Preparing firmware file..."}
     </Text>
   );

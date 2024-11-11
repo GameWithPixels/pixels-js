@@ -27,15 +27,10 @@ import { BouncingView } from "~/components/BouncingView";
 import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientButton } from "~/components/buttons";
-import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { updateFirmware } from "~/features/dfu";
 import { getKeepDiceNearDevice } from "~/features/profiles";
 import { logError } from "~/features/utils";
-import {
-  DfuFilesInfo,
-  useAppDfuFiles,
-  useBottomSheetPadding,
-  usePixelsCentral,
-} from "~/hooks";
+import { useBottomSheetPadding, usePixelsCentral } from "~/hooks";
 
 type DfuEventMap = Readonly<{
   onDfuState: Readonly<{ pixelId: number; state: DfuState }>;
@@ -227,7 +222,6 @@ function RestoreFirmwarePage({
     return stop;
   }, [central]);
 
-  const { dfuFilesInfo, dfuFilesError } = useAppDfuFiles();
   const [stopRequester, setStopRequester] = React.useState<() => void>();
   const cancelUpdating = useConfirmStopUpdatingActionSheet(() =>
     stopRequester?.()
@@ -287,11 +281,8 @@ function RestoreFirmwarePage({
           <Text variant="bodyLarge">
             {getKeepDiceNearDevice(bootloaders.length)}
           </Text>
-          <DfuFilesGate
-            dfuFilesInfo={dfuFilesInfo}
-            dfuFilesError={dfuFilesError}
-          >
-            {({ dfuFilesInfo }: { dfuFilesInfo: DfuFilesInfo }) => (
+          <DfuFilesGate>
+            {({ dfuFilesInfo }) => (
               <GradientButton
                 outline={updating}
                 disabled={!bootloaders.length || (updating && !stopRequester)}
