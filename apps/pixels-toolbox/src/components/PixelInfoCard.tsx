@@ -214,6 +214,7 @@ function BlinkingCard({
       ["transparent", "dimgray"]
     ),
   }));
+  const rollTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
   React.useEffect(() => {
     const flash = (x0: number, x1: number) =>
       withSequence(
@@ -223,17 +224,30 @@ function BlinkingCard({
         }),
         withTiming(x1, { duration: 300, easing: Easing.in(Easing.ease) })
       );
-    const listener = () => {
-      if (pixel.rollState === "rolling" || pixel.rollState === "handling") {
+    const startStopFlashing = (rolling: boolean) => {
+      if (rolling) {
         if (!isLoopingRef.current) {
           isLoopingRef.current = true;
           animValue.value = withRepeat(flash(0.5, 0), -1);
         }
+        // Stop flashing after 5 seconds if not getting any update
+        clearTimeout(rollTimeoutRef.current);
+        rollTimeoutRef.current = setTimeout(
+          () => startStopFlashing(false),
+          5000
+        );
       } else {
         isLoopingRef.current = false;
         animValue.value = flash(1, 0);
+        // Clear the timeout if it's still running
+        clearTimeout(rollTimeoutRef.current);
+        rollTimeoutRef.current = undefined;
       }
     };
+    const listener = () =>
+      startStopFlashing(
+        pixel.rollState === "rolling" || pixel.rollState === "handling"
+      );
     pixel.addPropertyListener("rollState", listener);
     return () => {
       pixel.removePropertyListener("rollState", listener);
