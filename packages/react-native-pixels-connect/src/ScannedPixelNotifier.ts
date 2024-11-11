@@ -10,7 +10,7 @@ import {
 import { Mutable } from "@systemic-games/pixels-core-utils";
 
 import { ScannedPixel } from "./ScannedPixel";
-import { NotifiersMap } from "./static";
+import { ScannedPixelNotifiersMap } from "./static";
 
 /** Type for an object with all the mutable props of {@link ScannedPixelNotifier}. */
 export type ScannedPixelNotifierMutableProps = PixelInfoNotifierMutableProps &
@@ -90,8 +90,7 @@ export class ScannedPixelNotifier<
   }
 
   static findInstance(pixelId: number): ScannedPixelNotifier | undefined {
-    const notifier = NotifiersMap.get(pixelId);
-    return notifier?.type === "pixel" ? notifier : undefined;
+    return ScannedPixelNotifiersMap.get(pixelId);
   }
 
   static getInstance(scannedPixel: ScannedPixel): ScannedPixelNotifier {
@@ -101,7 +100,7 @@ export class ScannedPixelNotifier<
       return notifier;
     } else {
       const newNotifier = new ScannedPixelNotifier(scannedPixel);
-      NotifiersMap.set(scannedPixel.pixelId, newNotifier);
+      ScannedPixelNotifiersMap.set(scannedPixel.pixelId, newNotifier);
       return newNotifier;
     }
   }

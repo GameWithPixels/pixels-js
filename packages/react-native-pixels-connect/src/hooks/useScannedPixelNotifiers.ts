@@ -61,11 +61,15 @@ export function useScannedPixelNotifiers(
             const index = retItems.findIndex(
               (sp) => sp.pixelId === op.item.pixelId
             );
-            if (index < 0) {
+            if (index < 0 || retItems[index] !== notifier) {
               if (retItems === items) {
                 retItems = [...items];
               }
-              retItems.push(notifier);
+              if (index < 0) {
+                retItems.push(notifier);
+              } else {
+                retItems[index] = notifier;
+              }
             }
             break;
           }

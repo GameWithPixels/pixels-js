@@ -273,10 +273,7 @@ export class PixelScanner {
    */
   startAsync(): Promise<void> {
     return PixelScanner._sharedQueue.run(() => {
-      // Remove outdated advertisements
-      this._pruneOutdated();
-      // Flush pending operations
-      this._notify();
+      this.flush();
       // Start scanning
       if (this._status === "stopped" && !this._startPromise) {
         Central.addListener("scannedPeripheral", this._onScannedCb);
@@ -314,6 +311,16 @@ export class PixelScanner {
         await Central.stopScan();
       }
     });
+  }
+
+  /**
+   * Notify of pending scan list operations.
+   */
+  flush(): void {
+    // Remove outdated advertisements
+    this._pruneOutdated();
+    // Flush pending operations
+    this._notify();
   }
 
   private _emitEvent<T extends keyof PixelScannerEventMap>(

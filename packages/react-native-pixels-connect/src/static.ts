@@ -9,7 +9,14 @@ import { ScannedPixelNotifier } from "./ScannedPixelNotifier";
 // TODO add Bootloader device type
 export const DevicesMap = new Map<string, Pixel | Charger>();
 
-export const NotifiersMap = new Map<
+export const ScannedPixelNotifiersMap = new Map<number, ScannedPixelNotifier>();
+
+export const ScannedChargerNotifiersMap = new Map<
   number,
-  ScannedPixelNotifier | ScannedChargerNotifier | ScannedBootloaderNotifier
+  ScannedChargerNotifier
+>();
+
+export const ScannedBootloaderNotifiersMap = new Map<
+  number,
+  ScannedBootloaderNotifier
 >();

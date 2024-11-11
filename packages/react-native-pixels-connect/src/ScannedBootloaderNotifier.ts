@@ -11,7 +11,7 @@ import {
 
 import { ScannedBootloader } from "./ScannedBootloader";
 import { ScannedPixel } from "./ScannedPixel";
-import { NotifiersMap } from "./static";
+import { ScannedBootloaderNotifiersMap } from "./static";
 
 /** Type for an object with all the mutable props of {@link ScannedBootloaderNotifier}. */
 export type ScannedBootloaderNotifierMutableProps =
@@ -97,7 +97,7 @@ export class ScannedBootloaderNotifier<
   }
 
   static findInstance(pixelId: number): ScannedBootloaderNotifier | undefined {
-    const notifier = NotifiersMap.get(pixelId);
+    const notifier = ScannedBootloaderNotifiersMap.get(pixelId);
     return notifier?.type === "bootloader" ? notifier : undefined;
   }
 
@@ -112,7 +112,7 @@ export class ScannedBootloaderNotifier<
       return notifier;
     } else {
       const newNotifier = new ScannedBootloaderNotifier(ScannedBootloader);
-      NotifiersMap.set(ScannedBootloader.pixelId, newNotifier);
+      ScannedBootloaderNotifiersMap.set(ScannedBootloader.pixelId, newNotifier);
       return newNotifier;
     }
   }

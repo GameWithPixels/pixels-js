@@ -115,7 +115,9 @@ export function usePixelScannerNotify<T>(
           case "stop":
             return scanner.stopAsync();
           case "clear":
-            setItems([]);
+            scanner.flush();
+            itemsRef.current = [];
+            setItems(itemsRef.current);
             break;
           default:
             assertNever(action);
