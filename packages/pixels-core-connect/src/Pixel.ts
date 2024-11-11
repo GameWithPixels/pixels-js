@@ -107,8 +107,7 @@ export type BatteryEvent = Readonly<{
 }>;
 
 /**
- * Data structure for {@link Pixel} data transfer events,
- * and for {@link Pixel.dataTransferProgress}.
+ * Data structure for {@link Pixel} user message events,
  * see {@link PixelEventMap}.
  * @category Pixels
  */
@@ -119,7 +118,8 @@ export type UserMessageEvent = Readonly<{
 }>;
 
 /**
- * Data structure for {@link Pixel} user message events,
+ * Data structure for {@link Pixel} data transfer events,
+ * and for {@link Pixel.dataTransferProgress}.
  * see {@link PixelEventMap}.
  * @category Pixels
  */
@@ -177,8 +177,8 @@ export type PixelEventMap = Readonly<{
 export type PixelOwnMutableProps = {
   /** On-die profile hash value. */
   profileHash: number;
-  /** Ongoing data transfer progress (such as programming a profile). */
-  transferProgress: DataTransferProgress | undefined;
+  /** Whether data is being transferred from or to the die. */
+  isTransferring: boolean;
 };
 
 /**
@@ -219,7 +219,7 @@ export class Pixel
 
   // Profile
   private _profileHash = 0;
-  private _transferProgress?: DataTransferProgress;
+  private _isTransferring = false;
 
   // Clean-up
   private _disposeFunc: () => void;
@@ -331,11 +331,9 @@ export class Pixel
     return this._profileHash;
   }
 
-  /**
-   * Gets an ongoing data transfer progress (such as programming a profile).
-   */
-  get transferProgress(): DataTransferProgress | undefined {
-    return this._transferProgress;
+  /** Whether data is being transferred from or to the die. */
+  get isTransferring(): boolean {
+    return this._isTransferring;
   }
 
   /**
@@ -384,14 +382,11 @@ export class Pixel
     const statusListener = ({ status }: PixelMutableProps) => {
       // Reset transfer progress on disconnect
       if (
-        this._transferProgress &&
+        this._isTransferring &&
         status !== "identifying" &&
         status !== "ready"
       ) {
-        this._updateTransferProgress({
-          type: "failed",
-          error: "disconnected",
-        });
+        this._updateTransferProgress({ type: "failed", error: "disconnected" });
       }
       // Notify battery state
       if (status === "ready") {
@@ -790,10 +785,6 @@ export class Pixel
    * @returns A promise that resolves once the transfer has completed.
    */
   async transferDataSet(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferProgress) {
-      throw new PixelTransferInProgressError(this);
-    }
-
     const data = dataSet.toByteArray();
     const hash = DataSet.computeHash(data);
 
@@ -847,9 +838,6 @@ export class Pixel
    * @returns A promise that resolves once the transfer has completed.
    */
   async playTestAnimation(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferProgress) {
-      throw new PixelTransferInProgressError(this);
-    }
     if (!dataSet.animations.length) {
       throw new PixelTransferInvalidDataError(this);
     }
@@ -894,9 +882,6 @@ export class Pixel
    * @returns A promise that resolves once the transfer has completed.
    */
   async transferInstantAnimations(dataSet: Readonly<DataSet>): Promise<void> {
-    if (this._transferProgress) {
-      throw new PixelTransferInProgressError(this);
-    }
     if (!dataSet.animations.length) {
       throw new PixelTransferInvalidDataError(this);
     }
@@ -1202,52 +1187,31 @@ export class Pixel
     }
   }
 
-  private _updateTransferProgress(ev: PixelEventMap["dataTransfer"]) {
-    // Update progress
-    const progress =
-      ev.type === "completed" || ev.type === "failed"
-        ? undefined
-        : ev.type === "progress"
-          ? {
-              progressPercent: ev.progressPercent,
-              transferredBytes: ev.transferredBytes,
-              totalBytes: ev.totalBytes,
-            }
-          : {
-              progressPercent: 0,
-              transferredBytes: 0,
-              totalBytes: ev.totalBytes,
-            };
-    const progressChanged = this._transferProgress !== progress;
-    this._transferProgress = progress;
-
-    // Send events
-    this._emitEvent("dataTransfer", ev);
-    if (progressChanged) {
-      this.emitPropertyEvent("transferProgress");
-    }
-  }
-
   private async _programDataSet(
     prepareDie: () => Promise<number>,
     ackType: MessageType,
     data: Uint8Array
   ): Promise<void> {
+    if (this._isTransferring) {
+      throw new PixelTransferInProgressError(this);
+    }
     // Notify that we're starting
+    this._isTransferring = true;
     this._updateTransferProgress({
       type: "preparing",
       totalBytes: data.byteLength,
     });
+    this.emitPropertyEvent("isTransferring");
 
     let ackResult: number | undefined;
     try {
       ackResult = await prepareDie();
     } catch (error) {
-      // Notify failed transfer
-      this._updateTransferProgress({
-        type: "failed",
-        error: "timeout",
-      });
+      // Transfer might already have been notified as failed in case of a disconnection
+      if (this._isTransferring) {
+        // Notify failed transfer
+        this._updateTransferProgress({ type: "failed", error: "timeout" });
+      }
       throw error;
     }
 
@@ -1263,10 +1227,7 @@ export class Pixel
         // Nothing to do
         this._log("Animations are already up-to-date");
         // Notify no transfer
-        this._updateTransferProgress({
-          type: "completed",
-          totalBytes: 0,
-        });
+        this._updateTransferProgress({ type: "completed", totalBytes: 0 });
         break;
 
       case TransferInstantAnimationsSetAckTypeValues.noMemory:
@@ -1287,12 +1248,19 @@ export class Pixel
           `Got unknown transfer result: ${ackResult}`
         );
         // Notify failed transfer
-        this._updateTransferProgress({
-          type: "failed",
-          error: "unknown",
-        });
+        this._updateTransferProgress({ type: "failed", error: "unknown" });
         throw error;
       }
+    }
+  }
+
+  private _updateTransferProgress(ev: PixelEventMap["dataTransfer"]) {
+    const wasTransferring = this._isTransferring;
+    this._isTransferring = ev.type !== "completed" && ev.type !== "failed";
+    // Send events
+    this._emitEvent("dataTransfer", ev);
+    if (this._isTransferring !== wasTransferring) {
+      this.emitPropertyEvent("isTransferring");
     }
   }
 
@@ -1350,11 +1318,14 @@ export class Pixel
         totalBytes: data.byteLength,
       });
     } catch (error) {
-      // Notify failed transfer
-      this._updateTransferProgress({
-        type: "failed",
-        error: "timeout",
-      });
+      // Transfer might already have been notified as failed in case of a disconnection
+      if (this._isTransferring) {
+        // Notify failed transfer
+        this._updateTransferProgress({
+          type: "failed",
+          error: "timeout",
+        });
+      }
       throw error;
     } finally {
       this.removeMessageListener(ackType, onFinished);
