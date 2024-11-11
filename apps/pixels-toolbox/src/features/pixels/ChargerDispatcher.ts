@@ -8,6 +8,7 @@ import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Charger,
   ChargerMessages,
+  Color,
   getCharger,
   Pixel,
   PixelStatus,
@@ -38,6 +39,7 @@ export interface ChargerDispatcherActionMap {
   connect: undefined;
   disconnect: undefined;
   reportRssi: boolean;
+  blink: undefined;
   rename: string;
   queueDFU: undefined;
   dequeueDFU: undefined;
@@ -371,6 +373,12 @@ export class ChargerDispatcher
       case "reportRssi":
         this._guard(
           this._charger.reportRssi((params as boolean) ?? true),
+          action
+        );
+        break;
+      case "blink":
+        this._guard(
+          this._charger.blink(Color.dimOrange, { count: 2, fade: 64 }),
           action
         );
         break;

@@ -443,7 +443,7 @@ export class PixelDispatcher
         );
         break;
       case "blink":
-        this._guard(this._pixel.blink(Color.dimOrange), action);
+        this._guard(this._pixel.blink(Color.dimOrange, { count: 2 }), action);
         break;
       case "blinkId":
         this._guard(

@@ -311,7 +311,7 @@ function buildTelemetryLinesInfo(t: ReturnType<typeof useTranslation>["t"]): {
       max: 0,
     },
     {
-      title: t("Battery"),
+      title: t("battery"),
       color: "teal",
       min: 0,
       max: 100,
@@ -510,6 +510,11 @@ function BottomButtons({
           <Button onPress={() => pd.dispatch(connectStr)}>
             {t(connectStr)}
           </Button>
+          {status === "ready" && isCharger && (
+            <Button onPress={() => (pd as ChargerDispatcher).dispatch("blink")}>
+              {t("blink")}
+            </Button>
+          )}
           {status === "ready" && !isCharger && (
             <>
               <Button onPress={showDischarge}>{t("discharge")}</Button>
