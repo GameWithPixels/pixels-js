@@ -91,7 +91,19 @@ function PixelRssi({ pixel, t }: PixelAndTranslation) {
       pixel.removePropertyListener("rssi", listener);
     };
   }, [pixel, forceUpdate]);
-  return <Text>{`📶 ${t("dBmWithValue", { value: pixel.rssi })}`}</Text>;
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        width: 85,
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <Text>{"📶 "}</Text>
+      <Text>{t("dBmWithValue", { value: pixel.rssi })}</Text>
+    </View>
+  );
 }
 
 function PixelBattery({ pixel, t }: PixelAndTranslation) {
@@ -107,11 +119,21 @@ function PixelBattery({ pixel, t }: PixelAndTranslation) {
   }, [pixel, forceUpdate]);
   const charging = pixel.isCharging ? "⚡️" : "🔋";
   return (
-    <Text>
-      {`${charging} ${t("percentWithValue", {
-        value: pixel.batteryLevel,
-      })}`}
-    </Text>
+    <View
+      style={{
+        flexDirection: "row",
+        width: 50,
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <Text>{`${charging} `}</Text>
+      <Text>
+        {t("percentWithValue", {
+          value: pixel.batteryLevel,
+        })}
+      </Text>
+    </View>
   );
 }
 
@@ -257,7 +279,7 @@ export function PixelInfoCard({ children, pixelInfo }: PixelInfoCardProps) {
           </View>
         )}
       </PixelInfoCardModeContext.Consumer>
-      <BaseHStack w="100%" justifyContent="space-around">
+      <BaseHStack w="100%" justifyContent="space-between">
         <PixelRssi {...props} />
         <PixelBattery {...props} />
         <PixelRollState {...props} />
