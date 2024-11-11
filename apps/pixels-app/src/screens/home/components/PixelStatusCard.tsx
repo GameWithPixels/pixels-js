@@ -19,7 +19,7 @@ import { PixelConnectionStatus } from "~/components/PixelConnectionStatus";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { getDieTypeAndColorwayLabel } from "~/features/profiles";
-import { useRegisteredPixel } from "~/hooks";
+import { usePixelTransferProgress, useRegisteredPixel } from "~/hooks";
 
 function AnimatedChargingIcon({
   size,
@@ -52,8 +52,7 @@ function PixelStatusDetails({ pairedDie }: { pairedDie: PairedDie }) {
   const batteryLevel = usePixelProp(pixel, "batteryLevel");
   const isCharging = usePixelProp(pixel, "isCharging") && isReady;
   const needCharging = (batteryLevel ?? 100) < 10;
-  const transferProgress =
-    usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
+  const transferProgress = usePixelTransferProgress(pixel);
   const transferring = isReady && transferProgress >= 0;
   const { colors } = useTheme();
   return (

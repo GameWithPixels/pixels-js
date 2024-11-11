@@ -12,6 +12,7 @@ import {
   Color,
   ConnectError,
   Pixel,
+  PixelEventMap,
   PixelMutableProps,
   PixelStatusEvent,
   ScannedBootloaderNotifier,
@@ -29,7 +30,7 @@ import { PriorityQueue } from "./PriorityQueue";
 import { ScanRequesterEventMap, ScanRequester } from "./ScanRequester";
 import { getDieDfuAvailability } from "./getDieDfuAvailability";
 
-import { updateFirmware } from "~/features/dfu/updateFirmware";
+import { updateFirmware } from "~/features/dfu";
 import { logError } from "~/features/utils";
 import { DfuFilesInfo } from "~/hooks";
 
@@ -177,6 +178,10 @@ export type PixelsCentralEventMap = Readonly<{
     pixelId: number;
     disconnectId?: number;
   }>; // Failed to connect Pixel because connection limit was reached
+
+  // Data transfer events
+  onDataTransfer: Readonly<{ pixelId: number } & PixelEventMap["dataTransfer"]>;
+
   // DFU events
   onDfuState: Readonly<{ pixelId: number; state: PixelsCentralDfuState }>;
   onDfuProgress: Readonly<{ pixelId: number; progress: number }>;
@@ -219,6 +224,9 @@ export class PixelsCentral {
 
   // Priority queue of Pixels to connect
   private readonly _connectQueue = new PriorityQueue();
+
+  // Data transfer status & progress
+  private _transferStatuses = new Map<number, PixelEventMap["dataTransfer"]>();
 
   // DFU
   private _pixelInDFU: number | undefined;
@@ -353,6 +361,12 @@ export class PixelsCentral {
     if (this._pixels.has(pixelId)) {
       return getPixel(pixelId);
     }
+  }
+
+  getDataTransferStatus(
+    pixelId: number
+  ): PixelEventMap["dataTransfer"] | undefined {
+    return this._transferStatuses.get(pixelId);
   }
 
   register(pixelId: number): void {
@@ -884,6 +898,14 @@ export class PixelsCentral {
         const onStatus = (ev: PixelStatusEvent) =>
           this._onConnectionStatus(pixelId, ev);
         pixel.addEventListener("statusChanged", onStatus);
+
+        // Data transfer progress
+        const onDataTransfer = (ev: PixelEventMap["dataTransfer"]) => {
+          this._transferStatuses.set(pixelId, ev);
+          this._emitEvent("onDataTransfer", { pixelId, ...ev });
+        };
+        pixel.addEventListener("dataTransfer", onDataTransfer);
+
         // Listen for scheduler events
         const scheduler = getScheduler(pixelId);
         const onConnectOpStatus = (
@@ -892,13 +914,15 @@ export class PixelsCentral {
           ev.operation.type === "connect" &&
           ev.status === "failed" &&
           this._onConnectOperationFailed(pixel, ev.error);
-
         scheduler.addListener("onOperationStatus", onConnectOpStatus);
+
         // Store unhook function
         data.disposer = () => {
           pixel.removeEventListener("statusChanged", onStatus);
+          pixel.removeEventListener("dataTransfer", onDataTransfer);
           scheduler.removeListener("onOperationStatus", onConnectOpStatus);
         };
+
         // Notify Pixels list changed
         this._emitEvent("pixels", this.pixels);
         // Notify Pixel found

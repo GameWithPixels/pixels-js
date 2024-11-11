@@ -21,6 +21,7 @@ export * from "./usePixelDfuAvailability";
 export * from "./usePixelDfuState";
 export * from "./usePixelScanner";
 export * from "./usePixelsCentral";
+export * from "./usePixelTransferProgress";
 export * from "./useProfile";
 export * from "./useProfilesList";
 export * from "./useRegisteredPixel";

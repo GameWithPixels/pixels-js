@@ -1,12 +1,13 @@
-import {
-  Pixel,
-  usePixelProp,
-} from "@systemic-games/react-native-pixels-connect";
+import { Pixel } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import { useTheme } from "react-native-paper";
 
-import { useSelectedPairedDie, useRegisteredPixel } from "~/hooks";
+import {
+  useSelectedPairedDie,
+  useRegisteredPixel,
+  usePixelTransferProgress,
+} from "~/hooks";
 
 export function PixelTransferProgressBar({
   pixel,
@@ -15,8 +16,7 @@ export function PixelTransferProgressBar({
   pixel: Pixel;
   style?: StyleProp<ViewStyle>;
 }) {
-  const progress =
-    usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
+  const progress = usePixelTransferProgress(pixel);
   const { colors } = useTheme();
   return (
     progress >= 0 &&

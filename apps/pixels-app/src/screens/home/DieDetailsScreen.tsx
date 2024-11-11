@@ -38,6 +38,7 @@ import {
   useProfile,
   useSetSelectedPairedDie,
   useRegisteredPixel,
+  usePixelTransferProgress,
 } from "~/hooks";
 
 function SectionTitle({ children }: React.PropsWithChildren) {
@@ -59,8 +60,7 @@ export function DieStatus({
   const isCharging = usePixelProp(pixel, "isCharging");
   const rollState = usePixelProp(pixel, "rollState");
   const currentFace = usePixelProp(pixel, "currentFace");
-  const transferProgress =
-    usePixelProp(pixel, "transferProgress")?.progressPercent ?? -1;
+  const transferProgress = usePixelTransferProgress(pixel);
   const { colors } = useTheme();
   return (
     <View style={[{ gap: 10 }, style]} {...props}>
