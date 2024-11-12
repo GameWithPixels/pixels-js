@@ -1,9 +1,14 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
-import { PrebuildAnimations } from "@systemic-games/pixels-edit-animation";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
 import { Text } from "react-native-paper";
+
+import {
+  AllViewOptions,
+  ViewOptions,
+  ViewOptionsModal,
+} from "./ViewOptionsModal";
 
 import { AppStyles } from "~/AppStyles";
 import { BaseBoxProps } from "~/components/BaseBox";
@@ -40,7 +45,7 @@ export const SwipeablePixelsList = React.memo(function ({
   const lastDispatchersList = React.useRef<
     (PixelDispatcher | ChargerDispatcher)[]
   >([]);
-  const dispatchers = React.useMemo(() => {
+  const allDispatchers = React.useMemo(() => {
     const scanned = scannedDevices
       .map((dev) =>
         dev.type === "pixel"
@@ -58,9 +63,25 @@ export const SwipeablePixelsList = React.memo(function ({
     return dispatchers;
   }, [scannedDevices]);
 
+  // Filters
+  const [viewOptions, setViewOptions] = React.useState<ViewOptions[]>(
+    AllViewOptions.filter((o) => o !== "onlyConnected" && o !== "expandedInfo")
+  );
+  const dispatchers = React.useMemo(
+    () =>
+      allDispatchers.filter(
+        (pd) =>
+          (pd.type !== "pixel" ||
+            pd.dieType === "unknown" ||
+            viewOptions.includes(pd.dieType)) &&
+          (pd.type !== "charger" || viewOptions.includes("charger")) &&
+          (!viewOptions.includes("onlyConnected") || pd.isReady)
+      ),
+    [allDispatchers, viewOptions]
+  );
+
   // Values for UI
   const { t } = useTranslation();
-  const [expandedInfo, setExpandedInfo] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
 
   // Actions dispatched to all Pixels
@@ -75,20 +96,16 @@ export const SwipeablePixelsList = React.memo(function ({
     [dispatchers]
   );
   const { showActionSheetWithOptions } = useActionSheet();
-  const showActionSheet = React.useCallback(() => {
+  const showMassOpActions = React.useCallback(() => {
     const options = [
       t("connect"),
       t("disconnect"),
       t("turnOff"),
       t("rainbowAllFaces"),
-      t("fire"),
-      t("noise"),
-      t("playProfileAnimation"),
       t("updateProfile"),
       t("updateBootloaderAndFirmware"),
       t("cancel"),
     ];
-
     showActionSheetWithOptions(
       {
         title: t("applyToAllRelevantPixels"),
@@ -107,27 +124,16 @@ export const SwipeablePixelsList = React.memo(function ({
             dispatchAll("turnOff");
             break;
           case 3:
-            dispatchAll("playAnimation", PrebuildAnimations.rainbow);
-            break;
-          case 4:
-            dispatchAll("playAnimation", PrebuildAnimations.cycleFire);
-            break;
-          case 5:
-            dispatchAll("playAnimation", PrebuildAnimations.noise);
-            break;
-          case 6:
-            dispatchAll("playProfileAnimation", 0);
-            break;
-          case 7:
             dispatchAll("uploadProfile");
             break;
-          case 8:
+          case 4:
             dispatchAll("queueDFU");
             break;
         }
       }
     );
   }, [dispatchAll, showActionSheetWithOptions, t]);
+  const [optionsVisible, setOptionsVisible] = React.useState(false);
 
   // FlatList item rendering
   const renderItem = React.useCallback(
@@ -161,36 +167,46 @@ export const SwipeablePixelsList = React.memo(function ({
   );
 
   return (
-    <BaseVStack {...props}>
-      <BaseHStack
-        width="100%"
-        alignItems="baseline"
-        justifyContent="space-between"
-      >
-        <EmojiButton onPress={() => setExpandedInfo((b) => !b)}>ℹ️</EmojiButton>
-        <Text variant="headlineMedium">
-          {t("pixelsWithCount", { count: dispatchers.length })}
-        </Text>
-        <EmojiButton onPress={showActionSheet}>⚙️</EmojiButton>
-      </BaseHStack>
-      {!(typeof scanStatus === "string") ? (
-        <Text>{String(scanStatus)}</Text>
-      ) : dispatchers.length ? (
-        <PixelInfoCardModeContext.Provider
-          value={expandedInfo ? "expanded" : "normal"}
+    <>
+      <BaseVStack {...props}>
+        <BaseHStack
+          width="100%"
+          alignItems="baseline"
+          justifyContent="space-between"
         >
-          <FlatList
-            contentContainerStyle={AppStyles.listContentContainer}
-            data={dispatchers}
-            renderItem={renderItem}
-            refreshControl={refreshControl}
-          />
-        </PixelInfoCardModeContext.Provider>
-      ) : (
-        <Text style={[AppStyles.italic, AppStyles.selfCentered, AppStyles.mv3]}>
-          {t("noPixelsFound")}
-        </Text>
-      )}
-    </BaseVStack>
+          <EmojiButton onPress={() => setOptionsVisible(true)}>⋮</EmojiButton>
+          <Text variant="headlineMedium">
+            {t("pixelsWithCount", { count: dispatchers.length })}
+          </Text>
+          <EmojiButton onPress={showMassOpActions}>⚙️</EmojiButton>
+        </BaseHStack>
+        {!(typeof scanStatus === "string") ? (
+          <Text>{String(scanStatus)}</Text>
+        ) : dispatchers.length ? (
+          <PixelInfoCardModeContext.Provider
+            value={viewOptions.includes("expandedInfo") ? "expanded" : "normal"}
+          >
+            <FlatList
+              contentContainerStyle={AppStyles.listContentContainer}
+              data={dispatchers}
+              renderItem={renderItem}
+              refreshControl={refreshControl}
+            />
+          </PixelInfoCardModeContext.Provider>
+        ) : (
+          <Text
+            style={[AppStyles.italic, AppStyles.selfCentered, AppStyles.mv3]}
+          >
+            {t("noPixelsDieOrChargerFound")}
+          </Text>
+        )}
+      </BaseVStack>
+      <ViewOptionsModal
+        visible={optionsVisible}
+        selectedOptions={viewOptions}
+        onSelectOptions={setViewOptions}
+        onDismiss={() => setOptionsVisible(false)}
+      />
+    </>
   );
 });

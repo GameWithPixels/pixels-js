@@ -26,7 +26,7 @@ i18n
   })
   .use(initReactI18next)
   .init({
-    debug: true,
+    debug: __DEV__,
     fallbackLng: "en",
     compatibilityJSON: "v3",
     interpolation: {
@@ -64,6 +64,7 @@ i18n
           disconnecting: "disconnecting",
           // Roll statuses
           unknown: "unknown",
+          rolled: "rolled",
           onFace: "on face",
           handling: "handling",
           rolling: "rolling",
@@ -97,7 +98,8 @@ i18n
           forceEnableCharging: "Force Enable Charging",
 
           // Pixels Scan List
-          noPixelsFound: "No Pixels found so far...",
+          noPixelsFound: "No Pixels die found so far...",
+          noPixelsDieOrChargerFound: "No Pixels die or charger found so far...",
           scannedPixelsWithCount: "{{count}} Scanned Pixels",
           tapOnItemToSelect: "Tap On Item To Select",
           clearScanList: "Clear Scan List",
@@ -192,6 +194,13 @@ i18n
           updateBootloaderAndFirmware: "Update Bootloader & Firmware",
           updateAvailableGoToSettings:
             "Update available, go to Settings page to install.",
+          filtersAndOptions: "Filters & Options",
+          onlyConnected: "Only Connected",
+          expandedInfo: "Expanded Info",
+          selectViewOptions: "Select View Options",
+          dieTypes: "Die Types",
+          selectAll: "Select All",
+          unselectAll: "Unselect All",
 
           // DFU
           dfuStateWithStatus: "DFU State: {{status}}",
@@ -359,6 +368,7 @@ i18n
           disconnecting: "断开连接中",
           // Roll statuses
           unknown: "未知",
+          rolled: "卷起的",
           onFace: "骰子稳定放置好",
           handling: "用手摇晃",
           rolling: "骰子滚动中",
