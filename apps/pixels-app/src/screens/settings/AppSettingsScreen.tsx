@@ -140,19 +140,21 @@ function AppSettingsPage({
           />
           <Body>Disable Playing Animations In App</Body>
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Switch
-            value={backgroundAudio}
-            onValueChange={(v) => {
-              appDispatch(setBackgroundAudio(v));
-            }}
-            trackColor={{
-              false: colors.onSurfaceDisabled,
-              true: colors.primary,
-            }}
-          />
-          <Body>Play Audio In Background</Body>
-        </View>
+        {Platform.OS === "android" && (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Switch
+              value={backgroundAudio}
+              onValueChange={(v) => {
+                appDispatch(setBackgroundAudio(v));
+              }}
+              trackColor={{
+                false: colors.onSurfaceDisabled,
+                true: colors.primary,
+              }}
+            />
+            <Body>Play Audio In Background</Body>
+          </View>
+        )}
         {Platform.OS === "ios" && (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <Switch

@@ -43,7 +43,6 @@ const config = {
         NSAppTransportSecurity: {
           NSAllowsArbitraryLoads: true,
         },
-        UIBackgroundModes: ["audio"],
       },
     },
     android: {

@@ -7,7 +7,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { reaction } from "mobx";
 import React from "react";
-import { Alert } from "react-native";
+import { Alert, AppState } from "react-native";
 
 import { PairedDie } from "./PairedDie";
 import { useAppSelector, useAppStore } from "./hooks";
@@ -60,6 +60,8 @@ function remoteActionListener(
   if (profileUuid) {
     const profile = readProfile(profileUuid, state.library);
     const action = profile.getRemoteAction(actionId);
+    const canPlayAudio =
+      AppState.currentState === "active" || state.appSettings.backgroundAudio;
     if (action) {
       console.log(
         log(`Got remote action of type ${action.type} with id ${actionId}`)
@@ -71,9 +73,10 @@ function remoteActionListener(
           getWebRequestPayload(pixel, profile.name, action.value)
         );
       } else if (action instanceof Profiles.ActionSpeakText) {
-        playActionSpeakText(action);
+        if (canPlayAudio) playActionSpeakText(action);
       } else if (action instanceof Profiles.ActionPlayAudioClip) {
-        playActionAudioClip(action, state.libraryAssets.audioClips.entities);
+        if (canPlayAudio)
+          playActionAudioClip(action, state.libraryAssets.audioClips.entities);
       } else {
         console.log(
           log(`Nothing to do for remote action of type "${action.type}`)

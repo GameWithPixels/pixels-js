@@ -1,4 +1,5 @@
 import { Audio, AudioMode, AVPlaybackSource } from "expo-av";
+import { Platform } from "react-native";
 
 import { getAudioClipPathname } from "./path";
 
@@ -45,7 +46,15 @@ export async function playAudioClipAsync(
 }
 
 export function setAudioSettingsAsync(
-  settings: Pick<AudioMode, "staysActiveInBackground" | "playsInSilentModeIOS">
+  settings: Readonly<
+    Pick<AudioMode, "staysActiveInBackground" | "playsInSilentModeIOS">
+  >
 ): Promise<void> {
+  if (Platform.OS === "ios") {
+    settings = {
+      ...settings,
+      staysActiveInBackground: false,
+    };
+  }
   return Audio.setAudioModeAsync(settings);
 }
