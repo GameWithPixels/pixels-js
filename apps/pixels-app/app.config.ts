@@ -4,7 +4,7 @@ const prod =
   process.env.EAS_BUILD_PROFILE !== "development";
 
 const version = "2.5.0"; // Version number must have 3 parts
-const buildNumber = 2503;
+const buildNumber = 2504;
 
 const config = {
   expo: {
