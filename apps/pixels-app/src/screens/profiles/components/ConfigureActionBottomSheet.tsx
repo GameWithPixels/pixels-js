@@ -409,7 +409,7 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       )}
       {faceMask !== undefined && (
         <View>
-          <Text variant="titleMedium">Highest Face Off</Text>
+          <Text variant="titleMedium">Top Face Off</Text>
           <Switch
             value={!!action.faceMask}
             onValueChange={(v) =>
@@ -713,11 +713,11 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
       >
         Voice Rate
       </SliderWithValueAndTitle>
-      <Text style={{ color: colors.onSurfaceDisabled, marginVertical: 5 }}>
-        {Platform.OS === "android"
-          ? "Only works if you have Google Play on your device."
-          : "Please make sure that your device is not in silent mode."}
-      </Text>
+      {Platform.OS === "android" && (
+        <Text style={{ color: colors.onSurfaceDisabled, marginVertical: 5 }}>
+          Only works if you have Google Play on your device."
+        </Text>
+      )}
       <OutlineButton onPress={() => playActionSpeakText(action)}>
         Test Speech
       </OutlineButton>
