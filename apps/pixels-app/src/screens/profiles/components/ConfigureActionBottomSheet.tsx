@@ -410,21 +410,32 @@ const ConfigurePlayAnimation = observer(function ConfigurePlayAnimation({
       {faceMask !== undefined && (
         <View>
           <Text variant="titleMedium">Top Face Off</Text>
-          <Switch
-            value={!!action.faceMask}
-            onValueChange={(v) =>
-              runInAction(() => {
-                action.faceMask = v
-                  ? getFaceMask(
-                      DiceUtils.getDieFaces(dieType).filter(
-                        (f) => f !== DiceUtils.getHighestFace(dieType)
-                      ),
-                      dieType
-                    )
-                  : undefined;
-              })
-            }
-          />
+          <View
+            style={{
+              flexDirection: "row",
+              marginHorizontal: 10,
+              marginTop: 5,
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <Switch
+              value={!!action.faceMask}
+              onValueChange={(v) =>
+                runInAction(() => {
+                  action.faceMask = v
+                    ? getFaceMask(
+                        DiceUtils.getDieFaces(dieType).filter(
+                          (f) => f !== DiceUtils.getHighestFace(dieType)
+                        ),
+                        dieType
+                      )
+                    : undefined;
+                })
+              }
+            />
+            <Text>Whether to keep the top face unlit.</Text>
+          </View>
         </View>
       )}
     </>
