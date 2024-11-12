@@ -367,10 +367,10 @@ export const Central = {
       _valueChangedSubs = _addNativeListener(
         "characteristicValueChanged",
         ({ device, characteristic, data }) => {
+          // Forward event
+          const name = device.name;
           try {
-            // Forward event
             const pInf = _peripherals.get(device.systemId);
-            const name = device.name;
             if (pInf) {
               const onValueChanged = pInf.valueChangedCallbacks.get(
                 getCharacteristicKey(

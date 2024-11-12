@@ -116,7 +116,7 @@ export abstract class PixelInfoNotifier<
       );
     } catch (e) {
       console.error(
-        `PixelInfoNotifier: Uncaught error in "${name}" event listener: ${e}`
+        `PixelInfoNotifier: Uncaught error in "${propertyName}" event listener: ${e}`
       );
     }
   }
