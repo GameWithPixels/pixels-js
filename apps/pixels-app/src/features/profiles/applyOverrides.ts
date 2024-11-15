@@ -26,8 +26,8 @@ export function applyActionOverrides(
 ): Profiles.Animation | undefined {
   const originalAnim = action.animation;
   if (originalAnim) {
-    let anim = originalAnim;
     const animUuid = originalAnim.uuid;
+    let anim = originalAnim;
     const getEditableAnim = () =>
       anim === originalAnim ? (anim = originalAnim.duplicate()) : anim;
     if (action.duration !== undefined) {
@@ -56,7 +56,7 @@ export function applyActionOverrides(
           animUuid
         );
       } else {
-        const gradient = AnimationUtils.getEditableGradient(anim);
+        const gradient = AnimationUtils.getEditableGradient(anim, animUuid);
         if (gradient && gradient.keyframes.length === action.colors.length) {
           AnimationUtils.setEditableGradient(
             getEditableAnim(),

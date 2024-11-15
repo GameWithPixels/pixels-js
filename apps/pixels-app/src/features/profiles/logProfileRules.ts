@@ -1,5 +1,7 @@
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 
+import { AnimationUtils } from "~/features/store/library/AnimationUtils";
+
 export function logProfileRules(profile: Profiles.Profile): void {
   for (const rule of profile.rules) {
     console.log(" - Rule of type " + rule.condition.type);
@@ -15,6 +17,12 @@ export function logProfileRules(profile: Profiles.Profile): void {
                 ` duration: ${anim.duration}, count ${action.loopCount}`
             : "    * No animation!"
         );
+        const gradient = AnimationUtils.getEditableGradient(anim);
+        if (gradient) {
+          console.log(
+            `      - Gradient: ${gradient.keyframes.map((kf) => `${Math.round(1e3 * kf.time)}/${kf.color}`).join(", ")}`
+          );
+        }
       } else if (action instanceof Profiles.ActionMakeWebRequest) {
         console.log(
           `    * Web request to "${action.url}" with value "${action.value}"`
