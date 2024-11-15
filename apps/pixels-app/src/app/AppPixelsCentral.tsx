@@ -1,6 +1,7 @@
 import {
   Color,
   ColorUtils,
+  DataSet,
   Pixel,
   PixelMutableProps,
   Profiles,
@@ -194,29 +195,54 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
             if (pairedDie.profileHash !== profileHash) {
               store.dispatch(
                 updatePairedDieProfileHash({
-                  pixelId: pixel.pixelId,
+                  pixelId,
                   hash: profileHash,
                 })
               );
             }
-            // Update paired die brightness if profile is being programmed
+            // Update paired die brightness if profile was being programmed
+            // and profile hashes are matching
             const op = central.getCurrentOperation(pixelId);
-            if (op?.type === "programProfile") {
-              // Note: if the die has restarted during programming, and reconnected
-              //       before the operation has failed, the brightness will still be updated
-              // Update paired die brightness
-              store.dispatch(
-                updatePairedDieBrightness({
-                  pixelId: pixel.pixelId,
-                  brightness: op.dataSet.brightness / 255,
-                })
-              );
+            const brightness =
+              op?.type === "programProfile" && op.dataSet.brightness / 255;
+            if (brightness !== false && pairedDie.brightness !== brightness) {
+              const hash = DataSet.computeHash(op.dataSet.toByteArray());
+              if (profileHash === hash) {
+                store.dispatch(
+                  updatePairedDieBrightness({
+                    pixelId,
+                    brightness,
+                  })
+                );
+              }
             }
             // Always check if profile needs to be programmed
             programProfileIfNeeded(pairedDie, central, store.getState);
           }
         };
         pixel.addPropertyListener("profileHash", onProfileHash);
+        const onProgProfileDisposer = central.addOperationStatusListener(
+          pixel.pixelId,
+          "programProfile",
+          (ev) => {
+            // Update brightness if profile was being programmed
+            if (ev.status === "succeeded") {
+              const pairedDie = pairedDiceSelectors.selectByPixelId(
+                store.getState(),
+                pixel.pixelId
+              );
+              const brightness = ev.operation.dataSet.brightness / 255;
+              if (pairedDie && pairedDie.brightness !== brightness) {
+                store.dispatch(
+                  updatePairedDieBrightness({
+                    pixelId: pixel.pixelId,
+                    brightness,
+                  })
+                );
+              }
+            }
+          }
+        );
 
         // Update name, firmware timestamp and profile hash on connection
         const onStatus = ({ status }: PixelMutableProps) => {
@@ -260,6 +286,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           pixel.removeEventListener("roll", onRoll);
           pixel.removeEventListener("remoteAction", onRemoteAction);
           onRenameDisposer();
+          onProgProfileDisposer();
         });
       }
     );

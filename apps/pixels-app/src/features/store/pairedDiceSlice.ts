@@ -26,9 +26,12 @@ function log(
     | "updatePairedDieFirmwareTimestamp"
     | "updatePairedDieProfileHash"
     | "updatePairedDieBrightness",
-  payload?: unknown
+  payload?: unknown,
+  extra?: string
 ) {
-  logWrite(`${action}, payload: ${JSON.stringify(payload)}`);
+  logWrite(
+    `${action}, payload: ${JSON.stringify(payload)}${extra ? ", " + extra : ""}`
+  );
 }
 
 // Redux slice that stores information about paired dice
@@ -133,7 +136,7 @@ const PairedDiceSlice = createSlice({
       const { payload } = action;
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
       if (die && die.profileHash !== payload.hash) {
-        log("updatePairedDieProfileHash", payload);
+        log("updatePairedDieProfileHash", payload, `was: ${die.profileHash}`);
         die.profileHash = payload.hash;
       }
     },
@@ -148,7 +151,7 @@ const PairedDiceSlice = createSlice({
       const { payload } = action;
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
       if (die && die.brightness !== payload.brightness) {
-        log("updatePairedDieBrightness", payload);
+        log("updatePairedDieBrightness", payload, `was: ${die.brightness}`);
         die.brightness = payload.brightness;
       }
     },

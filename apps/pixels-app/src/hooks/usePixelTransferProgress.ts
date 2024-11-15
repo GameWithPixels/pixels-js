@@ -30,8 +30,9 @@ export function usePixelTransferProgress(pixel?: { pixelId: number }): number {
       getProgress(!!pixelId && central.getDataTransferStatus(pixelId))
     );
     if (pixelId) {
-      return central.addListener("onDataTransfer", (ev) =>
-        setProgress(getProgress(ev))
+      return central.addListener(
+        "onDataTransfer",
+        (ev) => ev.pixelId === pixelId && setProgress(getProgress(ev))
       );
     }
   }, [central, pixelId]);

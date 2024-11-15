@@ -36,10 +36,9 @@ function log(
     | "resetAppTransientState"
     | "setAppUpdateResponse"
     | "setDfuFilesStatus"
-    | "setSelectedDieId",
-  value?: unknown
+    | "setSelectedDieId"
 ) {
-  logWrite(action + (value !== undefined ? `: ${value}` : ""));
+  logWrite(action);
 }
 
 // Redux slice that stores app settings
