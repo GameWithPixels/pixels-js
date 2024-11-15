@@ -45,6 +45,7 @@ import { DebugPerfMetrics } from "./components/DebugPerfMetrics";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
 import { UpdateProfileProvider } from "./components/UpdateProfileProvider";
+import { fixPromiseAllSettled } from "./fixes";
 import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
@@ -53,6 +54,9 @@ import { SettingsStack } from "./screens/settings";
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
+
+// Call this first to initialize the promise fix
+fixPromiseAllSettled();
 
 if (__DEV__) {
   // https://gist.github.com/mikelehen/5398652
