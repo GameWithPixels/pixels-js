@@ -13,6 +13,8 @@
     "px:eas-android": "cd apps && cd pixels-app && eas build -p android --profile",
     "px:eas-all": "cd apps && cd pixels-app && eas build -p all --profile",
     "px:eas-update": "cd apps && cd pixels-app && eas update --branch preview --message",
+    "px:eas-update-prod": "cd apps && cd pixels-app && eas update --branch production --message",
+    "px:upload-sourcemaps": "cd apps && cd pixels-app && npx sentry-expo-upload-sourcemaps dist",
     "px:eas-ios-submit": "cd apps && cd pixels-app && eas submit -p ios",
     "px:prebuild": "cd apps && cd pixels-app && yarn expo prebuild",
     "pxd": "set SYSTEMIC_PX_DEV=1 && yarn px",
