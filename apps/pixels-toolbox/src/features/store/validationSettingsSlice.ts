@@ -7,6 +7,9 @@ import {
 import { DiceSetType } from "~/features/validation";
 
 export interface ValidationSettingsState {
+  dieLabel: {
+    smallLabel: boolean;
+  };
   cartonLabel: {
     asn: string;
     productType: PixelDieType | DiceSetType;
@@ -22,6 +25,9 @@ export interface ValidationSettingsState {
 }
 
 const initialState: ValidationSettingsState = {
+  dieLabel: {
+    smallLabel: false,
+  },
   cartonLabel: {
     asn: "",
     productType: "d20",
@@ -41,6 +47,10 @@ const validationSettingsSlice = createSlice({
   name: "validationSettings",
   initialState,
   reducers: {
+    setPrintDieSmallLabel(state, action: PayloadAction<boolean>) {
+      state.dieLabel.smallLabel = action.payload;
+    },
+
     setCartonLabelAsn(state, action: PayloadAction<string>) {
       state.cartonLabel.asn = action.payload;
     },
@@ -79,6 +89,7 @@ const validationSettingsSlice = createSlice({
 });
 
 export const {
+  setPrintDieSmallLabel,
   setCartonLabelAsn,
   setCartonLabelProductType,
   setCartonLabelDieColorway,

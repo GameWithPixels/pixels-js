@@ -8,6 +8,7 @@ import {
   prepareDieLabelHtmlAsync,
   prepareCartonLabelHtmlAsync,
   prepareDiceSetLabelHtmlAsync,
+  prepareSmallDieLabelHtmlAsync,
 } from "./prepareHtmlAsync";
 import { PrintError, PrintStatus, UnknownProductPrintError } from "./types";
 
@@ -74,26 +75,34 @@ export async function printDieBoxLabelAsync(
     pixelId: number;
   },
   numCopies: number,
-  statusCallback?: (status: PrintStatus) => void
+  opt?: {
+    statusCallback?: (status: PrintStatus) => void;
+    smallLabel?: boolean;
+  }
 ): Promise<void> {
+  const prepareLabel = opt?.smallLabel
+    ? prepareSmallDieLabelHtmlAsync
+    : prepareDieLabelHtmlAsync;
   await printLabelAsync(
     dieInfo,
     (product) =>
-      prepareDieLabelHtmlAsync({
+      prepareLabel({
         ...product,
         deviceId: getDeviceId(dieInfo.pixelId),
         deviceName: dieInfo.name,
         dieImageFilename: getImageFilename(dieInfo.type),
       }),
     numCopies,
-    statusCallback
+    opt?.statusCallback
   );
 }
 
 export async function printDiceSetBoxLabelAsync(
   setInfo: Extract<ProductInfo, { kind: "set" }>,
   numCopies: number,
-  statusCallback?: (status: PrintStatus) => void
+  opt?: {
+    statusCallback?: (status: PrintStatus) => void;
+  }
 ): Promise<void> {
   await printLabelAsync(
     setInfo,
@@ -103,7 +112,7 @@ export async function printDiceSetBoxLabelAsync(
         diceImageFilenames: setInfo.dice.map(getImageFilename),
       }),
     numCopies,
-    statusCallback
+    opt?.statusCallback
   );
 }
 
@@ -112,7 +121,9 @@ export async function printCartonLabelAsync(
   asn: string,
   quantity: number,
   numCopies: number,
-  statusCallback?: (status: PrintStatus) => void
+  opt?: {
+    statusCallback?: (status: PrintStatus) => void;
+  }
 ): Promise<void> {
   await printLabelAsync(
     productInfo,
@@ -123,6 +134,6 @@ export async function printCartonLabelAsync(
         quantity,
       }),
     numCopies,
-    statusCallback
+    opt?.statusCallback
   );
 }

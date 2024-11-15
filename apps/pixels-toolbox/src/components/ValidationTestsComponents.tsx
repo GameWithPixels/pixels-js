@@ -27,6 +27,7 @@ import { Button, Text } from "react-native-paper";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
+import { useAppSelector } from "~/app/hooks";
 import { ColorwayImage } from "~/components/ColorwayImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { SelectColorwayModal } from "~/components/SelectColorwayModal";
@@ -96,7 +97,8 @@ function dieTypeStr(dieType: PixelDieType): string {
 function printLabel(
   pixel: Pixel,
   dieType: PixelDieType,
-  statusCallback: (status: PrintStatus | Error) => void
+  statusCallback: (status: PrintStatus | Error) => void,
+  opt?: { smallLabel?: boolean }
 ): void {
   printDieBoxLabelAsync(
     {
@@ -107,7 +109,10 @@ function printLabel(
       colorway: pixel.colorway,
     },
     1, // 1 copy
-    (status) => status !== "error" && statusCallback(status)
+    {
+      statusCallback: (status) => status !== "error" && statusCallback(status),
+      smallLabel: opt?.smallLabel,
+    }
   ).catch(statusCallback);
 }
 
@@ -1067,6 +1072,9 @@ export function PrepareDie({
 }: ValidationTestProps & PrintingProp) {
   const { t } = useTranslation();
 
+  const smallLabel = useAppSelector(
+    (state) => state.validationSettings.dieLabel.smallLabel
+  );
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
@@ -1087,8 +1095,10 @@ export function PrepareDie({
           setProgress
         );
         // Start printing ahead of time
-        printLabel(pixel, settings.dieType, onPrintStatus);
-      }, [onPrintStatus, pixel, settings.dieType]),
+        if (onPrintStatus) {
+          printLabel(pixel, settings.dieType, onPrintStatus, { smallLabel });
+        }
+      }, [onPrintStatus, pixel, settings.dieType, smallLabel]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,

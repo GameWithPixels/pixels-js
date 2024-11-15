@@ -16,6 +16,8 @@ import {
   Modal,
   Portal,
   RadioButton,
+  Switch,
+  SwitchProps,
   Text,
   Title,
 } from "react-native-paper";
@@ -28,11 +30,24 @@ import {
   setThemeMode,
   ThemeMode,
 } from "~/features/store/appSettingsSlice";
+import { setPrintDieSmallLabel } from "~/features/store/validationSettingsSlice";
 import { getLanguageShortCode } from "~/i18n";
 import { AppRootPageName } from "~/navigation";
 
 function toYesNo(value: boolean) {
   return value ? "Yes" : "No";
+}
+
+function SwitchWithLabel({
+  children,
+  ...props
+}: React.PropsWithChildren<SwitchProps>) {
+  return (
+    <BaseHStack alignItems="center" justifyContent="space-between">
+      <Text>{children}</Text>
+      <Switch {...props} />
+    </BaseHStack>
+  );
 }
 
 function ThemeRadio({
@@ -56,21 +71,6 @@ function ThemeRadio({
       />
       <Text>{label}</Text>
     </Pressable>
-  );
-}
-
-function ThemeCard() {
-  return (
-    <Card>
-      <Card.Content style={{ gap: 10 }}>
-        <Title>Theme</Title>
-        <BaseHStack px={5} justifyContent="space-between">
-          <ThemeRadio label="System" themeMode="system" />
-          <ThemeRadio label="Dark" themeMode="dark" />
-          <ThemeRadio label="Light" themeMode="light" />
-        </BaseHStack>
-      </Card.Content>
-    </Card>
   );
 }
 
@@ -104,10 +104,16 @@ function LanguageRadio({
   );
 }
 
-function LanguageCard() {
+function ThemeCard() {
   return (
     <Card>
       <Card.Content style={{ gap: 10 }}>
+        <Title>Theme</Title>
+        <BaseHStack px={5} justifyContent="space-between">
+          <ThemeRadio label="System" themeMode="system" />
+          <ThemeRadio label="Dark" themeMode="dark" />
+          <ThemeRadio label="Light" themeMode="light" />
+        </BaseHStack>
         <Title>Language</Title>
         <BaseHStack px={5} justifyContent="space-between">
           {/* <LanguageRadio label="System" language="system" /> // TODO Need to store value */}
@@ -144,6 +150,10 @@ function PageRadio({
 }
 
 function ValidationCard() {
+  const dispatch = useAppDispatch();
+  const smallDieLabel = useAppSelector(
+    (state) => state.validationSettings.dieLabel.smallLabel
+  );
   return (
     <Card>
       <Card.Content style={{ gap: 10 }}>
@@ -154,6 +164,14 @@ function ValidationCard() {
           <PageRadio label="Validation" page="Validation" />
           <PageRadio label="Label Printing" page="LabelPrinting" />
         </BaseHStack>
+        <SwitchWithLabel
+          value={smallDieLabel}
+          onValueChange={(v) => {
+            dispatch(setPrintDieSmallLabel(v));
+          }}
+        >
+          Print Small Die Label
+        </SwitchWithLabel>
       </Card.Content>
     </Card>
   );
@@ -326,7 +344,6 @@ function SettingsPage() {
   return (
     <ScrollView contentContainerStyle={AppStyles.listContentContainer}>
       <ThemeCard />
-      <LanguageCard />
       <ValidationCard />
       <EasCard />
     </ScrollView>
