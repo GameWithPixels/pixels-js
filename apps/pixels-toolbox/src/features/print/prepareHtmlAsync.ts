@@ -13,6 +13,7 @@ import { ProductIds } from "./loadCertificationIds";
 import cartonLabelHtmlZip from "!/labels/carton-label.zip";
 import diceSetLabelHtmlZip from "!/labels/dice-set-label.zip";
 import dieLabelHtmlZip from "!/labels/single-die-label.zip";
+import smallDieLabelHtmlZip from "!/labels/small-die-label.zip";
 import Pathname from "~/features/files/Pathname";
 import { loadFileFromModuleAsync } from "~/features/files/loadFileFromModuleAsync";
 import { unzipFileAsync } from "~/features/files/unzipFileAsync";
@@ -86,6 +87,16 @@ async function readFilesContent(
   }
 }
 
+function indexOfAssetFilename(html: string, asset: string): number {
+  const index = html.indexOf(`"${asset}"`);
+  return index >= 0 ? index : html.indexOf(`"assets/${asset}"`);
+}
+
+function getAssetFilename(html: string, start: number, end: number): string {
+  const filename = html.substring(start, end);
+  return !filename.startsWith("assets/") ? filename : filename.substring(7);
+}
+
 /**
  * Read HTML from label ZIP file and embed resources into it.
  * Using https://lindell.me/JsBarcode/ for generating the barcode.
@@ -148,7 +159,7 @@ async function prepareHtmlAsync(
     // Insert barcode SVG element
     barcodeDescriptors.forEach((bc, i) => {
       // Insert barcode
-      const barcodeIndex = html.indexOf(`"${bc.placeholder}"`);
+      const barcodeIndex = indexOfAssetFilename(html, bc.placeholder);
       if (barcodeIndex < 0) {
         throw new Error("prepareHtmlAsync: barcode image not found");
       }
@@ -187,22 +198,33 @@ async function prepareHtmlAsync(
       if (end < 0) {
         throw new Error("prepareHtmlAsync: Matching end quotes not found");
       }
-      const filename = html.substring(start, end);
-      const base64Data = filesContent.resources.get(filename);
-      if (base64Data) {
-        console.log("Embedding " + filename);
-        html =
-          html.substring(0, start) +
-          `data:${dataType};base64,` +
-          base64Data +
-          html.substring(end);
-        pos = start + base64Data.length + 1;
+      const filename = getAssetFilename(html, start, end);
+      const fileContent = filesContent.resources.get(filename);
+      if (fileContent) {
+        if (filename.endsWith(".js")) {
+          const endScript = html.indexOf("</script>", start);
+          if (endScript < 0) {
+            throw new Error(
+              "prepareHtmlAsync: Matching end script tag not found"
+            );
+          }
+          console.log("Embedding script " + filename);
+          const str = `>\n${fileContent}\n`;
+          html = html.substring(0, pos) + str + html.substring(endScript);
+          pos = endScript + str.length + 9;
+        } else {
+          console.log("Embedding " + filename);
+          const str = `data:${dataType};base64,${fileContent}`;
+          html = html.substring(0, start) + str + html.substring(end);
+          pos = end + str.length + 1;
+        }
       } else {
         console.warn(filename + " not found");
         pos = end + 1;
       }
     }
   };
+  embedFiles(`type="text/javascript" src=`, "");
   embedFiles("src=", "image/png");
   embedFiles("url(", "font/ttf");
 
@@ -245,6 +267,39 @@ export async function prepareDieLabelHtmlAsync(
     },
   ];
   return await prepareHtmlAsync(dieLabelHtmlZip, substitutions, barcodes);
+}
+
+export async function prepareSmallDieLabelHtmlAsync(
+  product: ProductIds & {
+    deviceId: string;
+    deviceName: string;
+    dieImageFilename: string;
+  }
+): Promise<string> {
+  const substitutions = {
+    ".D20.": product.name
+      .toLocaleUpperCase()
+      .replace("PIPPED D6", "PD6") // Shorten Pipped D6
+      .replace("FUDGE", "FD6") // Shorten Fudge D6
+      .split(" ")[0],
+    "Label-Icon-D20.png": product.dieImageFilename,
+    ".MG.": product.colorInitials,
+    "2BB52-PXLDIEA": product.fccId1,
+    "2BB52-CHG001A": product.fccId2,
+    "31060-PXLDIEA": product.icId1,
+    "31060-CHG001A": product.icId2,
+  };
+  console.log(JSON.stringify(substitutions));
+  const barcodes = [
+    {
+      format: "upc",
+      value: product.upcCode,
+      arguments:
+        'font: "Roboto Condensed", width: 2.5, margin: 0, marginLeft: 15',
+      placeholder: "barcode-00850055703353.gif",
+    },
+  ];
+  return await prepareHtmlAsync(smallDieLabelHtmlZip, substitutions, barcodes);
 }
 
 export async function prepareDiceSetLabelHtmlAsync(

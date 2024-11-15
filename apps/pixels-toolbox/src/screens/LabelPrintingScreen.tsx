@@ -388,7 +388,7 @@ function CartonLabelForm() {
             asn,
             quantity,
             numCopies,
-            setPrintStatus
+            { statusCallback: setPrintStatus }
           )
         }
       />
@@ -444,7 +444,7 @@ function DiceSetsLabelForm() {
               dice: getDiceSetDice(setType),
             },
             numCopies,
-            setPrintStatus
+            { statusCallback: setPrintStatus }
           )
         }
       />

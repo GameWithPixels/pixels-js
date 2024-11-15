@@ -17,6 +17,7 @@ import {
 import { SelectColorwayModal } from "./SelectColorwayModal";
 
 import { AppStyles, useModalStyle } from "~/AppStyles";
+import { useAppSelector } from "~/app/hooks";
 import { BaseVStack } from "~/components/BaseVStack";
 import { printDieBoxLabelAsync } from "~/features/print";
 
@@ -27,6 +28,9 @@ export function PrintDieLabelModal({
   const [printStatus, setPrintStatus] = React.useState("");
   const [onSelectColorway, setOnSelectColorway] =
     React.useState<(c: PixelColorway) => void>();
+  const smallLabel = useAppSelector(
+    (state) => state.validationSettings.dieLabel.smallLabel
+  );
   const showClose = printStatus.length > 0 && !printStatus.endsWith("...");
 
   // Values for UI
@@ -56,7 +60,11 @@ export function PrintDieLabelModal({
             colorway,
           },
           1, // 1 copy
-          (status) => setPrintStatus(t(status + "AsPrintStatus"))
+          {
+            statusCallback: (status) =>
+              setPrintStatus(t(status + "AsPrintStatus")),
+            smallLabel,
+          }
         );
       };
       print().catch((error) => {
@@ -65,7 +73,7 @@ export function PrintDieLabelModal({
         setPrintStatus(msg);
       });
     }
-  }, [pixel, t]);
+  }, [pixel, smallLabel, t]);
 
   return (
     <>

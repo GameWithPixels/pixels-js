@@ -12,6 +12,9 @@ export interface ValidationSettingsState {
   profileName?: PrebuildProfileName; // Select with selectProfileName
   skipPrintLabel?: boolean; // Select with selectSkipPrintLabel
   skipBatteryLevel?: boolean; // Select with selectSkipBatteryLevel
+  dieLabel: {
+    smallLabel: boolean;
+  };
   cartonLabel: {
     asn: string;
     productType: PixelDieType | DiceSetType;
@@ -27,6 +30,9 @@ export interface ValidationSettingsState {
 }
 
 const initialState: ValidationSettingsState = {
+  dieLabel: {
+    smallLabel: false,
+  },
   cartonLabel: {
     asn: "",
     productType: "d20",
@@ -60,6 +66,10 @@ const validationSettingsSlice = createSlice({
 
     setSkipBatteryLevel(state, action: PayloadAction<boolean>) {
       state.skipBatteryLevel = action.payload;
+    },
+
+    setPrintDieSmallLabel(state, action: PayloadAction<boolean>) {
+      state.dieLabel.smallLabel = action.payload;
     },
 
     setCartonLabelAsn(state, action: PayloadAction<string>) {
@@ -104,6 +114,7 @@ export const {
   setFactoryProfile,
   setSkipPrintLabel,
   setSkipBatteryLevel,
+  setPrintDieSmallLabel,
   setCartonLabelAsn,
   setCartonLabelProductType,
   setCartonLabelDieColorway,

@@ -88,7 +88,8 @@ import { FactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
 function printLabel(
   pixel: Pixel,
   dieType: PixelDieType,
-  statusCallback: (status: PrintStatus | Error) => void
+  statusCallback: (status: PrintStatus | Error) => void,
+  opt?: { smallLabel?: boolean }
 ): void {
   printDieBoxLabelAsync(
     {
@@ -99,7 +100,10 @@ function printLabel(
       colorway: pixel.colorway,
     },
     1, // 1 copy
-    (status) => status !== "error" && statusCallback(status)
+    {
+      statusCallback: (status) => status !== "error" && statusCallback(status),
+      smallLabel: opt?.smallLabel,
+    }
   ).catch(statusCallback);
 }
 
@@ -1100,6 +1104,9 @@ export function PrepareDie({
     hide: hideProfileMenu,
   } = useVisibility();
 
+  const smallLabel = useAppSelector(
+    (state) => state.validationSettings.dieLabel.smallLabel
+  );
   const [progress, setProgress] = React.useState(-1);
   const taskChain = useTaskChain(action, "PrepareDie")
     .withTask(
@@ -1180,9 +1187,9 @@ export function PrepareDie({
         );
         // Start printing ahead of time
         if (onPrintStatus) {
-          printLabel(pixel, settings.dieType, onPrintStatus);
+          printLabel(pixel, settings.dieType, onPrintStatus, { smallLabel });
         }
-      }, [onPrintStatus, pixel, profile, settings.dieType]),
+      }, [onPrintStatus, pixel, profile, settings.dieType, smallLabel]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
