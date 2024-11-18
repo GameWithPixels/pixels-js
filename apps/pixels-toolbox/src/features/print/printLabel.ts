@@ -22,12 +22,18 @@ function getImageFilename(dieType: PixelDieType): string {
   return `label-icon-${dieType}.png`;
 }
 
+export type PrintOptions = {
+  statusCallback?: (status: PrintStatus) => void;
+  smallLabel?: boolean;
+};
+
 export async function printLabelAsync(
   productInfo: ProductInfo,
   getHtml: (productIds: ProductIds) => Promise<string>,
   numCopies: number,
-  statusCallback?: (status: PrintStatus) => void
+  opt?: PrintOptions
 ): Promise<void> {
+  const { statusCallback, smallLabel } = opt ?? {};
   statusCallback?.("preparing");
   // Read certification ids
   const getProductIds = await loadCertificationIds();
@@ -42,7 +48,7 @@ export async function printLabelAsync(
     console.log("Sending HTML to BLuetooth ZPL printer");
     const result = await printHtmlToZpl("XP-", html, {
       enableJs: true,
-      imageWidth: 940,
+      imageWidth: smallLabel ? 411 : 980,
       numCopies,
     });
     const success = result === "success";
@@ -64,7 +70,7 @@ export async function printLabelAsync(
  *
  * Optional:
  * To set the paper width,  select "mm" in the top bar Unit frame, select the "Z" tab
- * and change "Paper Width" to 800.
+ * and change "Paper Width" to 800. 75.95
  *
  * @param pixelInfo Some information about the Pixel for which to print the label.
  * @param statusCallback An optional callback called with the printing status.
@@ -77,10 +83,7 @@ export async function printDieBoxLabelAsync(
     pixelId: number;
   },
   numCopies: number,
-  opt?: {
-    statusCallback?: (status: PrintStatus) => void;
-    smallLabel?: boolean;
-  }
+  opt?: PrintOptions
 ): Promise<void> {
   const prepareLabel = opt?.smallLabel
     ? prepareSmallDieLabelHtmlAsync
@@ -95,16 +98,14 @@ export async function printDieBoxLabelAsync(
         dieImageFilename: getImageFilename(dieInfo.type),
       }),
     numCopies,
-    opt?.statusCallback
+    opt
   );
 }
 
 export async function printDiceSetBoxLabelAsync(
   setInfo: Extract<ProductInfo, { kind: "set" }>,
   numCopies: number,
-  opt?: {
-    statusCallback?: (status: PrintStatus) => void;
-  }
+  opt?: Omit<PrintOptions, "smallLabel">
 ): Promise<void> {
   await printLabelAsync(
     setInfo,
@@ -114,7 +115,7 @@ export async function printDiceSetBoxLabelAsync(
         diceImageFilenames: setInfo.dice.map(getImageFilename),
       }),
     numCopies,
-    opt?.statusCallback
+    opt
   );
 }
 
@@ -123,9 +124,7 @@ export async function printCartonLabelAsync(
   asn: string,
   quantity: number,
   numCopies: number,
-  opt?: {
-    statusCallback?: (status: PrintStatus) => void;
-  }
+  opt?: Omit<PrintOptions, "smallLabel">
 ): Promise<void> {
   await printLabelAsync(
     productInfo,
@@ -136,6 +135,6 @@ export async function printCartonLabelAsync(
         quantity,
       }),
     numCopies,
-    opt?.statusCallback
+    opt
   );
 }
