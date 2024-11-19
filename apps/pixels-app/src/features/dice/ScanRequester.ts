@@ -68,6 +68,7 @@ export class ScanStartFailedError extends ScanStartError {
 export type ScanRequesterEventMap = PixelScannerEventMap &
   Readonly<{
     isScanRequested: boolean;
+    onScannerStopped: undefined;
     onScanError: Readonly<{ error: Error }>;
   }>;
 
@@ -222,9 +223,12 @@ export class ScanRequester {
               this._updateScanRequested(false);
             }
             // Stop scanning
-            this._scanner.stopAsync().catch((e) => {
-              console.error(`[ScanRequester] Error stopping scan: ${e}`);
-            });
+            this._scanner
+              .stopAsync()
+              .finally(() => this._emitEvent("onScannerStopped", undefined))
+              .catch((e) => {
+                console.error(`[ScanRequester] Error stopping scan: ${e}`);
+              });
           };
           clearTimeout(stopTimeout);
           if (stopDelay) {
@@ -253,7 +257,7 @@ export class ScanRequester {
     type: K,
     listener: EventReceiver<ScanRequesterEventMap[K]>
   ): void {
-    if (type === "isScanRequested") {
+    if (type === "isScanRequested" || type === "onScannerStopped") {
       this._evEmitter.addListener(type, listener);
     } else if (type === "onScanError") {
       if (this._evEmitter.listenerCount(type) === 0) {
@@ -281,7 +285,7 @@ export class ScanRequester {
     type: K,
     listener: EventReceiver<ScanRequesterEventMap[K]>
   ): void {
-    if (type === "isScanRequested") {
+    if (type === "isScanRequested" || type === "onScannerStopped") {
       this._evEmitter.removeListener(type, listener);
     } else if (type === "onScanError") {
       this._evEmitter.removeListener(type, listener);

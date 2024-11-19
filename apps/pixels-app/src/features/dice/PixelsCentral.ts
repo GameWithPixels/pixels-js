@@ -281,7 +281,10 @@ export class PixelsCentral {
           data.nextDiscoOnScan = undefined;
           data.lastConnectError = undefined;
         }
-        this._bootloaderDice.clear();
+        // Clear old bootloader dice data
+        for (const id of this._bootloaderDice.keys()) {
+          this._notifyNotInBootloader(id);
+        }
       }
     };
   }
@@ -496,13 +499,15 @@ export class PixelsCentral {
         }
       };
       // Unregister scan list listener when no longer scanning
-      const onScanReq = (scan: boolean) => {
-        if (!scan) {
-          this._scanner.removeListener("isScanRequested", onScanReq);
-          this._scanner.removeListener("onScanListChange", onScanListChange);
+      const onScannerStopped = () => {
+        this._scanner.removeListener("onScannerStopped", onScannerStopped);
+        this._scanner.removeListener("onScanListChange", onScanListChange);
+        // Clear old bootloader dice data
+        for (const id of this._bootloaderDice.keys()) {
+          this._notifyNotInBootloader(id);
         }
       };
-      this._scanner.addListener("isScanRequested", onScanReq);
+      this._scanner.addListener("onScannerStopped", onScannerStopped);
       this._scanner.addListener("onScanListChange", onScanListChange);
     }
     return this._scanner.requestScan();

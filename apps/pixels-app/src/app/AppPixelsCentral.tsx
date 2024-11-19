@@ -362,20 +362,22 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
   // Check for dice in bootloader
   React.useEffect(() => {
-    return central.addListener("onPixelBootloader", ({ notifier }) => {
-      const pairedDie = pairedDiceSelectors.selectByPixelId(
-        store.getState(),
-        notifier.pixelId
-      );
-      if (pairedDie) {
-        // Reset firmware timestamp as the die seems to be stuck in bootloader
-        // (most likely because of an incomplete firmware)
-        store.dispatch(
-          updatePairedDieFirmwareTimestamp({
-            pixelId: pairedDie.pixelId,
-            timestamp: 0,
-          })
+    return central.addListener("onPixelBootloader", ({ status, notifier }) => {
+      if (status === "scanned") {
+        const pairedDie = pairedDiceSelectors.selectByPixelId(
+          store.getState(),
+          notifier.pixelId
         );
+        if (pairedDie?.firmwareTimestamp) {
+          // Reset firmware timestamp as the die seems to be stuck in bootloader
+          // (most likely because of an incomplete firmware)
+          store.dispatch(
+            updatePairedDieFirmwareTimestamp({
+              pixelId: pairedDie.pixelId,
+              timestamp: 0,
+            })
+          );
+        }
       }
     });
   }, [central, store]);
