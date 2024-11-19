@@ -217,7 +217,11 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
               }
             }
             // Always check if profile needs to be programmed
-            programProfileIfNeeded(pairedDie, central, store.getState);
+            programProfileIfNeeded(
+              { ...pairedDie, profileHash }, // Use the up-to-date profile hash
+              central,
+              store.getState
+            );
           }
         };
         pixel.addPropertyListener("profileHash", onProfileHash);
