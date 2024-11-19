@@ -68,6 +68,9 @@ export async function updateBootloaderDice(
     while (true) {
       ++attemptsCount;
       try {
+        console.log(
+          `Recovering die in bootloader: ${unsigned32ToHex(pixelId)}`
+        );
         await updateFirmware({
           systemId: bootloader.systemId,
           pixelId,
@@ -313,7 +316,6 @@ function RestoreFirmwarePage({
                         dfuEvent.emit("onDfuState", { pixelId, state });
                       },
                       dfuProgressCallback: ({ pixelId, progress }) => {
-                        console.log(`DFU progress: ${progress}`);
                         dfuEvent.emit("onDfuProgress", { pixelId, progress });
                       },
                       stopRequested: () => stop,

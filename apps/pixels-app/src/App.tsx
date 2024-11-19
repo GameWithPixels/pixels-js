@@ -8,11 +8,13 @@ import {
 } from "@react-navigation/native";
 import * as Sentry from "@sentry/react-native";
 import { initBluetooth } from "@systemic-games/react-native-pixels-connect";
+import * as Application from "expo-application";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import * as Updates from "expo-updates";
 import React from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LogBox, Platform, StyleSheet, ViewStyle } from "react-native";
@@ -82,13 +84,17 @@ LogBox.ignoreLogs([
 ]);
 
 // Configure the file logger
-// Note: we don't wait for the promise to resolve,
+// Note: the app doesn't wait for the promise to resolve,
 // it's okay if the first few logs are not saved
 FileLogger.configure()
   .then(() => {
     if (Device.isDevice) {
       const { DeviceType: _, ...dev } = Device;
       console.log(`Device: ${JSON.stringify(dev)}`);
+      console.log(`App: ${JSON.stringify(Application)}`);
+      console.log(
+        `App update: ${!Updates.isEmbeddedLaunch && Updates.createdAt ? Updates.createdAt.toUTCString() : "none"}`
+      );
     }
   })
   .catch((error) => {
