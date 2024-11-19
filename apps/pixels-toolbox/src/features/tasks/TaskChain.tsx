@@ -7,6 +7,7 @@ import {
   TaskStatus,
   useTask,
 } from "./useTask";
+import { TaskStatusCallback } from "./useTaskComponent";
 
 interface TaskChainItem {
   status: TaskStatus;
@@ -14,7 +15,7 @@ interface TaskChainItem {
   error?: Error;
 }
 
-export default class TaskChain {
+export class TaskChain {
   private readonly _tasksItems: TaskChainItem[] = [];
   private readonly _action: TaskAction;
   private readonly _name: string | undefined;
@@ -101,11 +102,14 @@ export default class TaskChain {
     return this;
   }
 
-  withStatusChanged(onStatusChanged?: (result: TaskStatus) => void): TaskChain {
+  withStatusChanged(onStatusChanged?: TaskStatusCallback): TaskChain {
     const status = this.status;
     // eslint-disable-next-line react-hooks/rules-of-hooks
     React.useEffect(() => {
-      onStatusChanged?.(status);
+      onStatusChanged?.({
+        status,
+        error: status === "faulted" ? this.lastError : undefined,
+      });
     }, [onStatusChanged, status]);
     return this;
   }

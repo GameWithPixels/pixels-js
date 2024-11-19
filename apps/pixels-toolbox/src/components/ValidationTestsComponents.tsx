@@ -52,21 +52,22 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
-import { PrintStatus, printDieBoxLabelAsync } from "~/features/print";
+import { printDieBoxLabelAsync, PrintStatus } from "~/features/print";
 import {
   selectCustomFirmwareAndProfile,
   selectProfileName,
   selectSkipBatteryLevel,
 } from "~/features/store/validationSelectors";
 import { setFactoryProfile } from "~/features/store/validationSettingsSlice";
-import { createTaskStatusContainer } from "~/features/tasks/createTaskContainer";
 import {
+  createTaskStatusContainer,
+  TaskAction,
   TaskCanceledError,
+  TaskComponentProps,
   TaskFaultedError,
   TaskStatus,
-} from "~/features/tasks/useTask";
-import { useTaskChain } from "~/features/tasks/useTaskChain";
-import { TaskComponentProps } from "~/features/tasks/useTaskComponent";
+  useTaskChain as useTaskChainUntyped,
+} from "~/features/tasks";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { useVisibility } from "~/features/useVisibility";
 import {
@@ -83,7 +84,13 @@ import {
   withTimeout,
   withTimeoutAndDisconnect,
 } from "~/features/validation";
+import { TaskNames } from "~/features/validation/ErrorCodes";
 import { FactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
+
+const useTaskChain: (
+  action: TaskAction,
+  name: (typeof TaskNames)[number]
+) => ReturnType<typeof useTaskChainUntyped> = useTaskChainUntyped;
 
 function printLabel(
   pixel: Pixel,
@@ -129,10 +136,10 @@ async function playSoundAsync(source: AVPlaybackSource) {
   }
 }
 
-function playSoundOnResult(result: TaskStatus) {
-  if (result === "succeeded") {
+function playSoundOnResult({ status }: { status: TaskStatus }) {
+  if (status === "succeeded") {
     playSoundAsync(chimeSound);
-  } else if (result === "canceled" || result === "faulted") {
+  } else if (status === "canceled" || status === "faulted") {
     playSoundAsync(errorSound);
   }
 }
@@ -868,7 +875,7 @@ export function CheckLEDs({
               (resolve) => setResolvePromise(() => resolve),
               abortController.signal
             );
-            playSoundOnResult("succeeded");
+            playSoundOnResult({ status: "succeeded" });
           } finally {
             abortSignal.removeEventListener("abort", onAbort);
           }

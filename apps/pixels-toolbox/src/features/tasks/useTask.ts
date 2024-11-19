@@ -28,9 +28,11 @@ export class TaskCanceledError extends Error {
 }
 
 export class TaskFaultedError extends Error {
-  constructor(message?: string) {
+  readonly cause?: Error;
+  constructor(message?: string, error?: Error) {
     super(message);
     this.name = "TaskFaultedError";
+    this.cause = error;
   }
 }
 

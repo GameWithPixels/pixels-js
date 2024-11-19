@@ -64,9 +64,9 @@ import {
   getTaskResult,
   getTaskResultEmoji,
   TaskResult,
-} from "~/features/tasks/TaskResult";
-import { useTaskChain } from "~/features/tasks/useTaskChain";
-import { useTaskComponent } from "~/features/tasks/useTaskComponent";
+  useTaskChain,
+  useTaskComponent,
+} from "~/features/tasks";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
   getBoardOrDie,
@@ -76,6 +76,8 @@ import {
   ValidationSequence,
   ValidationSequences,
 } from "~/features/validation";
+import { getTaskErrorCode } from "~/features/validation/ErrorCodes";
+import { ValidationError } from "~/features/validation/ValidationError";
 import {
   FactoryDfuFilesBundle,
   useFactoryDfuFilesBundle,
@@ -101,6 +103,33 @@ function getDieValidationSequenceName(
     t("colonSeparator") +
     t(settings.dieType)
   );
+}
+
+function getErrorCode(error?: Error): number | undefined {
+  function getBaseErrorCode(error?: Error): number | undefined {
+    if (error) {
+      const baseCode = getTaskErrorCode(
+        // @ts-ignore Assuming the message is the task name
+        error.message
+      );
+      return baseCode ?? getBaseErrorCode(error.cause as Error);
+    }
+  }
+  function getErrorCode(error?: Error): number | undefined {
+    if (error) {
+      return error instanceof ValidationError
+        ? error.errorCode
+        : getErrorCode(error.cause as Error);
+    }
+  }
+
+  const baseCode = getBaseErrorCode(error);
+  const errCode = getErrorCode(error);
+  if (errCode && errCode > 100) {
+    return errCode;
+  } else if (baseCode) {
+    return baseCode + (errCode ?? 0);
+  }
 }
 
 function BottomButton({ children, ...props }: Omit<ButtonProps, "style">) {
@@ -766,7 +795,9 @@ function RunTestsPage({
               {getTaskResultEmoji(taskChain.status)}
             </Text>
             <Text variant="headlineMedium">
-              {t(`test${capitalize(result)}`)}
+              {result === "failed"
+                ? `${t("error")}${t("colonSeparator")}${getErrorCode(taskChain.lastError) ?? t("unknown")}`
+                : t(`test${capitalize(result)}`)}
             </Text>
             {!!pixel && (
               <Text variant="titleLarge">

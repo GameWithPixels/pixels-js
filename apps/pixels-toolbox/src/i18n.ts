@@ -424,6 +424,7 @@ i18n
           secondsWithValue: "{{value}} 秒",
           minutesWithValue: "{{value}} 分钟",
           pixelId: "骰子ID",
+          chargerId: "充电器ID",
           leds: "LEDs",
           colorway: "亮光方式",
           dieType: "骰子类型",

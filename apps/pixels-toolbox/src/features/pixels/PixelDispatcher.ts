@@ -555,7 +555,7 @@ export class PixelDispatcher
     await RNFS.appendFile(uri, "]\n");
   }
 
-  logMessages(enable = true): void {
+  enableMessageLogging(enable = true): void {
     if (enable) {
       this._pixel.logMessages = true;
       this._pixel.logger = console.log;

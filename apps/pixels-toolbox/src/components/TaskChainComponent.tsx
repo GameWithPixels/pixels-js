@@ -5,8 +5,7 @@ import { Card, Text, useTheme } from "react-native-paper";
 import { TaskContainer } from "./TaskContainer";
 
 import { LocalizedError } from "~/features/LocalizedError";
-import TaskChain from "~/features/tasks/TaskChain";
-import { TaskCanceledError } from "~/features/tasks/useTask";
+import { TaskCanceledError, TaskChain } from "~/features/tasks";
 
 export interface TaskChainComponentProps extends React.PropsWithChildren {
   title: string;
@@ -25,8 +24,8 @@ export function TaskChainComponent({
     error instanceof LocalizedError
       ? (error as LocalizedError).toLocalizedString(t)
       : error instanceof TaskCanceledError
-        ? (error as TaskCanceledError).userMessage ?? t("canceled")
-        : error?.message ?? (error ? String(error) : "");
+        ? ((error as TaskCanceledError).userMessage ?? t("canceled"))
+        : (error?.message ?? (error ? String(error) : ""));
   return (
     <Card>
       <Card.Content>

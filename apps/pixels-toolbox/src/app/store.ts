@@ -49,10 +49,6 @@ export const store = configureStore({
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     });
-    // if (__DEV__) {
-    //   const createDebugger = require("redux-flipper").default;
-    //   middleware.push(createDebugger());
-    // }
     return middleware;
   },
 });

@@ -9,7 +9,10 @@ import {
   TaskStatus,
 } from "./useTask";
 
-export type TaskStatusCallback = (status: TaskStatus) => void;
+export type TaskStatusCallback = (ev: {
+  status: TaskStatus;
+  error?: Error;
+}) => void;
 
 export type TaskComponentProps = React.PropsWithChildren<{
   action: TaskAction;
@@ -28,33 +31,41 @@ export function useTaskComponent(
   const asyncOp = React.useCallback(() => {
     let hasCompleted = false;
     return new Promise<void>((resolve, reject) =>
-      setOnTaskStatus(() => (s: TaskStatus) => {
-        switch (s) {
-          case "pending":
-          case "running":
-            if (hasCompleted) {
-              // TODO not a great way of having the callback to be recreated
-              setResetCounter(resetCounter + 1);
+      setOnTaskStatus(
+        () =>
+          ((ev) => {
+            switch (ev.status) {
+              case "pending":
+              case "running":
+                if (hasCompleted) {
+                  // TODO not a great way of having the callback to be recreated
+                  setResetCounter(resetCounter + 1);
+                }
+                break;
+              case "succeeded":
+              case "faulted":
+              case "canceled":
+                hasCompleted = true;
+                if (ev.status === "succeeded") {
+                  resolve();
+                } else {
+                  reject(
+                    ev.status === "canceled"
+                      ? new TaskCanceledError(taskName)
+                      : new TaskFaultedError(
+                          taskName,
+                          ev.error instanceof TaskFaultedError
+                            ? ev.error.cause
+                            : ev.error
+                        )
+                  );
+                }
+                break;
+              default:
+                assertNever(ev.status, `Unknown task status: ${ev.status}`);
             }
-            break;
-          case "succeeded":
-          case "faulted":
-          case "canceled":
-            hasCompleted = true;
-            if (s === "succeeded") {
-              resolve();
-            } else {
-              reject(
-                s === "canceled"
-                  ? new TaskCanceledError(taskName)
-                  : new TaskFaultedError(taskName)
-              );
-            }
-            break;
-          default:
-            assertNever(s);
-        }
-      })
+          }) as TaskStatusCallback
+      )
     );
   }, [resetCounter, taskName]);
   return [

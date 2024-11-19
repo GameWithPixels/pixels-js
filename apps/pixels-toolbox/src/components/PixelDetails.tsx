@@ -171,7 +171,7 @@ function ChargerInfo({ charger }: { charger: PixelDispatcher }) {
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
     <>
-      <TextEntry title={t("pixelId")}>
+      <TextEntry title={t("chargerId")}>
         {unsigned32ToHex(charger.pixelId)}
       </TextEntry>
       <TextEntry title={t("descriptionShort")}>

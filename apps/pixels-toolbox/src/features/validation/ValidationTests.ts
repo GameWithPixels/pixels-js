@@ -1,3 +1,5 @@
+// Disable false positive ESLint warning on throwing exceptions extending imported ValidationError type
+/* eslint-disable @typescript-eslint/no-throw-literal */
 import { getValueKeyName, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
   Color,
@@ -19,6 +21,8 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 
+import { ErrorCodes } from "./ErrorCodes";
+import { ValidationError } from "./ValidationError";
 import {
   SignalTimeoutError,
   withBlink,
@@ -28,10 +32,11 @@ import {
   withTimeout,
   withTimeoutAndDisconnect,
 } from "./signalHelpers";
-import { LocalizedError } from "../LocalizedError";
-import { getRandomDieNameAsync } from "../getRandomDieNameAsync";
 
-export class AccelerationInvalidValueError extends LocalizedError {
+import { getRandomDieNameAsync } from "~/features/getRandomDieNameAsync";
+
+export class AccelerationInvalidValueError extends ValidationError {
+  readonly errorCode = ErrorCodes.AccelerationInvalidValue;
   readonly x: number;
   readonly y: number;
   readonly z: number;
@@ -49,7 +54,8 @@ export class AccelerationInvalidValueError extends LocalizedError {
   }
 }
 
-export class BatteryOutOfRangeVoltageError extends LocalizedError {
+export class BatteryOutOfRangeVoltageError extends ValidationError {
+  readonly errorCode = ErrorCodes.BatteryOutOfRangeVoltage;
   readonly voltage: number;
   constructor(voltage: number) {
     super(`Out of range battery voltage: ${voltage}v`);
@@ -61,21 +67,20 @@ export class BatteryOutOfRangeVoltageError extends LocalizedError {
   }
 }
 
-export class WaitForChargingTimeoutError extends LocalizedError {
+export class WaitChargingTimeoutError extends SignalTimeoutError {
   readonly shouldBeCharging: boolean;
   readonly telemetry: Readonly<Telemetry>;
-  constructor(shouldBeCharging: boolean, telemetry: Telemetry) {
+  constructor(ms: number, shouldBeCharging: boolean, telemetry: Telemetry) {
     const state =
       getValueKeyName(
         telemetry.batteryControllerState,
         PixelBatteryControllerStateValues
       ) ?? "unknown";
     super(
-      `Timeout waiting for '${
+      ms,
+      `Expected to be ${
         shouldBeCharging ? "" : "not "
-      }charging' state. Controller state: ${state}, coil: ${
-        telemetry.vCoilTimes50 / 50
-      }v`
+      }charging but controller state is ${state} and v-coil ${telemetry.vCoilTimes50 / 50}v`
     );
     this.name = "WaitForChargingTimeoutError";
     this.shouldBeCharging = shouldBeCharging;
@@ -97,12 +102,13 @@ export class WaitForChargingTimeoutError extends LocalizedError {
   }
 }
 
-export class WaitFaceUpTimeoutError extends LocalizedError {
+export class WaitFaceUpTimeoutError extends SignalTimeoutError {
   readonly face: number;
   readonly roll: RollEvent;
-  constructor(face: number, roll: RollEvent) {
+  constructor(ms: number, face: number, roll: RollEvent) {
     super(
-      `Timeout waiting for face ${face}, face up: ${roll.face}, roll state: ${roll.state}`
+      ms,
+      `Expected to be on face ${face} but got ${roll.face} with roll state ${roll.state}`
     );
     this.name = "WaitFaceUpTimeoutError";
     this.face = face;
@@ -267,7 +273,8 @@ export const ValidationTests = {
               );
             } catch (error: any) {
               if (lastMsg && error instanceof SignalTimeoutError) {
-                throw new WaitForChargingTimeoutError(
+                throw new WaitChargingTimeoutError(
+                  error.timeout,
                   shouldBeCharging,
                   lastMsg
                 );
@@ -385,7 +392,7 @@ export const ValidationTests = {
               );
             } catch (error) {
               if (lastEv && error instanceof SignalTimeoutError) {
-                throw new WaitFaceUpTimeoutError(face, lastEv);
+                throw new WaitFaceUpTimeoutError(error.timeout, face, lastEv);
               } else {
                 throw error;
               }

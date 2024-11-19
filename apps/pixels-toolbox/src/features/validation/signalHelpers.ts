@@ -10,15 +10,17 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 
-import { LocalizedError } from "../LocalizedError";
-import { pixelStopAllAnimations } from "../pixels/extensions";
+import { ErrorCodes } from "./ErrorCodes";
+import { ValidationError } from "./ValidationError";
 
-import { TaskCanceledError } from "~/features/tasks/useTask";
+import { pixelStopAllAnimations } from "~/features/pixels/extensions";
+import { TaskCanceledError } from "~/features/tasks";
 
-export class SignalTimeoutError extends LocalizedError {
+export class SignalTimeoutError extends ValidationError {
+  readonly errorCode = ErrorCodes.Timeout;
   readonly timeout: number;
-  constructor(ms: number) {
-    super(`Timed out after ${ms}ms`);
+  constructor(ms: number, reason?: string) {
+    super(`Timed out after ${ms}ms` + (reason ? `, ${reason}` : ""));
     this.name = "SignalTimeoutError";
     this.timeout = ms;
   }
@@ -27,7 +29,8 @@ export class SignalTimeoutError extends LocalizedError {
   }
 }
 
-export class SignalDisconnectedError extends LocalizedError {
+export class SignalDisconnectedError extends ValidationError {
+  readonly errorCode = ErrorCodes.Disconnected;
   readonly pixel: Pixel;
   constructor(pixel: Pixel) {
     super();

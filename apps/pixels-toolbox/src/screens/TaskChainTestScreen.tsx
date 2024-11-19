@@ -4,11 +4,11 @@ import { Button, Text } from "react-native-paper";
 
 import { AppPage } from "~/components/AppPage";
 import { BaseVStack } from "~/components/BaseVStack";
-import { useTaskChain } from "~/features/tasks/useTaskChain";
 import {
   TaskComponentProps,
+  useTaskChain,
   useTaskComponent,
-} from "~/features/tasks/useTaskComponent";
+} from "~/features/tasks";
 
 interface MyTest1Props extends TaskComponentProps {
   something: string;
