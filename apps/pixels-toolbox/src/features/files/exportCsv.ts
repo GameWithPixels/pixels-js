@@ -31,3 +31,26 @@ export async function exportCsv<
     }
   }
 }
+
+export async function exportText(
+  filename: string,
+  contents: string
+): Promise<void> {
+  if (contents.length) {
+    if (Platform.OS === "android") {
+      const uri = await requestUserFileAsync(filename);
+      console.log(
+        `About to write ${contents.length} characters to ${filename}`
+      );
+      await StorageAccessFramework.writeAsStringAsync(uri, contents);
+    } else {
+      const uri = await Pathname.generateTempPathnameAsync(".csv");
+      try {
+        await FileSystem.writeAsStringAsync(uri, contents);
+        await shareFileAsync(uri);
+      } finally {
+        await FileSystem.deleteAsync(uri, { idempotent: true });
+      }
+    }
+  }
+}

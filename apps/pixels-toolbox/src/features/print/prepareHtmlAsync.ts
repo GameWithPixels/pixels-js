@@ -294,8 +294,7 @@ export async function prepareSmallDieLabelHtmlAsync(
     {
       format: "upc",
       value: product.upcCode,
-      arguments:
-        'font: "Roboto Condensed", width: 2.5, margin: 0, marginLeft: 15',
+      arguments: 'font: "Roboto Condensed", width: 3.3, margin: 0',
       placeholder: "barcode-00850055703353.gif",
     },
   ];

@@ -3,7 +3,8 @@ import { ActivityIndicator, Text } from "react-native-paper";
 import { BaseBox } from "~/components/BaseBox";
 import { BaseHStack } from "~/components/BaseHStack";
 import { BaseVStack } from "~/components/BaseVStack";
-import { getTaskResultEmoji, TaskRendererProps } from "~/features/tasks";
+import { getTaskResultEmoji } from "~/features/tasks/TaskResult";
+import { TaskRendererProps } from "~/features/tasks/useTask";
 
 export interface TaskContainerProps extends TaskRendererProps {
   title?: string;
