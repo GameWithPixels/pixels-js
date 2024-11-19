@@ -49,7 +49,6 @@ import profilesReducer, {
 } from "~/features/store/library/profilesSlice";
 import audioClipsReducer from "~/features/store/libraryAssets/audioClipsSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
-import { fixPromiseAllSettled } from "~/fixes";
 
 const MyStorage = !__DEV__
   ? AsyncStorage
@@ -155,15 +154,6 @@ export const store = configureStore({
     return withListener as typeof middleware;
   },
 });
-
-// We started to get "TypeError: Promise.allSettled is not a function (it is undefined)"
-// on dispatching actions. This is a workaround for this issue.
-const storeDispatch = store.dispatch;
-// @ts-ignore
-store.dispatch = (...args: Parameters<typeof storeDispatch>) => {
-  fixPromiseAllSettled();
-  return storeDispatch(...args);
-};
 
 export const persistor = persistStore(store);
 

@@ -5,8 +5,6 @@ import * as Updates from "expo-updates";
 import { Platform } from "react-native";
 import { ReduceMotion } from "react-native-reanimated";
 
-import { logError } from "./features/utils";
-
 // https://github.com/facebook/react-native/issues/15114
 // https://www.reactnativeschool.com/fix-react-native-text-cutoff-on-oneplus-oppo-devices
 export const TrailingSpaceFix = " ";
@@ -43,29 +41,4 @@ export function isErrorNoUpdatePublished(error?: string): boolean {
     Updates.isEmbeddedLaunch &&
     !!error?.startsWith("Failed to download manifest from URL")
   );
-}
-
-const promiseAllSettled = Promise.allSettled;
-// || ((promises: Promise<void>[]) =>
-//   Promise.all(
-//     promises.map((p) =>
-//       p
-//         .then((value) => ({
-//           status: "fulfilled",
-//           value,
-//         }))
-//         .catch((reason) => ({
-//           status: "rejected",
-//           reason,
-//         }))
-//     )
-//   ));
-if (!promiseAllSettled) {
-  logError("Promise.allSettled is not defined on startup");
-}
-
-export function fixPromiseAllSettled(): void {
-  // Fix for Promise.allSettled becoming undefined sometimes after initialization :(
-  // This started to happen around React Native 0.74.5
-  Promise.allSettled = Promise.allSettled ?? promiseAllSettled;
 }
