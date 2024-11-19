@@ -1,5 +1,5 @@
 import {
-  PixelsConnectUuids,
+  PixelsBluetoothIds,
   PixelSession,
 } from "@systemic-games/pixels-core-connect";
 import {
@@ -7,19 +7,19 @@ import {
   CentralEventMap,
 } from "@systemic-games/react-native-bluetooth-le";
 
+import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
+
 /**
  * Represents a Bluetooth session with a Pixel die,
  * using Web Bluetooth.
  */
 export default class BleSession extends PixelSession {
+  private _isCharger: boolean;
   private _disposeFunc: () => void;
 
-  constructor(params: {
-    systemId: string;
-    name?: string;
-    uuids: PixelsConnectUuids;
-  }) {
-    super(params);
+  constructor(type: "die" | "charger", systemId: string, name?: string) {
+    super(systemId, name);
+    this._isCharger = type === "charger";
     const onConnection = (
       ev: CentralEventMap["peripheralConnectionStatus"]
     ) => {
@@ -48,10 +48,11 @@ export default class BleSession extends PixelSession {
   }
 
   async subscribe(listener: (dataView: DataView) => void): Promise<() => void> {
+    const { service, notifyCharacteristic } = this.getBleUuids();
     await Central.subscribeCharacteristic(
       this.systemId,
-      this._bleUuids.service,
-      this._bleUuids.notifyCharacteristic,
+      service,
+      notifyCharacteristic,
       (ev) =>
         ev.value?.length &&
         listener(new DataView(new Uint8Array(ev.value).buffer))
@@ -59,8 +60,8 @@ export default class BleSession extends PixelSession {
     return () => {
       Central.unsubscribeCharacteristic(
         this.systemId,
-        this._bleUuids.service,
-        this._bleUuids.notifyCharacteristic
+        service,
+        notifyCharacteristic
       ).catch(() => {});
       // TODO (e) => this.log(`Error unsubscribing characteristic: ${e}`));
     };
@@ -71,12 +72,24 @@ export default class BleSession extends PixelSession {
     withoutResponse?: boolean,
     timeoutMs?: number // TODO default should be Constants.defaultRequestTimeout
   ): Promise<void> {
+    const { service, writeCharacteristic } = this.getBleUuids();
     await Central.writeCharacteristic(
       this.systemId,
-      this._bleUuids.service,
-      this._bleUuids.writeCharacteristic,
+      service,
+      writeCharacteristic,
       data,
       { withoutResponse, timeoutMs }
     );
+  }
+
+  private getBleUuids(): typeof PixelsBluetoothIds.die {
+    if (this._isCharger) {
+      return PixelsBluetoothIds.charger;
+    } else if (!ScannedDevicesRegistry.hasLegacyService(this.systemId)) {
+      // Default for dice
+      return PixelsBluetoothIds.die;
+    } else {
+      return PixelsBluetoothIds.legacyDie;
+    }
   }
 }

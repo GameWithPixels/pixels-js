@@ -1,25 +1,15 @@
-import { PixelsBluetoothIds, Pixel } from "@systemic-games/pixels-core-connect";
+import { Pixel } from "@systemic-games/pixels-core-connect";
 
 import BleSession from "./BleSession";
 import { PixelsDevices } from "./PixelsDevices";
 
 const _pixels = new Map<string, Pixel>();
 
-function getOrCreatePixel(
-  device: BluetoothDevice,
-  opt?: {
-    legacyService?: boolean;
-  }
-): Pixel {
+function getOrCreatePixel(device: BluetoothDevice): Pixel {
   // Keep Pixel instances
   let pixel = _pixels.get(device.id);
   if (!pixel) {
-    const session = new BleSession({
-      systemId: device.id,
-      uuids: opt?.legacyService
-        ? PixelsBluetoothIds.legacyDie
-        : PixelsBluetoothIds.die,
-    });
+    const session = new BleSession(device.id);
     pixel = new Pixel(session);
     _pixels.set(device.id, pixel);
   }

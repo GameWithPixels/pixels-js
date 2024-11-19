@@ -1,5 +1,3 @@
-import { PixelsConnectUuids } from "./PixelsBluetoothIds";
-
 /**
  * Data for a connection event.
  * @category Pixels
@@ -48,7 +46,6 @@ export abstract class PixelSession {
   protected readonly _systemId: string;
   protected _connStatusCb?: (ev: PixelSessionConnectionEvent) => void;
   private _lastConnStatus: PixelSessionConnectionStatus;
-  protected readonly _bleUuids: PixelsConnectUuids;
   private _name: string | undefined;
 
   /**
@@ -56,15 +53,10 @@ export abstract class PixelSession {
    * No attempt is made to connect to the die at this point.
    * @param systemId The peripheral system id (as assigned by the OS).
    */
-  constructor(params: {
-    systemId: string;
-    name?: string;
-    uuids: PixelsConnectUuids;
-  }) {
-    this._systemId = params.systemId;
+  constructor(systemId: string, name?: string) {
+    this._systemId = systemId;
     this._lastConnStatus = "disconnected"; // TODO get status from peripheral
-    this._bleUuids = { ...params.uuids };
-    this._name = params.name;
+    this._name = name;
   }
 
   /** Gets the peripheral system id (as assigned by the OS). */

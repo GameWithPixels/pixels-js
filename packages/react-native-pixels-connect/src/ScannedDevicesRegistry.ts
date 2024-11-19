@@ -22,10 +22,7 @@ function createEmptyItem(
 
 // For internal use only
 export const ScannedDevicesRegistry = {
-  store(
-    scannedDevice: ScannedDevice,
-    service: "custom" | "legacy" = "custom"
-  ): void {
+  store(scannedDevice: ScannedDevice, service?: "custom" | "legacy"): void {
     const item =
       _devicesMap.get(scannedDevice.pixelId) ??
       createEmptyItem(scannedDevice.pixelId);
@@ -34,7 +31,8 @@ export const ScannedDevicesRegistry = {
     } else {
       item.bootloader = scannedDevice;
     }
-    item.legacyService = service === "legacy";
+    item.legacyService =
+      service === undefined ? undefined : service === "legacy";
   },
 
   find(id: string | number): ScannedDevice | undefined {
@@ -67,16 +65,14 @@ export const ScannedDevicesRegistry = {
     return scannedDevice?.type === "bootloader" ? scannedDevice : undefined;
   },
 
-  hasLegacyService(id: string | number): boolean {
+  hasLegacyService(id: string | number): boolean | undefined {
     if (typeof id === "number") {
       const item = _devicesMap.get(id);
-      return !!item?.legacyService;
+      return item?.legacyService;
     } else {
       for (const item of _devicesMap.values()) {
         if (item.dieOrCharger?.systemId === id) {
-          return !!item?.legacyService;
-        } else if (item.bootloader?.systemId === id) {
-          return !!item?.legacyService;
+          return item?.legacyService;
         }
       }
     }

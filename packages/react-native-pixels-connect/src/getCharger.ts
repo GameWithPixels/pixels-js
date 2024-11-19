@@ -1,7 +1,4 @@
-import {
-  Charger,
-  PixelsBluetoothIds,
-} from "@systemic-games/pixels-core-connect";
+import { Charger } from "@systemic-games/pixels-core-connect";
 
 import BleSession from "./BleSession";
 import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
@@ -19,14 +16,7 @@ export function getCharger(id: string | number): Charger | undefined {
       // Or create a new Pixel instance
       const charger =
         exitingCharger ??
-        new Charger(
-          new BleSession({
-            systemId,
-            name: sc?.name,
-            uuids: PixelsBluetoothIds.charger,
-          }),
-          sc
-        );
+        new Charger(new BleSession("charger", systemId, sc?.name), sc);
       if (!exitingCharger) {
         // Keep track of this new instance
         DevicesMap.set(systemId, charger);

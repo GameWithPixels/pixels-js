@@ -6,7 +6,6 @@ import { ScannedPixelNotifier } from "./ScannedPixelNotifier";
 
 // Keep these lists in a separate file so it is not reloaded by Fast Refresh after a change in Central
 
-// TODO add Bootloader device type
 export const DevicesMap = new Map<string, Pixel | Charger>();
 
 export const ScannedPixelNotifiersMap = new Map<number, ScannedPixelNotifier>();

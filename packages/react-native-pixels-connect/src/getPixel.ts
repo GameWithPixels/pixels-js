@@ -1,4 +1,4 @@
-import { Pixel, PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
+import { Pixel } from "@systemic-games/pixels-core-connect";
 
 import BleSession from "./BleSession";
 import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
@@ -21,12 +21,7 @@ class GetPixelError extends Error {
  *           It can be either the system id as a string or the Pixel id as a number.
  * @returns A {@link Pixel} instance or undefined.
  */
-export function getPixel(
-  id: string | number,
-  opt?: {
-    legacyService?: boolean;
-  }
-): Pixel | undefined {
+export function getPixel(id: string | number): Pixel | undefined {
   if (typeof id === "number" ? id !== 0 : id?.length > 0) {
     const sp = ScannedDevicesRegistry.findPixel(id);
     // Get system id from the input data
@@ -34,29 +29,15 @@ export function getPixel(
     if (systemId?.length) {
       // Check for an existing Pixel object for the given system id
       const dev = DevicesMap.get(systemId);
-      const exitingPixel = dev instanceof Pixel ? dev : undefined;
-      // Or create a new Pixel instance
-      const pixel =
-        exitingPixel ??
-        new Pixel(
-          new BleSession({
-            systemId,
-            name: sp?.name,
-            uuids:
-              opt?.legacyService ??
-              ScannedDevicesRegistry.hasLegacyService(
-                sp?.pixelId ?? (typeof id === "number" ? id : 0)
-              )
-                ? PixelsBluetoothIds.legacyDie
-                : PixelsBluetoothIds.die,
-          }),
-          sp
-        );
-      if (!exitingPixel) {
+      if (dev instanceof Pixel) {
+        return dev;
+      } else {
+        // Create a new Pixel instance
+        const pixel = new Pixel(new BleSession("die", systemId, sp?.name), sp);
         // Keep track of this new instance
         DevicesMap.set(systemId, pixel);
+        return pixel;
       }
-      return pixel;
     }
   }
 }
