@@ -24,9 +24,10 @@ export function getNoAvailableDiceMessage(): string {
   return (
     "No available dice found so far. " +
     "Check that your dice are turned on and not connected to another device." +
-    (Platform.OS === "android" && Platform.Version <= 10
-      ? "\n\nPlease make sure to turn on the Location service on your device " +
-        "to allow the app to scan for dice."
+    (Platform.OS === "android" && Platform.Version <= 11
+      ? "\n\nPlease make sure to turn on the Location service on your device. " +
+        "This is required by Android 11, or older versions, in order to scan for Bluetooth devices. " +
+        "We will not use your location data in any way."
       : "")
   );
 }
