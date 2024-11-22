@@ -1,17 +1,17 @@
 import { PixelsBluetoothIds } from "@systemic-games/pixels-core-connect";
 import { ScannedPeripheral } from "@systemic-games/react-native-bluetooth-le";
 
-import { ScannedCharger } from "./ScannedCharger";
 import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
+import { ScannedMPC } from "./ScannedMPC";
 import SequentialDataReader from "./SequentialDataReader";
 
 // Function processing scan events from Central and returning a ScannedPixel
-export function getScannedCharger(
+export function getScannedMPC(
   peripheral: ScannedPeripheral
-): ScannedCharger | undefined {
+): ScannedMPC | undefined {
   const advData = peripheral.advertisementData;
-  if (!advData.services?.includes(PixelsBluetoothIds.charger.service)) {
-    // Not a Pixels charger
+  if (!advData.services?.includes(PixelsBluetoothIds.mpc.service)) {
+    // Not a Pixels MPC
     return;
   }
 
@@ -23,18 +23,7 @@ export function getScannedCharger(
   const serviceData = advData.servicesData?.[0];
 
   // Check the manufacturers data
-  if (
-    manufacturerData &&
-    manufacturerData.data?.length >= 1 &&
-    serviceData &&
-    serviceData.data.length >= 8
-  ) {
-    // Create data reader for the manufacturer data
-    const manufBuffer = new Uint8Array(manufacturerData.data);
-    const manufReader = new SequentialDataReader(
-      new DataView(manufBuffer.buffer)
-    );
-
+  if (serviceData && serviceData.data.length >= 8) {
     // Create data reader for the service data
     const serviceBuffer = new Uint8Array(serviceData.data);
     const serviceReader = new SequentialDataReader(
@@ -45,40 +34,31 @@ export function getScannedCharger(
     const pixelId = serviceReader.readU32();
     const firmwareDate = new Date(1000 * serviceReader.readU32());
 
-    // Read the advertised values from the manufacturer data
-    const ledCount = 3;
-    const battery = manufReader.readU8();
-    // MSB is battery charging
-    const batteryLevel = battery & 0x7f;
-    const isCharging = (battery & 0x80) > 0;
-
     if (pixelId) {
       const systemId = peripheral.systemId;
-      const scannedCharger = {
-        type: "charger" as "charger",
+      const scannedMPC = {
+        type: "mpc" as "mpc",
         systemId,
         pixelId,
         address: peripheral.address,
         name,
-        ledCount,
+        ledCount: 32,
         firmwareDate,
         rssi: advData.rssi,
-        batteryLevel,
-        isCharging,
+        batteryLevel: 0,
+        isCharging: false,
         timestamp: new Date(advData.timestamp),
       };
-      ScannedDevicesRegistry.store(scannedCharger);
-      return scannedCharger;
+      ScannedDevicesRegistry.store(scannedMPC);
+      return scannedMPC;
     } else {
       console.error(`Pixel ${name}: Received invalid advertising data`);
     }
   } else {
-    // console.error(
-    //   `Charger ${
-    //     name
-    //   }: Received unsupported advertising data (manufacturerData: ${
-    //     manufacturerData?.data.length ?? -1
-    //   } bytes, serviceData: ${serviceData?.data.length ?? -1} bytes)`
-    // );
+    console.error(
+      `MPC ${name}: Received unsupported advertising data (manufacturerData: ${
+        manufacturerData?.data.length ?? -1
+      } bytes, serviceData: ${serviceData?.data.length ?? -1} bytes)`
+    );
   }
 }

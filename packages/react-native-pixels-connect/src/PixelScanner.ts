@@ -16,12 +16,18 @@ import {
 
 import { ScannedBootloader } from "./ScannedBootloader";
 import { ScannedCharger } from "./ScannedCharger";
+import { ScannedMPC } from "./ScannedMPC";
 import { ScannedPixel } from "./ScannedPixel";
 import { getScannedBootloader } from "./getScannedBootloader";
 import { getScannedCharger } from "./getScannedCharger";
+import { getScannedMPC } from "./getScannedMPC";
 import { getScannedPixel } from "./getScannedPixel";
 
-export type ScannedDevice = ScannedPixel | ScannedCharger | ScannedBootloader;
+export type ScannedDevice =
+  | ScannedPixel
+  | ScannedCharger
+  | ScannedMPC
+  | ScannedBootloader;
 
 /**
  * The different possible operations on a {@link PixelScanner} list.
@@ -51,6 +57,7 @@ export type PixelScannerEventMap = Readonly<{
   status: ScanStatus;
   scannedPixels: readonly ScannedPixel[];
   scannedChargers: readonly ScannedCharger[];
+  scannedMPCs: readonly ScannedMPC[];
   scannedBootloaders: readonly ScannedBootloader[];
   // Events
   onStatusChange: Pick<
@@ -138,6 +145,14 @@ export class PixelScanner {
    */
   get scannedChargers(): ScannedCharger[] {
     return this._devices.filter((i) => i.type === "charger");
+  }
+
+  /**
+   * A copy of the list of scanned MPCs (cleared on loosing Bluetooth access
+   * if {@link PixelScanner.keepAliveDuration} is greater than zero).
+   */
+  get scannedMPCs(): ScannedMPC[] {
+    return this._devices.filter((i) => i.type === "mpc");
   }
 
   /**
@@ -285,6 +300,7 @@ export class PixelScanner {
                 PixelsBluetoothIds.die.service,
                 PixelsBluetoothIds.legacyDie.service,
                 PixelsBluetoothIds.charger.service,
+                PixelsBluetoothIds.mpc.service,
                 toFullUuid(PixelsBluetoothIds.dfuService),
               ],
               this
@@ -358,16 +374,20 @@ export class PixelScanner {
     const pixel = getScannedPixel(peripheral);
     if (pixel) {
       this._processItem(pixel);
-    } else {
-      const charger = getScannedCharger(peripheral);
-      if (charger) {
-        this._processItem(charger);
-      } else {
-        const bootloader = getScannedBootloader(peripheral);
-        if (bootloader) {
-          this._processItem(bootloader);
-        }
-      }
+      return;
+    }
+    const charger = getScannedCharger(peripheral);
+    if (charger) {
+      this._processItem(charger);
+      return;
+    }
+    const mpc = getScannedMPC(peripheral);
+    if (mpc) {
+      this._processItem(mpc);
+    }
+    const bootloader = getScannedBootloader(peripheral);
+    if (bootloader) {
+      this._processItem(bootloader);
     }
   }
 
@@ -406,7 +426,7 @@ export class PixelScanner {
           stopReason !== "failedToStart" &&
           this._keepAliveDuration > 0
         ) {
-          // Clear all Pixels & Chargers if Bluetooth has become unavailable
+          // Clear all devices if Bluetooth has become unavailable
           for (const { type, pixelId } of this._devices) {
             this._touched.set(pixelId, type);
           }
@@ -503,6 +523,9 @@ export class PixelScanner {
       }
       if (ops.find((op) => op.item.type === "bootloader")) {
         this._emitEvent("scannedBootloaders", this.scannedBootloaders);
+      }
+      if (ops.find((op) => op.item.type === "mpc")) {
+        this._emitEvent("scannedMPCs", this.scannedMPCs);
       }
     }
   }

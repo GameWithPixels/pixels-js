@@ -9,6 +9,10 @@ export const PixelsNamePrefixes = {
     bootloader: "LCC",
     default: "Charger",
   },
+  mpc: {
+    bootloader: "MPC",
+    default: "PixelMPC",
+  },
 } as const;
 
 export function getPixelsBootloaderAdvertisedName(
