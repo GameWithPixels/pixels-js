@@ -1,6 +1,6 @@
 {
   "name": "@systemic-games/pixels-core-connect",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Platform agnostic classes and functions to communicate with Pixels dice.",
   "main": "dist/cjs/index",
   "module": "dist/esm/index",
@@ -49,8 +49,8 @@
   },
   "homepage": "https://github.com/GameWithPixels/pixels-js/tree/main/packages/pixels-core-connect",
   "dependencies": {
-    "@systemic-games/pixels-core-animation": "~1.2.2",
-    "@systemic-games/pixels-core-utils": "~1.2.2",
+    "@systemic-games/pixels-core-animation": "~1.3.0",
+    "@systemic-games/pixels-core-utils": "~1.3.0",
     "events": "^3.3.0"
   },
   "devDependencies": {
