@@ -1,12 +1,13 @@
 import { ScannedDevice } from "./PixelScanner";
 import { ScannedBootloader } from "./ScannedBootloader";
 import { ScannedCharger } from "./ScannedCharger";
+import { ScannedMPC } from "./ScannedMPC";
 import { ScannedPixel } from "./ScannedPixel";
 
 const _devicesMap = new Map<
   number, // pixelId
   {
-    device?: ScannedPixel | ScannedCharger;
+    device?: ScannedPixel | ScannedCharger | ScannedMPC;
     bootloader?: ScannedBootloader;
     legacyService?: boolean;
   }
@@ -58,6 +59,11 @@ export const ScannedDevicesRegistry = {
   findCharger(id: string | number): ScannedCharger | undefined {
     const scannedDevice = ScannedDevicesRegistry.find(id);
     return scannedDevice?.type === "charger" ? scannedDevice : undefined;
+  },
+
+  findMPC(id: string | number): ScannedMPC | undefined {
+    const scannedDevice = ScannedDevicesRegistry.find(id);
+    return scannedDevice?.type === "mpc" ? scannedDevice : undefined;
   },
 
   findBootloader(id: string | number): ScannedBootloader | undefined {

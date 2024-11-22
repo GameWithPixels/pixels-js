@@ -7,10 +7,33 @@ import {
   PixelScannerDispatchAction,
   PixelScannerStatus,
 } from "./usePixelScannerNotify";
-import { PixelScannerListOperation } from "../PixelScanner";
+import { PixelScannerListOperation, ScannedDevice } from "../PixelScanner";
 import { ScannedBootloaderNotifier } from "../ScannedBootloaderNotifier";
 import { ScannedChargerNotifier } from "../ScannedChargerNotifier";
+import { ScannedMPCNotifier } from "../ScannedMPCNotifier";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
+
+function getNotifier(
+  device: ScannedDevice
+):
+  | ScannedPixelNotifier
+  | ScannedChargerNotifier
+  | ScannedMPCNotifier
+  | ScannedBootloaderNotifier {
+  const type = device.type;
+  switch (type) {
+    case "die":
+      return ScannedPixelNotifier.getInstance(device);
+    case "charger":
+      return ScannedChargerNotifier.getInstance(device);
+    case "mpc":
+      return ScannedMPCNotifier.getInstance(device);
+    case "bootloader":
+      return ScannedBootloaderNotifier.getInstance(device);
+    default:
+      assertNever(type, `No notifier class for device of type: ${type}`);
+  }
+}
 
 /**
  * React hook that creates {@link PixelScanner} to scan for Pixels using Bluetooth.
@@ -30,7 +53,12 @@ import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 export function useScannedPixelNotifiers(
   opt?: PixelScannerOptions
 ): [
-  (ScannedPixelNotifier | ScannedChargerNotifier | ScannedBootloaderNotifier)[],
+  (
+    | ScannedPixelNotifier
+    | ScannedChargerNotifier
+    | ScannedMPCNotifier
+    | ScannedBootloaderNotifier
+  )[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {
@@ -39,6 +67,7 @@ export function useScannedPixelNotifiers(
       items: (
         | ScannedPixelNotifier
         | ScannedChargerNotifier
+        | ScannedMPCNotifier
         | ScannedBootloaderNotifier
       )[],
       ops: readonly PixelScannerListOperation[]
@@ -52,12 +81,7 @@ export function useScannedPixelNotifiers(
         switch (t) {
           case "scanned": {
             // The same instance will always be returned for a given Pixel id
-            const notifier =
-              op.item.type === "die"
-                ? ScannedPixelNotifier.getInstance(op.item)
-                : op.item.type === "charger"
-                  ? ScannedChargerNotifier.getInstance(op.item)
-                  : ScannedBootloaderNotifier.getInstance(op.item);
+            const notifier = getNotifier(op.item);
             const index = retItems.findIndex(
               (sp) => sp.pixelId === op.item.pixelId
             );

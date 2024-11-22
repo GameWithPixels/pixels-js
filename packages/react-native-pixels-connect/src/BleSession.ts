@@ -14,7 +14,7 @@ import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
  * using Web Bluetooth.
  */
 export default class BleSession extends PixelSession {
-  readonly type: "die" | "charger";
+  readonly type: "die" | "charger" | "mpc";
   private _disposeFunc: () => void;
 
   constructor(type: BleSession["type"], systemId: string, name?: string) {
@@ -93,6 +93,8 @@ export default class BleSession extends PixelSession {
           : PixelsBluetoothIds.legacyDie;
       case "charger":
         return PixelsBluetoothIds.charger;
+      case "mpc":
+        return PixelsBluetoothIds.mpc;
     }
   }
 }
