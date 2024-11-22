@@ -40,7 +40,7 @@ export function CollapsableContainer({
     }
     return {
       height: animatedHeight.value !== -1 ? animatedHeight.value : undefined,
-      marginBottom: animatedHeight.value > 0 ? 0 : collapsedMarginBottom ?? 0,
+      marginBottom: animatedHeight.value > 0 ? 0 : (collapsedMarginBottom ?? 0),
     };
   }, [animatedHeight, collapsedMarginBottom, height, visible]);
   return (

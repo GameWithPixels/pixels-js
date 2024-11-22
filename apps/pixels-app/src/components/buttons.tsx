@@ -297,7 +297,7 @@ export function DieFaceButton({
 } & Omit<TouchableRippleProps, "children" | "style">) {
   const { colors, roundness } = useTheme();
   const textColor =
-    props.disabled ?? inUse ? colors.onSurfaceDisabled : colors.onSurface;
+    (props.disabled ?? inUse) ? colors.onSurfaceDisabled : colors.onSurface;
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <LinearGradient

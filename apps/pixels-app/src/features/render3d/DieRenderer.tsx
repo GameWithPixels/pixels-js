@@ -385,7 +385,7 @@ export function DieRenderer({
   initArgsRef.current.speed = speed;
   initArgsRef.current.pedestalStyle = !pedestal
     ? undefined
-    : pedestalStyle ?? {};
+    : (pedestalStyle ?? {});
   initArgsRef.current.animationInstances = animationInstances;
 
   const onContextCreate = React.useCallback((gl: ExpoWebGLRenderingContext) => {

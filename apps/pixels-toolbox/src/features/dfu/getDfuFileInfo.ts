@@ -51,7 +51,7 @@ export function getDfuFileInfo(
       return {
         pathname,
         basename: parts[0],
-        type: isFwOrBl ? typeStr : opt?.defaultType ?? "firmware",
+        type: isFwOrBl ? typeStr : (opt?.defaultType ?? "firmware"),
         date: new Date(date + "T" + timeWithSemicolon),
         comment: parts.length > 2 ? parts.slice(2).join(" ") : undefined,
       };

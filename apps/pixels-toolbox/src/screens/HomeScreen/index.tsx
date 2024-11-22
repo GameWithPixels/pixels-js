@@ -66,7 +66,7 @@ function DfuBundleSelection({
             <BaseVStack gap={5}>
               <Text>
                 {selectedDfuBundle
-                  ? dateLabel ?? t("tapToSelectFirmware")
+                  ? (dateLabel ?? t("tapToSelectFirmware"))
                   : noDFUFilesError
                     ? "No DFU files loaded"
                     : "Loading DFU files..."}

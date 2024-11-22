@@ -87,7 +87,7 @@ export function byteSizeOfProp<T extends object>(
   );
   return !!prop?.options?.nullTerminated || !!prop?.options?.terminator
     ? "dynamic"
-    : prop?.size ?? 0;
+    : (prop?.size ?? 0);
 }
 
 /**

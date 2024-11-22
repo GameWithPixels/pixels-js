@@ -22,7 +22,7 @@ export class MessageSerializer<MessageType extends string> {
   readonly _messageClasses: readonly MessageClass[];
 
   // Lookup table from message type value to message name
-  readonly _messageNamesLookup: Readonly<MessageType[]> = [];
+  readonly _messageNamesLookup: readonly MessageType[] = [];
 
   // Lookup table from MessageClass to MessageType
   readonly _reverseMsgClassesLookup: Readonly<Map<MessageClass, number>> =

@@ -35,8 +35,10 @@ export function pairDie(
   const { pairedDice, library } = store.getState();
   let profileUuid = opt?.forceNewProfile
     ? undefined
-    : pairedDice.paired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid ??
-      pairedDice.unpaired.find((p) => p.pixelId === pixel.pixelId)?.profileUuid;
+    : (pairedDice.paired.find((p) => p.pixelId === pixel.pixelId)
+        ?.profileUuid ??
+      pairedDice.unpaired.find((p) => p.pixelId === pixel.pixelId)
+        ?.profileUuid);
   // Create new profile if die profile not found or same as source profile
   let brightness = library.profiles.entities[profileUuid ?? -1]?.brightness;
   if (

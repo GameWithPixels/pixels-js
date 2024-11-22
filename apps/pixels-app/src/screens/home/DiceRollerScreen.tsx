@@ -68,17 +68,13 @@ const AnimatedRollCard = React.forwardRef(function AnimatedRollCard(
   ref: React.ForwardedRef<AnimatedRollCardHandle>
 ) {
   const [width, setWidth] = React.useState(widthProp);
-  React.useImperativeHandle(
-    ref,
-    () => {
-      return {
-        overrideWidth: (w: number) => {
-          setWidth(w);
-        },
-      };
-    },
-    []
-  );
+  React.useImperativeHandle(ref, () => {
+    return {
+      overrideWidth: (w: number) => {
+        setWidth(w);
+      },
+    };
+  }, []);
   React.useEffect(() => setWidth(widthProp), [widthProp]);
 
   const { width: screenWidth } = useWindowDimensions();

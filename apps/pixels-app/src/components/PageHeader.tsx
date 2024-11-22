@@ -36,7 +36,7 @@ export function PageHeader({
           flexDirection: "row",
           alignItems: "center",
           justifyContent:
-            leftElement ?? onGoBack ? "space-between" : "flex-end",
+            (leftElement ?? onGoBack) ? "space-between" : "flex-end",
           zIndex: Platform.select({ ios: -1 }),
         }}
       >

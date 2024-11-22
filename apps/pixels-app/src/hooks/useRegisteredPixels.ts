@@ -5,7 +5,7 @@ import { usePixelsCentral } from "./usePixelsCentral";
 
 import { areArraysEqual } from "~/features/utils";
 
-export function useRegisteredPixels(): Readonly<Pixel[]> {
+export function useRegisteredPixels(): readonly Pixel[] {
   const central = usePixelsCentral();
   const [pixels, setPixels] = React.useState([...central.pixels]);
   React.useEffect(() => {

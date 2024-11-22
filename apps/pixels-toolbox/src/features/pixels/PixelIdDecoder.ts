@@ -3,7 +3,7 @@ export type RbgColor = (typeof RbgColorNames)[number];
 
 const crcDivisor = "1011";
 const crcBitCount = crcDivisor.length - 1;
-const header: Readonly<RbgColor[]> = RbgColorNames;
+const header: readonly RbgColor[] = RbgColorNames;
 const headerBitsCount = RbgColorNames.length;
 const messageBitCount = headerBitsCount + crcBitCount + 32; // Pixel Id is 32 bits
 const frameDuration = 33; // In milliseconds
