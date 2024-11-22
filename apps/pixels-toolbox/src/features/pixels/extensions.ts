@@ -167,9 +167,10 @@ export async function pixelPlayProfileAnimation(
 
 /* List of codes for the store values' types. */
 export const PixelValueStoreType = {
-  DieType: 1,
-  Colorway: 2,
-  ValidationTimestampStart: 0xa0,
+  dieType: 1,
+  colorway: 2,
+  runMode: 3,
+  validationTimestampStart: 0xa0,
 } as const;
 
 /**
@@ -206,7 +207,7 @@ export async function pixelStoreValue(
   // Update Pixel instance
   if (result === "success") {
     switch (valueType) {
-      case PixelValueStoreType.DieType: {
+      case PixelValueStoreType.dieType: {
         const dieType = getValueKeyName(value, PixelDieTypeValues) ?? "unknown";
         log(pixel, `Updating die type to ${dieType}`);
         //@ts-expect-error Private function
@@ -216,7 +217,7 @@ export async function pixelStoreValue(
         );
         break;
       }
-      case PixelValueStoreType.Colorway: {
+      case PixelValueStoreType.colorway: {
         const colorway =
           getValueKeyName(value, PixelColorwayValues) ?? "unknown";
         log(pixel, `Updating colorway to ${colorway}`);

@@ -13,7 +13,6 @@ import {
   createLibraryProfile,
   EditAnimation,
   PrebuildAnimations,
-  PrebuildProfileName,
 } from "@systemic-games/pixels-edit-animation";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -56,6 +55,7 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "./extensions";
+import { createMegaProfile, ToolboxProfileName } from "./profiles";
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
@@ -84,13 +84,14 @@ export interface PixelDispatcherActionMap {
   discharge: number;
   setChargerMode: PixelBatteryControllerMode;
   rename: string;
-  uploadProfile: PrebuildProfileName;
+  uploadProfile: ToolboxProfileName;
   reprogramDefaultBehavior: undefined;
   resetAllSettings: undefined;
   queueDFU: undefined;
   dequeueDFU: undefined;
   setDieType: PixelDieType;
   setColorway: PixelColorway;
+  setRunMode: number;
 }
 
 /** List of possible DFU actions. */
@@ -504,7 +505,7 @@ export class PixelDispatcher
         break;
       case "uploadProfile":
         this._guard(
-          this._uploadProfile((params as PrebuildProfileName) ?? "default"),
+          this._uploadProfile((params as ToolboxProfileName) ?? "default"),
           action
         );
         break;
@@ -525,7 +526,7 @@ export class PixelDispatcher
           this._guard(
             pixelStoreValue(
               this._pixel,
-              PixelValueStoreType.DieType,
+              PixelValueStoreType.dieType,
               PixelDieTypeValues[params as PixelDieType]
             ),
             action
@@ -537,12 +538,22 @@ export class PixelDispatcher
           this._guard(
             pixelStoreValue(
               this._pixel,
-              PixelValueStoreType.Colorway,
+              PixelValueStoreType.colorway,
               PixelColorwayValues[params as PixelColorway]
             ),
             action
           );
         }
+        break;
+      case "setRunMode":
+        this._guard(
+          pixelStoreValue(
+            this._pixel,
+            PixelValueStoreType.runMode,
+            params as number
+          ),
+          action
+        );
         break;
       default:
         assertNever(action, `Unknown action ${action}`);
@@ -646,9 +657,13 @@ export class PixelDispatcher
     await this._playAnimation(PrebuildAnimations.noise);
   }
 
-  private async _uploadProfile(type: PrebuildProfileName): Promise<void> {
-    const profile = createLibraryProfile(type, this.dieType);
+  private async _uploadProfile(type: ToolboxProfileName): Promise<void> {
+    const profile =
+      type === "megaProfile"
+        ? createMegaProfile(this.dieType)
+        : createLibraryProfile(type, this.dieType);
     const dataSet = createDataSetForProfile(profile).toDataSet();
+    console.log(`Data set size: ${dataSet.computeDataSetByteSize()}`);
     const onProgress = this._onUploadProgress.bind(this);
     try {
       this._isUpdatingProfile = true;

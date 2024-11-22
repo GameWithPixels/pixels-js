@@ -993,7 +993,7 @@ export function StoreSettings({
     () =>
       storeValueChecked(
         pixel,
-        PixelValueStoreType.ValidationTimestampStart +
+        PixelValueStoreType.validationTimestampStart +
           getSequenceIndex(settings.sequence),
         get24BitsTimestamp(),
         { allowNotPermitted: dieFinal }
@@ -1007,7 +1007,7 @@ export function StoreSettings({
       );
       const value = PixelDieTypeValues[settings.dieType];
       assert(value);
-      await storeValueChecked(pixel, PixelValueStoreType.DieType, value);
+      await storeValueChecked(pixel, PixelValueStoreType.dieType, value);
     }
   }, [pixel, settings.dieType]);
 
@@ -1054,7 +1054,7 @@ export function StoreSettings({
                 assert(value);
                 await storeValueChecked(
                   pixel,
-                  PixelValueStoreType.Colorway,
+                  PixelValueStoreType.colorway,
                   value
                 );
               }
