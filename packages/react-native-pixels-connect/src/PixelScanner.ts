@@ -129,7 +129,7 @@ export class PixelScanner {
    * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
    */
   get scannedPixels(): ScannedPixel[] {
-    return this._devices.filter((i) => i.type === "pixel");
+    return this._devices.filter((i) => i.type === "die");
   }
 
   /**
@@ -495,7 +495,7 @@ export class PixelScanner {
       }
       this._touched.clear();
       this._emitEvent("onScanListChange", { ops });
-      if (ops.find((op) => op.item.type === "pixel")) {
+      if (ops.find((op) => op.item.type === "die")) {
         this._emitEvent("scannedPixels", this.scannedPixels);
       }
       if (ops.find((op) => op.item.type === "charger")) {

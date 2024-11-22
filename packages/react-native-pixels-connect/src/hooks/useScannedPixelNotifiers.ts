@@ -53,7 +53,7 @@ export function useScannedPixelNotifiers(
           case "scanned": {
             // The same instance will always be returned for a given Pixel id
             const notifier =
-              op.item.type === "pixel"
+              op.item.type === "die"
                 ? ScannedPixelNotifier.getInstance(op.item)
                 : op.item.type === "charger"
                   ? ScannedChargerNotifier.getInstance(op.item)

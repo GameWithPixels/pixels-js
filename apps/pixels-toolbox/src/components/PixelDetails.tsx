@@ -887,7 +887,7 @@ export function PixelDetails({
       <View style={AppStyles.mv3} />
       <Card>
         <Card.Content>
-          {pd.type === "pixel" ? (
+          {pd.type === "die" ? (
             <>
               <BaseInfo pixel={pd} />
               <TelemetryInfo pixel={pixel} />

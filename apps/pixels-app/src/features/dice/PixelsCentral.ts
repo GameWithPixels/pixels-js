@@ -433,7 +433,7 @@ export class PixelsCentral {
         ev: ScanRequesterEventMap["onScanListChange"]
       ) => {
         for (const op of ev.ops) {
-          if (op.item.type === "pixel") {
+          if (op.item.type === "die") {
             const { pixelId } = op.item;
             const scanStatus = op.status;
             switch (scanStatus) {
@@ -532,7 +532,7 @@ export class PixelsCentral {
       for (const op of ev.ops) {
         if (
           op.status === "scanned" &&
-          op.item.type === "pixel" &&
+          op.item.type === "die" &&
           op.item.pixelId === pixelId
         ) {
           resolver(op.item);

@@ -30,7 +30,7 @@ export function ScannedPixelsList({
   const [scannedDevices, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
   const scannedPixels = React.useMemo(
-    () => scannedDevices.filter((i) => i.type === "pixel"),
+    () => scannedDevices.filter((i) => i.type === "die"),
     [scannedDevices]
   );
   useErrorWithHandler(

@@ -142,7 +142,7 @@ export class PixelDispatcherError extends Error {
  * Interface with the props of {@link PixelDispatcher}.
  */
 export interface IPixelDispatcher extends Omit<ScannedPixel, "type"> {
-  type: "pixel" | "charger"; // TODO until we have a parent class & interface for the dispatchers
+  type: "die" | "charger"; // TODO until we have a parent class & interface for the dispatchers
   status: PixelStatus;
   isReady: boolean;
   durationSinceLastActivity: number;
@@ -312,7 +312,7 @@ export class PixelDispatcher
   private constructor(scannedPixel: ScannedPixelNotifier) {
     super(scannedPixel);
     this._info = {
-      type: "pixel",
+      type: "die",
       systemId: scannedPixel.systemId,
       pixelId: scannedPixel.pixelId,
       name: scannedPixel.name,
@@ -732,10 +732,7 @@ export class PixelDispatcher
       // Run next update if any
       const pixel = Static.dfuQueue.pending[0];
       if (pixel) {
-        assert(
-          pixel.type === "pixel",
-          "Queued DFU device is not of pixel type"
-        );
+        assert(pixel.type === "die", "Queued DFU device is not of pixel type");
         pixel._guard(pixel._startDFU(), "startDfu");
       }
     }

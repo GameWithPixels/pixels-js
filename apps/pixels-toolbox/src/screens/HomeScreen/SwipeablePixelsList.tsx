@@ -48,7 +48,7 @@ export const SwipeablePixelsList = React.memo(function ({
   const allDispatchers = React.useMemo(() => {
     const scanned = scannedDevices
       .map((dev) =>
-        dev.type === "pixel"
+        dev.type === "die"
           ? PixelDispatcher.getOrCreateDispatcher(dev)
           : dev.type === "charger"
             ? ChargerDispatcher.getOrCreateDispatcher(dev)
@@ -71,7 +71,7 @@ export const SwipeablePixelsList = React.memo(function ({
     () =>
       allDispatchers.filter(
         (pd) =>
-          (pd.type !== "pixel" ||
+          (pd.type !== "die" ||
             pd.dieType === "unknown" ||
             viewOptions.includes(pd.dieType)) &&
           (pd.type !== "charger" || viewOptions.includes("charger")) &&
@@ -91,7 +91,7 @@ export const SwipeablePixelsList = React.memo(function ({
       params?: PixelDispatcherActionMap[T]
     ) =>
       dispatchers.forEach(
-        (p) => p.type === "pixel" && p.dispatch(action, params)
+        (p) => p.type === "die" && p.dispatch(action, params)
       ),
     [dispatchers]
   );

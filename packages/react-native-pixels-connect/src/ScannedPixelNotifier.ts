@@ -38,7 +38,7 @@ export class ScannedPixelNotifier<
   private _data: Mutable<ScannedPixel>;
 
   // Device type
-  readonly type = "pixel";
+  readonly type = "die";
 
   // PixelInfo props
   get systemId(): string {

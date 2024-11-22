@@ -52,7 +52,7 @@ export const ScannedDevicesRegistry = {
 
   findPixel(id: string | number): ScannedPixel | undefined {
     const scannedDevice = ScannedDevicesRegistry.find(id);
-    return scannedDevice?.type === "pixel" ? scannedDevice : undefined;
+    return scannedDevice?.type === "die" ? scannedDevice : undefined;
   },
 
   findCharger(id: string | number): ScannedCharger | undefined {

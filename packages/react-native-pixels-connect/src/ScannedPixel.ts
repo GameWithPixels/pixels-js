@@ -13,7 +13,7 @@ import type { PixelInfo } from "@systemic-games/pixels-core-connect";
 export type ScannedPixel = PixelInfo &
   Readonly<{
     /** Device type is Pixels die. */
-    type: "pixel";
+    type: "die";
 
     /** Bluetooth MAC address, 48 bits, Not available on iOS. */
     address: number;

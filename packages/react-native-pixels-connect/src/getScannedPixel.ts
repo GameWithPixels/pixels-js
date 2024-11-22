@@ -119,7 +119,7 @@ export function getScannedPixel(
         firmwareDate.getTime()
       );
       const scannedPixel = {
-        type: "pixel" as "pixel",
+        type: "die" as "die",
         systemId,
         pixelId,
         address: peripheral.address,

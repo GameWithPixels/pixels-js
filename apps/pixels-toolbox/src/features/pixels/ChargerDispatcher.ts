@@ -97,7 +97,7 @@ export class ChargerDispatcher
   extends ScannedChargerNotifier<
     ChargerDispatcherMutableProps,
     ChargerDispatcher &
-      Readonly<{ type: "pixel"; address: number; timestamp: Date }>
+      Readonly<{ type: "die"; address: number; timestamp: Date }>
   >
   implements IPixelDispatcher
 {

@@ -116,7 +116,7 @@ function BatchPage() {
   const [scannedDevices, scanDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
   const scannedPixels = React.useMemo(
-    () => scannedDevices.filter((i) => i.type === "pixel"),
+    () => scannedDevices.filter((i) => i.type === "die"),
     [scannedDevices]
   );
   const [pixels, setPixels] = React.useState<Pixel[]>([]);

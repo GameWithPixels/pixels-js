@@ -25,7 +25,7 @@ export function getPixelDispatcher(
 ): PixelDispatcher | undefined {
   // We don't use 'instanceof' as it doesn't work after a fast refresh (RN 74)
   const dispatcher = DeviceDispatcherStatic.instances.get(pixelId);
-  if (dispatcher?.type === "pixel") {
+  if (dispatcher?.type === "die") {
     return dispatcher;
   }
   assert(!dispatcher, "Dispatcher is not of pixel type");

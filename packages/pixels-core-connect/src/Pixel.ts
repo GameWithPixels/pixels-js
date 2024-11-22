@@ -225,7 +225,7 @@ export class Pixel
   private _disposeFunc: () => void;
 
   /** Device type is Pixels die. */
-  readonly type = "pixel";
+  readonly type = "die";
 
   /** Gets the unique id assigned by the system to the Pixel Bluetooth peripheral. */
   get systemId(): string {

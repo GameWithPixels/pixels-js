@@ -56,7 +56,7 @@ function SelectPixel({
   const [scannedDevices, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers();
   const scannedPixels = React.useMemo(
-    () => scannedDevices.filter((i) => i.type === "pixel"),
+    () => scannedDevices.filter((i) => i.type === "die"),
     [scannedDevices]
   );
 
