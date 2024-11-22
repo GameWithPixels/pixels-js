@@ -65,7 +65,10 @@ export default class BleSession extends PixelSession {
       );
     }
     this._device = device;
-    device.name && this._setName(device.name);
+    if (!this.pixelName && device.name) {
+      // Only set the name if it's not already set, as the current name may be more up-to-date because of OS caching
+      this._setName(device.name);
+    }
 
     // Subscribe to disconnect event
     const onConnection = (/*ev: Event*/) => {
@@ -76,8 +79,10 @@ export default class BleSession extends PixelSession {
       //     ? ConnectionEventReasonValues.LinkLoss
       //     : ConnectionEventReasonValues.Timeout;
       // }
-      const name = device.name;
-      name && this._setName(name);
+      if (!this.pixelName && device.name) {
+        // Only set the name if it's not already set, as the current name may be more up-to-date because of OS caching
+        this._setName(device.name);
+      }
       // Notify disconnection
       this._notifyConnectionEvent("disconnected");
     };

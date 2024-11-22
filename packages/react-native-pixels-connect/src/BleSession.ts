@@ -23,7 +23,10 @@ export default class BleSession extends PixelSession {
     const onConnection = (
       ev: CentralEventMap["peripheralConnectionStatus"]
     ) => {
-      this._setName(ev.peripheral.name);
+      if (!this.pixelName) {
+        // Only set the name if it's not already set, as the current name may be more up-to-date because of OS caching
+        this._setName(ev.peripheral.name);
+      }
       this._notifyConnectionEvent(ev.connectionStatus, ev.reason);
     };
     Central.addPeripheralConnectionListener(this.systemId, onConnection);
