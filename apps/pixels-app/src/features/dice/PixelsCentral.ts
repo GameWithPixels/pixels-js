@@ -499,15 +499,17 @@ export class PixelsCentral {
         }
       };
       // Unregister scan list listener when no longer scanning
-      const onScannerStopped = () => {
-        this._scanner.removeListener("onScannerStopped", onScannerStopped);
-        this._scanner.removeListener("onScanListChange", onScanListChange);
-        // Clear old bootloader dice data
-        for (const id of this._bootloaderDice.keys()) {
-          this._notifyNotInBootloader(id);
+      const onScanRequested = (scanRequested: boolean) => {
+        if (!scanRequested) {
+          this._scanner.removeListener("isScanRequested", onScanRequested);
+          this._scanner.removeListener("onScanListChange", onScanListChange);
+          // Clear old bootloader dice data
+          for (const id of this._bootloaderDice.keys()) {
+            this._notifyNotInBootloader(id);
+          }
         }
       };
-      this._scanner.addListener("onScannerStopped", onScannerStopped);
+      this._scanner.addListener("isScanRequested", onScanRequested);
       this._scanner.addListener("onScanListChange", onScanListChange);
     }
     return this._scanner.requestScan();

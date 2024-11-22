@@ -68,7 +68,6 @@ export class ScanStartFailedError extends ScanStartError {
 export type ScanRequesterEventMap = PixelScannerEventMap &
   Readonly<{
     isScanRequested: boolean;
-    onScannerStopped: undefined;
     onScanError: Readonly<{ error: Error }>;
   }>;
 
@@ -196,9 +195,9 @@ export class ScanRequester {
     this._scanMan = new ManagedResource(
       // Take (called every time a scan is requested)
       () => {
+        console.log("[ScanRequester] Scan requested");
         // Subscribe to BLE state changes once
         if (!this._isScanRequested) {
-          console.log("[ScanRequester] Scanner taken");
           this._scanner.addListener("isReady", onReady);
           this._updateScanRequested(true);
         }
@@ -218,17 +217,14 @@ export class ScanRequester {
           // as Android won't accept more than 5 scans per minute
           const stop = () => {
             // Unsubscribe from BLE state changes
-            if (!this._isScanRequested) {
+            if (this._isScanRequested) {
               this._scanner.removeListener("isReady", onReady);
               this._updateScanRequested(false);
             }
             // Stop scanning
-            this._scanner
-              .stopAsync()
-              .finally(() => this._emitEvent("onScannerStopped", undefined))
-              .catch((e) => {
-                console.error(`[ScanRequester] Error stopping scan: ${e}`);
-              });
+            this._scanner.stopAsync().catch((e) => {
+              console.error(`[ScanRequester] Error stopping scan: ${e}`);
+            });
           };
           clearTimeout(stopTimeout);
           if (stopDelay) {
@@ -257,7 +253,7 @@ export class ScanRequester {
     type: K,
     listener: EventReceiver<ScanRequesterEventMap[K]>
   ): void {
-    if (type === "isScanRequested" || type === "onScannerStopped") {
+    if (type === "isScanRequested") {
       this._evEmitter.addListener(type, listener);
     } else if (type === "onScanError") {
       if (this._evEmitter.listenerCount(type) === 0) {
@@ -285,7 +281,7 @@ export class ScanRequester {
     type: K,
     listener: EventReceiver<ScanRequesterEventMap[K]>
   ): void {
-    if (type === "isScanRequested" || type === "onScannerStopped") {
+    if (type === "isScanRequested") {
       this._evEmitter.removeListener(type, listener);
     } else if (type === "onScanError") {
       this._evEmitter.removeListener(type, listener);
@@ -319,10 +315,10 @@ export class ScanRequester {
     }
   }
 
-  private _updateScanRequested(isReq: boolean) {
-    if (this._isScanRequested !== isReq) {
-      this._isScanRequested = isReq;
-      this._emitEvent("isScanRequested", isReq);
+  private _updateScanRequested(requested: boolean) {
+    if (this._isScanRequested !== requested) {
+      this._isScanRequested = requested;
+      this._emitEvent("isScanRequested", requested);
     }
   }
 }
