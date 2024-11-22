@@ -6,7 +6,7 @@ import { ScannedPixel } from "./ScannedPixel";
 const _devicesMap = new Map<
   number, // pixelId
   {
-    dieOrCharger?: ScannedPixel | ScannedCharger;
+    device?: ScannedPixel | ScannedCharger;
     bootloader?: ScannedBootloader;
     legacyService?: boolean;
   }
@@ -26,10 +26,10 @@ export const ScannedDevicesRegistry = {
     const item =
       _devicesMap.get(scannedDevice.pixelId) ??
       createEmptyItem(scannedDevice.pixelId);
-    if (scannedDevice.type === "pixel" || scannedDevice.type === "charger") {
-      item.dieOrCharger = scannedDevice;
-    } else {
+    if (scannedDevice.type === "bootloader") {
       item.bootloader = scannedDevice;
+    } else {
+      item.device = scannedDevice;
     }
     item.legacyService =
       service === undefined ? undefined : service === "legacy";
@@ -38,11 +38,11 @@ export const ScannedDevicesRegistry = {
   find(id: string | number): ScannedDevice | undefined {
     if (typeof id === "number") {
       const item = _devicesMap.get(id);
-      return item?.dieOrCharger ?? item?.bootloader;
+      return item?.device ?? item?.bootloader;
     } else {
       for (const item of _devicesMap.values()) {
-        if (item.dieOrCharger?.systemId === id) {
-          return item.dieOrCharger;
+        if (item.device?.systemId === id) {
+          return item.device;
         } else if (item.bootloader?.systemId === id) {
           return item.bootloader;
         }
@@ -71,7 +71,7 @@ export const ScannedDevicesRegistry = {
       return item?.legacyService;
     } else {
       for (const item of _devicesMap.values()) {
-        if (item.dieOrCharger?.systemId === id) {
+        if (item.device?.systemId === id) {
           return item?.legacyService;
         }
       }

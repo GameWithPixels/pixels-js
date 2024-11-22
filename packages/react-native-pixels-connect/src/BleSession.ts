@@ -14,12 +14,12 @@ import { ScannedDevicesRegistry } from "./ScannedDevicesRegistry";
  * using Web Bluetooth.
  */
 export default class BleSession extends PixelSession {
-  private _isCharger: boolean;
+  readonly type: "die" | "charger";
   private _disposeFunc: () => void;
 
-  constructor(type: "die" | "charger", systemId: string, name?: string) {
+  constructor(type: BleSession["type"], systemId: string, name?: string) {
     super(systemId, name);
-    this._isCharger = type === "charger";
+    this.type = type;
     const onConnection = (
       ev: CentralEventMap["peripheralConnectionStatus"]
     ) => {
@@ -83,13 +83,13 @@ export default class BleSession extends PixelSession {
   }
 
   private getBleUuids(): typeof PixelsBluetoothIds.die {
-    if (this._isCharger) {
-      return PixelsBluetoothIds.charger;
-    } else if (!ScannedDevicesRegistry.hasLegacyService(this.systemId)) {
-      // Default for dice
-      return PixelsBluetoothIds.die;
-    } else {
-      return PixelsBluetoothIds.legacyDie;
+    switch (this.type) {
+      case "die":
+        return !ScannedDevicesRegistry.hasLegacyService(this.systemId)
+          ? PixelsBluetoothIds.die // Default for dice
+          : PixelsBluetoothIds.legacyDie;
+      case "charger":
+        return PixelsBluetoothIds.charger;
     }
   }
 }

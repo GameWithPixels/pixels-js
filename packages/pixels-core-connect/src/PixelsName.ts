@@ -11,67 +11,75 @@ export const PixelsNamePrefixes = {
   },
 } as const;
 
-export function getBootloaderAdvertisedName(
-  pixelId: number,
-  type: "die" | "charger" = "die"
+export function getPixelsBootloaderAdvertisedName(
+  type: keyof typeof PixelsNamePrefixes,
+  pixelId: number
 ): string {
   if (!pixelId) {
     throw new Error("getBootloaderAdvertisedName: got empty Pixel id");
   }
-  return (
-    (type === "die"
-      ? PixelsNamePrefixes.die.bootloader
-      : PixelsNamePrefixes.charger.bootloader) + unsigned32ToHex(pixelId)
-  );
+  const prefix = PixelsNamePrefixes[type].bootloader;
+  if (!prefix) {
+    throw new Error("isPixelDeviceName: unknown Pixels device type");
+  }
+  return prefix + unsigned32ToHex(pixelId);
 }
 
-export function isPixelBootloaderName(
-  name: string,
-  type: "die" | "charger" = "die"
+function isPixelsName(name: string, prefix: string): boolean {
+  return name.length === prefix.length + 8 && name.startsWith(prefix);
+}
+
+export function isPixelsBootloaderName(
+  type: keyof typeof PixelsNamePrefixes,
+  name: string
 ): boolean {
-  return (
-    name.length === 11 &&
-    name.startsWith(
-      type === "die"
-        ? PixelsNamePrefixes.die.bootloader
-        : PixelsNamePrefixes.charger.bootloader
-    )
-  );
+  const prefix = PixelsNamePrefixes[type].bootloader;
+  if (!prefix) {
+    throw new Error("isPixelDeviceName: unknown Pixels device type");
+  }
+  return isPixelsName(name, prefix);
 }
 
-export function isPixelDeviceName(
-  name: string,
-  type: "die" | "charger" = "die"
+export function isPixelsDeviceName(
+  type: keyof typeof PixelsNamePrefixes,
+  name: string
 ): boolean {
-  return type === "die"
-    ? name.length === 13 && name.startsWith(PixelsNamePrefixes.die.default)
-    : name.length === 15 && name.startsWith(PixelsNamePrefixes.charger.default);
+  const prefix = PixelsNamePrefixes[type].default;
+  if (!prefix) {
+    throw new Error("isPixelDeviceName: unknown Pixels device type");
+  }
+  return isPixelsName(name, prefix);
 }
 
-export function getDefaultPixelDeviceName(
-  pixelId: number,
-  type: "die" | "charger" = "die"
+export function getDefaultPixelsDeviceName(
+  type: keyof typeof PixelsNamePrefixes,
+  pixelId: number
 ): string {
   if (!pixelId) {
     throw new Error("getDefaultPixelName: got empty Pixel id");
   }
-  return (
-    (type === "die"
-      ? PixelsNamePrefixes.die.default
-      : PixelsNamePrefixes.charger.default) + unsigned32ToHex(pixelId)
-  );
+  const prefix = PixelsNamePrefixes[type].default;
+  if (!prefix) {
+    throw new Error("getDefaultPixelName: unknown Pixels device type");
+  }
+  return prefix + unsigned32ToHex(pixelId);
+}
+
+function getPixelId(name: string, prefix: string): number | undefined {
+  if (isPixelsName(name, prefix)) {
+    return parseInt(name.slice(prefix.length), 16);
+  }
 }
 
 export function getPixelIdFromName(name: string): number | undefined {
-  if (
-    name.length === 11 &&
-    (isPixelBootloaderName(name, "die") ||
-      isPixelBootloaderName(name, "charger"))
-  ) {
-    return parseInt(name.slice(3), 16);
-  } else if (isPixelDeviceName("die")) {
-    return parseInt(name.slice(5), 16);
-  } else if (isPixelDeviceName("charger")) {
-    return parseInt(name.slice(7), 16);
+  for (const prefixes of Object.values(PixelsNamePrefixes)) {
+    const blId = getPixelId(name, prefixes.bootloader);
+    if (blId !== undefined) {
+      return blId;
+    }
+    const devId = getPixelId(name, prefixes.default);
+    if (devId !== undefined) {
+      return devId;
+    }
   }
 }

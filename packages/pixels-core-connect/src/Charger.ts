@@ -2,7 +2,6 @@ import {
   AnimConstants,
   Color,
   Color32Utils,
-  DiceUtils,
   PixelColorway,
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
@@ -11,7 +10,6 @@ import {
   EventReceiver,
   Mutable,
   safeAssign,
-  unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 
 import {
@@ -39,6 +37,7 @@ import { PixelInfo } from "./PixelInfo";
 import { PixelMessage } from "./PixelMessage";
 import { PixelRollState } from "./PixelRollState";
 import { PixelSession } from "./PixelSession";
+import { getDefaultPixelsDeviceName } from "./PixelsName";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
 import {
   PixelConnectError,
@@ -222,10 +221,6 @@ export class Charger
       currentFace: 0,
       currentFaceIndex: 0,
     };
-    if (this._info.ledCount && this._info.dieType === "unknown") {
-      // Try to guess the die type if we got "unknown" from the info
-      this._info.dieType = DiceUtils.estimateDieType(this._info.ledCount);
-    }
     this._versions = {
       firmwareVersion: 0,
       settingsVersion: 0,
@@ -264,7 +259,9 @@ export class Charger
     // Reset profile hash & die name on "clear settings" and "program default" ack
     const resetListener = () => {
       // Reset name
-      this._updateName("PxlLcc" + unsigned32ToHex(this._info.pixelId));
+      this._updateName(
+        getDefaultPixelsDeviceName("charger", this._info.pixelId)
+      );
     };
     this.addMessageListener("programDefaultParametersFinished", resetListener);
 

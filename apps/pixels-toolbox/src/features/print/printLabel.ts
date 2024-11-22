@@ -1,6 +1,6 @@
 import { assert } from "@systemic-games/pixels-core-utils";
 import {
-  getBootloaderAdvertisedName,
+  getPixelsBootloaderAdvertisedName,
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 import { printHtmlToZpl } from "@systemic-games/react-native-zpl-print";
@@ -93,7 +93,7 @@ export async function printDieBoxLabelAsync(
     (product) =>
       prepareLabel({
         ...product,
-        deviceId: getBootloaderAdvertisedName(dieInfo.pixelId),
+        deviceId: getPixelsBootloaderAdvertisedName("die", dieInfo.pixelId),
         deviceName: dieInfo.name,
         dieImageFilename: getImageFilename(dieInfo.type),
       }),

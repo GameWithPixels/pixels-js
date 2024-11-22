@@ -44,13 +44,13 @@ export const PixelsBluetoothIds = {
 
   /** Service and characteristic UUIDs of a Pixels charger. */
   charger: {
-    /** Large charging case (LCC) service UUID. */
+    /** Charger service UUID. */
     service: "a8b90001-8d5e-4411-bd7a-cb49359d1f05",
 
-    /** Large charging case (LCC) notify characteristic UUID. */
+    /** Charger notify characteristic UUID. */
     notifyCharacteristic: "a8b90002-8d5e-4411-bd7a-cb49359d1f05",
 
-    /** Large charging case (LCC) write characteristic UUID. */
+    /** Charger write characteristic UUID. */
     writeCharacteristic: "a8b90003-8d5e-4411-bd7a-cb49359d1f05",
   } as Readonly<PixelsConnectUuids>,
 

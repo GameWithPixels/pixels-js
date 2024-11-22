@@ -24,7 +24,7 @@ export function deserializeChunkedMessage<
       const dataSize = dataView.getUint8(offset);
       if (warn && value.chunkSize > 0 && dataSize !== value.chunkSize) {
         warn(
-          `Received IAmADie '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
+          `In message of type ${msg.type}, got '${key}' chunk of size ${dataSize} but expected ${value.chunkSize} bytes`
         );
       }
       deserialize(

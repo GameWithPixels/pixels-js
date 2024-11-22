@@ -59,7 +59,7 @@ import { PixelInfo } from "./PixelInfo";
 import { PixelMessage } from "./PixelMessage";
 import { PixelRollState, PixelRollStateValues } from "./PixelRollState";
 import { PixelSession } from "./PixelSession";
-import { getDefaultPixelDeviceName } from "./PixelsName";
+import { getDefaultPixelsDeviceName } from "./PixelsName";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
 import {
   PixelConnectError,
@@ -428,7 +428,7 @@ export class Pixel
       // Reset profile hash
       this._updateHash(Constants.factoryProfileHashes[this.dieType] ?? 0);
       // Reset name
-      this._updateName(getDefaultPixelDeviceName(this._info.pixelId));
+      this._updateName(getDefaultPixelsDeviceName("die", this._info.pixelId));
     };
     this.addMessageListener("clearSettingsAck", resetListener);
     this.addMessageListener("programDefaultParametersFinished", resetListener);

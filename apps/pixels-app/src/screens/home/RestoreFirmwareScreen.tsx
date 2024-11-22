@@ -10,7 +10,7 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
-  getDefaultPixelDeviceName,
+  getDefaultPixelsDeviceName,
   ScannedBootloaderNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -163,7 +163,7 @@ function BootloaderItem({ notifier }: { notifier: ScannedBootloaderNotifier }) {
     >
       <View>
         <Text variant="bodyLarge">
-          {getDefaultPixelDeviceName(notifier.pixelId)}
+          {getDefaultPixelsDeviceName("die", notifier.pixelId)}
         </Text>
         <Text>
           {dfuState ? (

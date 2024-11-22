@@ -1,6 +1,6 @@
 import {
   getPixelIdFromName,
-  isPixelBootloaderName,
+  isPixelsBootloaderName,
   PixelsBluetoothIds,
   toFullUuid,
 } from "@systemic-games/pixels-core-connect";
@@ -27,7 +27,7 @@ export function getScannedBootloader(
   if (pixelId) {
     const scannedBootloader = {
       type: "bootloader",
-      deviceType: isPixelBootloaderName(name, "charger") ? "charger" : "die",
+      deviceType: isPixelsBootloaderName("charger", name) ? "charger" : "die",
       systemId: peripheral.systemId,
       name,
       pixelId,
