@@ -9,7 +9,6 @@ import {
   EditAnimationKeyframed,
   PrebuildAnimations,
   PrebuildAnimationsExt,
-  PrebuildProfilesNames,
 } from "@systemic-games/pixels-edit-animation";
 import {
   ChargerMessages,
@@ -66,6 +65,7 @@ import { requestUserFileAsync } from "~/features/files/requestUserFileAsync";
 import ChargerDispatcher from "~/features/pixels/ChargerDispatcher";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { TelemetryData } from "~/features/pixels/TelemetryData";
+import { ToolboxProfiles } from "~/features/pixels/profiles";
 import { shareFileAsync } from "~/features/shareFileAsync";
 import { useVisibility } from "~/features/useVisibility";
 import { useAppBackgroundState } from "~/hooks/useAppBackgroundState";
@@ -506,9 +506,15 @@ function BottomButtons({
   } = useVisibility();
 
   const {
-    visible: setDieColorwayMenuVisible,
-    show: showSetDieColorwayMenu,
-    hide: hideSetDieColorwayMenu,
+    visible: setColorwayMenuVisible,
+    show: showSetColorwayMenu,
+    hide: hideSetColorwayMenu,
+  } = useVisibility();
+
+  const {
+    visible: setRunModeMenuVisible,
+    show: showSetRunModeMenu,
+    hide: hideSetRunModeMenu,
   } = useVisibility();
 
   const { t } = useTranslation();
@@ -556,7 +562,7 @@ function BottomButtons({
                   </Button>
                 }
               >
-                {PrebuildProfilesNames.map((profile) => (
+                {ToolboxProfiles.map((profile) => (
                   <Menu.Item
                     key={profile}
                     title={profile}
@@ -599,6 +605,27 @@ function BottomButtons({
                 ))}
               </Menu>
               <Menu
+                visible={setRunModeMenuVisible}
+                onDismiss={hideSetRunModeMenu}
+                anchorPosition="top"
+                anchor={
+                  <Button onPress={showSetRunModeMenu}>
+                    {t("setRunMode")}
+                  </Button>
+                }
+              >
+                {["user", "validation", "attract"].map((runMode, i) => (
+                  <Menu.Item
+                    key={runMode}
+                    title={runMode}
+                    onPress={() => {
+                      pd.dispatch("setRunMode", i);
+                      hideSetRunModeMenu();
+                    }}
+                  />
+                ))}
+              </Menu>
+              <Menu
                 visible={setDieTypeMenuVisible}
                 onDismiss={hideSetDieTypeMenu}
                 anchorPosition="top"
@@ -622,12 +649,12 @@ function BottomButtons({
                   ))}
               </Menu>
               <Menu
-                visible={setDieColorwayMenuVisible}
-                onDismiss={hideSetDieColorwayMenu}
+                visible={setColorwayMenuVisible}
+                onDismiss={hideSetColorwayMenu}
                 anchorPosition="top"
                 anchor={
-                  <Button onPress={showSetDieColorwayMenu}>
-                    {t("setDieColorway")}
+                  <Button onPress={showSetColorwayMenu}>
+                    {t("setColorway")}
                   </Button>
                 }
               >
@@ -639,7 +666,7 @@ function BottomButtons({
                       title={colorway}
                       onPress={() => {
                         pd.dispatch("setColorway", colorway);
-                        hideSetDieColorwayMenu();
+                        hideSetColorwayMenu();
                       }}
                     />
                   ))}
@@ -653,7 +680,6 @@ function BottomButtons({
               >
                 {t("playKeyframes")}
               </Button>
-              <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
             </>
           )}
           {!isCharger && (
@@ -694,7 +720,6 @@ function BottomButtons({
               <Button onPress={() => pd.dispatch("calibrate")}>
                 {t("calibrate")}
               </Button>
-              <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
               <Button onPress={() => pd.dispatch("exitValidation")}>
                 {t("exitValidationMode")}
               </Button>
@@ -706,6 +731,8 @@ function BottomButtons({
               </Button>
             </>
           )}
+          <Button onPress={onExportTelemetry}>{t("saveTelemetry")}</Button>
+          <Button onPress={onShowTelemetry}>{t("telemetryGraph")}</Button>
           <Button onPress={onExportMessages}>{t("exportLogs")}</Button>
         </BaseVStack>
       </BaseHStack>
@@ -910,20 +937,20 @@ export function PixelDetails({
         </Card.Content>
       </Card>
       <View style={AppStyles.mv3} />
-      <Card>
-        <Card.Content>
-          {pd.type === "die" ? (
-            <>
-              <BaseInfo pixel={pd} />
-              <TelemetryInfo pixel={pixel} />
-            </>
-          ) : (
-            <ChargerInfo charger={pd} />
-          )}
-        </Card.Content>
-      </Card>
-      <View style={AppStyles.mv3} />
       <ScrollView>
+        <Card>
+          <Card.Content>
+            {pd.type === "die" ? (
+              <>
+                <BaseInfo pixel={pd} />
+                <TelemetryInfo pixel={pixel} />
+              </>
+            ) : (
+              <ChargerInfo charger={pd} />
+            )}
+          </Card.Content>
+        </Card>
+        <View style={AppStyles.mv3} />
         <Card>
           <Card.Content>
             {lastError ? (
