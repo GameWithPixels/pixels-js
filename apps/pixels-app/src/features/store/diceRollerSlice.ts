@@ -55,28 +55,27 @@ const DiceRollerSlice = createSlice({
     },
 
     addRollerEntry(state, action: PayloadAction<Omit<DatedRoll, "timestamp">>) {
-      log("addRollerEntry");
       if (!state.paused) {
+        log("addRollerEntry");
         const { allRolls, visibleRolls } = state;
         const lastTimestamp =
-          allRolls.entities[allRolls.ids.at(-1) ?? -1]?.timestamp;
-        const timestamp = Math.max(
-          Date.now(),
-          lastTimestamp ? lastTimestamp + 1 : 0
-        );
+          allRolls.entities[allRolls.ids.at(-1) ?? -1]?.timestamp ?? 0;
+        const timestamp = Math.max(Date.now(), lastTimestamp + 1);
         // Keep 100 items max
-        const oldest = allRolls.ids.at(-1) as number;
-        if (oldest && allRolls.ids.length > 100) {
+        if (allRolls.ids.length >= 100) {
+          const oldest = allRolls.ids[0];
           datedRollsAdapter.removeOne(allRolls, oldest);
-          if (visibleRolls.includes(oldest)) {
-            visibleRolls.splice(visibleRolls.indexOf(oldest), 1);
+          const i = visibleRolls.indexOf(oldest as number);
+          if (i >= 0) {
+            visibleRolls.splice(i, 1);
           }
         }
+        const { pixelId, dieType, value } = action.payload;
         datedRollsAdapter.addOne(allRolls, {
           timestamp,
-          pixelId: action.payload.pixelId,
-          dieType: action.payload.dieType,
-          value: action.payload.value,
+          pixelId,
+          dieType,
+          value,
         });
         visibleRolls.push(timestamp);
       }
