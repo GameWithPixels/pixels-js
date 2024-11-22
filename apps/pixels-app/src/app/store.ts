@@ -49,6 +49,7 @@ import profilesReducer, {
 } from "~/features/store/library/profilesSlice";
 import audioClipsReducer from "~/features/store/libraryAssets/audioClipsSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
+import pairedMPCsReducer from "~/features/store/pairedMPCsSlice";
 
 const MyStorage = !__DEV__
   ? AsyncStorage
@@ -105,6 +106,7 @@ const rootReducer = combineReducers({
   appSettings: persist("appSettings", appSettingsReducer),
   // Dice data
   pairedDice: persist("pairedDice", pairedDiceReducer),
+  pairedMPCs: persist("pairedMPCs", pairedMPCsReducer),
   diceStats: persist("diceStats", diceStatsReducer),
   // Library data
   library: combineReducers({

@@ -194,7 +194,7 @@ export const AppThemes = {
 export function backgroundImageFromColor(color: string): number {
   switch (color) {
     default:
-      console.log(`backgroundImageFromColor: Unknown primary color ${color}`);
+      console.warn(`backgroundImageFromColor: Unknown primary color ${color}`);
     // eslint-disable-next-line no-fallthrough
     case BlueDarkTheme.colors.primary:
       return require("#/backgrounds/blue.png");

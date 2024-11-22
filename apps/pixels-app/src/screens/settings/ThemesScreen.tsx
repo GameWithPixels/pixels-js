@@ -128,6 +128,8 @@ function ThemesPage({
         <ThemePicker screen="profiles" />
         <Divider style={{ marginVertical: 10 }} />
         <ThemePicker screen="settings" />
+        <Divider style={{ marginVertical: 10 }} />
+        <ThemePicker screen="demo" />
       </ScrollView>
     </View>
   );

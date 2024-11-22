@@ -346,18 +346,21 @@ function RollerPage({
     (state) => state.appSettings.rollerCardsSizeRatio
   );
   const allRolls = useAppSelector((state) => state.diceRoller.allRolls);
-  const rolls = useAppSelector((state) => state.diceRoller.visibleRolls);
+  const rollsTimestamps = useAppSelector(
+    (state) => state.diceRoller.visibleRolls
+  );
   const refs = React.useRef<
     Map<number, React.RefObject<AnimatedRollCardHandle>>
   >(new Map());
   React.useEffect(() => {
     // Clear old refs
-    for (const i of refs.current.keys()) {
-      if (!rolls.includes(i)) {
+    const timestamps = Array.from(refs.current.keys());
+    for (const i of timestamps) {
+      if (!rollsTimestamps.includes(i)) {
         refs.current.delete(i);
       }
     }
-  }, [rolls]);
+  }, [rollsTimestamps]);
 
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   // Scroll to bottom when a new item is added
@@ -402,11 +405,14 @@ function RollerPage({
         contentContainerStyle={{ gap: 10, overflow: "visible" }}
         removeClippedSubviews={false}
       >
-        <Banner visible={!rolls.length} style={{ marginHorizontal: 10 }}>
+        <Banner
+          visible={!rollsTimestamps.length}
+          style={{ marginHorizontal: 10 }}
+        >
           Roll any connected die to get started!
         </Banner>
         <View style={{ overflow: "visible" }}>
-          {rolls.map((k, i) => {
+          {rollsTimestamps.map((k, i) => {
             const roll = allRolls.entities[k];
             let ref = refs.current.get(k);
             if (!ref) {

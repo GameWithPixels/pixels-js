@@ -8,6 +8,7 @@ export const AppScreensNames: Record<RootScreenName, string> = {
   profiles: "Profiles",
   animations: "Animations",
   settings: "Settings",
+  demo: "Demo",
   onboarding: "Onboarding",
 } as const;
 

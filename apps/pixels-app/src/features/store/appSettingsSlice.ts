@@ -64,6 +64,7 @@ const initialState: AppSettingsState = {
     profiles: "purple",
     animations: "yellow",
     settings: "orange",
+    demo: "yellow",
   },
   showAdvancedSettings: false,
   debugMode: false,

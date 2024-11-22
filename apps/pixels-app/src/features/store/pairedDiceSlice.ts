@@ -18,10 +18,9 @@ const initialState: PairedDiceState = {
 
 function log(
   action:
+    | "resetPairedDice"
     | "addPairedDie"
     | "removePairedDie"
-    | "resetPairedDice"
-    | "resetPairedDice"
     | "updatePairedDieName"
     | "updatePairedDieFirmwareTimestamp"
     | "updatePairedDieProfileHash"
@@ -159,9 +158,9 @@ const PairedDiceSlice = createSlice({
 });
 
 export const {
+  resetPairedDice,
   addPairedDie,
   removePairedDie,
-  resetPairedDice,
   updatePairedDieName,
   updatePairedDieFirmwareTimestamp,
   updatePairedDieProfileHash,

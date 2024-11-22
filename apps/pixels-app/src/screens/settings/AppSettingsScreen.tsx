@@ -29,6 +29,7 @@ import {
   setShowAdvancedSettings,
 } from "~/features/store";
 import { resetDiceRoller } from "~/features/store/diceRollerSlice";
+import { resetPairedMPCs } from "~/features/store/pairedMPCsSlice";
 import { useConfirmActionSheet } from "~/hooks";
 
 function AppSettingsPage({
@@ -55,6 +56,7 @@ function AppSettingsPage({
       );
       !debugMode && appDispatch(resetAppSettings());
       appDispatch(resetPairedDice());
+      appDispatch(resetPairedMPCs());
       appDispatch(resetDiceStats());
       appDispatch(resetDiceRoller());
       appDispatch(resetAppTransientState());

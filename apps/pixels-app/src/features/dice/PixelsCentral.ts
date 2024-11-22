@@ -16,6 +16,7 @@ import {
   PixelMutableProps,
   PixelStatusEvent,
   ScannedBootloaderNotifier,
+  ScannedMPCNotifier,
   ScannedPixel,
   ScannedPixelNotifier,
   ScanStatus,
@@ -178,6 +179,12 @@ export type PixelsCentralEventMap = Readonly<{
     pixelId: number;
     disconnectId?: number;
   }>; // Failed to connect Pixel because connection limit was reached
+
+  // MPC
+  onMPCScanned: Readonly<{
+    status: "scanned" | "lost";
+    notifier: ScannedMPCNotifier;
+  }>;
 
   // Data transfer events
   onDataTransfer: Readonly<{ pixelId: number } & PixelEventMap["dataTransfer"]>;
@@ -494,6 +501,31 @@ export class PixelsCentral {
               }
             } else {
               this._notifyNotInBootloader(op.item.pixelId);
+            }
+          } else if (op.item.type === "mpc") {
+            const { pixelId } = op.item;
+            const scanStatus = op.status;
+            switch (scanStatus) {
+              case "scanned": {
+                // Always update notifier
+                const notifier = ScannedMPCNotifier.getInstance(op.item);
+                this._emitEvent("onMPCScanned", {
+                  status: "scanned",
+                  notifier,
+                });
+                break;
+              }
+              case "lost": {
+                const notifier = ScannedMPCNotifier.findInstance(pixelId);
+                notifier &&
+                  this._emitEvent("onMPCScanned", {
+                    status: "lost",
+                    notifier,
+                  });
+                break;
+              }
+              default:
+                assertNever(scanStatus);
             }
           }
         }

@@ -19,6 +19,7 @@ export type BottomTabParamList = {
   profiles: undefined;
   animations: undefined;
   settings: undefined;
+  demo: undefined;
 };
 
 export type RootScreenName = keyof BottomTabParamList;
@@ -39,6 +40,8 @@ export type AnimationsStackProps = NativeStackScreenProps<
   BottomTabParamList,
   "animations"
 >;
+
+export type DemoStackProps = NativeStackScreenProps<BottomTabParamList, "demo">;
 
 export type SettingsStackProps = NativeStackScreenProps<
   BottomTabParamList,
@@ -195,6 +198,22 @@ export type EditAnimationScreenProps = NativeStackScreenProps<
 export type PickColorDesignScreenProps = NativeStackScreenProps<
   AnimationsStackParamList,
   "pickColorDesign"
+>;
+
+// Demo screens
+export type DemoStackParamList = {
+  mpcsList: undefined;
+  mpcDetails: { pixelId: number };
+};
+
+export type MPCsListScreenProps = NativeStackScreenProps<
+  DemoStackParamList,
+  "mpcsList"
+>;
+
+export type MPCDetailsScreenProps = NativeStackScreenProps<
+  DemoStackParamList,
+  "mpcDetails"
 >;
 
 // Settings screens

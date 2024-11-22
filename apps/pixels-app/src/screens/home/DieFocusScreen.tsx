@@ -26,9 +26,8 @@ function useUnpairActionSheet(
 ): () => void {
   const appDispatch = useAppDispatch();
   const { showActionSheetWithOptions } = useActionSheet();
-
   const { colors } = useTheme();
-  const unpairDieWithConfirmation = React.useCallback(() => {
+  return React.useCallback(() => {
     showActionSheetWithOptions(
       {
         options: [`Unpair ${pairedDie?.name}`, "Keep Die"],
@@ -46,17 +45,7 @@ function useUnpairActionSheet(
         }
       }
     );
-  }, [
-    appDispatch,
-    colors.background,
-    colors.error,
-    colors.onBackground,
-    navigation,
-    pairedDie,
-    showActionSheetWithOptions,
-  ]);
-
-  return unpairDieWithConfirmation;
+  }, [appDispatch, colors, navigation, pairedDie, showActionSheetWithOptions]);
 }
 
 function DieFocusPage({
@@ -132,11 +121,12 @@ export function DieFocusScreen({
   navigation,
 }: DieFocusScreenProps) {
   const pairedDie = useSetSelectedPairedDie(pixelId);
-  if (!pairedDie) {
-    navigation.goBack();
-    return null;
-  }
-  return (
+  React.useEffect(() => {
+    if (!pairedDie) {
+      navigation.goBack();
+    }
+  }, [pairedDie, navigation]);
+  return !pairedDie ? null : (
     <AppBackground>
       <DieFocusPage pairedDie={pairedDie} navigation={navigation} />
       <SelectedPixelTransferProgressBar />

@@ -24,11 +24,15 @@ export interface AppTransientState {
       [dieId: number]: number;
     };
   };
+  demo: {
+    selectedMPCId?: number;
+  };
 }
 
 const initialState: AppTransientState = {
   update: { gotResponse: false },
   dice: { transferProgress: {} },
+  demo: {},
 };
 
 function log(

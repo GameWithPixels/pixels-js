@@ -528,11 +528,12 @@ export function RollsHistoryScreen({
   navigation,
 }: RollsHistoryScreenProps) {
   const pairedDie = useSetSelectedPairedDie(pixelId);
-  if (!pairedDie) {
-    navigation.goBack();
-    return null;
-  }
-  return (
+  React.useEffect(() => {
+    if (!pairedDie) {
+      navigation.goBack();
+    }
+  }, [pairedDie, navigation]);
+  return !pairedDie ? null : (
     <AppBackground>
       <RollsHistoryPage pairedDie={pairedDie} navigation={navigation} />
       <SelectedPixelTransferProgressBar />

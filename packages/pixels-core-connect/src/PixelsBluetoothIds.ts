@@ -54,6 +54,18 @@ export const PixelsBluetoothIds = {
     writeCharacteristic: "a8b90003-8d5e-4411-bd7a-cb49359d1f05",
   } as Readonly<PixelsConnectUuids>,
 
+  /** Service and characteristic UUIDs of a Multi Purpose Controller (MPC). */
+  mpc: {
+    /** Multi Purpose Controller (MPC) service UUID. */
+    service: "20700001-eb78-4002-80ca-388a6c7f4620",
+
+    /** Multi Purpose Controller (MPC) notify characteristic UUID. */
+    notifyCharacteristic: "20700002-eb78-4002-80ca-388a6c7f4620",
+
+    /** Multi Purpose Controller (MPC) write characteristic UUID. */
+    writeCharacteristic: "20700003-eb78-4002-80ca-388a6c7f4620",
+  } as Readonly<PixelsConnectUuids>,
+
   /** Nordic's DFU service short UUID. */
   dfuService: 0xfe59,
 
