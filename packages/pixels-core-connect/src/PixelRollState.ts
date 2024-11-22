@@ -22,7 +22,7 @@ export const PixelRollStateValues = {
   crooked: enumValue(),
 
   /**
-   * The dis is not moving and, as far as we know, it has either
+   * The die is not moving and, as far as we know, it has either
    * never moved or it didn't move enough to trigger a roll.
    */
   onFace: enumValue(),
