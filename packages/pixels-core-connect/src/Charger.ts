@@ -562,8 +562,6 @@ export class Charger
       (iAmALCC as LegacyIAmALCC).pixelId ??
       (iAmALCC as IAmALCC).chargerInfo?.pixelId;
     if (!pixelId) {
-      const ledCount = (iAmALCC as LegacyIAmALCC).ledCount;
-      console.log("ledCount=" + ledCount);
       // This should never happen
       throw new PixelConnectError(this, "Got an empty Pixel id");
     }
