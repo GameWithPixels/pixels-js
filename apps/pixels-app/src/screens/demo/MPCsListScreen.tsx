@@ -130,10 +130,11 @@ function MPCsListPage({
               </OutlineButton>
               <OutlineButton
                 onPress={() => {
-                  const referenceTime = 10000;
-                  const targetTime = Date.now() + referenceTime;
+                  const referenceTime = 1000; // Arbitrary reference time
+                  const maxDelayTime = 100; // Expected max delay before we've messages all controllers
+                  const targetTime = Date.now() + maxDelayTime;
                   forEachMPC(pairedMPCs, (mpc) =>
-                    mpc.sync(targetTime - Date.now(), referenceTime)
+                    mpc.sync(targetTime, referenceTime)
                   );
                 }}
               >
