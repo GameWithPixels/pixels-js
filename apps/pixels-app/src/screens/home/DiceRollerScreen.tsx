@@ -25,8 +25,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { DiceRollerScreenProps } from "~/app/navigation";
+import { AppStore } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
@@ -37,15 +38,139 @@ import {
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
+import { GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { AvailableDieTypes } from "~/features/dice/AvailableDieTypes";
 import {
+  calculateFinalResult,
+  RollResults,
+  tallyRolls,
+  Token,
+  tokenize,
+} from "~/features/dice-notation";
+import { defaultPlugins } from "~/features/dice-notation/createDiceRoller";
+import { SIMPLE_DIE_ROLL } from "~/features/dice-notation/rules/simpleDieRoll";
+import { CoreTokenTypes } from "~/features/dice-notation/tokens";
+import {
+  getDefaultRollConfigOptions,
+  getFinalRollConfig,
+  RollConfig,
+} from "~/features/dice-notation/util/rollConfig";
+import {
   addRollerEntry,
+  DatedRoll,
   hideAllRollerEntries,
   hideRollerEntry,
   setRollerCardsSizeRatio,
   setRollerPaused,
 } from "~/features/store";
+
+function _rollDice(tokens: Token[], rollConfig: RollConfig): RollResults {
+  const plugins = defaultPlugins;
+  return tokens.map((token) => {
+    switch (token.type) {
+      case CoreTokenTypes.CloseParen:
+      case CoreTokenTypes.OpenParen:
+      case CoreTokenTypes.Operator:
+        return null;
+      case CoreTokenTypes.DiceRoll:
+        return plugins[token.detailType].roll(token.detail, rollConfig);
+    }
+  });
+}
+
+type DieTypeRolls = (PixelDieType | number)[] | null;
+
+function getPixelsDiceList(
+  tokens: Token[],
+  rollConfig: RollConfig
+): DieTypeRolls[] {
+  const plugins = defaultPlugins;
+  return tokens.map((token) =>
+    token.type !== CoreTokenTypes.DiceRoll
+      ? null
+      : token.detailType !== SIMPLE_DIE_ROLL
+        ? plugins[token.detailType].roll(token.detail, rollConfig)
+        : // Overriding the roll function to estimate the die type
+          Array(token.detail.count).fill(
+            DiceUtils.estimateDieType(token.detail.numSides)
+          )
+  );
+}
+
+function waitForRollsAsync(
+  store: AppStore,
+  diceList: DieTypeRolls[]
+): Promise<RollResults> {
+  return new Promise<RollResults>((resolve) => {
+    const ourRolls: DatedRoll[] = [];
+    let lastUsedRoll = store.getState().diceRoller.allRolls.ids.at(-1);
+    const unsubscribe = store.subscribe(() => {
+      const { allRolls: diceRollerRolls } = store.getState().diceRoller;
+      // Defer computation to not slow down the UI
+      setTimeout(() => {
+        const lastRoll = diceRollerRolls.ids.at(-1);
+        const roll = diceRollerRolls.entities[lastRoll ?? -1];
+        if (roll && (!lastUsedRoll || lastRoll !== lastUsedRoll)) {
+          console.log("Got new roll:" + JSON.stringify(roll));
+          lastUsedRoll = lastRoll;
+          ourRolls.push(roll);
+          // Build roll results
+          const ourRollsCopy = [...ourRolls];
+          const results: RollResults = [];
+          for (const arr of diceList) {
+            if (arr) {
+              const rolls: number[] = [];
+              results.push(rolls);
+              for (const dieType of arr) {
+                if (typeof dieType === "number") {
+                  // We got a number, use it as the roll
+                  rolls.push(dieType);
+                  continue;
+                }
+                const index = ourRollsCopy.findIndex(
+                  (r) => r.dieType === dieType
+                );
+                if (index >= 0) {
+                  rolls.push(ourRollsCopy[index].value);
+                  ourRollsCopy.splice(index, 1);
+                } else {
+                  // Abort and wait for the next roll
+                  console.log("Waiting for roll of type " + dieType);
+                  return;
+                }
+              }
+            } else {
+              results.push(null);
+            }
+          }
+          unsubscribe();
+          resolve(results);
+        }
+      }, 100);
+    });
+  });
+}
+
+async function testDiceNotationAsync(
+  store: AppStore,
+  formula: string,
+  setExpectedRolls: (diceType: PixelDieType[]) => void
+): Promise<number> {
+  const rollConfig = getFinalRollConfig(getDefaultRollConfigOptions());
+  const tokens = tokenize(formula);
+  console.log(`Tokenized ${formula}:` + JSON.stringify(tokens, null, 2));
+  const diceList = getPixelsDiceList(tokens, rollConfig);
+  console.log(`Dice list: ${diceList.join(", ")}`);
+  setExpectedRolls(diceList.flat().filter((x) => !!x) as PixelDieType[]);
+  const rolls = await waitForRollsAsync(store, diceList);
+  // const rolls = rollDice(tokens, rollConfig);
+  console.log(`Rolled ${formula}: ${JSON.stringify(rolls, null, 2)}`);
+  const rollTotals = tallyRolls(tokens, rolls, rollConfig);
+  const result = calculateFinalResult(tokens, rollTotals);
+  console.log(`Result=${result}`);
+  return result;
+}
 
 interface AnimatedRollCardHandle {
   overrideWidth: (w: number) => void;
@@ -332,6 +457,7 @@ function OptionsMenu({
           }}
         />
       ))}
+      <Divider />
     </HeaderMenuButton>
   );
 }
@@ -341,6 +467,7 @@ function RollerPage({
 }: {
   navigation: DiceRollerScreenProps["navigation"];
 }) {
+  const store = useAppStore();
   const appDispatch = useAppDispatch();
   const sizeRatio = useAppSelector(
     (state) => state.appSettings.rollerCardsSizeRatio
@@ -361,6 +488,9 @@ function RollerPage({
       }
     }
   }, [rollsTimestamps]);
+
+  const formula = "2d20+3";
+  const [result, setResult] = React.useState<string>();
 
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   // Scroll to bottom when a new item is added
@@ -399,6 +529,18 @@ function RollerPage({
       >
         Roller
       </PageHeader>
+      <GradientButton
+        style={{ margin: 10 }}
+        onPress={() => {
+          testDiceNotationAsync(store, formula, (dieTypes) =>
+            setResult("Expected rolls: " + dieTypes.join(", "))
+          )
+            .then((r) => setResult(r.toString()))
+            .catch((e) => setResult(e.toString()));
+        }}
+      >
+        {result ?? `Test formula: "${formula}"`}
+      </GradientButton>
       <ScrollView
         ref={scrollViewRef}
         contentInsetAdjustmentBehavior="automatic"
