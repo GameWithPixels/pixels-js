@@ -1,5 +1,4 @@
 export const MPCRoles = [
-  "panel",
   "left1",
   "left2",
   "left3",

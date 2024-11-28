@@ -41,7 +41,7 @@ const PairedDiceSlice = createSlice({
       // Assign role
       const role =
         MPCRoles.find((r) => !state.paired.find((d) => d.role === r)) ??
-        "panel";
+        MPCRoles[0];
       const mpc = {
         systemId: payload.systemId,
         pixelId: payload.pixelId,

@@ -2,6 +2,9 @@ import {
   Color,
   ColorUtils,
   DataSet,
+  getMPC,
+  MPC,
+  MPCMutableProps,
   Pixel,
   PixelMutableProps,
   Profiles,
@@ -122,6 +125,247 @@ function programProfileIfNeeded(
   }
 }
 
+function syncMPCs(pixelIds: number[]) {
+  const referenceTime = 1000; // Arbitrary reference time
+  const maxDelayTime = 100; // Expected max delay before we've messages all controllers
+  const targetTime = Date.now() + maxDelayTime;
+  for (const id of pixelIds) {
+    const mpc = getMPC(id);
+    if (mpc?.status === "ready") {
+      mpc
+        .sync(targetTime, referenceTime)
+        .catch((e) => console.warn(`Error syncing MPC ${mpc.name}: ${e}`));
+    }
+  }
+}
+
+function hookToPixel(
+  pixel: Pixel,
+  store: AppStore,
+  central: PixelsCentral
+): () => void {
+  // Die name
+  const onRename = ({ pixelId, name }: PixelMutableProps) => {
+    const pairedDie = pairedDiceSelectors.selectByPixelId(
+      store.getState(),
+      pixelId
+    );
+    if (pairedDie && pairedDie.name !== name) {
+      store.dispatch(updatePairedDieName({ pixelId, name }));
+    }
+  };
+  pixel.addPropertyListener("name", onRename);
+
+  // Show dialog on rename error
+  const onRenameDisposer = central.addOperationStatusListener(
+    pixel.pixelId,
+    "rename",
+    (ev) => {
+      if (ev.status === "failed") {
+        // Show dialog on rename error
+        Alert.alert(
+          "Failed to Rename Die",
+          "An error occurred while renaming the die\n" + String(ev.error),
+          [{ text: "OK", style: "default" }]
+        );
+      }
+    }
+  );
+
+  // Firmware date
+  const onFwDate = ({ pixelId, firmwareDate }: PixelMutableProps) => {
+    const pairedDie = pairedDiceSelectors.selectByPixelId(
+      store.getState(),
+      pixelId
+    );
+    if (pairedDie && pairedDie.firmwareTimestamp !== firmwareDate.getTime()) {
+      store.dispatch(
+        updatePairedDieFirmwareTimestamp({
+          pixelId,
+          timestamp: firmwareDate.getTime(),
+        })
+      );
+    }
+  };
+  pixel.addPropertyListener("firmwareDate", onFwDate);
+
+  // Profile
+  const onProfileHash = ({ pixelId, profileHash }: PixelMutableProps) => {
+    const pairedDie = pairedDiceSelectors.selectByPixelId(
+      store.getState(),
+      pixelId
+    );
+    if (pairedDie) {
+      if (pairedDie.profileHash !== profileHash) {
+        store.dispatch(
+          updatePairedDieProfileHash({
+            pixelId,
+            hash: profileHash,
+          })
+        );
+      }
+      // Update paired die brightness if profile was being programmed
+      // and profile hashes are matching
+      const op = central.getCurrentOperation(pixelId);
+      const brightness =
+        op?.type === "programProfile" && op.dataSet.brightness / 255;
+      if (brightness !== false && pairedDie.brightness !== brightness) {
+        const hash = DataSet.computeHash(op.dataSet.toByteArray());
+        if (profileHash === hash) {
+          store.dispatch(
+            updatePairedDieBrightness({
+              pixelId,
+              brightness,
+            })
+          );
+        }
+      }
+      // Always check if profile needs to be programmed
+      programProfileIfNeeded(
+        { ...pairedDie, profileHash }, // Use the up-to-date profile hash
+        central,
+        store.getState
+      );
+    }
+  };
+  pixel.addPropertyListener("profileHash", onProfileHash);
+  const onProgProfileDisposer = central.addOperationStatusListener(
+    pixel.pixelId,
+    "programProfile",
+    (ev) => {
+      // Update brightness if profile was being programmed
+      if (ev.status === "succeeded") {
+        const pairedDie = pairedDiceSelectors.selectByPixelId(
+          store.getState(),
+          pixel.pixelId
+        );
+        const brightness = ev.operation.dataSet.brightness / 255;
+        if (pairedDie && pairedDie.brightness !== brightness) {
+          store.dispatch(
+            updatePairedDieBrightness({
+              pixelId: pixel.pixelId,
+              brightness,
+            })
+          );
+        }
+      }
+    }
+  );
+
+  // Update name, firmware timestamp and profile hash on connection
+  const onStatus = ({ status }: PixelMutableProps) => {
+    if (status === "ready") {
+      onRename(pixel);
+      onFwDate(pixel);
+      onProfileHash(pixel);
+    }
+  };
+  pixel.addPropertyListener("status", onStatus);
+
+  // Rolls
+  const onRoll = (roll: number) => {
+    const pairedDie = pairedDiceSelectors.selectByPixelId(
+      store.getState(),
+      pixel.pixelId
+    );
+    if (pairedDie) {
+      store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
+      store.dispatch(
+        addRollerEntry({
+          pixelId: pixel.pixelId,
+          dieType: pixel.dieType,
+          value: roll,
+        })
+      );
+    }
+  };
+  pixel.addEventListener("roll", onRoll);
+
+  // Remote action
+  const onRemoteAction = (actionId: number) =>
+    remoteActionListener(pixel, actionId, store);
+  pixel.addEventListener("remoteAction", onRemoteAction);
+
+  return () => {
+    pixel.removePropertyListener("name", onRename);
+    pixel.removePropertyListener("firmwareDate", onFwDate);
+    pixel.removePropertyListener("status", onStatus);
+    pixel.removePropertyListener("profileHash", onProfileHash);
+    pixel.removeEventListener("roll", onRoll);
+    pixel.removeEventListener("remoteAction", onRemoteAction);
+    onRenameDisposer();
+    onProgProfileDisposer();
+  };
+}
+
+function hookToMPC(
+  mpc: MPC,
+  store: AppStore,
+  central: PixelsCentral
+): () => void {
+  // Die name
+  const onRename = ({ pixelId, name }: MPCMutableProps) => {
+    const pairedDie = pairedDiceSelectors.selectByPixelId(
+      store.getState(),
+      pixelId
+    );
+    if (pairedDie && pairedDie.name !== name) {
+      store.dispatch(updatePairedDieName({ pixelId, name }));
+    }
+  };
+  mpc.addPropertyListener("name", onRename);
+
+  // Show dialog on rename error
+  const onRenameDisposer = central.addOperationStatusListener(
+    mpc.pixelId,
+    "rename",
+    (ev) => {
+      if (ev.status === "failed") {
+        // Show dialog on rename error
+        Alert.alert(
+          "Failed to Rename Die",
+          "An error occurred while renaming the die\n" + String(ev.error),
+          [{ text: "OK", style: "default" }]
+        );
+      }
+    }
+  );
+
+  // Firmware date
+  const onFwDate = ({ pixelId, firmwareDate }: MPCMutableProps) => {
+    const pairedDie = pairedDiceSelectors.selectByPixelId(
+      store.getState(),
+      pixelId
+    );
+    if (pairedDie && pairedDie.firmwareTimestamp !== firmwareDate.getTime()) {
+      store.dispatch(
+        updatePairedDieFirmwareTimestamp({
+          pixelId,
+          timestamp: firmwareDate.getTime(),
+        })
+      );
+    }
+  };
+  mpc.addPropertyListener("firmwareDate", onFwDate);
+
+  // Update name, firmware timestamp and profile hash on connection
+  const onStatus = ({ status }: MPCMutableProps) => {
+    if (status === "ready") {
+      onRename(mpc);
+      onFwDate(mpc);
+      syncMPCs([mpc.pixelId]);
+    }
+  };
+  mpc.addPropertyListener("status", onStatus);
+
+  return () => {
+    mpc.removePropertyListener("name", onRename);
+    mpc.removePropertyListener("firmwareDate", onFwDate);
+    mpc.removePropertyListener("status", onStatus);
+    onRenameDisposer();
+  };
+}
+
 export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   const store = useAppStore();
   const [central] = React.useState(() => new PixelsCentral());
@@ -134,168 +378,17 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
     const removeOnPixelFound = central.addListener(
       "onDeviceFound",
       ({ device }) => {
-        const pixel = device instanceof Pixel ? device : undefined;
-        if (!pixel) {
-          return;
-        }
         // Clean up previous event listeners
-        disposers.get(pixel.pixelId)?.();
-
-        // Die name
-        const onRename = ({ pixelId, name }: PixelMutableProps) => {
-          const pairedDie = pairedDiceSelectors.selectByPixelId(
-            store.getState(),
-            pixelId
-          );
-          if (pairedDie && pairedDie.name !== name) {
-            store.dispatch(updatePairedDieName({ pixelId, name }));
-          }
-        };
-        pixel.addPropertyListener("name", onRename);
-
-        // Show dialog on rename error
-        const onRenameDisposer = central.addOperationStatusListener(
-          pixel.pixelId,
-          "rename",
-          (ev) => {
-            if (ev.status === "failed") {
-              // Show dialog on rename error
-              Alert.alert(
-                "Failed to Rename Die",
-                "An error occurred while renaming the die\n" + String(ev.error),
-                [{ text: "OK", style: "default" }]
-              );
-            }
-          }
-        );
-
-        // Firmware date
-        const onFwDate = ({ pixelId, firmwareDate }: PixelMutableProps) => {
-          const pairedDie = pairedDiceSelectors.selectByPixelId(
-            store.getState(),
-            pixelId
-          );
-          if (
-            pairedDie &&
-            pairedDie.firmwareTimestamp !== firmwareDate.getTime()
-          ) {
-            store.dispatch(
-              updatePairedDieFirmwareTimestamp({
-                pixelId,
-                timestamp: firmwareDate.getTime(),
-              })
-            );
-          }
-        };
-        pixel.addPropertyListener("firmwareDate", onFwDate);
-
-        // Profile
-        const onProfileHash = ({ pixelId, profileHash }: PixelMutableProps) => {
-          const pairedDie = pairedDiceSelectors.selectByPixelId(
-            store.getState(),
-            pixelId
-          );
-          if (pairedDie) {
-            if (pairedDie.profileHash !== profileHash) {
-              store.dispatch(
-                updatePairedDieProfileHash({
-                  pixelId,
-                  hash: profileHash,
-                })
-              );
-            }
-            // Update paired die brightness if profile was being programmed
-            // and profile hashes are matching
-            const op = central.getCurrentOperation(pixelId);
-            const brightness =
-              op?.type === "programProfile" && op.dataSet.brightness / 255;
-            if (brightness !== false && pairedDie.brightness !== brightness) {
-              const hash = DataSet.computeHash(op.dataSet.toByteArray());
-              if (profileHash === hash) {
-                store.dispatch(
-                  updatePairedDieBrightness({
-                    pixelId,
-                    brightness,
-                  })
-                );
-              }
-            }
-            // Always check if profile needs to be programmed
-            programProfileIfNeeded(
-              { ...pairedDie, profileHash }, // Use the up-to-date profile hash
-              central,
-              store.getState
-            );
-          }
-        };
-        pixel.addPropertyListener("profileHash", onProfileHash);
-        const onProgProfileDisposer = central.addOperationStatusListener(
-          pixel.pixelId,
-          "programProfile",
-          (ev) => {
-            // Update brightness if profile was being programmed
-            if (ev.status === "succeeded") {
-              const pairedDie = pairedDiceSelectors.selectByPixelId(
-                store.getState(),
-                pixel.pixelId
-              );
-              const brightness = ev.operation.dataSet.brightness / 255;
-              if (pairedDie && pairedDie.brightness !== brightness) {
-                store.dispatch(
-                  updatePairedDieBrightness({
-                    pixelId: pixel.pixelId,
-                    brightness,
-                  })
-                );
-              }
-            }
-          }
-        );
-
-        // Update name, firmware timestamp and profile hash on connection
-        const onStatus = ({ status }: PixelMutableProps) => {
-          if (status === "ready") {
-            onRename(pixel);
-            onFwDate(pixel);
-            onProfileHash(pixel);
-          }
-        };
-        pixel.addPropertyListener("status", onStatus);
-
-        // Rolls
-        const onRoll = (roll: number) => {
-          const pairedDie = pairedDiceSelectors.selectByPixelId(
-            store.getState(),
-            pixel.pixelId
-          );
-          if (pairedDie) {
-            store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
-            store.dispatch(
-              addRollerEntry({
-                pixelId: pixel.pixelId,
-                dieType: pixel.dieType,
-                value: roll,
-              })
-            );
-          }
-        };
-        pixel.addEventListener("roll", onRoll);
-
-        // Remote action
-        const onRemoteAction = (actionId: number) =>
-          remoteActionListener(pixel, actionId, store);
-        pixel.addEventListener("remoteAction", onRemoteAction);
-
-        disposers.set(pixel.pixelId, () => {
-          pixel.removePropertyListener("name", onRename);
-          pixel.removePropertyListener("firmwareDate", onFwDate);
-          pixel.removePropertyListener("status", onStatus);
-          pixel.removePropertyListener("profileHash", onProfileHash);
-          pixel.removeEventListener("roll", onRoll);
-          pixel.removeEventListener("remoteAction", onRemoteAction);
-          onRenameDisposer();
-          onProgProfileDisposer();
-        });
+        disposers.get(device.pixelId)?.();
+        const unhook =
+          device instanceof Pixel
+            ? hookToPixel(device, store, central)
+            : device instanceof MPC
+              ? hookToMPC(device, store, central)
+              : undefined;
+        if (unhook) {
+          disposers.set(device.pixelId, unhook);
+        }
       }
     );
 
@@ -484,6 +577,18 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       new Color(ColorUtils.multiply(Color.dimGreen, appBrightness))
     );
   }, [central, appBrightness]);
+
+  // Re-sync MPCs every 10 minutes
+  React.useEffect(() => {
+    const id = setInterval(
+      () => {
+        const pairedMPCs = store.getState().pairedMPCs.paired;
+        syncMPCs(pairedMPCs.map((p) => p.pixelId));
+      },
+      10 * 60 * 1000
+    );
+    return () => clearInterval(id);
+  }, [store]);
 
   return (
     <PixelsCentralContext.Provider value={central}>

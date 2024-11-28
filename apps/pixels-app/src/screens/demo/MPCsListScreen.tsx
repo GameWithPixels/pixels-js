@@ -123,23 +123,7 @@ function MPCsListPage({
               <OutlineButton onPress={() => setShowPairDice(true)}>
                 Add MPC
               </OutlineButton>
-              <OutlineButton
-                onPress={() => forEachMPC(pairedMPCs, (mpc) => mpc.connect())}
-              >
-                Connect All
-              </OutlineButton>
-              <OutlineButton
-                onPress={() => {
-                  const referenceTime = 1000; // Arbitrary reference time
-                  const maxDelayTime = 100; // Expected max delay before we've messages all controllers
-                  const targetTime = Date.now() + maxDelayTime;
-                  forEachMPC(pairedMPCs, (mpc) =>
-                    mpc.sync(targetTime, referenceTime)
-                  );
-                }}
-              >
-                Synchronize
-              </OutlineButton>
+              <OutlineButton onPress={() => {}}>Synchronize</OutlineButton>
               <GradientButton
                 onPress={() => forEachMPC(pairedMPCs, (mpc) => mpc.playAnim(1))}
               >
