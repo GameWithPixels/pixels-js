@@ -5,12 +5,7 @@ import {
   PixelColorway,
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
-import {
-  createTypedEventEmitter,
-  EventReceiver,
-  Mutable,
-  safeAssign,
-} from "@systemic-games/pixels-core-utils";
+import { Mutable, safeAssign } from "@systemic-games/pixels-core-utils";
 
 import { deserializeChunkedMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
@@ -32,8 +27,8 @@ import {
 } from "./MPCMessages";
 import {
   PixelConnect,
+  PixelConnectEventMap,
   PixelConnectMutableProps,
-  PixelStatusEvent,
 } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
 import { PixelMessage } from "./PixelMessage";
@@ -55,9 +50,7 @@ import {
  * Call {@link MPC.addEventListener} to subscribe to an event.
  * @category Pixels
  */
-export type MPCEventMap = Readonly<{
-  /** MPC status changed notification. */
-  statusChanged: PixelStatusEvent;
+export type MPCEventMap = PixelConnectEventMap & {
   /** Message received notification. */
   messageReceived: MPCMessageOrType;
   /** Message send notification. */
@@ -67,7 +60,7 @@ export type MPCEventMap = Readonly<{
     level: number; // Percentage
     isCharging: boolean;
   }>;
-}>;
+};
 
 /**
  * The mutable properties of {@link MPC} not inherited from parent
@@ -98,13 +91,11 @@ export class MPC
   extends PixelConnect<
     MPCMutableProps,
     PixelConnectMutableProps & MPCOwnMutableProps,
-    MPCMessageType
+    MPCMessageType,
+    MPCEventMap
   >
   implements MPCOwnMutableProps
 {
-  // Our events emitter
-  private readonly _evEmitter = createTypedEventEmitter<MPCEventMap>();
-
   // MPC data
   private readonly _info: Mutable<PixelInfo>;
   private readonly _versions: Omit<
@@ -328,59 +319,6 @@ export class MPC
   }
 
   /**
-   * Asynchronously tries to connect to the die. Throws on connection error.
-   * @param timeoutMs Delay before giving up (may be ignored when having concurrent
-   *                  calls to connect()). It may take longer than the given timeout
-   *                  for the function to return.
-   * @returns A promise that resoles to this instance once the connection process
-   *          has completed (whether successfully or not).
-   * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
-   */
-  async connect(timeoutMs = 0): Promise<MPC> {
-    await this._internalConnect(timeoutMs);
-    return this;
-  }
-
-  /**
-   * Immediately disconnects from the die.
-   * @returns A promise that resolves once the disconnect request has been processed.
-   **/
-  async disconnect(): Promise<MPC> {
-    await this._internalDisconnect();
-    return this;
-  }
-
-  /**
-   * Registers a listener function that will be called when the specified
-   * event is raised.
-   * See {@link MPCEventMap} for the list of events and their
-   * associated data.
-   * @param type A case-sensitive string representing the event type to listen for.
-   * @param listener The callback function.
-   */
-  addEventListener<K extends keyof MPCEventMap>(
-    type: K,
-    listener: EventReceiver<MPCEventMap[K]>
-  ): void {
-    this._evEmitter.addListener(type, listener);
-  }
-
-  /**
-   * Unregisters a listener from receiving events identified by
-   * the given event name.
-   * See {@link MPCEventMap} for the list of events and their
-   * associated data.
-   * @param type A case-sensitive string representing the event type.
-   * @param listener The callback function to unregister.
-   */
-  removeEventListener<K extends keyof MPCEventMap>(
-    type: K,
-    listener: EventReceiver<MPCEventMap[K]>
-  ): void {
-    this._evEmitter.removeListener(type, listener);
-  }
-
-  /**
    * Sends a message to the MPC.
    * @param msgOrType Message with the data to send or just a message type.
    * @param withoutAck Whether to request a confirmation that the message was received.
@@ -561,9 +499,6 @@ export class MPC
       })
     );
   }
-  protected _onStatusChanged(ev: PixelStatusEvent): void {
-    this._emitEvent("statusChanged", ev);
-  }
 
   protected async _internalSetup(): Promise<void> {
     // Reset version numbers
@@ -659,19 +594,6 @@ export class MPC
       this._emitEvent("messageReceived", msgOrType);
     }
     return msgOrType;
-  }
-
-  private _emitEvent<T extends keyof MPCEventMap>(
-    name: T,
-    ev: MPCEventMap[T]
-  ): void {
-    try {
-      this._evEmitter.emit(name, ev);
-    } catch (e) {
-      console.error(
-        this._tagLogString(`Uncaught error in "${name}" event listener: ${e}`)
-      );
-    }
   }
 
   private _updateName(name: string) {

@@ -1,4 +1,8 @@
-import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
+import {
+  createTypedEventEmitter,
+  EventReceiver,
+  unsigned32ToHex,
+} from "@systemic-games/pixels-core-utils";
 import { EventEmitter } from "events";
 
 import { Constants } from "./Constants";
@@ -32,12 +36,6 @@ export type PixelStatus =
   | "ready"
   | "disconnecting";
 
-export type PixelStatusEvent = Readonly<{
-  status: PixelStatus;
-  lastStatus: PixelStatus;
-  reason?: PixelSessionConnectionEventReason;
-}>;
-
 /**
  * The mutable properties of {@link PixelConnect} not inherited from parent
  * class {@link PixelInfoNotifier}.
@@ -61,6 +59,15 @@ export type PixelConnectMutableProps = PixelInfoNotifierMutableProps &
  */
 export type PixelInfoWithStatus = PixelInfo & PixelConnectOwnMutableProps;
 
+export type PixelConnectEventMap = {
+  /** Pixel status changed notification. */
+  statusChanged: Readonly<{
+    status: PixelStatus;
+    lastStatus: PixelStatus;
+    reason?: PixelSessionConnectionEventReason;
+  }>;
+};
+
 /**
  * Abstract class that represents a connection to a Pixel device (die, charger, etc.).
  * @category Pixels
@@ -69,7 +76,11 @@ export abstract class PixelConnect<
   MutableProps extends PixelConnectMutableProps = PixelConnectMutableProps,
   Type extends PixelInfoWithStatus = PixelInfoWithStatus,
   MessageType extends string = string,
+  EventMap extends PixelConnectEventMap = PixelConnectEventMap,
 > extends PixelInfoNotifier<MutableProps, Type> {
+  // Events emitter
+  private readonly _evEmitter = createTypedEventEmitter<EventMap>();
+
   // Message event emitter
   protected readonly _msgEvEmitter = new EventEmitter();
 
@@ -150,6 +161,36 @@ export abstract class PixelConnect<
   }
 
   /**
+   * Registers a listener function that will be called when the specified
+   * event is raised.
+   * See {@link PixelEventMap} for the list of events and their
+   * associated data.
+   * @param type A case-sensitive string representing the event type to listen for.
+   * @param listener The callback function.
+   */
+  addEventListener<K extends string & keyof EventMap>(
+    type: K,
+    listener: EventReceiver<EventMap[K]>
+  ): void {
+    this._evEmitter.addListener(type, listener);
+  }
+
+  /**
+   * Unregisters a listener from receiving events identified by
+   * the given event name.
+   * See {@link PixelEventMap} for the list of events and their
+   * associated data.
+   * @param type A case-sensitive string representing the event type.
+   * @param listener The callback function to unregister.
+   */
+  removeEventListener<K extends string & keyof EventMap>(
+    type: K,
+    listener: EventReceiver<EventMap[K]>
+  ): void {
+    this._evEmitter.removeListener(type, listener);
+  }
+
+  /**
    * Registers a listener function that will be called on receiving
    * raw messages of a given type from the Pixel.
    * @param msgType The type of message to watch for.
@@ -174,25 +215,27 @@ export abstract class PixelConnect<
     this._msgEvEmitter.removeListener(`${msgType}Message`, listener);
   }
 
-  protected abstract _internalDispose(): void;
-  protected abstract _onStatusChanged(ev: PixelStatusEvent): void;
-  protected abstract _internalSetup(): Promise<void>;
-  protected abstract _internalDeserializeMessage(
-    dataView: DataView
-  ): PixelMessage | MessageType;
-
-  protected async _internalConnect(timeoutMs = 0): Promise<void> {
+  /**
+   * Asynchronously tries to connect to the device. Throws on connection error.
+   * @param timeoutMs Delay before giving up (may be ignored when having concurrent
+   *                  calls to connect()). It may take longer than the given timeout
+   *                  for the function to return.
+   * @returns A promise that resoles to this instance once the connection has been
+   *          established.
+   * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
+   */
+  async connect(timeoutMs = 0): Promise<PixelConnect> {
     try {
       // Connect to the peripheral
       await this._session.connect(timeoutMs);
 
       // And prepare our instance for communications with the device
       if (this.status === "connecting") {
-        // Notify we're connected and proceeding with die identification
+        // Notify we're connected and proceeding with device identification
         this._updateStatus("identifying");
 
         try {
-          // Subscribe to get messages from die (will unsubscribe on disconnect)
+          // Subscribe to get messages from device (will unsubscribe on disconnect)
           await this._session.subscribe((dv: DataView) =>
             this._onValueChanged(dv)
           );
@@ -249,15 +292,23 @@ export abstract class PixelConnect<
         throw new PixelConnectError(this, error);
       }
     }
+    return this;
   }
 
   /**
-   * Immediately disconnects from the die.
+   * Immediately disconnects from the device.
    * @returns A promise that resolves once the disconnect request has been processed.
    **/
-  protected async _internalDisconnect(): Promise<void> {
+  async disconnect(): Promise<PixelConnect> {
     await this._session.disconnect();
+    return this;
   }
+
+  protected abstract _internalDispose(): void;
+  protected abstract _internalSetup(): Promise<void>;
+  protected abstract _internalDeserializeMessage(
+    dataView: DataView
+  ): PixelMessage | MessageType;
 
   // Callback on notify characteristic value change
   private _onValueChanged(dataView: DataView) {
@@ -408,7 +459,7 @@ export abstract class PixelConnect<
       const lastStatus = this._status;
       this._status = status;
       this._log(`Status changed to ${status} with reason: ${reason}`);
-      this._onStatusChanged({ status, lastStatus, reason });
+      this._emitEvent("statusChanged", { status, lastStatus, reason });
       this.emitPropertyEvent("status");
     }
   }
@@ -444,6 +495,19 @@ export abstract class PixelConnect<
             .map((b) => (b >>> 0).toString(16).padStart(2, "0"))
             .join(":")}`
         )
+      );
+    }
+  }
+
+  protected _emitEvent<K extends string & keyof EventMap>(
+    type: K,
+    ev: EventMap[K]
+  ): void {
+    try {
+      this._evEmitter.emit(type, ev);
+    } catch (e) {
+      console.error(
+        this._tagLogString(`Uncaught error in "${type}" event listener: ${e}`)
       );
     }
   }

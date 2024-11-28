@@ -11,8 +11,6 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import {
   byteSizeOf,
-  createTypedEventEmitter,
-  EventReceiver,
   getValueKeyName,
   Mutable,
   safeAssign,
@@ -52,8 +50,8 @@ import {
 } from "./DieMessages";
 import {
   PixelConnect,
+  PixelConnectEventMap,
   PixelConnectMutableProps,
-  PixelStatusEvent,
 } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
 import { PixelMessage } from "./PixelMessage";
@@ -136,9 +134,7 @@ export type DataTransferProgress = Readonly<{
  * Call {@link Pixel.addEventListener} to subscribe to an event.
  * @category Pixels
  */
-export type PixelEventMap = Readonly<{
-  /** Pixel status changed notification. */
-  statusChanged: PixelStatusEvent;
+export type PixelEventMap = PixelConnectEventMap & {
   /** Message received notification. */
   messageReceived: MessageOrType;
   /** Message send notification. */
@@ -167,7 +163,7 @@ export type PixelEventMap = Readonly<{
         type: "progress";
       } & DataTransferProgress)
   >;
-}>;
+};
 
 /**
  * The mutable properties of {@link Pixel} not inherited from parent
@@ -203,13 +199,11 @@ export class Pixel
   extends PixelConnect<
     PixelMutableProps,
     PixelConnectMutableProps & PixelOwnMutableProps,
-    MessageType
+    MessageType,
+    PixelEventMap
   >
   implements PixelOwnMutableProps
 {
-  // Event emitter
-  private readonly _evEmitter = createTypedEventEmitter<PixelEventMap>();
-
   // Pixel data
   private readonly _info: Mutable<PixelInfo>;
   private readonly _versions: Omit<
@@ -536,59 +530,6 @@ export class Pixel
         this._updateRoll(info.rollState, info.currentFaceIndex);
       }
     }
-  }
-
-  /**
-   * Asynchronously tries to connect to the die. Throws on connection error.
-   * @param timeoutMs Delay before giving up (may be ignored when having concurrent
-   *                  calls to connect()). It may take longer than the given timeout
-   *                  for the function to return.
-   * @returns A promise that resoles to this instance once the connection process
-   *          has completed (whether successfully or not).
-   * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
-   */
-  async connect(timeoutMs = 0): Promise<Pixel> {
-    await this._internalConnect(timeoutMs);
-    return this;
-  }
-
-  /**
-   * Immediately disconnects from the die.
-   * @returns A promise that resolves once the disconnect request has been processed.
-   **/
-  async disconnect(): Promise<Pixel> {
-    await this._internalDisconnect();
-    return this;
-  }
-
-  /**
-   * Registers a listener function that will be called when the specified
-   * event is raised.
-   * See {@link PixelEventMap} for the list of events and their
-   * associated data.
-   * @param type A case-sensitive string representing the event type to listen for.
-   * @param listener The callback function.
-   */
-  addEventListener<K extends keyof PixelEventMap>(
-    type: K,
-    listener: EventReceiver<PixelEventMap[K]>
-  ): void {
-    this._evEmitter.addListener(type, listener);
-  }
-
-  /**
-   * Unregisters a listener from receiving events identified by
-   * the given event name.
-   * See {@link PixelEventMap} for the list of events and their
-   * associated data.
-   * @param type A case-sensitive string representing the event type.
-   * @param listener The callback function to unregister.
-   */
-  removeEventListener<K extends keyof PixelEventMap>(
-    type: K,
-    listener: EventReceiver<PixelEventMap[K]>
-  ): void {
-    this._evEmitter.removeListener(type, listener);
   }
 
   /**
@@ -930,10 +871,6 @@ export class Pixel
     );
   }
 
-  protected _onStatusChanged(ev: PixelStatusEvent): void {
-    this._emitEvent("statusChanged", ev);
-  }
-
   protected async _internalSetup(): Promise<void> {
     // Reset version numbers
     let verProp: keyof typeof this._versions;
@@ -1048,19 +985,6 @@ export class Pixel
       this._emitEvent("messageReceived", msgOrType);
     }
     return msgOrType;
-  }
-
-  private _emitEvent<T extends keyof PixelEventMap>(
-    name: T,
-    ev: PixelEventMap[T]
-  ): void {
-    try {
-      this._evEmitter.emit(name, ev);
-    } catch (e) {
-      console.error(
-        this._tagLogString(`Uncaught error in "${name}" event listener: ${e}`)
-      );
-    }
   }
 
   private _updateName(name: string) {

@@ -204,8 +204,8 @@ function getFaceUp(dieType: PixelDieType, step: "1" | "2" | "3"): number {
 async function repeatConnect(
   abortSignal: AbortSignal,
   t: ReturnType<typeof useTranslation>["t"],
-  connect: (timeout: number) => Promise<void | Pixel>,
-  disconnect: () => Promise<void | Pixel>
+  connect: (timeout: number) => Promise<unknown>,
+  disconnect: () => Promise<unknown>
 ) {
   const onAbort = () => {
     disconnect().catch((error) =>
