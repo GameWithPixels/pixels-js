@@ -2,12 +2,9 @@ import { useFocusEffect } from "@react-navigation/native";
 import {
   PixelScannerOptions,
   PixelScannerDispatchAction,
-  ScannedPixelNotifier,
   useScannedPixelNotifiers,
   PixelScannerStatus,
-  ScannedChargerNotifier,
-  ScannedBootloaderNotifier,
-  ScannedMPCNotifier,
+  ScannedDeviceNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 
@@ -15,12 +12,7 @@ import React from "react";
 export function useFocusScannedPixelNotifiers(
   opt?: PixelScannerOptions
 ): [
-  (
-    | ScannedPixelNotifier
-    | ScannedChargerNotifier
-    | ScannedMPCNotifier
-    | ScannedBootloaderNotifier
-  )[],
+  ScannedDeviceNotifier[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {
