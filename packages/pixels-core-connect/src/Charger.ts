@@ -5,12 +5,7 @@ import {
   PixelColorway,
   PixelDieType,
 } from "@systemic-games/pixels-core-animation";
-import {
-  createTypedEventEmitter,
-  EventReceiver,
-  Mutable,
-  safeAssign,
-} from "@systemic-games/pixels-core-utils";
+import { Mutable, safeAssign } from "@systemic-games/pixels-core-utils";
 
 import {
   BatteryLevel,
@@ -32,8 +27,8 @@ import { deserializeChunkedMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
 import {
   PixelConnect,
+  PixelConnectEventMap,
   PixelConnectMutableProps,
-  PixelStatusEvent,
 } from "./PixelConnect";
 import { PixelInfo } from "./PixelInfo";
 import { PixelMessage } from "./PixelMessage";
@@ -56,9 +51,7 @@ import { isPixelChargingOrDone } from "./isPixelChargingOrDone";
  * Call {@link Charger.addEventListener} to subscribe to an event.
  * @category Pixels
  */
-export type ChargerEventMap = Readonly<{
-  /** Charger status changed notification. */
-  statusChanged: PixelStatusEvent;
+export type ChargerEventMap = PixelConnectEventMap & {
   /** Message received notification. */
   messageReceived: ChargerMessageOrType;
   /** Message send notification. */
@@ -68,7 +61,7 @@ export type ChargerEventMap = Readonly<{
     level: number; // Percentage
     isCharging: boolean;
   }>;
-}>;
+};
 
 /**
  * The mutable properties of {@link Charger} not inherited from parent
@@ -100,13 +93,11 @@ export class Charger
   extends PixelConnect<
     ChargerMutableProps,
     PixelConnectMutableProps & ChargerOwnMutableProps,
-    ChargerMessageType
+    ChargerMessageType,
+    ChargerEventMap
   >
   implements ChargerOwnMutableProps
 {
-  // Our events emitter
-  private readonly _evEmitter = createTypedEventEmitter<ChargerEventMap>();
-
   // Charger data
   private readonly _info: Mutable<PixelInfo>;
   private readonly _versions: Omit<
@@ -332,59 +323,6 @@ export class Charger
   }
 
   /**
-   * Asynchronously tries to connect to the die. Throws on connection error.
-   * @param timeoutMs Delay before giving up (may be ignored when having concurrent
-   *                  calls to connect()). It may take longer than the given timeout
-   *                  for the function to return.
-   * @returns A promise that resoles to this instance once the connection process
-   *          has completed (whether successfully or not).
-   * @throws Will throw a {@link PixelConnectError} if it fails to connect in time.
-   */
-  async connect(timeoutMs = 0): Promise<Charger> {
-    await this._internalConnect(timeoutMs);
-    return this;
-  }
-
-  /**
-   * Immediately disconnects from the die.
-   * @returns A promise that resolves once the disconnect request has been processed.
-   **/
-  async disconnect(): Promise<Charger> {
-    await this._internalDisconnect();
-    return this;
-  }
-
-  /**
-   * Registers a listener function that will be called when the specified
-   * event is raised.
-   * See {@link ChargerEventMap} for the list of events and their
-   * associated data.
-   * @param type A case-sensitive string representing the event type to listen for.
-   * @param listener The callback function.
-   */
-  addEventListener<K extends keyof ChargerEventMap>(
-    type: K,
-    listener: EventReceiver<ChargerEventMap[K]>
-  ): void {
-    this._evEmitter.addListener(type, listener);
-  }
-
-  /**
-   * Unregisters a listener from receiving events identified by
-   * the given event name.
-   * See {@link ChargerEventMap} for the list of events and their
-   * associated data.
-   * @param type A case-sensitive string representing the event type.
-   * @param listener The callback function to unregister.
-   */
-  removeEventListener<K extends keyof ChargerEventMap>(
-    type: K,
-    listener: EventReceiver<ChargerEventMap[K]>
-  ): void {
-    this._evEmitter.removeListener(type, listener);
-  }
-
-  /**
    * Sends a message to the Charger.
    * @param msgOrType Message with the data to send or just a message type.
    * @param withoutAck Whether to request a confirmation that the message was received.
@@ -554,10 +492,6 @@ export class Charger
     await this.sendAndWaitForResponse(blinkMsg, "blinkAck");
   }
 
-  protected _onStatusChanged(ev: PixelStatusEvent): void {
-    this._emitEvent("statusChanged", ev);
-  }
-
   protected async _internalSetup(): Promise<void> {
     // Reset version numbers
     let verProp: keyof typeof this._versions;
@@ -652,19 +586,6 @@ export class Charger
       this._emitEvent("messageReceived", msgOrType);
     }
     return msgOrType;
-  }
-
-  private _emitEvent<T extends keyof ChargerEventMap>(
-    name: T,
-    ev: ChargerEventMap[T]
-  ): void {
-    try {
-      this._evEmitter.emit(name, ev);
-    } catch (e) {
-      console.error(
-        this._tagLogString(`Uncaught error in "${name}" event listener: ${e}`)
-      );
-    }
   }
 
   private _updateName(name: string) {
