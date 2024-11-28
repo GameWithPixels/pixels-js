@@ -7,7 +7,7 @@ import { ScannedPixel } from "./ScannedPixel";
 const _devicesMap = new Map<
   number, // pixelId
   {
-    device?: ScannedPixel | ScannedCharger | ScannedMPC;
+    device?: Exclude<ScannedDevice, ScannedBootloader>;
     bootloader?: ScannedBootloader;
     legacyService?: boolean;
   }

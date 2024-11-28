@@ -10,16 +10,11 @@ import {
 import { PixelScannerListOperation, ScannedDevice } from "../PixelScanner";
 import { ScannedBootloaderNotifier } from "../ScannedBootloaderNotifier";
 import { ScannedChargerNotifier } from "../ScannedChargerNotifier";
+import { ScannedDeviceNotifier } from "../ScannedDeviceNotifier";
 import { ScannedMPCNotifier } from "../ScannedMPCNotifier";
 import { ScannedPixelNotifier } from "../ScannedPixelNotifier";
 
-function getNotifier(
-  device: ScannedDevice
-):
-  | ScannedPixelNotifier
-  | ScannedChargerNotifier
-  | ScannedMPCNotifier
-  | ScannedBootloaderNotifier {
+function getNotifier(device: ScannedDevice): ScannedDeviceNotifier {
   const type = device.type;
   switch (type) {
     case "die":
@@ -38,38 +33,28 @@ function getNotifier(
 /**
  * React hook that creates {@link PixelScanner} to scan for Pixels using Bluetooth.
  * Use this hook if you don't want the hosting React component to re-render every
- * time an already scanned Pixel in the returned list of {@link ScannedPixelNotifier}
+ * time an already scanned Pixel in the returned list of {@link ScannedDeviceNotifier}
  * gets updated.
  * @param opt Optional arguments, see {@link PixelScannerOptions}.
  * @returns An array with:
- * - The list of {@link ScannedPixelNotifier}. The list itself is not modified when
+ * - The list of {@link ScannedDeviceNotifier}. The list itself is not modified when
  *   existing items are updated.
  * - A stable reducer like function to dispatch actions to the scanner.
  * - The scan status or the last error.
  * @remarks
- * {@link ScannedPixelNotifier} instances are kept globally, for a given Pixel
+ * {@link ScannedDeviceNotifier} instances are kept globally, for a given Pixel
  * the same instance is returned and updated by all scanners.
  */
 export function useScannedPixelNotifiers(
   opt?: PixelScannerOptions
 ): [
-  (
-    | ScannedPixelNotifier
-    | ScannedChargerNotifier
-    | ScannedMPCNotifier
-    | ScannedBootloaderNotifier
-  )[],
+  ScannedDeviceNotifier[],
   (action: PixelScannerDispatchAction) => void,
   PixelScannerStatus,
 ] {
   const mapItems = React.useCallback(
     (
-      items: (
-        | ScannedPixelNotifier
-        | ScannedChargerNotifier
-        | ScannedMPCNotifier
-        | ScannedBootloaderNotifier
-      )[],
+      items: ScannedDeviceNotifier[],
       ops: readonly PixelScannerListOperation[]
     ) => {
       // We only want to create a React re-render when items are added
