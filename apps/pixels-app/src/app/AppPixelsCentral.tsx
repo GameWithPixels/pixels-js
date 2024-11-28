@@ -125,12 +125,13 @@ function programProfileIfNeeded(
   }
 }
 
-function syncMPCs(pixelIds: number[]) {
+function syncMPCs(store: AppStore): void {
+  console.log("Syncing MPCs");
   const referenceTime = 1000; // Arbitrary reference time
   const maxDelayTime = 100; // Expected max delay before we've messages all controllers
   const targetTime = Date.now() + maxDelayTime;
-  for (const id of pixelIds) {
-    const mpc = getMPC(id);
+  for (const pairedMPC of store.getState().pairedMPCs.paired) {
+    const mpc = getMPC(pairedMPC.pixelId);
     if (mpc?.status === "ready") {
       mpc
         .sync(targetTime, referenceTime)
@@ -353,7 +354,7 @@ function hookToMPC(
     if (status === "ready") {
       onRename(mpc);
       onFwDate(mpc);
-      syncMPCs([mpc.pixelId]);
+      syncMPCs(store);
     }
   };
   mpc.addPropertyListener("status", onStatus);
@@ -582,8 +583,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   React.useEffect(() => {
     const id = setInterval(
       () => {
-        const pairedMPCs = store.getState().pairedMPCs.paired;
-        syncMPCs(pairedMPCs.map((p) => p.pixelId));
+        syncMPCs(store);
       },
       10 * 60 * 1000
     );
