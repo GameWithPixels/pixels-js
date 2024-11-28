@@ -12,9 +12,9 @@ import {
   Color,
   ConnectError,
   Pixel,
+  PixelConnectEventMap,
   PixelEventMap,
   PixelMutableProps,
-  PixelStatusEvent,
   ScannedBootloaderNotifier,
   ScannedPixel,
   ScannedPixelNotifier,
@@ -902,7 +902,7 @@ export class PixelsCentral {
       const pixel = getPixel(pixelId);
       if (pixel) {
         // Watch for Pixel connection status changes
-        const onStatus = (ev: PixelStatusEvent) =>
+        const onStatus = (ev: PixelConnectEventMap["statusChanged"]) =>
           this._onConnectionStatus(pixelId, ev);
         pixel.addEventListener("statusChanged", onStatus);
 
@@ -941,7 +941,7 @@ export class PixelsCentral {
 
   private _onConnectionStatus(
     pixelId: number,
-    { status, lastStatus, reason }: PixelStatusEvent
+    { status, lastStatus, reason }: PixelConnectEventMap["statusChanged"]
   ): void {
     if (isConnected(status)) {
       // Not in bootloader if connected
