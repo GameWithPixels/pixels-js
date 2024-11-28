@@ -37,9 +37,9 @@ export function usePixelScanner(): {
     setAvailablePixels((prev) => (prev.length ? [] : prev));
     if (!stopRef.current) {
       const removeOnAvailable = central.addListener(
-        "onAvailability",
+        "onUnregisteredDeviceScanned",
         ({ status, notifier }) => {
-          if (status === "available") {
+          if (status === "scanned" && notifier.type === "die") {
             setAvailablePixels((notifiers) =>
               notifiers.find((p) => p.pixelId === notifier.pixelId)
                 ? notifiers

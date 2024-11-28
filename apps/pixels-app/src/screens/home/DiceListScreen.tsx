@@ -231,7 +231,7 @@ function useCheckForDiceInBootloader(
     if (enabled) {
       alertShownRef.current = false;
       return central.addListener(
-        "onPixelBootloader",
+        "onPixelBootloaderScanned",
         ({ status, notifier: { pixelId } }) => {
           if (
             !alertShownRef.current &&

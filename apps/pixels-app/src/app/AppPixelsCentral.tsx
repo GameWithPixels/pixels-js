@@ -132,8 +132,12 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
     // Hook to Pixel events
     const removeOnPixelFound = central.addListener(
-      "onPixelFound",
-      ({ pixel }) => {
+      "onDeviceFound",
+      ({ device }) => {
+        const pixel = device instanceof Pixel ? device : undefined;
+        if (!pixel) {
+          return;
+        }
         // Clean up previous event listeners
         disposers.get(pixel.pixelId)?.();
 
@@ -317,22 +321,24 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   // Update firmware timestamp on scan
   React.useEffect(() => {
     return central.addListener(
-      "onPixelScanned",
-      ({ notifier: { pixelId, firmwareDate } }) => {
-        const pairedDie = pairedDiceSelectors.selectByPixelId(
-          store.getState(),
-          pixelId
-        );
-        if (
-          pairedDie &&
-          pairedDie.firmwareTimestamp !== firmwareDate.getTime()
-        ) {
-          store.dispatch(
-            updatePairedDieFirmwareTimestamp({
-              pixelId,
-              timestamp: firmwareDate.getTime(),
-            })
+      "onRegisteredDeviceScanned",
+      ({ status, notifier: { type, pixelId, firmwareDate } }) => {
+        if (status === "scanned" && type === "die") {
+          const pairedDie = pairedDiceSelectors.selectByPixelId(
+            store.getState(),
+            pixelId
           );
+          if (
+            pairedDie &&
+            pairedDie.firmwareTimestamp !== firmwareDate.getTime()
+          ) {
+            store.dispatch(
+              updatePairedDieFirmwareTimestamp({
+                pixelId,
+                timestamp: firmwareDate.getTime(),
+              })
+            );
+          }
         }
       }
     );
@@ -340,50 +346,57 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
   // Monitor paired dice
   const pairedDice = useAppSelector((state) => state.pairedDice.paired);
+  const pairedMPCs = useAppSelector((state) => state.pairedMPCs.paired);
   React.useEffect(() => {
+    const registeredIds = new Set(central.registeredPixelsIds);
     // Paired dice may have changed since the last render
-    const newPairedDice = store.getState().pairedDice.paired;
+    const upToDatePairedDice = store.getState().pairedDice.paired;
+    const upToDatePairedMPCs = store.getState().pairedMPCs.paired;
     // Update list of registered Pixels
-    const pixelIds = newPairedDice.map((d) => d.pixelId);
-    for (const id of central.registeredPixelsIds) {
+    const pixelIds = upToDatePairedDice
+      .map((d) => d.pixelId)
+      .concat(upToDatePairedMPCs.map((d) => d.pixelId));
+    for (const id of registeredIds) {
       if (!pixelIds.includes(id)) {
         central.unregister(id);
       }
     }
-    const registeredPixelsIds = new Set(central.registeredPixelsIds);
     for (const id of pixelIds) {
-      if (!registeredPixelsIds.has(id)) {
+      if (!registeredIds.has(id)) {
         central.register(id);
         // Connect to initial list of dice with low priority,
         // dice added later will connect with high priority
         central.tryConnect(id, {
-          priority: registeredPixelsIds.size ? "high" : "low",
+          priority: registeredIds.size ? "high" : "low",
         });
       }
     }
     // Keep pairedDice in dependencies!
-  }, [central, pairedDice, store]);
+  }, [central, pairedDice, pairedMPCs, store]);
 
   // Check for dice in bootloader
   React.useEffect(() => {
-    return central.addListener("onPixelBootloader", ({ status, notifier }) => {
-      if (status === "scanned") {
-        const pairedDie = pairedDiceSelectors.selectByPixelId(
-          store.getState(),
-          notifier.pixelId
-        );
-        if (pairedDie?.firmwareTimestamp) {
-          // Reset firmware timestamp as the die seems to be stuck in bootloader
-          // (most likely because of an incomplete firmware)
-          store.dispatch(
-            updatePairedDieFirmwareTimestamp({
-              pixelId: pairedDie.pixelId,
-              timestamp: 0,
-            })
+    return central.addListener(
+      "onPixelBootloaderScanned",
+      ({ status, notifier }) => {
+        if (status === "scanned") {
+          const pairedDie = pairedDiceSelectors.selectByPixelId(
+            store.getState(),
+            notifier.pixelId
           );
+          if (pairedDie?.firmwareTimestamp) {
+            // Reset firmware timestamp as the die seems to be stuck in bootloader
+            // (most likely because of an incomplete firmware)
+            store.dispatch(
+              updatePairedDieFirmwareTimestamp({
+                pixelId: pairedDie.pixelId,
+                timestamp: 0,
+              })
+            );
+          }
         }
       }
-    });
+    );
   }, [central, store]);
 
   // Re-program profiles when app brightness changes

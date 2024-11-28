@@ -34,9 +34,9 @@ export function useMPCScanner(): {
     setAvailableMPCs((prev) => (prev.length ? [] : prev));
     if (!stopRef.current) {
       const removeOnAvailable = central.addListener(
-        "onMPCScanned",
+        "onUnregisteredDeviceScanned",
         ({ status, notifier }) => {
-          if (status === "scanned") {
+          if (status === "scanned" && notifier.type === "mpc") {
             setAvailableMPCs((notifiers) =>
               notifiers.find((p) => p.pixelId === notifier.pixelId)
                 ? notifiers
