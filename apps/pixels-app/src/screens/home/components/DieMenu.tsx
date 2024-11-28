@@ -12,22 +12,24 @@ import { AppStyles } from "~/app/styles";
 import { getBorderRadius } from "~/features/getBorderRadius";
 
 export function DieMenu({
-  disconnected,
+  ready,
   onUnpair,
   onUpdateFirmware,
   onRename,
   onCalibrate,
   onReset,
   onTurnOff,
+  onSetRunMode,
   ...props
 }: {
-  disconnected?: boolean;
+  ready?: boolean;
   onUnpair: () => void;
   onUpdateFirmware?: () => void;
   onRename?: () => void;
   onCalibrate?: () => void;
   onReset?: () => void;
   onTurnOff?: () => void;
+  onSetRunMode?: () => void;
 } & Omit<MenuProps, "children" | "theme" | "containerStyle">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
@@ -65,7 +67,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Rename"
-            disabled={!!disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
                 name="rename-box"
@@ -86,7 +88,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Calibrate"
-            disabled={disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <CalibrateIcon size={size} color={color} />
             )}
@@ -103,7 +105,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Reset Die Settings"
-            disabled={disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <Feather name="refresh-ccw" size={size} color={color} />
             )}
@@ -120,7 +122,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Turn Off"
-            disabled={disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
                 name="power-standby"
@@ -132,6 +134,27 @@ export function DieMenu({
             onPress={() => {
               props.onDismiss?.();
               onTurnOff();
+            }}
+          />
+          <Divider />
+        </>
+      )}
+      {onSetRunMode && (
+        <>
+          <Menu.Item
+            title="Set Run Mode"
+            disabled={!ready}
+            trailingIcon={({ size, color }) => (
+              <MaterialCommunityIcons
+                name="run-fast"
+                size={size}
+                color={color}
+              />
+            )}
+            contentStyle={AppStyles.menuItemWithIcon}
+            onPress={() => {
+              props.onDismiss?.();
+              onSetRunMode();
             }}
           />
           <Divider />

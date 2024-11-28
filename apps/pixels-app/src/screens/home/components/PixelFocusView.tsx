@@ -1,3 +1,4 @@
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
 import { createLibraryProfile } from "@systemic-games/pixels-edit-animation";
 import {
@@ -32,6 +33,7 @@ import { SlideInView } from "~/components/SlideInView";
 import { GradientButton } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
 import { ProfileCard } from "~/components/profile";
+import { pixelStoreValue, PixelValueStoreType } from "~/features/extensions";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
 import { Library, preSerializeProfile, readProfile } from "~/features/store";
 import {
@@ -86,10 +88,11 @@ export function PixelFocusViewHeader({
   const store = useAppStore();
   const central = usePixelsCentral();
   const pixel = useRegisteredPixel(pairedDie);
-  const status = usePixelStatus(pixel);
-  const ready = status === "ready";
+  const ready = usePixelStatus(pixel) === "ready";
   const hasFirmwareUpdate = useHasFirmwareUpdate(pairedDie.pixelId);
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
+
+  const { colors } = useTheme();
 
   const showConfirmReset = useConfirmActionSheet("Reset Die Settings", () => {
     if (ready) {
@@ -114,6 +117,7 @@ export function PixelFocusViewHeader({
       readProfile(pairedDie.profileUuid, store.getState().library);
     }
   });
+
   const showConfirmTurnOff = useConfirmActionSheet(
     "Turn Die Off",
     () =>
@@ -124,6 +128,30 @@ export function PixelFocusViewHeader({
         "Reminder: your die will stay off until placed back in its case with the lid closed. " +
         "Alternatively you can turn it back on by holding a magnet to its upper face.",
     }
+  );
+
+  const { showActionSheetWithOptions } = useActionSheet();
+  const showSelectRunMode = React.useCallback(
+    (pixel: Pixel) => {
+      showActionSheetWithOptions(
+        {
+          title: "Select Run Mode",
+          options: ["User", "Validation", "Attract", "Cancel"],
+          cancelButtonIndex: 3,
+          containerStyle: { backgroundColor: colors.background },
+          titleTextStyle: { color: colors.onSurface },
+          textStyle: { color: colors.onBackground },
+        },
+        (selectedIndex?: number) => {
+          if (selectedIndex !== undefined) {
+            pixelStoreValue(pixel, PixelValueStoreType.runMode, selectedIndex)
+              .then(() => pixel.turnOff("reset"))
+              .catch((e) => console.warn(`Failed to set run mode: ${e}`));
+          }
+        }
+      );
+    },
+    [colors, showActionSheetWithOptions]
   );
 
   const [renameVisible, setRenameVisible] = React.useState(false);
@@ -148,7 +176,6 @@ export function PixelFocusViewHeader({
   );
 
   const { width: windowWidth } = useWindowDimensions();
-  const { colors } = useTheme();
   const textColor =
     actionsMenuVisible || !ready ? colors.onSurfaceDisabled : colors.onSurface;
   return (
@@ -187,13 +214,14 @@ export function PixelFocusViewHeader({
               x: (windowWidth - 230) / 2,
               y: Platform.OS === "ios" ? 40 : 50,
             }}
-            disconnected={!ready}
+            ready={ready}
             onDismiss={() => setActionsMenuVisible(false)}
             onUnpair={onUnpair}
             onUpdateFirmware={hasFirmwareUpdate ? onFirmwareUpdate : undefined}
             onRename={() => setRenameVisible(true)}
             onReset={() => showConfirmReset()}
             onTurnOff={() => showConfirmTurnOff()}
+            onSetRunMode={() => pixel && showSelectRunMode(pixel)}
           />
           <FirmwareUpdateBadge
             pairedDie={pairedDie}
