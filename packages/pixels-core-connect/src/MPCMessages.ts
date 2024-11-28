@@ -304,6 +304,9 @@ export class PlayAnimation implements PixelMessage {
 
   @serializable(1)
   animation = 0;
+
+  @serializable(2)
+  delay = 0; // Milliseconds
 }
 
 export class StopAnimation implements PixelMessage {

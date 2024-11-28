@@ -484,10 +484,11 @@ export class MPC
     );
   }
 
-  async playAnim(animIndex: number): Promise<void> {
+  async playAnim(animIndex: number, delay = 0): Promise<void> {
     await this.sendMessage(
       safeAssign(new PlayAnimation(), {
         animation: animIndex,
+        delay,
       })
     );
   }
