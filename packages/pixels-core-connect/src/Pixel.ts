@@ -672,11 +672,14 @@ export class Pixel
    * Requests the Pixel to completely turn off.
    * @returns A promise that resolves once the message has been send.
    */
-  async turnOff(): Promise<void> {
+  async turnOff(
+    powerOperation: keyof typeof PixelPowerOperationValues = "turnOff"
+  ): Promise<void> {
+    const operation =
+      PixelPowerOperationValues[powerOperation] ??
+      PixelPowerOperationValues.turnOff;
     await this.sendMessage(
-      safeAssign(new PowerOperation(), {
-        operation: PixelPowerOperationValues.turnOff,
-      }),
+      safeAssign(new PowerOperation(), { operation }),
       true // withoutAck
     );
   }
