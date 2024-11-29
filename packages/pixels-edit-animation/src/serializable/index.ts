@@ -2,6 +2,7 @@ export * from "./animations";
 export * from "./audioClip";
 export * from "./color";
 export * from "./convert";
+export * from "./compositeProfile";
 export * from "./gradient";
 export * from "./keyframes";
 export * from "./pattern";

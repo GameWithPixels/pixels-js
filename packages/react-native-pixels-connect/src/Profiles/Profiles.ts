@@ -57,4 +57,16 @@ export {
   EditRgbKeyframe as RgbKeyframe,
   EditRgbTrack as RgbTrack,
   EditRule as Rule,
+  // Composite profile
+  CompositeActionTypeValues,
+  type CompositeActionType,
+  CompositeConditionTypeValues,
+  type CompositeConditionType,
+  EditCompositeAction as CompositeAction,
+  EditCompositeActionPlayMcpAnimation as CompositeActionPlayMcpAnimation,
+  EditCompositeCondition as CompositeCondition,
+  EditCompositeConditionResult as CompositeConditionResult,
+  EditCompositeConditionRollTag as CompositeConditionRollTag,
+  EditCompositeRule as CompositeRule,
+  EditCompositeProfile as CompositeProfile,
 } from "@systemic-games/pixels-edit-animation";

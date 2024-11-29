@@ -74,3 +74,38 @@ export function createAction(type: Profiles.ActionType): Profiles.Action {
       assertNever(type, `Unsupported action type: ${type}`);
   }
 }
+
+export function createCompositeCondition(
+  type: Profiles.CompositeConditionType | "rolled"
+): Profiles.CompositeRule["condition"] {
+  switch (type) {
+    case "none":
+      throw new Error("Cannot create a composite condition of type 'none'");
+    case "rolled":
+      return new Profiles.ConditionRolled();
+    case "result":
+      return new Profiles.CompositeConditionResult();
+    case "rollTag":
+      return new Profiles.CompositeConditionRollTag();
+    default:
+      assertNever(type, `Unsupported composite condition type: ${type}`);
+  }
+}
+
+export function createCompositeAction(
+  type: Profiles.CompositeActionType | Profiles.ActionType
+): Profiles.CompositeRule["actions"][number] {
+  switch (type) {
+    case "none":
+      throw new Error("Cannot create a composite action of type 'none'");
+    case "playAnimation":
+    case "playAudioClip":
+    case "makeWebRequest":
+    case "speakText":
+      return createAction(type);
+    case "playMcpAnimation":
+      return new Profiles.CompositeActionPlayMcpAnimation();
+    default:
+      assertNever(type, `Unsupported composite action type: ${type}`);
+  }
+}

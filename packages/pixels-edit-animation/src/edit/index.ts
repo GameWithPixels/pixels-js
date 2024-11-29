@@ -1,4 +1,7 @@
+// Decorators
 import * as decorators from "./decorators";
+export { decorators };
+
 export * from "./ColorMode";
 export { default as Editable } from "./Editable";
 export { default as EditAction } from "./EditAction";
@@ -38,4 +41,14 @@ export { default as EditRgbGradient } from "./EditRgbGradient";
 export { default as EditRgbKeyframe } from "./EditRgbKeyframe";
 export { default as EditRgbTrack } from "./EditRgbTrack";
 export { default as EditRule } from "./EditRule";
-export { decorators };
+
+// Composite profile
+export * from "./CompositeActionType";
+export * from "./CompositeConditionType";
+export { default as EditCompositeAction } from "./EditCompositeAction";
+export { default as EditCompositeActionPlayMcpAnimation } from "./EditCompositeActionPlayMcpAnimation";
+export { default as EditCompositeCondition } from "./EditCompositeCondition";
+export { default as EditCompositeConditionResult } from "./EditCompositeConditionResult";
+export { default as EditCompositeConditionRollTag } from "./EditCompositeConditionRollTag";
+export { default as EditCompositeRule } from "./EditCompositeRule";
+export { default as EditCompositeProfile } from "./EditCompositeProfile";

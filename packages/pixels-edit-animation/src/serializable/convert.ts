@@ -32,6 +32,11 @@ import {
   AnimationSequenceData,
 } from "./animations";
 import { fromColor, toColor } from "./color";
+import {
+  CompositeProfileData,
+  createCompositeActionSetData,
+  createCompositeConditionSetData,
+} from "./compositeProfile";
 import { GradientData } from "./gradient";
 import { toKeyframes, fromKeyframes } from "./keyframes";
 import { PatternData } from "./pattern";
@@ -41,6 +46,7 @@ import {
   createConditionSetData,
 } from "./profile";
 import {
+  EditAction,
   EditActionPlayAnimation,
   EditActionPlayAudioClip,
   EditAnimation,
@@ -54,6 +60,10 @@ import {
   EditAnimationSequence,
   EditAnimationSequenceItem,
   EditAnimationSimple,
+  EditCompositeActionPlayMcpAnimation,
+  EditCompositeConditionResult,
+  EditCompositeConditionRollTag,
+  EditCompositeProfile,
   EditCondition,
   EditConditionBatteryState,
   EditConditionConnectionState,
@@ -382,154 +392,7 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
   const conditions = createConditionSetData();
   const actions = createActionSetData();
   const rules = profile.rules.map((r) => {
-    const condType = r.condition.type;
-    let condIndex = 0;
-    switch (condType) {
-      case "none":
-        throw new Error(`Invalid condition type: ${condType}`);
-      case "handling":
-      case "crooked":
-        break;
-      case "helloGoodbye":
-        {
-          condIndex = conditions[condType].length;
-          const cond = r.condition as EditConditionHelloGoodbye;
-          conditions[condType].push({
-            flags: valuesToKeys(
-              bitsToFlags(cond.flags),
-              HelloGoodbyeFlagsValues
-            ),
-          });
-        }
-        break;
-      case "rolling":
-        {
-          condIndex = conditions[condType].length;
-          const cond = r.condition as EditConditionRolling;
-          conditions[condType].push({
-            recheckAfter: cond.recheckAfter,
-          });
-        }
-        break;
-      case "faceCompare":
-        {
-          condIndex = conditions["rolled"].length;
-          const cond = r.condition as EditConditionFaceCompare;
-          conditions["rolled"].push({
-            faces: fromFaceCompare(cond.flags, cond.face),
-          });
-        }
-        break;
-      case "rolled":
-        {
-          condIndex = conditions[condType].length;
-          const cond = r.condition as EditConditionRolled;
-          conditions[condType].push({ faces: [...cond.faces] });
-        }
-        break;
-      case "connection":
-        {
-          condIndex = conditions[condType].length;
-          const cond = r.condition as EditConditionConnectionState;
-          conditions[condType].push({
-            flags: valuesToKeys(
-              bitsToFlags(cond.flags),
-              ConnectionStateFlagsValues
-            ),
-          });
-        }
-        break;
-      case "battery":
-        {
-          condIndex = conditions[condType].length;
-          const cond = r.condition as EditConditionBatteryState;
-          conditions[condType].push({
-            flags: valuesToKeys(
-              bitsToFlags(cond.flags),
-              BatteryStateFlagsValues
-            ),
-            recheckAfter: cond.recheckAfter,
-          });
-        }
-        break;
-      case "idle":
-        {
-          condIndex = conditions[condType].length;
-          const cond = r.condition as EditConditionIdle;
-          conditions[condType].push({
-            period: cond.period,
-          });
-        }
-        break;
-      default:
-        assertNever(condType, `Unsupported condition type: ${condType}`);
-    }
-    return {
-      condition: {
-        type: condType === "faceCompare" ? "rolled" : condType,
-        index: condIndex,
-      },
-      actions: r.actions.map((action) => {
-        const actType = action.type;
-        if (actType === "none") {
-          throw new Error(`Invalid action type: ${actType}`);
-        }
-        switch (actType) {
-          case "playAnimation":
-            {
-              const act = action as EditActionPlayAnimation;
-              actions[actType].push({
-                animationUuid: act.animation?.uuid,
-                face: act.face,
-                loopCount: act.loopCount,
-                duration: act.duration,
-                fade: act.fade,
-                intensity: act.intensity,
-                faceMask: act.faceMask,
-                colors: act.colors.map(ColorUtils.colorToString),
-              });
-            }
-            break;
-          case "playAudioClip":
-            {
-              const act = action as EditActionPlayAudioClip;
-              actions[actType].push({
-                clipUuid: act.clipUuid,
-                volume: act.volume,
-                loopCount: act.loopCount,
-              });
-            }
-            break;
-          case "makeWebRequest":
-            {
-              const act = action as EditActionMakeWebRequest;
-              actions[actType].push({
-                url: act.url,
-                value: act.value,
-                format: act.format,
-              });
-            }
-            break;
-          case "speakText":
-            {
-              const act = action as EditActionSpeakText;
-              actions[actType].push({
-                text: act.text,
-                volume: act.volume,
-                pitch: act.pitch,
-                rate: act.rate,
-              });
-            }
-            break;
-          default:
-            assertNever(actType, `Unsupported action type: ${actType}`);
-        }
-        return {
-          type: actType,
-          index: actions[actType].length - 1,
-        };
-      }),
-    };
+    return addConditionData(r, conditions, actions);
   });
   return {
     uuid: profile.uuid,
@@ -543,6 +406,160 @@ export function fromProfile(profile: Readonly<EditProfile>): ProfileData {
     conditions,
     actions,
     rules,
+  };
+}
+
+function addConditionData(
+  rule: Readonly<EditRule>,
+  conditions: ProfileData["conditions"],
+  actions: ProfileData["actions"]
+): ProfileData["rules"][number] {
+  const { type } = rule.condition;
+  let index = 0;
+  switch (type) {
+    case "none":
+      throw new Error(`Invalid condition type: ${type}`);
+    case "handling":
+    case "crooked":
+      break;
+    case "helloGoodbye":
+      {
+        index = conditions[type].length;
+        const cond = rule.condition as EditConditionHelloGoodbye;
+        conditions[type].push({
+          flags: valuesToKeys(bitsToFlags(cond.flags), HelloGoodbyeFlagsValues),
+        });
+      }
+      break;
+    case "rolling":
+      {
+        index = conditions[type].length;
+        const cond = rule.condition as EditConditionRolling;
+        conditions[type].push({
+          recheckAfter: cond.recheckAfter,
+        });
+      }
+      break;
+    case "faceCompare":
+      {
+        index = conditions["rolled"].length;
+        const cond = rule.condition as EditConditionFaceCompare;
+        conditions["rolled"].push({
+          faces: fromFaceCompare(cond.flags, cond.face),
+        });
+      }
+      break;
+    case "rolled":
+      {
+        index = conditions[type].length;
+        const cond = rule.condition as EditConditionRolled;
+        conditions[type].push({ faces: [...cond.faces] });
+      }
+      break;
+    case "connection":
+      {
+        index = conditions[type].length;
+        const cond = rule.condition as EditConditionConnectionState;
+        conditions[type].push({
+          flags: valuesToKeys(
+            bitsToFlags(cond.flags),
+            ConnectionStateFlagsValues
+          ),
+        });
+      }
+      break;
+    case "battery":
+      {
+        index = conditions[type].length;
+        const cond = rule.condition as EditConditionBatteryState;
+        conditions[type].push({
+          flags: valuesToKeys(bitsToFlags(cond.flags), BatteryStateFlagsValues),
+          recheckAfter: cond.recheckAfter,
+        });
+      }
+      break;
+    case "idle":
+      {
+        index = conditions[type].length;
+        const cond = rule.condition as EditConditionIdle;
+        conditions[type].push({
+          period: cond.period,
+        });
+      }
+      break;
+    default:
+      assertNever(type, `Unsupported condition type: ${type}`);
+  }
+  return {
+    condition: {
+      type: type === "faceCompare" ? "rolled" : type,
+      index,
+    },
+    actions: rule.actions.map((action) => addActionData(action, actions)),
+  };
+}
+
+function addActionData(
+  action: Readonly<EditAction>,
+  actions: ProfileData["actions"]
+): ProfileData["rules"][number]["actions"][number] {
+  const { type } = action;
+  if (type === "none") {
+    throw new Error(`Invalid action type: ${type}`);
+  }
+  switch (type) {
+    case "playAnimation":
+      {
+        const act = action as EditActionPlayAnimation;
+        actions[type].push({
+          animationUuid: act.animation?.uuid,
+          face: act.face,
+          loopCount: act.loopCount,
+          duration: act.duration,
+          fade: act.fade,
+          intensity: act.intensity,
+          faceMask: act.faceMask,
+          colors: act.colors.map(ColorUtils.colorToString),
+        });
+      }
+      break;
+    case "playAudioClip":
+      {
+        const act = action as EditActionPlayAudioClip;
+        actions[type].push({
+          clipUuid: act.clipUuid,
+          volume: act.volume,
+          loopCount: act.loopCount,
+        });
+      }
+      break;
+    case "makeWebRequest":
+      {
+        const act = action as EditActionMakeWebRequest;
+        actions[type].push({
+          url: act.url,
+          value: act.value,
+          format: act.format,
+        });
+      }
+      break;
+    case "speakText":
+      {
+        const act = action as EditActionSpeakText;
+        actions[type].push({
+          text: act.text,
+          volume: act.volume,
+          pitch: act.pitch,
+          rate: act.rate,
+        });
+      }
+      break;
+    default:
+      assertNever(type, `Unsupported action type: ${type}`);
+  }
+  return {
+    type,
+    index: actions[type].length - 1,
   };
 }
 
@@ -752,4 +769,91 @@ export function fromGradient(
 ): GradientData {
   const keyframes = fromKeyframes(gradient.keyframes);
   return { uuid: gradient.uuid, keyframes };
+}
+
+export function fromCompositeProfile(
+  profile: Readonly<EditCompositeProfile>
+): CompositeProfileData {
+  const conditions = createCompositeConditionSetData();
+  const actions = createCompositeActionSetData();
+  const rules = profile.rules.map((r) => {
+    const type = r.condition.type;
+    let index = 0;
+    switch (type) {
+      case "none":
+        throw new Error(`Invalid composite condition type: ${type}`);
+      case "rolled":
+        {
+          index = conditions[type].length;
+          const cond = r.condition as EditConditionRolled;
+          conditions[type].push({ faces: [...cond.faces] });
+        }
+        break;
+      case "result":
+        {
+          index = conditions[type].length;
+          const cond = r.condition as EditCompositeConditionResult;
+          conditions[type].push({
+            value: cond.value,
+          });
+        }
+        break;
+      case "rollTag":
+        {
+          index = conditions[type].length;
+          const cond = r.condition as EditCompositeConditionRollTag;
+          conditions[type].push({
+            tag: cond.tag,
+          });
+        }
+        break;
+      default:
+        assertNever(type, `Unsupported composite condition type: ${type}`);
+    }
+    return {
+      condition: { type, index },
+      actions: r.actions.map((action) => {
+        const actType = action.type;
+        if (actType === "none") {
+          throw new Error(`Invalid composite action type: ${actType}`);
+        }
+        switch (actType) {
+          case "playAnimation":
+          case "playAudioClip":
+          case "makeWebRequest":
+          case "speakText":
+            addActionData(action, actions);
+            break;
+          case "playMcpAnimation":
+            {
+              const act = action as EditCompositeActionPlayMcpAnimation;
+              actions[actType].push({
+                animation: act.animation,
+              });
+            }
+            break;
+          default:
+            assertNever(
+              actType,
+              `Unsupported composite action type: ${actType}`
+            );
+        }
+        return {
+          type: actType,
+          index: actions[actType].length - 1,
+        };
+      }),
+    } as const;
+  });
+  return {
+    uuid: profile.uuid,
+    name: profile.name,
+    formula: profile.formula,
+    description: profile.description,
+    creationDate: profile.creationDate.getTime(),
+    lastModified: profile.lastModified.getTime(),
+    conditions,
+    actions,
+    rules,
+  };
 }
