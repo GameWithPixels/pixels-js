@@ -1,3 +1,4 @@
+import { range } from "@systemic-games/pixels-core-utils";
 import {
   getMPC,
   MPC,
@@ -23,7 +24,7 @@ function forEachMPC<T>(
   action: (mpc: MPC) => Promise<T>
 ): void {
   for (const p of pairedMPCs) {
-    const mpc = getMPC(p.systemId);
+    const mpc = getMPC(p.pixelId);
     if (mpc) {
       action(mpc).catch((e) => console.log(String(e)));
     }
@@ -124,16 +125,34 @@ function MPCsListPage({
                 Add MPC
               </OutlineButton>
               <OutlineButton onPress={() => {}}>Synchronize</OutlineButton>
-              <GradientButton
-                onPress={() => forEachMPC(pairedMPCs, (mpc) => mpc.playAnim(1))}
-              >
-                Play Animation 1
-              </GradientButton>
-              <GradientButton
-                onPress={() => forEachMPC(pairedMPCs, (mpc) => mpc.stopAnim(1))}
-              >
-                Stop Animation 1
-              </GradientButton>
+              {range(1, 5).map((i) => (
+                <View
+                  key={i}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <Text variant="bodyLarge">Anim #{i}</Text>
+                  <GradientButton
+                    style={{ flex: 1 }}
+                    onPress={() =>
+                      forEachMPC(pairedMPCs, (mpc) => mpc.playAnim(i))
+                    }
+                  >
+                    Play
+                  </GradientButton>
+                  <GradientButton
+                    style={{ flex: 1 }}
+                    onPress={() =>
+                      forEachMPC(pairedMPCs, (mpc) => mpc.stopAnim(i))
+                    }
+                  >
+                    Stop
+                  </GradientButton>
+                </View>
+              ))}
               <MPCsList
                 pairedMPCs={pairedMPCs}
                 onSelectMPC={(pairedMpc) =>
