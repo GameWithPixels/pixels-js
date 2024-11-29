@@ -4,7 +4,6 @@ import {
   Action,
 } from "@systemic-games/pixels-core-animation";
 
-import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
 
 export default abstract class EditAction {
@@ -17,18 +16,4 @@ export default abstract class EditAction {
   ): Action;
 
   abstract duplicate(): EditAction;
-
-  replaceAnimation(
-    _oldAnimation: EditAnimation,
-    _newAnimation: EditAnimation
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-  ): void {}
-
-  requiresAnimation(_animation: EditAnimation): boolean {
-    return false;
-  }
-
-  collectAnimations(): EditAnimation[] {
-    return [];
-  }
 }

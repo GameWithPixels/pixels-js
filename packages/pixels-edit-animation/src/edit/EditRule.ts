@@ -2,6 +2,7 @@ import { DataSet, Rule } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
 import EditAction from "./EditAction";
+import EditActionPlayAnimation from "./EditActionPlayAnimation";
 import EditAnimation from "./EditAnimation";
 import EditCondition from "./EditCondition";
 import EditDataSet from "./EditDataSet";
@@ -57,11 +58,16 @@ export default class EditRule {
     newAnimation: EditAnimation
   ): void {
     for (const action of this.actions) {
-      action.replaceAnimation(oldAnimation, newAnimation);
+      if (action instanceof EditActionPlayAnimation) {
+        action.replaceAnimation(oldAnimation, newAnimation);
+      }
     }
   }
 
   requiresAnimation(animation: EditAnimation): boolean {
-    return !!this.actions.find((a) => a.requiresAnimation(animation));
+    return !!this.actions.find(
+      (a) =>
+        a instanceof EditActionPlayAnimation && a.requiresAnimation(animation)
+    );
   }
 }

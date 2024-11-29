@@ -1,6 +1,7 @@
 import { enumValue } from "@systemic-games/pixels-core-utils";
 
 /**
+ * Defines the supported types of conditions for a profile.
  * @category Profile Condition
  * @enum
  */

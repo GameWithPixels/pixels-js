@@ -1,7 +1,7 @@
 import { enumValue } from "@systemic-games/pixels-core-utils";
 
 /**
- * Defines the supported types of actions.
+ * Defines the supported types of actions for a profile.
  * @category Profile Action
  * @enum
  */
