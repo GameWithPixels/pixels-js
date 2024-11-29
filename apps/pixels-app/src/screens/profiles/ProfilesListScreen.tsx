@@ -20,7 +20,6 @@ import {
 } from "~/components/AnimatedProfileSearchbar";
 import { AppBackground } from "~/components/AppBackground";
 import { HeaderMenuButton } from "~/components/HeaderMenuButton";
-import { PickDieBottomSheet } from "~/components/PickDieBottomSheet";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
@@ -29,7 +28,6 @@ import { FloatingAddButton } from "~/components/buttons";
 import { EmptyLibraryCard } from "~/components/cards";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import {
-  getCompatibleDieTypes,
   getProfilesGroupingLabel,
   getSortModeIcon,
   getSortModeLabel,
@@ -39,8 +37,6 @@ import {
   SortModeList,
 } from "~/features/profiles";
 import {
-  Library,
-  readProfile,
   setProfilesGrouping,
   setProfilesSortMode,
   setProfilesViewMode,
@@ -161,6 +157,7 @@ function ProfilesListPage({
   const store = useAppStore();
   const { library: profiles } = useProfilesList();
 
+  const createProfile = () => navigation.navigate("createProfile");
   const editProfile = (profile: Readonly<Profiles.Profile>) =>
     navigation.navigate("editProfileStack", {
       screen: "editProfile",
@@ -168,8 +165,6 @@ function ProfilesListPage({
         profileUuid: profile.uuid,
       },
     });
-  const [profileToProgram, setProfileToProgram] =
-    React.useState<Readonly<Profiles.Profile>>();
 
   const viewMode = useAppSelector((state) => state.appSettings.profileViewMode);
   const groupBy = useAppSelector((state) => state.appSettings.profilesGrouping);
@@ -217,22 +212,18 @@ function ProfilesListPage({
               <ProfilesGrid
                 profiles={filteredProfiles}
                 onSelectProfile={editProfile}
-                onProgramDice={setProfileToProgram}
               />
             ) : (
               <ProfilesList
                 profiles={filteredProfiles}
                 onSelectProfile={editProfile}
-                onProgramDice={setProfileToProgram}
                 groupBy={groupBy}
                 sortMode={sortMode}
               />
             )}
           </>
         ) : (
-          <EmptyLibraryCard
-            onPress={() => navigation.navigate("createProfile")}
-          />
+          <EmptyLibraryCard onPress={createProfile} />
         )}
       </GHScrollView>
       {profiles.length > 0 && (
@@ -243,40 +234,10 @@ function ProfilesListPage({
           />
           <FloatingAddButton
             sentry-label="add-profile"
-            onPress={() => navigation.navigate("createProfile")}
+            onPress={createProfile}
           />
         </>
       )}
-      <PickDieBottomSheet
-        dieTypes={
-          profileToProgram
-            ? getCompatibleDieTypes(profileToProgram.dieType)
-            : undefined
-        }
-        visible={!!profileToProgram}
-        onDismiss={(pairedDie) => {
-          if (pairedDie && profileToProgram) {
-            // Update die profile
-            const profileData =
-              store.getState().library.profiles.entities[profileToProgram.uuid];
-            if (profileData) {
-              store.dispatch(
-                Library.Profiles.update({
-                  ...profileData,
-                  uuid: pairedDie.profileUuid,
-                  sourceUuid: profileToProgram.uuid,
-                  // It's possible to use a profile from another die type
-                  // (ex: D00 & D10 share the same profiles)
-                  dieType: pairedDie.dieType,
-                })
-              );
-              // Update profile instance
-              readProfile(pairedDie.profileUuid, store.getState().library);
-            }
-          }
-          setProfileToProgram(undefined);
-        }}
-      />
     </>
   );
 }
