@@ -260,7 +260,6 @@ export interface ProfilesListProps extends ViewProps {
   groupBy?: ProfilesGrouping;
   sortMode?: SortMode;
   onSelectProfile?: (profile: Readonly<Profiles.Profile>) => void;
-  onProgramDice?: (profile: Readonly<Profiles.Profile>) => void;
 }
 
 export function ProfilesList({
