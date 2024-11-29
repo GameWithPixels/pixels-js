@@ -7,6 +7,7 @@ import {
 } from "@systemic-games/pixels-core-animation";
 import { safeAssign } from "@systemic-games/pixels-core-utils";
 
+import EditActionPlayAnimation from "./EditActionPlayAnimation";
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
 import EditAnimation from "./EditAnimation";
 import EditDataSet from "./EditDataSet";
@@ -94,9 +95,11 @@ export default class EditProfile extends Editable {
     const animations: EditAnimation[] = [];
     for (const r of this.rules) {
       for (const action of r.actions) {
-        for (const anim of action.collectAnimations()) {
-          if (!animations.includes(anim)) {
-            animations.push(anim);
+        if (action instanceof EditActionPlayAnimation) {
+          for (const anim of action.collectAnimations()) {
+            if (!animations.includes(anim)) {
+              animations.push(anim);
+            }
           }
         }
       }

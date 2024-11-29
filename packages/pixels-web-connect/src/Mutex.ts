@@ -8,7 +8,6 @@ export default class Mutex {
 
   // Lock the mutex and return the function to unlock it
   lock(): Promise<() => void> {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     let executor = (_resolve: () => void) => {};
 
     // Update the mutex (note: the fulfillment handler will be called asynchronously)
