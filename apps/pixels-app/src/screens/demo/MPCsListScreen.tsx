@@ -10,7 +10,7 @@ import { Text } from "react-native-paper";
 
 import { PairMPCsBottomSheet } from "./components/PairMPCsBottomSheet";
 
-import { PairedMPC } from "~/app/PairedMPC";
+import { MPCRoles, PairedMPC } from "~/app/PairedMPC";
 import { useAppSelector } from "~/app/hooks";
 import { MPCsListScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
@@ -124,7 +124,32 @@ function MPCsListPage({
               <OutlineButton onPress={() => setShowPairDice(true)}>
                 Add MPC
               </OutlineButton>
-              <OutlineButton onPress={() => {}}>Synchronize</OutlineButton>
+              <OutlineButton
+                onPress={() => {
+                  const referenceTime = 1000; // Arbitrary reference time
+                  const maxDelayTime = 100; // Expected max delay before we've messages all controllers
+                  const offset = 500;
+                  const targetTime = Date.now() + maxDelayTime;
+                  pairedMPCs.forEach((mpc) => {
+                    const pmpc = getMPC(mpc.pixelId);
+                    if (pmpc) {
+                      pmpc
+                        .sync(
+                          targetTime,
+                          referenceTime,
+                          (2.5 - Math.abs(MPCRoles.indexOf(mpc.role) - 2.5)) *
+                            offset,
+                          0
+                        )
+                        .catch((e) =>
+                          console.warn(`Error syncing MPC ${mpc.name}: ${e}`)
+                        );
+                    }
+                  });
+                }}
+              >
+                Synchronize
+              </OutlineButton>
               {range(1, 5).map((i) => (
                 <View
                   key={i}
@@ -138,7 +163,12 @@ function MPCsListPage({
                   <GradientButton
                     style={{ flex: 1 }}
                     onPress={() =>
-                      forEachMPC(pairedMPCs, (mpc) => mpc.playAnim(i))
+                      pairedMPCs.forEach((mpc) => {
+                        const pmpc = getMPC(mpc.pixelId);
+                        if (pmpc) {
+                          pmpc.playAnim(i, 0, MPCRoles.indexOf(mpc.role), 0);
+                        }
+                      })
                     }
                   >
                     Play

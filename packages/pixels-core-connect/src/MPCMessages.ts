@@ -307,6 +307,12 @@ export class PlayAnimation implements PixelMessage {
 
   @serializable(2)
   delay = 0; // Milliseconds
+
+  @serializable(4)
+  genericParam0 = 0;
+
+  @serializable(4)
+  genericParam1 = 0;
 }
 
 export class StopAnimation implements PixelMessage {
@@ -443,6 +449,12 @@ export class SynchronizeTime implements PixelMessage {
 
   @serializable(4)
   itWillBeThisManyMs = 0;
+
+  @serializable(4)
+  genericParam0 = 0;
+
+  @serializable(4)
+  genericParam1 = 0;
 }
 
 export const serializer = new MessageSerializer<MPCMessageType>(

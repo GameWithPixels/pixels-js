@@ -14,6 +14,7 @@ import React from "react";
 import { Alert, AppState } from "react-native";
 
 import { PairedDie } from "./PairedDie";
+import { MPCRoles } from "./PairedMPC";
 import { useAppSelector, useAppStore } from "./hooks";
 import {
   AppStore,
@@ -129,12 +130,18 @@ function syncMPCs(store: AppStore): void {
   console.log("Syncing MPCs");
   const referenceTime = 1000; // Arbitrary reference time
   const maxDelayTime = 100; // Expected max delay before we've messages all controllers
+  const offset = 100;
   const targetTime = Date.now() + maxDelayTime;
   for (const pairedMPC of store.getState().pairedMPCs.paired) {
     const mpc = getMPC(pairedMPC.pixelId);
     if (mpc?.status === "ready") {
       mpc
-        .sync(targetTime, referenceTime)
+        .sync(
+          targetTime,
+          referenceTime,
+          (2.5 - Math.abs(MPCRoles.indexOf(pairedMPC.role) - 2.5)) * offset,
+          0
+        )
         .catch((e) => console.warn(`Error syncing MPC ${mpc.name}: ${e}`));
     }
   }

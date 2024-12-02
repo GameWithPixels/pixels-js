@@ -475,20 +475,34 @@ export class MPC
     await this.sendAndWaitForResponse(blinkMsg, "blinkAck");
   }
 
-  async sync(targetTime: number, referenceTime: number): Promise<void> {
+  async sync(
+    targetTime: number,
+    referenceTime: number,
+    param0 = 0,
+    param1 = 0
+  ): Promise<void> {
     await this.sendMessage(
       safeAssign(new SynchronizeTime(), {
         inThisManyMs: targetTime - Date.now(),
         itWillBeThisManyMs: referenceTime,
+        genericParam0: param0,
+        genericParam1: param1,
       })
     );
   }
 
-  async playAnim(animIndex: number, delay = 0): Promise<void> {
+  async playAnim(
+    animIndex: number,
+    delay = 0,
+    param0 = 0,
+    param1 = 0
+  ): Promise<void> {
     await this.sendMessage(
       safeAssign(new PlayAnimation(), {
         animation: animIndex,
         delay,
+        genericParam0: param0,
+        genericParam1: param1,
       })
     );
   }

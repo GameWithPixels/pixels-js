@@ -1,7 +1,11 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
-import { MPC, useMPCProp } from "@systemic-games/react-native-pixels-connect";
+import {
+  getMPC,
+  MPC,
+  useMPCProp,
+} from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleSheet, View, ViewProps } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
@@ -136,6 +140,18 @@ function MPCConfig({
         <Text>Role: {mpc.role}</Text>
         <OutlineButton onPress={() => showAssignRoleActionSheet()}>
           Change
+        </OutlineButton>
+      </View>
+      <View style={{ ...styles.paragraph, flexDirection: "row" }}>
+        <OutlineButton
+          onPress={() => {
+            const pmpc = getMPC(mpc.pixelId);
+            if (pmpc) {
+              pmpc.playAnim(0, 0, MPCRoles.indexOf(mpc.role), 0);
+            }
+          }}
+        >
+          Blink
         </OutlineButton>
       </View>
     </View>
