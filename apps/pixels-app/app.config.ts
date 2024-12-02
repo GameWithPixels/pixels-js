@@ -3,7 +3,7 @@ const prod =
   !process.env.SYSTEMIC_PX_DEV &&
   process.env.EAS_BUILD_PROFILE !== "development";
 
-const version = "2.5.1"; // Version number must have 3 parts
+const version = "2.5.2"; // Version number must have 3 parts
 const buildNumber = 2504;
 
 const config = {
