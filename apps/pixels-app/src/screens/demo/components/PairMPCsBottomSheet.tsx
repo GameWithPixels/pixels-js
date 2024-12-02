@@ -11,6 +11,7 @@ import { useAppStore } from "~/app/hooks";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
+import { ScanningIndicator } from "~/components/ScanningIndicator";
 import { TouchableCard } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton } from "~/components/buttons";
@@ -117,16 +118,25 @@ function SelectScannedMPCs({
             />
           ))
         ) : (
-          <AnimatedText
-            key={showNoMPC ? "empty" : "scanning"}
-            entering={FadeIn.duration(300)}
-            style={{ marginLeft: 10 }}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              marginLeft: 10,
+            }}
           >
-            {showNoMPC
-              ? "No MPCs found. Make sure they are nearby and powered on."
-              : "Scanning for MPCs..."}
-            .
-          </AnimatedText>
+            <ScanningIndicator />
+            <AnimatedText
+              key={showNoMPC ? "empty" : "scanning"}
+              entering={FadeIn.duration(300)}
+            >
+              {showNoMPC
+                ? "No MPCs found. Make sure they are nearby and powered on."
+                : "Scanning for MPCs..."}
+              .
+            </AnimatedText>
+          </View>
         )}
       </BottomSheetScrollView>
       {/* Show select/ unselect all when more than 1 line of MPCs cards */}

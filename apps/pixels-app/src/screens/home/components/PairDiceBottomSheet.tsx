@@ -17,6 +17,7 @@ import { getBottomSheetProps } from "~/app/themes";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
+import { ScanningIndicator } from "~/components/ScanningIndicator";
 import { TouchableCard } from "~/components/TouchableCard";
 import { AnimatedText } from "~/components/animated";
 import { GradientButton } from "~/components/buttons";
@@ -146,17 +147,28 @@ function SelectScannedPixels({
             />
           ))
         ) : (
-          <AnimatedText
-            key={showNoDie ? "empty" : "scanning"}
-            entering={FadeIn.duration(300)}
-            style={{ marginLeft: 10 }}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              marginLeft: 10,
+            }}
           >
-            {showNoDie
-              ? getNoAvailableDiceMessage() +
-                `\n\nFor help about turning on your dice go in the "More" tab`
-              : "Scanning for dice..."}
-            .
-          </AnimatedText>
+            <ScanningIndicator />
+            <AnimatedText
+              key={showNoDie ? "empty" : "scanning"}
+              entering={FadeIn.duration(300)}
+              variant="bodyMedium"
+              style={{}}
+            >
+              {showNoDie
+                ? getNoAvailableDiceMessage() +
+                  `\n\nFor help about turning on your dice go in the "More" tab`
+                : "Scanning for dice..."}
+              .
+            </AnimatedText>
+          </View>
         )}
       </BottomSheetScrollView>
       {/* Show select/ unselect all when more than 1 line of dice cards */}
