@@ -2,6 +2,8 @@ import calculateFinalResult from "./calculateFinalResult";
 import createRoll from "./roll";
 import createRollDice from "./rollDice";
 import constant from "./rules/constant";
+import keepHighestRoll from "./rules/keepHighestRoll";
+import keepLowestRoll from "./rules/keepLowestRoll";
 import simpleDieRoll from "./rules/simpleDieRoll";
 import type { Plugins } from "./rules/types";
 import createTallyRolls from "./tallyRolls";
@@ -12,6 +14,8 @@ import {
 } from "./util/rollConfig";
 
 export const defaultPlugins = {
+  [keepLowestRoll.typeConstant]: keepLowestRoll,
+  [keepHighestRoll.typeConstant]: keepHighestRoll,
   [simpleDieRoll.typeConstant]: simpleDieRoll,
   [constant.typeConstant]: constant,
 };
