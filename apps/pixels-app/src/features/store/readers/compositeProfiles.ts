@@ -55,6 +55,7 @@ function updateProfile(
   profile.name = profileData.name;
   profile.description = profileData.description;
   profile.formula = profileData.formula;
+  profile.speakResult = profileData.speakResult;
   if (profile.creationDate.getTime() !== profileData.creationDate) {
     profile.creationDate = new Date(profileData.creationDate);
   }

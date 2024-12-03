@@ -12,6 +12,9 @@ export default class EditCompositeProfile extends Editable {
   @observable
   rules: EditCompositeRule[];
 
+  @observable
+  speakResult: boolean;
+
   // TODO The properties below should be moved to a separate class
 
   @observable
@@ -26,6 +29,7 @@ export default class EditCompositeProfile extends Editable {
     description?: string;
     formula?: string;
     rules?: EditCompositeRule[];
+    speakResult?: boolean;
     creationDate?: Date;
     lastModified?: Date;
   }) {
@@ -33,6 +37,7 @@ export default class EditCompositeProfile extends Editable {
     this.description = opt?.description ?? "";
     this.formula = opt?.formula;
     this.rules = opt?.rules ?? [];
+    this.speakResult = opt?.speakResult ?? false;
     this.creationDate = opt?.creationDate ?? new Date();
     this.lastModified = opt?.lastModified ?? new Date();
   }

@@ -2,7 +2,14 @@ import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { View, ScrollView } from "react-native";
-import { Button, MD3Theme, TextInput, useTheme } from "react-native-paper";
+import {
+  Button,
+  MD3Theme,
+  Switch,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 
 import {
   EditRuleCallback,
@@ -18,7 +25,7 @@ import {
   useEditableCompositeProfile,
 } from "~/hooks";
 
-const EditProfileText = observer(function EditProfileDescription({
+const EditProfileString = observer(function EditProfileString({
   valueName,
   getValue,
   setValue,
@@ -27,7 +34,7 @@ const EditProfileText = observer(function EditProfileDescription({
 }: {
   valueName: string;
   getValue: () => string | undefined;
-  setValue: (text: string) => void;
+  setValue: (value: string) => void;
   multiline?: boolean;
   colors: MD3Theme["colors"];
 }) {
@@ -40,10 +47,38 @@ const EditProfileText = observer(function EditProfileDescription({
       style={{ backgroundColor: colors.elevation.level0 }}
       contentStyle={{ marginVertical: 10 }}
       value={getValue()}
-      onChangeText={(t) => runInAction(() => setValue(t))}
+      onChangeText={(v) => runInAction(() => setValue(v))}
       placeholder={"This profile has no " + valueName}
       placeholderTextColor={colors.onSurfaceDisabled}
     />
+  );
+});
+
+const EditProfileBool = observer(function EditProfileString({
+  label,
+  getValue,
+  setValue,
+}: {
+  label: string;
+  getValue: () => boolean | undefined;
+  setValue: (value: boolean) => void;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        marginHorizontal: 10,
+        marginTop: 5,
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <Switch
+        value={getValue()}
+        onValueChange={(v) => runInAction(() => setValue(v))}
+      />
+      <Text>{label}</Text>
+    </View>
   );
 });
 
@@ -88,26 +123,32 @@ function EditCompositeProfilePage({
         }}
       >
         <SectionTitle>Name</SectionTitle>
-        <EditProfileText
+        <EditProfileString
           valueName="name"
           getValue={() => profile.name}
-          setValue={(t) => (profile.name = t)}
+          setValue={(v) => (profile.name = v)}
           colors={colors}
         />
         <SectionTitle>Description</SectionTitle>
-        <EditProfileText
+        <EditProfileString
           valueName="description"
           multiline
           getValue={() => profile.description}
-          setValue={(t) => (profile.description = t)}
+          setValue={(v) => (profile.description = v)}
           colors={colors}
         />
         <SectionTitle>Formula</SectionTitle>
-        <EditProfileText
+        <EditProfileString
           valueName="formula"
           getValue={() => profile.formula}
-          setValue={(t) => (profile.formula = t)}
+          setValue={(v) => (profile.formula = v)}
           colors={colors}
+        />
+        <SectionTitle>Speak Result</SectionTitle>
+        <EditProfileBool
+          label="Whether to speak the formula result"
+          getValue={() => profile.speakResult}
+          setValue={(v) => (profile.speakResult = v)}
         />
       </ScrollView>
     </View>

@@ -4,6 +4,7 @@ import { UniqueNamedData } from "./unique";
 export interface CompositeProfileData extends UniqueNamedData {
   description: string;
   formula?: string;
+  speakResult: boolean;
   creationDate: number;
   lastModified: number;
   conditions: {

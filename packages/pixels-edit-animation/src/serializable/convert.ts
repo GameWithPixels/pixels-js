@@ -848,8 +848,9 @@ export function fromCompositeProfile(
   return {
     uuid: profile.uuid,
     name: profile.name,
-    formula: profile.formula,
     description: profile.description,
+    formula: profile.formula,
+    speakResult: profile.speakResult,
     creationDate: profile.creationDate.getTime(),
     lastModified: profile.lastModified.getTime(),
     conditions,

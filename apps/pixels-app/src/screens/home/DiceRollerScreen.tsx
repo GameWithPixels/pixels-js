@@ -5,7 +5,8 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 import * as Haptics from "expo-haptics";
-import { reaction } from "mobx";
+import * as Speech from "expo-speech";
+import { observer } from "mobx-react-lite";
 import React from "react";
 import {
   View,
@@ -306,19 +307,20 @@ function CompositeRoll({
 
 function FormulaCard({
   formula,
+  speak,
   rolls: appRolls,
   onDismiss,
   onReset,
 }: {
   formula: string;
+  speak?: boolean;
   rolls: readonly RollerSingleEntry[];
   onDismiss: (
     entry: Omit<RollerCompositeEntry, "timestamp"> | undefined
   ) => void;
   onReset: () => void;
 }) {
-  const [dismissTimeout, setDismissTimeout] =
-    React.useState<ReturnType<typeof setTimeout>>();
+  const [isDone, setIsDone] = React.useState(false);
   const dismissTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
   React.useEffect(() => {
     return () => {
@@ -390,21 +392,25 @@ function FormulaCard({
 
   // Dismiss the card after 5 seconds when done
   const showResult = React.useCallback(() => {
-    if (result !== undefined) {
+    // Skip if already set
+    if (result !== undefined && !dismissTimeoutRef.current) {
       const entry = {
         formula,
         result,
         rolls: compositeRolls,
       } as const;
-      // Skip if already set
-      setDismissTimeout(
-        (id) =>
-          (dismissTimeoutRef.current = id
-            ? id
-            : setTimeout(() => onDismiss(entry), 5000))
-      );
+      dismissTimeoutRef.current = setTimeout(() => onDismiss(entry), 5000);
+      setIsDone(true);
+      if (speak) {
+        const settings = {
+          volume: 1,
+          pitch: 1,
+          rate: 1,
+        } as const;
+        Speech.speak(result.toString(), settings);
+      }
     }
-  }, [compositeRolls, formula, onDismiss, result]);
+  }, [compositeRolls, formula, onDismiss, result, speak]);
 
   // Store the result if all rolls are available
   React.useEffect(() => {
@@ -415,10 +421,9 @@ function FormulaCard({
     ) {
       showResult();
     } else {
-      setDismissTimeout((id) => {
-        clearTimeout(id);
-        return (dismissTimeoutRef.current = undefined);
-      });
+      clearTimeout(dismissTimeoutRef.current);
+      dismissTimeoutRef.current = undefined;
+      setIsDone(false);
     }
   }, [resultError, rollsResults, showResult, tokenizerError]);
 
@@ -477,7 +482,7 @@ function FormulaCard({
         >
           <CompositeRoll
             formula={formula}
-            result={dismissTimeout ? result : undefined}
+            result={isDone ? result : undefined}
             rolls={compositeRolls}
           />
         </Pressable>
@@ -619,7 +624,7 @@ function OptionsMenu({
   );
 }
 
-function RollerPage({
+const RollerPage = observer(function RollerPage({
   navigation,
 }: {
   navigation: DiceRollerScreenProps["navigation"];
@@ -666,21 +671,15 @@ function RollerPage({
   const activeProfile = useOptionalCompositeProfile(
     useAppSelector((state) => state.diceRoller.activeProfileUuid)
   );
-  const [formula, setFormula] = React.useState(activeProfile?.formula ?? "");
-  const clearSetFormulaTimeout = React.useRef<() => void>();
+  const formula = activeProfile?.formula ?? "";
+  const [showFormula, setShowFormula] = React.useState(!!formula.length);
+  const clearShowFormulaTimeout = React.useRef<() => void>();
   React.useEffect(() => {
-    clearSetFormulaTimeout.current?.();
-    setFormula(activeProfile?.formula ?? "");
-    if (activeProfile) {
-      return reaction(
-        () => activeProfile.formula,
-        (formula) => setFormula(formula ?? "")
-      );
-    }
-  }, [activeProfile]);
-  React.useEffect(() => {
-    return () => clearSetFormulaTimeout.current?.();
-  }, []);
+    // Reset on profile or formula change
+    setShowFormula(!!formula.length);
+    setFormulaCounter((c) => c + 1);
+    return () => clearShowFormulaTimeout.current?.();
+  }, [activeProfile, formula]);
   const [formulaCounter, setFormulaCounter] = React.useState(0);
   const resetFormulaCard = React.useCallback(
     () => setFormulaCounter((c) => c + 1),
@@ -688,20 +687,18 @@ function RollerPage({
   );
   const removeFormulaCard = React.useCallback(
     (entry: Omit<RollerCompositeEntry, "timestamp"> | undefined) => {
-      setFormula("");
+      setShowFormula(false);
       setFormulaCounter((c) => c + 1);
       if (entry) {
         appDispatch(addCompositeRollerEntry(entry));
       }
-      const id = setTimeout(() => {
-        setFormula(activeProfile?.formula ?? "");
-      }, 5000);
-      clearSetFormulaTimeout.current = () => {
-        clearSetFormulaTimeout.current = undefined;
+      const id = setTimeout(() => setShowFormula(true), 5000);
+      clearShowFormulaTimeout.current = () => {
+        clearShowFormulaTimeout.current = undefined;
         clearTimeout(id);
       };
     },
-    [activeProfile?.formula, appDispatch]
+    [appDispatch]
   );
 
   // Scroll to bottom when a new item is added
@@ -714,10 +711,10 @@ function RollerPage({
 
   // Scroll to bottom when the formula is set
   React.useEffect(() => {
-    if (formula.length) {
+    if (showFormula && formula.length) {
       scrollViewRef.current?.scrollToEnd();
     }
-  }, [formula]);
+  }, [formula.length, showFormula]);
 
   const [menuVisible, setMenuVisible] = React.useState(false);
   const bottomPadding = useSharedValue(0);
@@ -813,10 +810,11 @@ function RollerPage({
         {/* Padding to have a smooth scroll */}
         <Animated.View style={animatedPadding} />
       </ScrollView>
-      {!!formula.length && (
+      {!!formula.length && showFormula && (
         <FormulaCard
           key={formula + formulaCounter} // Create new component when the formula changes
           formula={formula}
+          speak={activeProfile?.speakResult}
           rolls={visibleSingleRolls}
           onDismiss={removeFormulaCard}
           onReset={resetFormulaCard}
@@ -824,7 +822,8 @@ function RollerPage({
       )}
     </View>
   );
-}
+});
+
 export function DiceRollerScreen({ navigation }: DiceRollerScreenProps) {
   return (
     <AppBackground>
