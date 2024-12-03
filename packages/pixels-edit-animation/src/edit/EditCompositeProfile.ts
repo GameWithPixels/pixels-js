@@ -1,3 +1,4 @@
+import EditAnimation from "./EditAnimation";
 import EditCompositeRule from "./EditCompositeRule";
 import Editable from "./Editable";
 import { observable } from "./decorators";
@@ -15,6 +16,9 @@ export default class EditCompositeProfile extends Editable {
   @observable
   speakResult: boolean;
 
+  @observable
+  resultAnimation?: EditAnimation;
+
   // TODO The properties below should be moved to a separate class
 
   @observable
@@ -28,6 +32,7 @@ export default class EditCompositeProfile extends Editable {
     name?: string;
     description?: string;
     formula?: string;
+    resultAnimation?: EditAnimation;
     rules?: EditCompositeRule[];
     speakResult?: boolean;
     creationDate?: Date;
@@ -36,6 +41,7 @@ export default class EditCompositeProfile extends Editable {
     super(opt);
     this.description = opt?.description ?? "";
     this.formula = opt?.formula;
+    this.resultAnimation = opt?.resultAnimation;
     this.rules = opt?.rules ?? [];
     this.speakResult = opt?.speakResult ?? false;
     this.creationDate = opt?.creationDate ?? new Date();

@@ -1,3 +1,4 @@
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -19,7 +20,9 @@ import {
 import { EditCompositeProfileScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
+import { PickAnimationBottomSheet } from "~/components/PickAnimationBottomSheet";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
+import { GradientButton } from "~/components/buttons";
 import {
   useCommitEditableCompositeProfile,
   useEditableCompositeProfile,
@@ -94,6 +97,8 @@ function EditCompositeProfilePage({
   const profile = useEditableCompositeProfile(profileUuid);
   const commitProfile = useCommitEditableCompositeProfile(profileUuid);
 
+  const [animPickerVisible, setAnimPickerVisible] = React.useState(false);
+
   const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
@@ -149,6 +154,33 @@ function EditCompositeProfilePage({
           label="Whether to speak the formula result"
           getValue={() => profile.speakResult}
           setValue={(v) => (profile.speakResult = v)}
+        />
+        <SectionTitle>Result Animation</SectionTitle>
+        <GradientButton
+          sentry-label="select-result-animation"
+          style={{ marginHorizontal: 10 }}
+          onPress={() => setAnimPickerVisible(true)}
+        >
+          {profile.resultAnimation?.name ?? "Select Animation"}
+        </GradientButton>
+        <PickAnimationBottomSheet
+          animation={profile.resultAnimation}
+          // dieType={dieType}
+          visible={animPickerVisible}
+          onSelectAnimation={(anim) => {
+            runInAction(() => {
+              profile.resultAnimation = anim as Profiles.Animation; // TODO This cast removes readonly
+              // Clear overrides
+              // action.duration = undefined;
+              // action.loopCount = 1;
+              // action.fade = undefined;
+              // action.intensity = undefined;
+              // action.faceMask = undefined;
+              // action.colors.length = 0;
+            });
+            setAnimPickerVisible(false);
+          }}
+          onDismiss={() => setAnimPickerVisible(false)}
         />
       </ScrollView>
     </View>

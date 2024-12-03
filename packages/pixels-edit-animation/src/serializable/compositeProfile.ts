@@ -5,6 +5,7 @@ export interface CompositeProfileData extends UniqueNamedData {
   description: string;
   formula?: string;
   speakResult: boolean;
+  resultAnimationUuid?: string;
   creationDate: number;
   lastModified: number;
   conditions: {

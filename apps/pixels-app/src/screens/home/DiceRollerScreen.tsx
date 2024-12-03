@@ -1,8 +1,13 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { createDataSetForAnimations } from "@systemic-games/pixels-edit-animation";
 import {
+  Color,
   DiceUtils,
+  getPixel,
+  Pixel,
   PixelDieType,
+  Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
@@ -65,6 +70,44 @@ import {
   RollerCompositeEntry,
 } from "~/features/store";
 import { useOptionalCompositeProfile } from "~/hooks";
+
+// Store our animations
+function getTestDataSet() {
+  // Loose animation: blink red twice, with some fading.
+  const animLoose = new Profiles.AnimationFlashes({
+    duration: 1.5,
+    color: Color.red,
+    count: 2,
+    fade: 0.4,
+  });
+
+  // Win animation #1: play rainbow twice during 2 seconds,
+  // with some fading between colors.
+  const animWin1 = new Profiles.AnimationRainbow({
+    duration: 2,
+    count: 2,
+    fade: 0.5,
+  });
+
+  // Win animation #2: animate color from green to dark blue,
+  // over 2 seconds.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const animWin2 = new Profiles.AnimationGradient({
+    duration: 2,
+    gradient: Profiles.RgbGradient.createFromKeyFrames([
+      { time: 0.2, color: Color.green },
+      { time: 0.8, color: Color.dimBlue },
+    ]),
+  });
+
+  // Build the above animations so they can be uploaded to the dice
+  return createDataSetForAnimations([animWin1, animLoose]).toDataSet();
+}
+
+async function testInstantAnimationsAsync(pixel: Pixel): Promise<void> {
+  await pixel.transferInstantAnimations(getTestDataSet());
+  await pixel.playInstantAnimation(1);
+}
 
 interface AnimatedRollCardHandle {
   overrideWidth: (w: number) => void;
@@ -308,12 +351,14 @@ function CompositeRoll({
 function FormulaCard({
   formula,
   speak,
+  animation,
   rolls: appRolls,
   onDismiss,
   onReset,
 }: {
   formula: string;
   speak?: boolean;
+  animation?: Profiles.Animation;
   rolls: readonly RollerSingleEntry[];
   onDismiss: (
     entry: Omit<RollerCompositeEntry, "timestamp"> | undefined
@@ -356,7 +401,7 @@ function FormulaCard({
   const expectedRolls = React.useMemo(() => getExpectedRolls(tokens), [tokens]);
 
   // And merge with the actual rolls
-  const rollsResults = React.useMemo(
+  const { results: rollsResults, selectedIndices } = React.useMemo(
     () => getRollsResults(expectedRolls, rolls),
     [expectedRolls, rolls]
   );
@@ -401,6 +446,7 @@ function FormulaCard({
       } as const;
       dismissTimeoutRef.current = setTimeout(() => onDismiss(entry), 5000);
       setIsDone(true);
+      // Speak the result
       if (speak) {
         const settings = {
           volume: 1,
@@ -409,8 +455,40 @@ function FormulaCard({
         } as const;
         Speech.speak(result.toString(), settings);
       }
+      // Play the animation
+      if (animation) {
+        const dice = selectedIndices
+          .map((i) => {
+            const roll = rolls[i]!;
+            return { ...roll, pixel: getPixel(roll.pixelId) };
+          })
+          .filter(
+            (v, i, self) => i === self.findIndex((t) => t.pixelId === v.pixelId)
+          );
+        setTimeout(() => {
+          for (const { dieType, pixel } of dice) {
+            console.log(
+              `Playing animation ${animation.name} for ${pixel?.name} of type ${dieType}`
+            );
+            if (pixel) {
+              testInstantAnimationsAsync(pixel).catch((e) =>
+                console.error(String(e))
+              );
+            }
+          }
+        }, 5000);
+      }
     }
-  }, [compositeRolls, formula, onDismiss, result, speak]);
+  }, [
+    animation,
+    compositeRolls,
+    formula,
+    onDismiss,
+    result,
+    rolls,
+    selectedIndices,
+    speak,
+  ]);
 
   // Store the result if all rolls are available
   React.useEffect(() => {
@@ -815,6 +893,7 @@ const RollerPage = observer(function RollerPage({
           key={formula + formulaCounter} // Create new component when the formula changes
           formula={formula}
           speak={activeProfile?.speakResult}
+          animation={activeProfile?.resultAnimation}
           rolls={visibleSingleRolls}
           onDismiss={removeFormulaCard}
           onReset={resetFormulaCard}

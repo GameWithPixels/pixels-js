@@ -5,6 +5,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { runInAction } from "mobx";
 
+import { readAnimation } from "./animations";
 import { log } from "./log";
 import {
   updateConditionRolled,
@@ -56,6 +57,9 @@ function updateProfile(
   profile.description = profileData.description;
   profile.formula = profileData.formula;
   profile.speakResult = profileData.speakResult;
+  profile.resultAnimation = profileData.resultAnimationUuid
+    ? readAnimation(profileData.resultAnimationUuid, library)
+    : undefined;
   if (profile.creationDate.getTime() !== profileData.creationDate) {
     profile.creationDate = new Date(profileData.creationDate);
   }

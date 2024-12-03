@@ -1,14 +1,9 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { encodeUtf8 } from "@systemic-games/pixels-core-utils";
-import {
-  Color,
-  createDataSetForAnimations,
-  createLibraryProfile,
-} from "@systemic-games/pixels-edit-animation";
+import { createLibraryProfile } from "@systemic-games/pixels-edit-animation";
 import {
   Constants,
   Pixel,
-  Profiles,
   Serializable,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -49,44 +44,6 @@ import {
   useProfile,
   useRegisteredPixel,
 } from "~/hooks";
-
-// Store our animations
-function getTestDataSet() {
-  // Loose animation: blink red twice, with some fading.
-  const animLoose = new Profiles.AnimationFlashes({
-    duration: 1.5,
-    color: Color.red,
-    count: 2,
-    fade: 0.4,
-  });
-
-  // Win animation #1: play rainbow twice during 2 seconds,
-  // with some fading between colors.
-  const animWin1 = new Profiles.AnimationRainbow({
-    duration: 2,
-    count: 2,
-    fade: 0.5,
-  });
-
-  // Win animation #2: animate color from green to dark blue,
-  // over 2 seconds.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const animWin2 = new Profiles.AnimationGradient({
-    duration: 2,
-    gradient: Profiles.RgbGradient.createFromKeyFrames([
-      { time: 0.2, color: Color.green },
-      { time: 0.8, color: Color.dimBlue },
-    ]),
-  });
-
-  // Build the above animations so they can be uploaded to the dice
-  return createDataSetForAnimations([animWin1, animLoose]).toDataSet();
-}
-
-async function testInstantAnimationsAsync(pixel: Pixel): Promise<void> {
-  await pixel.transferInstantAnimations(getTestDataSet());
-  await pixel.playInstantAnimation(1);
-}
 
 const PixelNameTextInput = React.forwardRef(function PixelNameTextInput(
   {
@@ -265,12 +222,6 @@ export function PixelFocusViewHeader({
             onReset={() => showConfirmReset()}
             onTurnOff={() => showConfirmTurnOff()}
             onSetRunMode={() => pixel && showSelectRunMode(pixel)}
-            onTestAnim={() => {
-              if (pixel)
-                testInstantAnimationsAsync(pixel).catch((e) =>
-                  console.warn(`Failed to test instant animations: ${e}`)
-                );
-            }}
           />
           <FirmwareUpdateBadge
             pairedDie={pairedDie}

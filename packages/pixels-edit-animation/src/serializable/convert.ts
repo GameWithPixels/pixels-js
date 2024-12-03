@@ -851,6 +851,7 @@ export function fromCompositeProfile(
     description: profile.description,
     formula: profile.formula,
     speakResult: profile.speakResult,
+    resultAnimationUuid: profile.resultAnimation?.uuid,
     creationDate: profile.creationDate.getTime(),
     lastModified: profile.lastModified.getTime(),
     conditions,

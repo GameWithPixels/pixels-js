@@ -41,35 +41,36 @@ export function getExpectedRolls(tokens: Token[]): ExpectedRolls[] {
 export function getRollsResults(
   expectedDiceRolls: readonly ExpectedRolls[],
   rolls: readonly Readonly<{ dieType: PixelDieType; value: number }>[]
-): RollResults {
-  const results: RollResults = [];
-  const availableRolls = [...rolls];
+): { results: RollResults; selectedIndices: number[] } {
+  const results = [];
+  const selected: number[] = [];
   for (const arr of expectedDiceRolls) {
     if (arr) {
-      const rolls: number[] = [];
-      results.push(rolls);
+      const rollValues: number[] = [];
+      results.push(rollValues);
       for (const dieType of arr) {
         if (typeof dieType === "string") {
-          const index = availableRolls.findIndex(
-            (r) =>
+          const index = rolls.findIndex(
+            (r, i) =>
+              !selected.includes(i) &&
               DiceUtils.getFaceCount(r.dieType) ===
-              DiceUtils.getFaceCount(dieType)
+                DiceUtils.getFaceCount(dieType)
           );
           if (index >= 0) {
-            rolls.push(availableRolls[index].value);
-            availableRolls.splice(index, 1);
+            rollValues.push(rolls[index].value);
+            selected.push(index);
           } else {
-            rolls.push(-1);
+            rollValues.push(-1);
           }
         } else {
-          rolls.push(dieType);
+          rollValues.push(dieType);
         }
       }
     } else {
       results.push(arr);
     }
   }
-  return results;
+  return { results, selectedIndices: selected };
 }
 
 export function computeRollsResult(
