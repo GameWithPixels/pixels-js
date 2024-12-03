@@ -1,5 +1,13 @@
 import { Operator } from "./operators";
 import { CONSTANT } from "./rules/constant";
+import {
+  KeepHighestRollToken,
+  KEEP_HIGHEST_ROLL,
+} from "./rules/keepHighestRoll";
+import {
+  KeepLowestRollToken,
+  KEEP_LOWEST_ROLL,
+} from "./rules/keepLowestRoll";
 import { SimpleDiceRollToken, SIMPLE_DIE_ROLL } from "./rules/simpleDieRoll";
 
 export enum CoreTokenTypes {
@@ -87,6 +95,34 @@ export const diceRollToken = (
   content,
   detailType: SIMPLE_DIE_ROLL,
   detail: { count, numSides },
+});
+
+export const keepHighestRollToken = (
+  count: number,
+  numSides: number,
+  keep: number,
+  position: number,
+  content: string
+): DiceRollToken<KeepHighestRollToken> => ({
+  type: CoreTokenTypes.DiceRoll,
+  position,
+  content,
+  detailType: KEEP_HIGHEST_ROLL,
+  detail: { count, numSides, keep },
+});
+
+export const keepLowestRollToken = (
+  count: number,
+  numSides: number,
+  keep: number,
+  position: number,
+  content: string
+): DiceRollToken<KeepLowestRollToken> => ({
+  type: CoreTokenTypes.DiceRoll,
+  position,
+  content,
+  detailType: KEEP_LOWEST_ROLL,
+  detail: { count, numSides, keep },
 });
 
 export const constantToken = (

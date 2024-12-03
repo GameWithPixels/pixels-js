@@ -10,6 +10,8 @@ import {
   Token,
 } from "./dice-notation";
 import { defaultPlugins } from "./dice-notation/createDiceRoller";
+import { KEEP_HIGHEST_ROLL } from "./dice-notation/rules/keepHighestRoll";
+import { KEEP_LOWEST_ROLL } from "./dice-notation/rules/keepLowestRoll";
 import { SIMPLE_DIE_ROLL } from "./dice-notation/rules/simpleDieRoll";
 import { CoreTokenTypes } from "./dice-notation/tokens";
 import {
@@ -25,7 +27,9 @@ export function getExpectedRolls(tokens: Token[]): ExpectedRolls[] {
   return tokens.map((token) =>
     token.type !== CoreTokenTypes.DiceRoll
       ? null
-      : token.detailType !== SIMPLE_DIE_ROLL
+      : token.detailType !== SIMPLE_DIE_ROLL &&
+          token.detailType !== KEEP_HIGHEST_ROLL &&
+          token.detailType !== KEEP_LOWEST_ROLL
         ? plugins[token.detailType].roll(token.detail, rollConfig)
         : // Overriding the roll function to estimate the die type
           Array(token.detail.count).fill(
