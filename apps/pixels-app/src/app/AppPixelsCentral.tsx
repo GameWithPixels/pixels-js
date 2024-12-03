@@ -33,8 +33,9 @@ import {
 } from "~/features/profiles";
 import {
   addDieRoll,
-  addRollerEntry,
+  addSingleRollerEntry,
   Library,
+  readCompositeProfile,
   readProfile,
   updatePairedDieBrightness,
   updatePairedDieFirmwareTimestamp,
@@ -50,6 +51,10 @@ import {
   EditableProfileStoreGetterContext,
   PixelsCentralContext,
 } from "~/hooks";
+import {
+  EditableCompositeProfileStore,
+  EditableCompositeProfileStoreGetterContext,
+} from "~/hooks/useEditableCompositeProfile";
 
 function remoteActionListener(
   pixel: Pixel,
@@ -276,7 +281,7 @@ function hookToPixel(
     if (pairedDie) {
       store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
       store.dispatch(
-        addRollerEntry({
+        addSingleRollerEntry({
           pixelId: pixel.pixelId,
           dieType: pixel.dieType,
           value: roll,
@@ -540,7 +545,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
           return item;
         } else {
           // Create a new editable profile
-          const profileStore = new EditableProfileStore(profileUuid, () =>
+          const profileStore = new EditableProfileStore(() =>
             readProfile(profileUuid, store.getState().library, true)
           );
           editableProfileStoresMap.set(profileUuid, profileStore);
@@ -556,7 +561,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
                 );
                 if (pairedDie) {
                   // Save die profile
-                  const profile = profileStore.profile;
+                  const profile = profileStore.object;
                   if (profile) {
                     commitEditableProfile(profile, store);
                   } else {
@@ -574,6 +579,39 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       },
     }),
     [editableProfileStoresMap, store]
+  );
+
+  // Composite profiles edition
+  const [editableCompositeProfileStoresMap] = React.useState(
+    () => new Map<string, EditableCompositeProfileStore>()
+  );
+  const editableCompositeProfileStoreGetter = React.useMemo(
+    () => ({
+      getEditableCompositeProfileStore: (profileUuid: string) => {
+        const item = editableCompositeProfileStoresMap.get(profileUuid);
+        if (item) {
+          return item;
+        } else {
+          // Create a new editable profile
+          const profileStore = new EditableCompositeProfileStore(() =>
+            readCompositeProfile(profileUuid, store.getState().library, true)
+          );
+          editableCompositeProfileStoresMap.set(profileUuid, profileStore);
+          // Remove profile when not needed
+          const disposer = reaction(
+            () => profileStore.version,
+            (version) => {
+              if (!version) {
+                disposer();
+                editableCompositeProfileStoresMap.delete(profileUuid);
+              }
+            }
+          );
+          return profileStore;
+        }
+      },
+    }),
+    [editableCompositeProfileStoresMap, store]
   );
 
   // Blink color
@@ -599,7 +637,11 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       <EditableProfileStoreGetterContext.Provider
         value={editableProfileStoreGetter}
       >
-        {children}
+        <EditableCompositeProfileStoreGetterContext.Provider
+          value={editableCompositeProfileStoreGetter}
+        >
+          {children}
+        </EditableCompositeProfileStoreGetterContext.Provider>
       </EditableProfileStoreGetterContext.Provider>
     </PixelsCentralContext.Provider>
   );

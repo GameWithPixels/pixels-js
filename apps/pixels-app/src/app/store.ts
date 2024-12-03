@@ -38,6 +38,9 @@ import animationsNormalsReducer from "~/features/store/library/animations/normal
 import animationsPatternReducer from "~/features/store/library/animations/patternSlice";
 import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
 import animationsSequenceReducer from "~/features/store/library/animations/sequenceSlice";
+import compositeProfilesReducer, {
+  compositeProfilesAdapter,
+} from "~/features/store/library/compositeProfilesSlice";
 import gradientsReducer, {
   gradientsAdapter,
 } from "~/features/store/library/gradientsSlice";
@@ -110,6 +113,10 @@ const rootReducer = combineReducers({
   diceStats: persist("diceStats", diceStatsReducer),
   // Library data
   library: combineReducers({
+    compositeProfiles: persist(
+      "library/compositeProfiles",
+      compositeProfilesReducer
+    ),
     profiles: persist("library/profiles", profilesReducer),
     animations: combineReducers({
       cycle: persistAnim("cycles", animationsCycleReducer),
@@ -180,6 +187,12 @@ export const addAppListener = addListener as TypedAddListener<
   RootState,
   AppDispatch
 >;
+
+export const compositeProfilesSelectors = Object.freeze(
+  compositeProfilesAdapter.getSelectors<RootState>(
+    (state) => state.library.compositeProfiles
+  )
+);
 
 export const profilesSelectors = Object.freeze(
   profilesAdapter.getSelectors<RootState>((state) => state.library.profiles)

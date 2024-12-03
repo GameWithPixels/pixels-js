@@ -1,11 +1,19 @@
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import {
   DiceUtils,
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 import * as Haptics from "expo-haptics";
+import { reaction } from "mobx";
 import React from "react";
-import { View, ScrollView, useWindowDimensions, Pressable } from "react-native";
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  Pressable,
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
   Divider,
@@ -25,9 +33,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { DiceRollerScreenProps } from "~/app/navigation";
-import { AppStore } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { Card } from "~/components/Card";
@@ -38,139 +45,25 @@ import {
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { Banner } from "~/components/banners";
-import { GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { AvailableDieTypes } from "~/features/dice/AvailableDieTypes";
+import { tokenize } from "~/features/dice-notation";
 import {
-  calculateFinalResult,
-  RollResults,
-  tallyRolls,
-  Token,
-  tokenize,
-} from "~/features/dice-notation";
-import { defaultPlugins } from "~/features/dice-notation/createDiceRoller";
-import { SIMPLE_DIE_ROLL } from "~/features/dice-notation/rules/simpleDieRoll";
-import { CoreTokenTypes } from "~/features/dice-notation/tokens";
+  computeRollsResult,
+  getExpectedRolls,
+  getRollsResults,
+} from "~/features/rollFormula";
 import {
-  getDefaultRollConfigOptions,
-  getFinalRollConfig,
-  RollConfig,
-} from "~/features/dice-notation/util/rollConfig";
-import {
-  addRollerEntry,
-  DatedRoll,
+  addSingleRollerEntry,
+  RollerSingleEntry,
   hideAllRollerEntries,
   hideRollerEntry,
   setRollerCardsSizeRatio,
   setRollerPaused,
+  addCompositeRollerEntry,
+  RollerCompositeEntry,
 } from "~/features/store";
-
-function _rollDice(tokens: Token[], rollConfig: RollConfig): RollResults {
-  const plugins = defaultPlugins;
-  return tokens.map((token) => {
-    switch (token.type) {
-      case CoreTokenTypes.CloseParen:
-      case CoreTokenTypes.OpenParen:
-      case CoreTokenTypes.Operator:
-        return null;
-      case CoreTokenTypes.DiceRoll:
-        return plugins[token.detailType].roll(token.detail, rollConfig);
-    }
-  });
-}
-
-type DieTypeRolls = (PixelDieType | number)[] | null;
-
-function getPixelsDiceList(
-  tokens: Token[],
-  rollConfig: RollConfig
-): DieTypeRolls[] {
-  const plugins = defaultPlugins;
-  return tokens.map((token) =>
-    token.type !== CoreTokenTypes.DiceRoll
-      ? null
-      : token.detailType !== SIMPLE_DIE_ROLL
-        ? plugins[token.detailType].roll(token.detail, rollConfig)
-        : // Overriding the roll function to estimate the die type
-          Array(token.detail.count).fill(
-            DiceUtils.estimateDieType(token.detail.numSides)
-          )
-  );
-}
-
-function waitForRollsAsync(
-  store: AppStore,
-  diceList: DieTypeRolls[]
-): Promise<RollResults> {
-  return new Promise<RollResults>((resolve) => {
-    const ourRolls: DatedRoll[] = [];
-    let lastUsedRoll = store.getState().diceRoller.allRolls.ids.at(-1);
-    const unsubscribe = store.subscribe(() => {
-      const { allRolls: diceRollerRolls } = store.getState().diceRoller;
-      // Defer computation to not slow down the UI
-      setTimeout(() => {
-        const lastRoll = diceRollerRolls.ids.at(-1);
-        const roll = diceRollerRolls.entities[lastRoll ?? -1];
-        if (roll && (!lastUsedRoll || lastRoll !== lastUsedRoll)) {
-          console.log("Got new roll:" + JSON.stringify(roll));
-          lastUsedRoll = lastRoll;
-          ourRolls.push(roll);
-          // Build roll results
-          const ourRollsCopy = [...ourRolls];
-          const results: RollResults = [];
-          for (const arr of diceList) {
-            if (arr) {
-              const rolls: number[] = [];
-              results.push(rolls);
-              for (const dieType of arr) {
-                if (typeof dieType === "number") {
-                  // We got a number, use it as the roll
-                  rolls.push(dieType);
-                  continue;
-                }
-                const index = ourRollsCopy.findIndex(
-                  (r) => r.dieType === dieType
-                );
-                if (index >= 0) {
-                  rolls.push(ourRollsCopy[index].value);
-                  ourRollsCopy.splice(index, 1);
-                } else {
-                  // Abort and wait for the next roll
-                  console.log("Waiting for roll of type " + dieType);
-                  return;
-                }
-              }
-            } else {
-              results.push(null);
-            }
-          }
-          unsubscribe();
-          resolve(results);
-        }
-      }, 100);
-    });
-  });
-}
-
-async function testDiceNotationAsync(
-  store: AppStore,
-  formula: string,
-  setExpectedRolls: (diceType: PixelDieType[]) => void
-): Promise<number> {
-  const rollConfig = getFinalRollConfig(getDefaultRollConfigOptions());
-  const tokens = tokenize(formula);
-  console.log(`Tokenized ${formula}:` + JSON.stringify(tokens, null, 2));
-  const diceList = getPixelsDiceList(tokens, rollConfig);
-  console.log(`Dice list: ${diceList.join(", ")}`);
-  setExpectedRolls(diceList.flat().filter((x) => !!x) as PixelDieType[]);
-  const rolls = await waitForRollsAsync(store, diceList);
-  // const rolls = rollDice(tokens, rollConfig);
-  console.log(`Rolled ${formula}: ${JSON.stringify(rolls, null, 2)}`);
-  const rollTotals = tallyRolls(tokens, rolls, rollConfig);
-  const result = calculateFinalResult(tokens, rollTotals);
-  console.log(`Result=${result}`);
-  return result;
-}
+import { useOptionalCompositeProfile } from "~/hooks";
 
 interface AnimatedRollCardHandle {
   overrideWidth: (w: number) => void;
@@ -178,15 +71,13 @@ interface AnimatedRollCardHandle {
 
 const AnimatedRollCard = React.forwardRef(function AnimatedRollCard(
   {
+    children,
     width: widthProp,
-    faceValue,
-    dieType,
     position,
     onRemove,
   }: {
+    children: (props: { width: number }) => React.ReactNode;
     width: number;
-    faceValue: number;
-    dieType: PixelDieType;
     position?: "left" | "right";
     onRemove?: () => void;
   },
@@ -320,33 +211,280 @@ const AnimatedRollCard = React.forwardRef(function AnimatedRollCard(
               alignItems: "center",
               marginLeft: width * 0.01,
             }}
-          >
-            <DieWireframe dieType={dieType} size={width * 0.3} />
-            <Divider
-              style={{
-                height: "95%",
-                width: 1,
-                backgroundColor: colors.onPrimary,
-                marginLeft: width * 0.03,
-              }}
-            />
-            <Text
-              style={{
-                fontFamily: "LTInternet-Bold",
-                flexGrow: 1,
-                textAlign: "center",
-                fontSize: width * 0.45,
-                lineHeight: width * 0.5,
-              }}
-            >
-              {faceValue}
-            </Text>
-          </Pressable>
+            children={children({ width })}
+          />
         </Card>
       </Animated.View>
     </GestureDetector>
   );
 });
+
+function SingleRoll({
+  dieType,
+  faceValue,
+  width,
+}: {
+  dieType: PixelDieType;
+  faceValue: number;
+  width: number;
+}) {
+  const { colors } = useTheme();
+  return (
+    <>
+      <DieWireframe dieType={dieType} size={width * 0.3} />
+      <Divider
+        style={{
+          height: "95%",
+          width: 1,
+          backgroundColor: colors.onPrimary,
+          marginLeft: width * 0.03,
+        }}
+      />
+      <Text
+        style={{
+          fontFamily: "LTInternet-Bold",
+          flexGrow: 1,
+          textAlign: "center",
+          fontSize: width * 0.45,
+          lineHeight: width * 0.5,
+        }}
+      >
+        {faceValue}
+      </Text>
+    </>
+  );
+}
+
+function CompositeRoll({
+  formula,
+  result,
+  rolls,
+  width, // TODO need to be used
+}: {
+  formula: string;
+  result?: number;
+  rolls: { dieType: PixelDieType; value?: number }[];
+  width?: number;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ alignItems: "center", gap: 10 }}>
+      <Text variant="titleLarge">
+        {formula}
+        {result !== undefined ? ` = ${result}` : ""}
+      </Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 10,
+        }}
+      >
+        {rolls.map(({ dieType, value }, i) => (
+          <View
+            key={i}
+            style={{
+              flexDirection: "row",
+              paddingVertical: 5,
+              paddingHorizontal: 10,
+              gap: 10,
+              alignItems: "center",
+              borderWidth: StyleSheet.hairlineWidth,
+              borderColor: colors.onSurface,
+              borderRadius: 10,
+            }}
+          >
+            <DieWireframe dieType={dieType} size={30} />
+            <Text variant="bodyLarge">{value ?? "?"}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function FormulaCard({
+  formula,
+  rolls: appRolls,
+  onDismiss,
+  onReset,
+}: {
+  formula: string;
+  rolls: readonly RollerSingleEntry[];
+  onDismiss: (
+    entry: Omit<RollerCompositeEntry, "timestamp"> | undefined
+  ) => void;
+  onReset: () => void;
+}) {
+  const [dismissTimeout, setDismissTimeout] =
+    React.useState<ReturnType<typeof setTimeout>>();
+  const dismissTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+  React.useEffect(() => {
+    return () => {
+      // Clear timeout on dismount
+      clearTimeout(dismissTimeoutRef.current);
+    };
+  }, []);
+
+  // Start time
+  const startTimestampRef = React.useRef(Date.now());
+
+  // Keep rolls that are newer than the formula
+  const rolls = React.useMemo(
+    () => appRolls.filter((r) => r.timestamp >= startTimestampRef.current),
+    [appRolls]
+  );
+
+  // Get the expected rolls based on the formula
+  const { tokens, tokenizerError } = React.useMemo(() => {
+    try {
+      const tokens = tokenize(formula);
+      return {
+        tokens,
+        tokenizerError: tokens.length ? undefined : "Blank or empty formula",
+      };
+    } catch (e) {
+      return {
+        tokens: [],
+        tokenizerError: String(e),
+      };
+    }
+  }, [formula]);
+  const expectedRolls = React.useMemo(() => getExpectedRolls(tokens), [tokens]);
+
+  // And merge with the actual rolls
+  const rollsResults = React.useMemo(
+    () => getRollsResults(expectedRolls, rolls),
+    [expectedRolls, rolls]
+  );
+  const compositeRolls = React.useMemo(() => {
+    const ret = [];
+    for (let i = 0; i < expectedRolls.length; ++i) {
+      const rolls = expectedRolls[i];
+      const results = rollsResults[i];
+      if (rolls?.length && rolls?.length === results?.length) {
+        for (let j = 0; j < rolls.length; ++j) {
+          const dieType = rolls[j];
+          if (typeof dieType === "string") {
+            const v = results[j];
+            ret.push({ dieType, value: v < 0 ? undefined : v });
+          }
+        }
+      }
+    }
+    return ret;
+  }, [expectedRolls, rollsResults]);
+
+  // Compute the final result
+  const { result, resultError } = React.useMemo(() => {
+    try {
+      const result = tokens.length
+        ? computeRollsResult(tokens, rollsResults)
+        : 0;
+      return { result, resultError: undefined };
+    } catch (e) {
+      return { result: undefined, resultError: String(e) };
+    }
+  }, [rollsResults, tokens]);
+
+  // Dismiss the card after 5 seconds when done
+  const showResult = React.useCallback(() => {
+    if (result !== undefined) {
+      const entry = {
+        formula,
+        result,
+        rolls: compositeRolls,
+      } as const;
+      // Skip if already set
+      setDismissTimeout(
+        (id) =>
+          (dismissTimeoutRef.current = id
+            ? id
+            : setTimeout(() => onDismiss(entry), 5000))
+      );
+    }
+  }, [compositeRolls, formula, onDismiss, result]);
+
+  // Store the result if all rolls are available
+  React.useEffect(() => {
+    if (
+      !tokenizerError &&
+      !resultError &&
+      !rollsResults.flatMap((r) => r ?? []).find((n) => n < 0)
+    ) {
+      showResult();
+    } else {
+      setDismissTimeout((id) => {
+        clearTimeout(id);
+        return (dismissTimeoutRef.current = undefined);
+      });
+    }
+  }, [resultError, rollsResults, showResult, tokenizerError]);
+
+  // Action sheet
+  const { colors } = useTheme();
+  const { showActionSheetWithOptions } = useActionSheet();
+  const showOptions = React.useCallback(
+    () =>
+      showActionSheetWithOptions(
+        {
+          options: ["Stop", "Reset", "Cancel"],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 2,
+          tintColor: colors.onSurface,
+          destructiveColor: colors.error,
+          containerStyle: { backgroundColor: colors.background },
+          titleTextStyle: { color: colors.onSurfaceVariant },
+          messageTextStyle: { color: colors.onSurfaceVariant },
+        },
+        (selectedIndex?: number) => {
+          switch (selectedIndex) {
+            case 0:
+              showResult();
+              break;
+            case 1:
+              onReset();
+              break;
+          }
+        }
+      ),
+    [colors, onReset, showActionSheetWithOptions, showResult]
+  );
+
+  return (
+    <Card
+      row
+      frameless
+      noBorder
+      vivid
+      style={{ margin: 20 }}
+      contentStyle={{ margin: 5, backgroundColor: colors.background }}
+    >
+      {tokenizerError || resultError ? (
+        <View style={{ width: "100%", margin: 10 }}>
+          <Text variant="bodyLarge">
+            Something's wrong with the selected formula:{` '${formula}'`}
+          </Text>
+          <Text variant="bodyLarge" style={{ color: colors.error }}>
+            {tokenizerError ?? resultError}
+          </Text>
+        </View>
+      ) : (
+        <Pressable
+          onLongPress={() => showOptions()}
+          style={{ width: "100%", marginVertical: 10 }}
+        >
+          <CompositeRoll
+            formula={formula}
+            result={dismissTimeout ? result : undefined}
+            rolls={compositeRolls}
+          />
+        </Pressable>
+      )}
+    </Card>
+  );
+}
 
 function RollDiceLine({
   diceTypes,
@@ -376,30 +514,35 @@ function OptionsMenu({
   sizeRatio,
   onChangeSizeRatio,
   onCommitSizeRatio,
+  editSettings,
   ...props
 }: {
   sizeRatio: number;
   onChangeSizeRatio: (ratio: number) => void;
   onCommitSizeRatio: (ratio: number) => void;
+  editSettings: () => void;
 } & Omit<HeaderMenuButtonProps, "children">) {
   const paused = useAppSelector((state) => state.diceRoller.paused);
   const appDispatch = useAppDispatch();
   const { colors } = useTheme();
   return (
     <HeaderMenuButton {...props}>
-      <Text variant="bodyLarge" style={{ paddingHorizontal: 15 }}>
-        Display Size
-      </Text>
-      <SliderWithValue
-        percentage
-        value={sizeRatio}
-        onValueChange={onChangeSizeRatio}
-        onEndEditing={onCommitSizeRatio}
-        minimumValue={0.3}
-        maximumValue={1}
-        style={{ marginHorizontal: 10, marginBottom: 10 }}
+      <Menu.Item
+        title="Settings"
+        trailingIcon={() => (
+          <MaterialCommunityIcons
+            name="cog-outline"
+            size={24}
+            color={colors.onSurface}
+          />
+        )}
+        contentStyle={AppStyles.menuItemWithIcon}
+        style={{ zIndex: 1 }}
+        onPress={() => {
+          editSettings();
+          props.onDismiss?.();
+        }}
       />
-      <Divider />
       <Menu.Item
         title={paused ? "Paused" : "Running"}
         trailingIcon={() =>
@@ -420,7 +563,6 @@ function OptionsMenu({
           props.onDismiss?.();
         }}
       />
-      <Divider />
       <Menu.Item
         title="Clear All"
         trailingIcon={() => (
@@ -452,12 +594,27 @@ function OptionsMenu({
             Math.ceil(((i + 1) * AvailableDieTypes.length) / 2)
           )}
           addRoll={(dieType, value) => {
-            appDispatch(addRollerEntry({ pixelId: 0, dieType, value }));
+            appDispatch(addSingleRollerEntry({ pixelId: 0, dieType, value }));
             props.onDismiss?.();
           }}
         />
       ))}
       <Divider />
+      <Text
+        variant="bodyLarge"
+        style={{ paddingHorizontal: 15, marginVertical: 10 }}
+      >
+        Display Size
+      </Text>
+      <SliderWithValue
+        percentage
+        value={sizeRatio}
+        onValueChange={onChangeSizeRatio}
+        onEndEditing={onCommitSizeRatio}
+        minimumValue={0.3}
+        maximumValue={1}
+        style={{ marginHorizontal: 10, marginBottom: 10 }}
+      />
     </HeaderMenuButton>
   );
 }
@@ -467,15 +624,31 @@ function RollerPage({
 }: {
   navigation: DiceRollerScreenProps["navigation"];
 }) {
-  const store = useAppStore();
   const appDispatch = useAppDispatch();
   const sizeRatio = useAppSelector(
     (state) => state.appSettings.rollerCardsSizeRatio
   );
-  const allRolls = useAppSelector((state) => state.diceRoller.allRolls);
-  const rollsTimestamps = useAppSelector(
-    (state) => state.diceRoller.visibleRolls
+  const singleRolls = useAppSelector((state) => state.diceRoller.singleRolls);
+  const compositeRolls = useAppSelector(
+    (state) => state.diceRoller.compositeRolls
   );
+  const rollsTimestamps = useAppSelector(
+    (state) => state.diceRoller.visibleRollsIds
+  );
+  const visibleRolls = React.useMemo(
+    () =>
+      rollsTimestamps.map(
+        (k) => singleRolls.entities[k] ?? compositeRolls.entities[k]
+      ),
+    [compositeRolls.entities, rollsTimestamps, singleRolls.entities]
+  );
+  const visibleSingleRolls = React.useMemo(
+    () =>
+      visibleRolls.filter((r) => r && "pixelId" in r) as RollerSingleEntry[],
+    [visibleRolls]
+  );
+
+  // List of refs to the roll cards
   const refs = React.useRef<
     Map<number, React.RefObject<AnimatedRollCardHandle>>
   >(new Map());
@@ -489,16 +662,62 @@ function RollerPage({
     }
   }, [rollsTimestamps]);
 
-  const formula = "2d20+3";
-  const [result, setResult] = React.useState<string>();
+  // The formula to use (if any)
+  const activeProfile = useOptionalCompositeProfile(
+    useAppSelector((state) => state.diceRoller.activeProfileUuid)
+  );
+  const [formula, setFormula] = React.useState(activeProfile?.formula ?? "");
+  const clearSetFormulaTimeout = React.useRef<() => void>();
+  React.useEffect(() => {
+    clearSetFormulaTimeout.current?.();
+    setFormula(activeProfile?.formula ?? "");
+    if (activeProfile) {
+      return reaction(
+        () => activeProfile.formula,
+        (formula) => setFormula(formula ?? "")
+      );
+    }
+  }, [activeProfile]);
+  React.useEffect(() => {
+    return () => clearSetFormulaTimeout.current?.();
+  }, []);
+  const [formulaCounter, setFormulaCounter] = React.useState(0);
+  const resetFormulaCard = React.useCallback(
+    () => setFormulaCounter((c) => c + 1),
+    []
+  );
+  const removeFormulaCard = React.useCallback(
+    (entry: Omit<RollerCompositeEntry, "timestamp"> | undefined) => {
+      setFormula("");
+      setFormulaCounter((c) => c + 1);
+      if (entry) {
+        appDispatch(addCompositeRollerEntry(entry));
+      }
+      const id = setTimeout(() => {
+        setFormula(activeProfile?.formula ?? "");
+      }, 5000);
+      clearSetFormulaTimeout.current = () => {
+        clearSetFormulaTimeout.current = undefined;
+        clearTimeout(id);
+      };
+    },
+    [activeProfile?.formula, appDispatch]
+  );
 
-  const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   // Scroll to bottom when a new item is added
+  const scrollViewRef = React.useRef<Animated.ScrollView>(null);
   React.useEffect(() => {
     // Slightly delay the scroll to make sure the new item is rendered on iOS
     const id = setTimeout(() => scrollViewRef.current?.scrollToEnd(), 0);
     return () => clearTimeout(id);
-  }, [allRolls]);
+  }, [visibleRolls]);
+
+  // Scroll to bottom when the formula is set
+  React.useEffect(() => {
+    if (formula.length) {
+      scrollViewRef.current?.scrollToEnd();
+    }
+  }, [formula]);
 
   const [menuVisible, setMenuVisible] = React.useState(false);
   const bottomPadding = useSharedValue(0);
@@ -524,23 +743,12 @@ function RollerPage({
             contentStyle={{ width: 220 }}
             onShowMenu={() => setMenuVisible(true)}
             onDismiss={() => setMenuVisible(false)}
+            editSettings={() => navigation.navigate("diceRollerSettings")}
           />
         )}
       >
         Roller
       </PageHeader>
-      <GradientButton
-        style={{ margin: 10 }}
-        onPress={() => {
-          testDiceNotationAsync(store, formula, (dieTypes) =>
-            setResult("Expected rolls: " + dieTypes.join(", "))
-          )
-            .then((r) => setResult(r.toString()))
-            .catch((e) => setResult(e.toString()));
-        }}
-      >
-        {result ?? `Test formula: "${formula}"`}
-      </GradientButton>
       <ScrollView
         ref={scrollViewRef}
         contentInsetAdjustmentBehavior="automatic"
@@ -554,44 +762,66 @@ function RollerPage({
           Roll any connected die to get started!
         </Banner>
         <View style={{ overflow: "visible" }}>
-          {rollsTimestamps.map((k, i) => {
-            const roll = allRolls.entities[k];
-            let ref = refs.current.get(k);
+          {visibleRolls.map((roll, i) => {
+            if (!roll) return null;
+            let ref = refs.current.get(roll.timestamp);
             if (!ref) {
               ref = React.createRef();
-              refs.current.set(k, ref);
+              refs.current.set(roll.timestamp, ref);
             }
             return (
-              roll && (
-                <AnimatedRollCard
-                  key={roll.timestamp}
-                  ref={ref}
-                  width={sizeRatio * screenWidth}
-                  faceValue={roll.value}
-                  dieType={roll.dieType}
-                  position={i % 2 ? "right" : "left"}
-                  onRemove={
-                    menuVisible
-                      ? undefined
-                      : () => {
-                          appDispatch(hideRollerEntry(roll.timestamp));
-                          bottomPadding.value = sizeRatio * screenWidth;
-                          bottomPadding.value = withTiming(0, {
-                            duration: 300,
-                          });
-                          Haptics.notificationAsync(
-                            Haptics.NotificationFeedbackType.Success
-                          );
-                        }
-                  }
-                />
-              )
+              <AnimatedRollCard
+                key={roll.timestamp}
+                ref={ref}
+                width={sizeRatio * screenWidth}
+                position={i % 2 ? "right" : "left"}
+                onRemove={
+                  menuVisible
+                    ? undefined
+                    : () => {
+                        appDispatch(hideRollerEntry(roll.timestamp));
+                        bottomPadding.value = sizeRatio * screenWidth;
+                        bottomPadding.value = withTiming(0, {
+                          duration: 300,
+                        });
+                        Haptics.notificationAsync(
+                          Haptics.NotificationFeedbackType.Success
+                        );
+                      }
+                }
+              >
+                {({ width }) =>
+                  "pixelId" in roll ? (
+                    <SingleRoll
+                      dieType={roll.dieType}
+                      faceValue={roll.value}
+                      width={width}
+                    />
+                  ) : (
+                    <CompositeRoll
+                      formula={roll.formula}
+                      result={roll.result}
+                      rolls={roll.rolls}
+                      width={width}
+                    />
+                  )
+                }
+              </AnimatedRollCard>
             );
           })}
         </View>
         {/* Padding to have a smooth scroll */}
         <Animated.View style={animatedPadding} />
       </ScrollView>
+      {!!formula.length && (
+        <FormulaCard
+          key={formula + formulaCounter} // Create new component when the formula changes
+          formula={formula}
+          rolls={visibleSingleRolls}
+          onDismiss={removeFormulaCard}
+          onReset={resetFormulaCard}
+        />
+      )}
     </View>
   );
 }

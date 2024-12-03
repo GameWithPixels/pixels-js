@@ -80,6 +80,8 @@ export type HomeStackParamList = {
   firmwareUpdate: undefined;
   restoreFirmware: undefined;
   diceRoller: undefined;
+  diceRollerSettings: undefined;
+  editCompositeProfile: { profileUuid: string };
 };
 
 export type DiceListScreenProps = NativeStackScreenProps<
@@ -122,11 +124,19 @@ export type DiceRollerScreenProps = NativeStackScreenProps<
   "diceRoller"
 >;
 
+export type DiceRollerSettingsScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "diceRollerSettings"
+>;
+
+export type EditCompositeProfileScreenProps = NativeStackScreenProps<
+  HomeStackParamList,
+  "editCompositeProfile"
+>;
+
 // Edit Die Profile screens
 export type EditDieProfileStackParamList = {
-  editDieProfile: {
-    pixelId: number;
-  };
+  editDieProfile: { pixelId: number };
 } & EditProfileSubStackParamList;
 
 export type EditDieProfileScreenProps = NativeStackScreenProps<

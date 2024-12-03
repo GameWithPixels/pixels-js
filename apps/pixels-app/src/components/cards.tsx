@@ -495,3 +495,44 @@ export function EmptyLibraryCard({ onPress }: { onPress: () => void }) {
     </RotatingGradient>
   );
 }
+
+export function EmptyRollerSettingsCard({ onPress }: { onPress: () => void }) {
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
+  return (
+    <RotatingGradient
+      colors={[colors.primary, colors.tertiary]}
+      style={{
+        width: "80%",
+        marginTop: 60,
+        alignSelf: "center",
+        borderRadius,
+      }}
+    >
+      <View
+        style={{
+          gap: 40,
+          margin: 2,
+          paddingVertical: 40,
+          paddingHorizontal: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius,
+          backgroundColor: colors.background,
+        }}
+      >
+        <Text variant="titleLarge">Roller Composite Profiles</Text>
+        <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+          Composite profiles let you create roll formulas and associate actions
+          to the result.
+        </Text>
+        <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+          You may also create actions based on how dice are used in the formula.
+        </Text>
+        <GradientButton onPress={onPress}>
+          Create Composite Profile
+        </GradientButton>
+      </View>
+    </RotatingGradient>
+  );
+}

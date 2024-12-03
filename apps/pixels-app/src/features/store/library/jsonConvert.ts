@@ -221,6 +221,7 @@ export function jsonConvert(dataSet: Json.DataSet): LibraryData {
   );
   const { audioClips } = toAudioClips(dataSet.audioClips);
   return {
+    compositeProfiles: [],
     profiles: [],
     animations,
     patterns,

@@ -9,10 +9,12 @@ import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import { logWrite } from "./logWrite";
 import { LibraryData } from "./types";
 
+type PatternData = Serializable.PatternData;
+
 export type PatternsState = EntityState<Serializable.PatternData>;
 
 export const patternsAdapter = createEntityAdapter({
-  selectId: (pattern: Readonly<Serializable.PatternData>) => pattern.uuid,
+  selectId: (pattern: Readonly<PatternData>) => pattern.uuid,
 });
 
 const patternsSlice = createSlice({
@@ -25,13 +27,13 @@ const patternsSlice = createSlice({
       return patternsAdapter.addMany(state, action.payload.patterns);
     },
 
-    add(state, action: PayloadAction<Serializable.PatternData>) {
+    add(state, action: PayloadAction<PatternData>) {
       const pattern = action.payload;
       patternsAdapter.addOne(state, pattern);
       logWrite("add", "pattern", pattern.uuid, pattern.name);
     },
 
-    update(state, action: PayloadAction<Serializable.PatternData>) {
+    update(state, action: PayloadAction<PatternData>) {
       const pattern = action.payload;
       patternsAdapter.setOne(state, pattern);
       logWrite("update", "pattern", pattern.uuid, pattern.name);

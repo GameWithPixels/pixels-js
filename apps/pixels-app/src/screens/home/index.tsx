@@ -3,8 +3,10 @@ import React from "react";
 
 import { DiceListScreen } from "./DiceListScreen";
 import { DiceRollerScreen } from "./DiceRollerScreen";
+import { DiceRollerSettingsScreen } from "./DiceRollerSettingsScreen";
 import { DieDetailsScreen } from "./DieDetailsScreen";
 import { DieFocusScreen } from "./DieFocusScreen";
+import { EditCompositeProfileScreen } from "./EditCompositeProfileScreen";
 import { EditDieProfileStack } from "./EditDieProfileStack";
 import { FirmwareUpdateScreen } from "./FirmwareUpdateScreen";
 import { RestoreFirmwareScreen } from "./RestoreFirmwareScreen";
@@ -70,6 +72,16 @@ export function HomeStack({ route }: HomeStackProps) {
             ...getStackNavigationOptions("bottom-sheet"),
             gestureEnabled: false,
           }}
+        />
+        <Stack.Screen
+          name="diceRollerSettings"
+          component={DiceRollerSettingsScreen}
+          options={getStackNavigationOptions("bottom-sheet")}
+        />
+        <Stack.Screen
+          name="editCompositeProfile"
+          component={EditCompositeProfileScreen}
+          options={getStackNavigationOptions("bottom-sheet")}
         />
       </Stack.Navigator>
     </NavigationRoot>

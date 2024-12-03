@@ -1,14 +1,11 @@
 import { logWrite as logWriteUntyped } from "../logWrite";
+import { LibraryData } from "./types";
+
+type RemovePlural<S extends string> = S extends `${infer A}s` ? A : S;
 
 export function logWrite(
   action: "add" | "update" | "remove" | "reset",
-  type:
-    | "template"
-    | "profile"
-    | "animation"
-    | "pattern"
-    | "gradient"
-    | "audioClip",
+  type: RemovePlural<keyof LibraryData>,
   uuid: string,
   message?: unknown
 ) {

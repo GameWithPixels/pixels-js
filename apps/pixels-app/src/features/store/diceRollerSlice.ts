@@ -8,40 +8,92 @@ import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 
 import { logWrite } from "./logWrite";
 
-export interface DatedRoll {
+export interface RollerSingleEntry {
   timestamp: number; // Unique identifier
   pixelId: number;
   dieType: PixelDieType;
   value: number;
 }
 
-export type DatedRollsState = EntityState<DatedRoll>;
+export type RollerSinglesState = EntityState<RollerSingleEntry>;
 
-export const datedRollsAdapter = createEntityAdapter({
-  selectId: (roll: Readonly<DatedRoll>) => roll.timestamp,
+export const singleRollsAdapter = createEntityAdapter({
+  selectId: (roll: Readonly<RollerSingleEntry>) => roll.timestamp,
+});
+
+export interface RollerCompositeEntry {
+  timestamp: number; // Unique identifier
+  formula: string;
+  result: number;
+  rolls: { dieType: PixelDieType; value?: number }[];
+}
+
+export type RollerCompositesState = EntityState<RollerCompositeEntry>;
+
+export const compositeRollsAdapter = createEntityAdapter({
+  selectId: (roll: Readonly<RollerCompositeEntry>) => roll.timestamp,
 });
 
 export interface DiceRollerState {
-  allRolls: DatedRollsState;
-  visibleRolls: number[]; // Timestamps
+  singleRolls: RollerSinglesState;
+  compositeRolls: RollerCompositesState;
+  visibleRollsIds: number[]; // Timestamps
   paused: boolean;
+  activeProfileUuid: string;
 }
 
 const initialState: DiceRollerState = {
-  allRolls: datedRollsAdapter.getInitialState(),
-  visibleRolls: [],
+  singleRolls: singleRollsAdapter.getInitialState(),
+  compositeRolls: compositeRollsAdapter.getInitialState(),
+  visibleRollsIds: [],
   paused: false,
+  activeProfileUuid: "",
 };
 
 function log(
   action:
     | "resetDiceRoller"
-    | "addRollerEntry"
+    | "addSingleRollerEntry"
+    | "addCompositeRollerEntry"
     | "hideRollerEntry"
     | "hideAllRollerEntries"
     | "setRollerPaused"
+    | "setActiveRollerProfileUuid"
 ) {
   logWrite(action);
+}
+
+function generateTimestamp(state: DiceRollerState) {
+  const { singleRolls, compositeRolls } = state;
+  const timestampSingle =
+    singleRolls.entities[singleRolls.ids.at(-1) ?? -1]?.timestamp;
+  const timestampComposite =
+    compositeRolls.entities[compositeRolls.ids.at(-1) ?? -1]?.timestamp;
+  const timestamp = Math.max(
+    Date.now(),
+    (timestampSingle ?? -1) + 1,
+    (timestampComposite ?? -1) + 1
+  );
+  return timestamp;
+}
+
+// 128 because we are geeks!
+function keepLessThan128Rolls(state: DiceRollerState) {
+  const { singleRolls, compositeRolls, visibleRollsIds: visibleRolls } = state;
+  if (singleRolls.ids.length + compositeRolls.ids.length >= 128) {
+    const oldestSingle = (singleRolls.ids[0] as number) ?? 0;
+    const oldestComposite = (compositeRolls.ids[0] as number) ?? 0;
+    const oldest = Math.min(oldestSingle, oldestComposite);
+    if (oldest === oldestSingle) {
+      singleRollsAdapter.removeOne(singleRolls, oldest);
+    } else {
+      compositeRollsAdapter.removeOne(compositeRolls, oldest);
+    }
+    const i = visibleRolls.indexOf(oldest as number);
+    if (i >= 0) {
+      visibleRolls.splice(i, 1);
+    }
+  }
 }
 
 // Redux slice that stores rolls for the dice roller
@@ -54,58 +106,78 @@ const DiceRollerSlice = createSlice({
       return initialState;
     },
 
-    addRollerEntry(state, action: PayloadAction<Omit<DatedRoll, "timestamp">>) {
+    addSingleRollerEntry(
+      state,
+      action: PayloadAction<Omit<RollerSingleEntry, "timestamp">>
+    ) {
       if (!state.paused) {
-        log("addRollerEntry");
-        const { allRolls, visibleRolls } = state;
-        const lastTimestamp =
-          allRolls.entities[allRolls.ids.at(-1) ?? -1]?.timestamp ?? 0;
-        const timestamp = Math.max(Date.now(), lastTimestamp + 1);
-        // Keep 100 items max
-        if (allRolls.ids.length >= 100) {
-          const oldest = allRolls.ids[0];
-          datedRollsAdapter.removeOne(allRolls, oldest);
-          const i = visibleRolls.indexOf(oldest as number);
-          if (i >= 0) {
-            visibleRolls.splice(i, 1);
-          }
-        }
+        log("addSingleRollerEntry");
+        keepLessThan128Rolls(state);
+        const { singleRolls, visibleRollsIds } = state;
+        const timestamp = generateTimestamp(state);
         const { pixelId, dieType, value } = action.payload;
-        datedRollsAdapter.addOne(allRolls, {
+        singleRollsAdapter.addOne(singleRolls, {
           timestamp,
           pixelId,
           dieType,
           value,
         });
-        visibleRolls.push(timestamp);
+        visibleRollsIds.push(timestamp);
+      }
+    },
+
+    addCompositeRollerEntry(
+      state,
+      action: PayloadAction<Omit<RollerCompositeEntry, "timestamp">>
+    ) {
+      if (!state.paused) {
+        log("addCompositeRollerEntry");
+        keepLessThan128Rolls(state);
+        const { compositeRolls, visibleRollsIds } = state;
+        const timestamp = generateTimestamp(state);
+        const { formula, result, rolls } = action.payload;
+        compositeRollsAdapter.addOne(compositeRolls, {
+          timestamp,
+          formula,
+          result,
+          rolls: rolls.map(({ dieType, value }) => ({ dieType, value })),
+        });
+        visibleRollsIds.push(timestamp);
       }
     },
 
     hideRollerEntry(state, action: PayloadAction<number>) {
       log("hideRollerEntry");
-      const i = state.visibleRolls.indexOf(action.payload);
+      const i = state.visibleRollsIds.indexOf(action.payload);
       if (i >= 0) {
-        state.visibleRolls.splice(i, 1);
+        state.visibleRollsIds.splice(i, 1);
       }
     },
 
     hideAllRollerEntries(state) {
       log("hideAllRollerEntries");
-      state.visibleRolls.length = 0;
+      state.visibleRollsIds.length = 0;
     },
 
     setRollerPaused(state, action: PayloadAction<boolean>) {
       log("setRollerPaused");
       state.paused = action.payload;
     },
+
+    setActiveRollerProfileUuid(state, action: PayloadAction<string>) {
+      log("setRollerPaused");
+      state.activeProfileUuid = action.payload;
+    },
   },
 });
 
 export const {
   resetDiceRoller,
-  addRollerEntry,
+  addSingleRollerEntry,
+  addCompositeRollerEntry,
   hideRollerEntry,
   hideAllRollerEntries,
   setRollerPaused,
+  setActiveRollerProfileUuid,
 } = DiceRollerSlice.actions;
 export default DiceRollerSlice.reducer;

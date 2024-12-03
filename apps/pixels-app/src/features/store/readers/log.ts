@@ -1,6 +1,10 @@
+import { LibraryData } from "~/features/store/library";
+
+type RemovePlural<S extends string> = S extends `${infer A}s` ? A : S;
+
 export function log(
   action: "create" | "update",
-  type: "profile" | "animation" | "pattern" | "gradient" | "audioClip",
+  type: RemovePlural<keyof LibraryData>,
   uuid: string,
   message?: string
 ) {

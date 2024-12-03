@@ -105,7 +105,7 @@ function SaveToLibraryDialog({
                 }
               }
               if (profileData && profileName.length) {
-                const profile = profileStore.profile;
+                const profile = profileStore.object;
                 if (profile) {
                   // Save to library
                   const uuid = generateProfileUuid(store.getState().library);

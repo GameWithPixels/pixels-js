@@ -113,8 +113,8 @@ function updateProfile(
   }
 }
 
-function updateCondition(
-  condition: Profiles.Condition,
+export function updateCondition(
+  condition: Profiles.Rule["condition"],
   { type, index }: Serializable.RuleData["condition"],
   conditionSetData: Serializable.ConditionSetData
 ): void {
@@ -137,12 +137,7 @@ function updateCondition(
       break;
     case "rolled":
       if (condition instanceof Profiles.ConditionRolled) {
-        const data = conditionSetData[type][index];
-        const facesCount = data.faces.length;
-        condition.faces.length = facesCount;
-        for (let j = 0; j < facesCount; ++j) {
-          condition.faces[j] = data.faces[j];
-        }
+        updateConditionRolled(conditionSetData[type][index], condition);
       }
       break;
     case "crooked":
@@ -175,8 +170,19 @@ function updateCondition(
   }
 }
 
-function updateAction(
-  action: Profiles.Action,
+export function updateConditionRolled(
+  data: Serializable.ConditionSetData["rolled"][number],
+  condition: Profiles.ConditionRolled
+) {
+  const facesCount = data.faces.length;
+  condition.faces.length = facesCount;
+  for (let j = 0; j < facesCount; ++j) {
+    condition.faces[j] = data.faces[j];
+  }
+}
+
+export function updateAction(
+  action: Profiles.Rule["actions"][number],
   { type, index }: Serializable.RuleData["actions"][number],
   actionSetData: Serializable.ActionSetData,
   library: LibraryState

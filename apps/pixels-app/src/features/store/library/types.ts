@@ -6,6 +6,7 @@ export type AppProfileData = Serializable.ProfileData & {
 };
 
 export interface LibraryData {
+  compositeProfiles: Serializable.CompositeProfileData[];
   profiles: AppProfileData[];
   animations: Serializable.AnimationSetData;
   patterns: Serializable.PatternData[];

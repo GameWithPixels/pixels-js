@@ -20,6 +20,7 @@ export function DieMenu({
   onReset,
   onTurnOff,
   onSetRunMode,
+  onTestAnim,
   ...props
 }: {
   ready?: boolean;
@@ -30,6 +31,7 @@ export function DieMenu({
   onReset?: () => void;
   onTurnOff?: () => void;
   onSetRunMode?: () => void;
+  onTestAnim?: () => void;
 } & Omit<MenuProps, "children" | "theme" | "containerStyle">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness);
@@ -155,6 +157,27 @@ export function DieMenu({
             onPress={() => {
               props.onDismiss?.();
               onSetRunMode();
+            }}
+          />
+          <Divider />
+        </>
+      )}
+      {onTestAnim && (
+        <>
+          <Menu.Item
+            title="Test Animation"
+            disabled={!ready}
+            trailingIcon={({ size, color }) => (
+              <MaterialCommunityIcons
+                name="animation-play-outline"
+                size={size}
+                color={color}
+              />
+            )}
+            contentStyle={AppStyles.menuItemWithIcon}
+            onPress={() => {
+              props.onDismiss?.();
+              onTestAnim();
             }}
           />
           <Divider />

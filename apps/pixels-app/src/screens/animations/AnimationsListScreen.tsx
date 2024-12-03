@@ -153,6 +153,10 @@ function AnimationsListPage({
   return (
     <>
       <AppBackground>
+        <PageHeader
+          viewMode={viewMode}
+          onSelectViewMode={(vm) => setViewMode(vm)}
+        />
         <ScrollView
           contentContainerStyle={{
             padding: 10,
@@ -173,10 +177,6 @@ function AnimationsListPage({
             />
           )}
         </ScrollView>
-        <PageHeader
-          viewMode={viewMode}
-          onSelectViewMode={(vm) => setViewMode(vm)}
-        />
       </AppBackground>
       <FloatingAddButton
         sentry-label="add-animation"
