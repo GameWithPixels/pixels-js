@@ -128,18 +128,19 @@ function MPCsListPage({
                 onPress={() => {
                   const referenceTime = 1000; // Arbitrary reference time
                   const maxDelayTime = 100; // Expected max delay before we've messages all controllers
-                  const offset = 500;
+                  const timeOffset = 0;
+                  const distance = 12;
                   const targetTime = Date.now() + maxDelayTime;
                   pairedMPCs.forEach((mpc) => {
                     const pmpc = getMPC(mpc.pixelId);
                     if (pmpc) {
+                      const xcoord = MPCRoles.indexOf(mpc.role) - 2.5;
                       pmpc
                         .sync(
                           targetTime,
                           referenceTime,
-                          (2.5 - Math.abs(MPCRoles.indexOf(mpc.role) - 2.5)) *
-                            offset,
-                          0
+                          xcoord * timeOffset,
+                          xcoord * distance
                         )
                         .catch((e) =>
                           console.warn(`Error syncing MPC ${mpc.name}: ${e}`)
