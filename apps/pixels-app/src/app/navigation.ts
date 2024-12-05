@@ -214,6 +214,7 @@ export type PickColorDesignScreenProps = NativeStackScreenProps<
 export type DemoStackParamList = {
   mpcsList: undefined;
   mpcDetails: { pixelId: number };
+  rollToWin: undefined;
 };
 
 export type MPCsListScreenProps = NativeStackScreenProps<
@@ -224,6 +225,11 @@ export type MPCsListScreenProps = NativeStackScreenProps<
 export type MPCDetailsScreenProps = NativeStackScreenProps<
   DemoStackParamList,
   "mpcDetails"
+>;
+
+export type RollToWinScreenProps = NativeStackScreenProps<
+  DemoStackParamList,
+  "rollToWin"
 >;
 
 // Settings screens

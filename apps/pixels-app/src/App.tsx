@@ -38,6 +38,7 @@ import { AppPixelsCentral } from "./app/AppPixelsCentral";
 import { useAppSelector } from "./app/hooks";
 import {
   BottomTabParamList,
+  DemoStackParamList,
   HomeStackParamList,
   ProfilesStackParamList,
 } from "./app/navigation";
@@ -198,10 +199,7 @@ function AppPage() {
           options={({ route }) => ({
             title: "Demo",
             tabBarIcon: AnimationsIcon,
-            tabBarStyle: getTabBarStyle<ProfilesStackParamList>(
-              route,
-              "profilesList"
-            ),
+            tabBarStyle: getTabBarStyle<DemoStackParamList>(route, "mpcsList"),
           })}
         />
         <Tab.Screen

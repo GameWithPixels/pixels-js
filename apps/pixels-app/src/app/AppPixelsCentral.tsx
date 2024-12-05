@@ -2,7 +2,6 @@ import {
   Color,
   ColorUtils,
   DataSet,
-  getMPC,
   MPC,
   MPCMutableProps,
   Pixel,
@@ -14,7 +13,6 @@ import React from "react";
 import { Alert, AppState } from "react-native";
 
 import { PairedDie } from "./PairedDie";
-import { MPCRoles } from "./PairedMPC";
 import { useAppSelector, useAppStore } from "./hooks";
 import {
   AppStore,
@@ -24,6 +22,7 @@ import {
 } from "./store";
 
 import { PixelsCentral } from "~/features/dice";
+import { syncMPCs } from "~/features/mpcUtils";
 import {
   createProfileDataSetWithOverrides,
   getWebRequestPayload,
@@ -128,24 +127,6 @@ function programProfileIfNeeded(
       type: "programProfile",
       dataSet,
     });
-  }
-}
-
-export function syncMPCs(store: AppStore): void {
-  console.log("Syncing MPCs");
-  const referenceTime = 1000; // Arbitrary reference time
-  const maxDelayTime = 100; // Expected max delay before we've messages all controllers
-  const timeOffset = 0;
-  const distance = 12;
-  const targetTime = Date.now() + maxDelayTime;
-  for (const pairedMPC of store.getState().pairedMPCs.paired) {
-    const mpc = getMPC(pairedMPC.pixelId);
-    if (mpc?.status === "ready") {
-      const xcoord = MPCRoles.indexOf(pairedMPC.role) - 2.5;
-      mpc
-        .sync(targetTime, referenceTime, xcoord * timeOffset, xcoord * distance)
-        .catch((e) => console.warn(`Error syncing MPC ${mpc.name}: ${e}`));
-    }
   }
 }
 
@@ -363,7 +344,7 @@ function hookToMPC(
     if (status === "ready") {
       onRename(mpc);
       onFwDate(mpc);
-      syncMPCs(store);
+      syncMPCs(store.getState().pairedMPCs.paired);
     }
   };
   mpc.addPropertyListener("status", onStatus);
@@ -624,9 +605,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   // Re-sync MPCs every 10 minutes
   React.useEffect(() => {
     const id = setInterval(
-      () => {
-        syncMPCs(store);
-      },
+      () => syncMPCs(store.getState().pairedMPCs.paired),
       10 * 60 * 1000
     );
     return () => clearInterval(id);

@@ -17,7 +17,23 @@ async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
   return loadedSound;
 }
 
-export async function playAudioClipAsync(
+export async function playSoundAsync(uri: string, volume = 1): Promise<void> {
+  const sound = await getSound({ uri });
+  await sound.setPositionAsync(0);
+  await sound.setVolumeAsync(volume);
+  return new Promise((resolve, reject) => {
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.isLoaded && status.didJustFinish) {
+        resolve();
+      } else if (!status.isLoaded) {
+        reject(new Error(status.error));
+      }
+    });
+    sound.playAsync();
+  });
+}
+
+export async function playAudioFileAsync(
   filename: string,
   volume = 1
 ): Promise<void> {
@@ -27,19 +43,7 @@ export async function playAudioClipAsync(
     return;
   }
   try {
-    const sound = await getSound({ uri });
-    await sound.setPositionAsync(0);
-    await sound.setVolumeAsync(volume);
-    return new Promise((resolve, reject) => {
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          resolve();
-        } else if (!status.isLoaded) {
-          reject(new Error(status.error));
-        }
-      });
-      sound.playAsync();
-    });
+    playSoundAsync(uri, volume);
   } catch (e) {
     logError(`Error playing audio clip ${uri}: ${e}`);
   }

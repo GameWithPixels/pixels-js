@@ -1,35 +1,20 @@
 import { range } from "@systemic-games/pixels-core-utils";
-import {
-  getMPC,
-  MPC,
-  useMPCProp,
-} from "@systemic-games/react-native-pixels-connect";
+import { useMPCProp } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView, View, ViewProps } from "react-native";
 import { Text } from "react-native-paper";
 
 import { PairMPCsBottomSheet } from "./components/PairMPCsBottomSheet";
 
-import { MPCRoles, PairedMPC } from "~/app/PairedMPC";
+import { PairedMPC } from "~/app/PairedMPC";
 import { useAppSelector } from "~/app/hooks";
 import { MPCsListScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
 import { GradientButton, OutlineButton } from "~/components/buttons";
+import { syncMPCs, playAnimOnMPCs, stopAnimOnMPCs } from "~/features/mpcUtils";
 import { useMPC } from "~/hooks";
-
-function forEachMPC<T>(
-  pairedMPCs: PairedMPC[],
-  action: (mpc: MPC) => Promise<T>
-): void {
-  for (const p of pairedMPCs) {
-    const mpc = getMPC(p.pixelId);
-    if (mpc) {
-      action(mpc).catch((e) => console.log(String(e)));
-    }
-  }
-}
 
 function MPCCard({
   pairedMPC,
@@ -115,6 +100,9 @@ function MPCsListPage({
         >
           <BluetoothStateWarning style={{ marginVertical: 10 }}>
             <View style={{ gap: 10 }}>
+              <OutlineButton onPress={() => navigation.navigate("rollToWin")}>
+                Roll To Win
+              </OutlineButton>
               <Text
                 variant="titleLarge"
                 style={{ alignSelf: "center", margin: 10 }}
@@ -124,31 +112,7 @@ function MPCsListPage({
               <OutlineButton onPress={() => setShowPairDice(true)}>
                 Add MPC
               </OutlineButton>
-              <OutlineButton
-                onPress={() => {
-                  const referenceTime = 1000; // Arbitrary reference time
-                  const maxDelayTime = 100; // Expected max delay before we've messages all controllers
-                  const timeOffset = 0;
-                  const distance = 12;
-                  const targetTime = Date.now() + maxDelayTime;
-                  pairedMPCs.forEach((mpc) => {
-                    const pmpc = getMPC(mpc.pixelId);
-                    if (pmpc) {
-                      const xcoord = MPCRoles.indexOf(mpc.role) - 2.5;
-                      pmpc
-                        .sync(
-                          targetTime,
-                          referenceTime,
-                          xcoord * timeOffset,
-                          xcoord * distance
-                        )
-                        .catch((e) =>
-                          console.warn(`Error syncing MPC ${mpc.name}: ${e}`)
-                        );
-                    }
-                  });
-                }}
-              >
+              <OutlineButton onPress={() => syncMPCs(pairedMPCs)}>
                 Synchronize
               </OutlineButton>
               {range(1, 5).map((i) => (
@@ -163,22 +127,13 @@ function MPCsListPage({
                   <Text variant="bodyLarge">Anim #{i}</Text>
                   <GradientButton
                     style={{ flex: 1 }}
-                    onPress={() =>
-                      pairedMPCs.forEach((mpc) => {
-                        const pmpc = getMPC(mpc.pixelId);
-                        if (pmpc) {
-                          pmpc.playAnim(i, 0, MPCRoles.indexOf(mpc.role), 0);
-                        }
-                      })
-                    }
+                    onPress={() => playAnimOnMPCs(pairedMPCs, i)}
                   >
                     Play
                   </GradientButton>
                   <GradientButton
                     style={{ flex: 1 }}
-                    onPress={() =>
-                      forEachMPC(pairedMPCs, (mpc) => mpc.stopAnim(i))
-                    }
+                    onPress={() => stopAnimOnMPCs(pairedMPCs, i)}
                   >
                     Stop
                   </GradientButton>

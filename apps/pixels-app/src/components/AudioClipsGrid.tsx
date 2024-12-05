@@ -6,7 +6,7 @@ import { Text, useTheme } from "react-native-paper";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
-import { playAudioClipAsync } from "~/features/audio";
+import { playAudioFileAsync } from "~/features/audio";
 import { AudioClipAsset } from "~/features/store/libraryAssets";
 
 export function AudioClipCard({
@@ -39,7 +39,7 @@ export function AudioClipCard({
         size={30}
         color={colors.onSurface}
         style={{ position: "absolute", top: 0, right: 0, padding: 5 }}
-        onPress={() => playAudioClipAsync(audioClipUuid + "." + fileType)}
+        onPress={() => playAudioFileAsync(audioClipUuid + "." + fileType)}
       />
     </TouchableCard>
   );

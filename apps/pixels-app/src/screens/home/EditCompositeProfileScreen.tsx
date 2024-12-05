@@ -12,16 +12,12 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import {
-  EditRuleCallback,
-  SectionTitle,
-} from "../profiles/components/RulesSection";
+import { SectionTitle } from "../profiles/components/RulesSection";
 
 import { EditCompositeProfileScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { PickAnimationBottomSheet } from "~/components/PickAnimationBottomSheet";
-import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
 import { GradientButton } from "~/components/buttons";
 import {
   useCommitEditableCompositeProfile,
@@ -87,12 +83,10 @@ const EditProfileBool = observer(function EditProfileString({
 
 function EditCompositeProfilePage({
   profileUuid,
-  onEditRule,
-  onGoBack,
+  navigation,
 }: {
   profileUuid: string;
-  onEditRule: EditRuleCallback;
-  onGoBack: () => void;
+  navigation: EditCompositeProfileScreenProps["navigation"];
 }) {
   const profile = useEditableCompositeProfile(profileUuid);
   const commitProfile = useCommitEditableCompositeProfile(profileUuid);
@@ -109,7 +103,7 @@ function EditCompositeProfilePage({
             sentry-label="commit-edit-composite-profile"
             onPress={() => {
               commitProfile();
-              onGoBack();
+              navigation.goBack();
             }}
           >
             Done
@@ -197,10 +191,8 @@ export function EditCompositeProfileScreen({
     <AppBackground>
       <EditCompositeProfilePage
         profileUuid={profileUuid}
-        onEditRule={(ruleIndex) => {}} //navigation.navigate("editRule", ruleIndex)}
-        onGoBack={() => navigation.goBack()}
+        navigation={navigation}
       />
-      <SelectedPixelTransferProgressBar />
     </AppBackground>
   );
 }

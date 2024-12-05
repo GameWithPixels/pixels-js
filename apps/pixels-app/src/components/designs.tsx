@@ -60,9 +60,9 @@ function ColorDesignColumn({
       {patterns.map((d) => (
         <ColorDesignCard
           key={d.uuid}
-          style={{ height: 180 }}
           pattern={d}
           dieType="d20"
+          style={{ height: 180 }}
           selected={d === selected}
           onPress={() => onSelectDesign?.(d)}
         />

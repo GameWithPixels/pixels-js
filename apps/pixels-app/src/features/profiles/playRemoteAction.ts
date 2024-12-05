@@ -17,7 +17,7 @@ import {
 
 import { RootState } from "~/app/store";
 import { ToastSettings } from "~/app/themes";
-import { playAudioClipAsync } from "~/features/audio";
+import { playAudioFileAsync } from "~/features/audio";
 
 const baseDiceIconUrl =
   "https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes";
@@ -143,7 +143,7 @@ export function playActionAudioClip(
     showToast(`Playing Audio Clip action.\nClip: ${clip.name}`, ToastSettings);
     const play = async () => {
       for (let i = 0; i < loopCount; i++) {
-        await playAudioClipAsync(filename, volume);
+        await playAudioFileAsync(filename, volume);
       }
     };
     play();
