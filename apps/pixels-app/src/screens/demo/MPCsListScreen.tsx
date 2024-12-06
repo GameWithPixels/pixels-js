@@ -115,7 +115,7 @@ function MPCsListPage({
               <OutlineButton onPress={() => syncMPCs(pairedMPCs)}>
                 Synchronize
               </OutlineButton>
-              {range(1, 5).map((i) => (
+              {range(0, 6).map((i) => (
                 <View
                   key={i}
                   style={{

@@ -17,8 +17,11 @@ async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
   return loadedSound;
 }
 
-export async function playSoundAsync(uri: string, volume = 1): Promise<void> {
-  const sound = await getSound({ uri });
+export async function playSoundAsync(
+  source: AVPlaybackSource,
+  volume = 1
+): Promise<void> {
+  const sound = await getSound(source);
   await sound.setPositionAsync(0);
   await sound.setVolumeAsync(volume);
   return new Promise((resolve, reject) => {
@@ -43,7 +46,7 @@ export async function playAudioFileAsync(
     return;
   }
   try {
-    playSoundAsync(uri, volume);
+    playSoundAsync({ uri }, volume);
   } catch (e) {
     logError(`Error playing audio clip ${uri}: ${e}`);
   }

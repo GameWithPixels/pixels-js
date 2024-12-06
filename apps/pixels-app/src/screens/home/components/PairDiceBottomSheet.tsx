@@ -160,7 +160,6 @@ function SelectScannedPixels({
               key={showNoDie ? "empty" : "scanning"}
               entering={FadeIn.duration(300)}
               variant="bodyMedium"
-              style={{}}
             >
               {showNoDie
                 ? getNoAvailableDiceMessage() +
