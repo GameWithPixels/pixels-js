@@ -32,7 +32,7 @@ import { useAppSelector, useAppStore } from "~/app/hooks";
 import { RollToWinScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { playSoundAsync } from "~/features/audio";
-import { playAnimOnMPCs } from "~/features/mpcUtils";
+import { playAnimOnMPCs, stopAnimOnMPCs } from "~/features/mpcUtils";
 import { readProfile } from "~/features/store";
 import { usePixelsCentral } from "~/hooks";
 
@@ -50,31 +50,32 @@ const rainbowColors = [
 const ResultConfig = {
   reset: {
     dieAnim: { name: "Rolling Rainbow", delay: 0 },
+    mpcAnim: { index: 2, duration: 1000 },
   },
   rolling: {
-    mpcAnim: 0,
+    mpcAnim: { index: 4 },
   },
   100: {
-    mpcAnim: 1,
+    mpcAnim: { index: 0 },
     dieAnim: { name: "Rolling Rainbow", delay: 2000, loopCount: 3 },
     sound: fupicatSound,
   },
   75: {
-    mpcAnim: 2,
+    mpcAnim: { index: 3 },
     sound: fupicatSound,
   },
   50: {
-    mpcAnim: 3,
+    mpcAnim: { index: 5 },
     sound: fupicatSound,
   },
   0: {
-    mpcAnim: 4,
+    mpcAnim: { index: 1 },
     sound: fupicatSound,
   },
 };
 
 function getActionConfig(result: number | "reset" | "rolling"): {
-  mpcAnim?: number;
+  mpcAnim?: { index: number; duration?: number };
   dieAnim?: { name: string; delay: number; loopCount?: number };
   sound?: AVPlaybackSource;
 } {
@@ -121,6 +122,9 @@ function playAnimOnDie(
   }
 }
 
+// TODO hack to stop MPCs animations before starting a new one
+let stopMCPAnims: (() => void) | undefined = undefined;
+
 function playAction({
   result,
   die10,
@@ -136,8 +140,19 @@ function playAction({
   console.log(
     `Playing action ${result}, mpcAnim: ${mpcAnim}, dieAnim: ${dieAnim}, sound: ${!!sound}`
   );
-  if (mpcAnim !== undefined && mpcAnim >= 0) {
-    playAnimOnMPCs(pairedMPCs, mpcAnim);
+  if (mpcAnim) {
+    stopMCPAnims?.();
+    playAnimOnMPCs(pairedMPCs, mpcAnim.index);
+    const stop = () => stopAnimOnMPCs(pairedMPCs, mpcAnim.index);
+    if (mpcAnim.duration) {
+      const id = setTimeout(stop, mpcAnim.duration);
+      stopMCPAnims = () => {
+        clearTimeout(id);
+        stop();
+      };
+    } else {
+      stopMCPAnims = stop;
+    }
   }
   if (dieAnim) {
     setTimeout(() => {
@@ -325,6 +340,11 @@ function RollToWinScreenScreenPage({
       disposers.forEach((d) => d());
     };
   }, [central, pairedDice, store]);
+
+  const pairedMPCs = useAppSelector((state) => state.pairedMPCs.paired);
+  React.useEffect(() => {
+    dispatch({ type: "registerMPCs", pairedMPCs });
+  }, [central, pairedMPCs]);
 
   const progress = useSharedValue(-100);
   const animStyle = useAnimatedStyle(() => {
