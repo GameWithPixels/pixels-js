@@ -11,6 +11,7 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { AVPlaybackSource } from "expo-av";
 import { Image } from "expo-image";
+import * as Speech from "expo-speech";
 import React from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { Text } from "react-native-paper";
@@ -25,15 +26,23 @@ import Animated, {
 } from "react-native-reanimated";
 import { ViewProps } from "react-native-svg/lib/typescript/fabric/utils";
 
+// https://freesound.org/people/Benboncan/sounds/73581/
+import sadTromboneSound from "#/demo/benboncan_sad-trombone.wav";
 // https://freesound.org/people/Fupicat/sounds/527650/
-import fupicatSound from "#/demo/fupicat_winsquare.wav";
+import winSquareSound from "#/demo/fupicat_winsquare.wav";
+// https://freesound.org/people/Vesperia94/sounds/403057/
+import hooraySound from "#/demo/vesperia94_hooray.wav";
 import { PairedMPC } from "~/app/PairedMPC";
 import { useAppSelector, useAppStore } from "~/app/hooks";
 import { RollToWinScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { playSoundAsync } from "~/features/audio";
 import { playAnimOnMPCs, stopAnimOnMPCs } from "~/features/mpcUtils";
-import { readProfile } from "~/features/store";
+import {
+  incrementRollToWinCounter,
+  incrementRollToWinSuccesses,
+  readProfile,
+} from "~/features/store";
 import { usePixelsCentral } from "~/hooks";
 
 const rainbowColors = [
@@ -49,35 +58,37 @@ const rainbowColors = [
 
 const ResultConfig = {
   reset: {
-    dieAnim: { name: "Rolling Rainbow", delay: 0 },
     mpcAnim: { index: 2, duration: 1000 },
   },
   rolling: {
     mpcAnim: { index: 4 },
   },
-  100: {
+  99: {
     mpcAnim: { index: 0 },
-    dieAnim: { name: "Rolling Rainbow", delay: 2000, loopCount: 3 },
-    sound: fupicatSound,
+    dieAnim: { name: "Rolling Rainbow", delay: 2000, loopCount: 2 },
+    sound: { source: hooraySound },
   },
-  75: {
+  60: {
     mpcAnim: { index: 3 },
-    sound: fupicatSound,
+    dieAnim: { name: "Colored Flash", delay: 2000, loopCount: 2 },
+    sound: { source: winSquareSound },
   },
-  50: {
+  25: {
     mpcAnim: { index: 5 },
-    sound: fupicatSound,
+    dieAnim: { name: "Waterfall Rainbow", delay: 2000, loopCount: 2 },
+    sound: { source: winSquareSound },
   },
   0: {
     mpcAnim: { index: 1 },
-    sound: fupicatSound,
+    dieAnim: { name: "Quick Red", delay: 2000, loopCount: 2 },
+    sound: { source: sadTromboneSound, volume: 0.5 },
   },
 };
 
 function getActionConfig(result: number | "reset" | "rolling"): {
   mpcAnim?: { index: number; duration?: number };
   dieAnim?: { name: string; delay: number; loopCount?: number };
-  sound?: AVPlaybackSource;
+  sound?: { source: AVPlaybackSource; volume?: number };
 } {
   if (result === "reset" || result === "rolling") {
     return ResultConfig[result];
@@ -123,7 +134,7 @@ function playAnimOnDie(
 }
 
 // TODO hack to stop MPCs animations before starting a new one
-let stopMCPAnims: (() => void) | undefined = undefined;
+let stopMPCAnims: (() => void) | undefined = undefined;
 
 function playAction({
   result,
@@ -141,17 +152,20 @@ function playAction({
     `Playing action ${result}, mpcAnim: ${mpcAnim}, dieAnim: ${dieAnim}, sound: ${!!sound}`
   );
   if (mpcAnim) {
-    stopMCPAnims?.();
+    stopMPCAnims?.();
     playAnimOnMPCs(pairedMPCs, mpcAnim.index);
-    const stop = () => stopAnimOnMPCs(pairedMPCs, mpcAnim.index);
+    const stop = () => {
+      stopAnimOnMPCs(pairedMPCs, mpcAnim.index);
+      stopMPCAnims = undefined;
+    };
     if (mpcAnim.duration) {
       const id = setTimeout(stop, mpcAnim.duration);
-      stopMCPAnims = () => {
+      stopMPCAnims = () => {
         clearTimeout(id);
         stop();
       };
     } else {
-      stopMCPAnims = stop;
+      stopMPCAnims = stop;
     }
   }
   if (dieAnim) {
@@ -161,8 +175,16 @@ function playAction({
     }, dieAnim.delay);
   }
   if (sound) {
-    playSoundAsync(sound).catch((e) =>
-      console.log(`playSoundAsync error: ${e}`)
+    if (typeof result === "number") {
+      const settings = { volume: 1, pitch: 1, rate: 1 } as const;
+      Speech.speak(result.toString(), settings);
+    }
+    setTimeout(
+      () =>
+        playSoundAsync(sound.source, sound.volume).catch((e) =>
+          console.log(`playSoundAsync error: ${e}`)
+        ),
+      2500
     );
   }
 }
@@ -185,6 +207,7 @@ function rollReducer(
     | ({
         type: "rollState";
         dieType: "d10" | "d00";
+        onResult?: (result: number) => void;
       } & PixelEventMap["rollState"])
 ): CombinedRollsState {
   const { type } = action;
@@ -227,32 +250,40 @@ function rollReducer(
     }
     case "rollState": {
       const { die10, die00, pairedMPCs } = state;
-      if (die10 && die00) {
-        const { dieType, state: rollState, faceIndex } = action;
+      if (
+        die10 &&
+        die00 &&
+        // Ignore roll events once we have a result
+        !(typeof state.d00 === "number" && typeof state.d10 === "number")
+      ) {
+        const { dieType, state: rollState, faceIndex, onResult } = action;
         if (rollState === "handling" || rollState === "rolling") {
-          if (state[dieType] === undefined) {
-            playAction({ result: "rolling", ...state });
+          if (state[dieType] !== "rolling") {
+            // Play action only if the other die is not already rolling
+            if (state[dieType === "d10" ? "d00" : "d10"] !== "rolling") {
+              playAction({ result: "rolling", ...state });
+            }
             return { ...state, [dieType]: "rolling" };
           }
-        } else if (typeof state[dieType] !== "number") {
-          if (rollState !== "rolled") {
-            console.log("STILL");
-            return { ...state, [dieType]: undefined };
-          } else {
-            console.log("ROLLED");
-            const newState = { ...state, [dieType]: faceIndex };
-            if (
-              typeof newState.d00 === "number" &&
-              typeof newState.d10 === "number"
-            ) {
-              if (newState.d10 + newState.d00 === 0) {
-                newState.d00 = 10;
-              }
-              const result = newState.d10 + 10 * newState.d00;
-              playAction({ result, die10, die00, pairedMPCs });
+        } else if (rollState !== "rolled") {
+          console.log("STILL");
+          stopMPCAnims?.();
+          return { ...state, [dieType]: undefined };
+        } else {
+          console.log("ROLLED");
+          const newState = { ...state, [dieType]: faceIndex };
+          if (
+            typeof newState.d00 === "number" &&
+            typeof newState.d10 === "number"
+          ) {
+            if (newState.d10 + newState.d00 === 0) {
+              newState.d00 = 10;
             }
-            return newState;
+            const result = newState.d10 + 10 * newState.d00;
+            playAction({ result, die10, die00, pairedMPCs });
+            onResult?.(result);
           }
+          return newState;
         }
       }
       break;
@@ -303,6 +334,21 @@ function RollToWinScreenScreenPage({
     pairedMPCs: [],
   });
 
+  // Auto-reset
+  const resetTimeoutIdRef = React.useRef<ReturnType<typeof setTimeout>>();
+  React.useEffect(() => {
+    if (
+      typeof diceState.d10 === "number" &&
+      typeof diceState.d00 === "number"
+    ) {
+      clearTimeout(resetTimeoutIdRef.current);
+      resetTimeoutIdRef.current = setTimeout(
+        () => dispatch({ type: "resetRolls" }),
+        3000
+      );
+    }
+  }, [diceState.d00, diceState.d10]);
+
   // Watch D10s & D00s
   React.useEffect(() => {
     const disposers: (() => void)[] = [];
@@ -321,7 +367,19 @@ function RollToWinScreenScreenPage({
                 console.log(
                   `Pixel ${unsigned32ToHex(d.pixelId)} ${ev.state} ${ev.face}`
                 );
-                dispatch({ type: "rollState", ...ev, dieType });
+                dispatch({
+                  type: "rollState",
+                  ...ev,
+                  dieType,
+                  onResult: (result) => {
+                    setTimeout(() => {
+                      if (result >= 99) {
+                        store.dispatch(incrementRollToWinSuccesses());
+                      }
+                      store.dispatch(incrementRollToWinCounter());
+                    }, 0);
+                  },
+                });
               };
               pixel.addEventListener("rollState", onRoll);
               disposers.push(() => {
@@ -346,39 +404,39 @@ function RollToWinScreenScreenPage({
     dispatch({ type: "registerMPCs", pairedMPCs });
   }, [central, pairedMPCs]);
 
-  const progress = useSharedValue(-100);
+  const progress = useSharedValue(0);
+  React.useEffect(() => {
+    progress.value = withRepeat(withTiming(1, { duration: 2000 }), -1, false);
+  }, [progress]);
   const animStyle = useAnimatedStyle(() => {
     return {
-      backgroundColor:
-        progress.value === -100
-          ? "transparent"
-          : interpolateColor(
-              progress.value,
-              rainbowColors.map((_, i) =>
-                Math.min(1, Math.max(0, (i - 0.5) / (rainbowColors.length - 2)))
-              ),
-              rainbowColors
-            ),
+      backgroundColor: interpolateColor(
+        progress.value,
+        rainbowColors.map((_, i) =>
+          Math.min(1, Math.max(0, (i - 0.5) / (rainbowColors.length - 2)))
+        ),
+        rainbowColors
+      ),
     };
   });
-  React.useEffect(() => {
-    if (
-      typeof diceState.d10 === "number" &&
-      typeof diceState.d00 === "number"
-    ) {
-      progress.value = 0;
-      progress.value = withRepeat(withTiming(1, { duration: 2000 }), -1, false);
-    } else {
-      progress.value = -100;
-    }
-  }, [diceState.d00, diceState.d10, progress]);
 
   return (
     <Pressable
       style={{ height: "100%" }}
-      onLongPress={() => dispatch({ type: "resetRolls" })}
+      onLongPress={() => {
+        dispatch({ type: "resetRolls" });
+        clearTimeout(resetTimeoutIdRef.current);
+        resetTimeoutIdRef.current = undefined;
+      }}
     >
-      <Animated.View style={[animStyle, { flex: 1 }]}>
+      <Animated.View
+        style={[
+          typeof diceState.d10 === "number" && typeof diceState.d00 === "number"
+            ? animStyle
+            : undefined,
+          { flex: 1 },
+        ]}
+      >
         {/* <PageHeader mode="arrow-left" onGoBack={navigation.goBack}>
         Roll To Win
       </PageHeader> */}

@@ -18,11 +18,13 @@ const keepLowestRoll: DiceRule<KeepLowestRollToken> = {
   },
   roll: ({ count, numSides }, { generateRolls }) =>
     generateRolls(count, numSides),
-  calculateValue: (token, rolls) =>
-    rolls
-      .sort((a, b) => a - b)
-      .slice(0, token.keep)
-      .reduce((agg, num) => agg + num, 0),
+  calculateValue: (token, rolls, { context }) => {
+    const winners = rolls.sort((a, b) => a - b).slice(0, token.keep);
+    for (const val of winners) {
+      context["addTag"]?.("kl", val);
+    }
+    return winners.reduce((agg, num) => agg + num, 0);
+  },
 };
 
 export default keepLowestRoll;

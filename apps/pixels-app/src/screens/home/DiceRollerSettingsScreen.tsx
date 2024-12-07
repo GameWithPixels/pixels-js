@@ -8,11 +8,10 @@ import { useAppSelector, useAppStore } from "~/app/hooks";
 import { DiceRollerSettingsScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
-import { FloatingAddButton, OutlineButton } from "~/components/buttons";
+import { FloatingAddButton } from "~/components/buttons";
 import { EmptyRollerSettingsCard } from "~/components/cards";
 import { CompositeProfilesList } from "~/components/compositeProfile";
 import { generateProfileUuid } from "~/features/profiles";
-import { setActiveRollerProfileUuid } from "~/features/store";
 import { useOptionalCompositeProfile } from "~/hooks";
 import {
   useCompositeProfilesList,
@@ -66,22 +65,11 @@ function DiceRollerSettingsPage({
                 Composite Profiles
               </Text>
               <View style={{ flex: 1 }} />
-              {activeProfile && (
-                <OutlineButton
-                  onPress={() => store.dispatch(setActiveRollerProfileUuid(""))}
-                  style={{ alignSelf: "flex-end" }}
-                >
-                  Use None
-                </OutlineButton>
-              )}
             </View>
             <CompositeProfilesList
               profiles={profiles}
               selected={activeProfile}
               onSelectProfile={(p) =>
-                store.dispatch(setActiveRollerProfileUuid(p.uuid))
-              }
-              onLongPressProfile={(p) =>
                 navigation.navigate("editCompositeProfile", {
                   profileUuid: p.uuid,
                 })

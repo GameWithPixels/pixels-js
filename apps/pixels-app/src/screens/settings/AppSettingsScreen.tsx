@@ -5,7 +5,7 @@ import { Divider, Switch, useTheme } from "react-native-paper";
 import { SettingsSwitch } from "./components/SettingsSwitch";
 import { Body, Remark } from "./components/text";
 
-import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
+import { useAppSelector, useAppStore } from "~/app/hooks";
 import {
   AppSettingsScreenProps,
   SettingsMenuScreenProps,
@@ -37,7 +37,8 @@ function AppSettingsPage({
 }: {
   navigation: SettingsMenuScreenProps["navigation"];
 }) {
-  const appDispatch = useAppDispatch();
+  const store = useAppStore();
+  const appDispatch = store.dispatch;
 
   const {
     diceBrightnessFactor: brightness,
@@ -66,7 +67,6 @@ function AppSettingsPage({
   );
 
   // Secret buttons to enable debug mode
-  const store = useAppStore();
   const secretToggleRef = React.useRef<{
     counter: number;
     timeoutId?: ReturnType<typeof setTimeout>;
@@ -203,6 +203,26 @@ function AppSettingsPage({
             >
               Debug Mode
             </SettingsSwitch>
+            <OutlineButton
+              onPress={() => {
+                const profiles = store.getState().library.profiles;
+                const diceProfiles = store
+                  .getState()
+                  .pairedDice.paired.map((d) => d.profileUuid);
+                for (const id of profiles.ids) {
+                  const profile = profiles.entities[id];
+                  if (
+                    profile &&
+                    !diceProfiles.includes(profile.uuid) &&
+                    profiles.entities[profile.uuid]?.name === "Default Profile"
+                  ) {
+                    appDispatch(Library.Profiles.remove(profile.uuid));
+                  }
+                }
+              }}
+            >
+              Delete Default Profiles
+            </OutlineButton>
           </>
         )}
       </ScrollView>

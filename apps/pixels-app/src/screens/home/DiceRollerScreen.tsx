@@ -2,7 +2,6 @@ import { useActionSheet } from "@expo/react-native-action-sheet";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { createDataSetForAnimations } from "@systemic-games/pixels-edit-animation";
 import {
-  Color,
   DiceUtils,
   getPixel,
   Pixel,
@@ -14,11 +13,11 @@ import * as Speech from "expo-speech";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import {
-  View,
+  Pressable,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
-  Pressable,
+  View,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
@@ -39,7 +38,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { DiceRollerScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
@@ -60,53 +59,26 @@ import {
   getRollsResults,
 } from "~/features/rollFormula";
 import {
+  addCompositeRollerEntry,
   addSingleRollerEntry,
-  RollerSingleEntry,
   hideAllRollerEntries,
   hideRollerEntry,
+  RollerCompositeEntry,
+  RollerSingleEntry,
+  setActiveRollerProfileUuid,
   setRollerCardsSizeRatio,
   setRollerPaused,
-  addCompositeRollerEntry,
-  RollerCompositeEntry,
 } from "~/features/store";
-import { useOptionalCompositeProfile } from "~/hooks";
+import { iOSBorderRadiusFix } from "~/fixes";
+import { useOptionalCompositeProfile, usePixelsCentral } from "~/hooks";
 
-// Store our animations
-function getTestDataSet() {
-  // Loose animation: blink red twice, with some fading.
-  const animLoose = new Profiles.AnimationFlashes({
-    duration: 1.5,
-    color: Color.red,
-    count: 2,
-    fade: 0.4,
-  });
-
-  // Win animation #1: play rainbow twice during 2 seconds,
-  // with some fading between colors.
-  const animWin1 = new Profiles.AnimationRainbow({
-    duration: 2,
-    count: 2,
-    fade: 0.5,
-  });
-
-  // Win animation #2: animate color from green to dark blue,
-  // over 2 seconds.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const animWin2 = new Profiles.AnimationGradient({
-    duration: 2,
-    gradient: Profiles.RgbGradient.createFromKeyFrames([
-      { time: 0.2, color: Color.green },
-      { time: 0.8, color: Color.dimBlue },
-    ]),
-  });
-
-  // Build the above animations so they can be uploaded to the dice
-  return createDataSetForAnimations([animWin1, animLoose]).toDataSet();
-}
-
-async function testInstantAnimationsAsync(pixel: Pixel): Promise<void> {
-  await pixel.transferInstantAnimations(getTestDataSet());
-  await pixel.playInstantAnimation(1);
+async function playInstantAnimationsAsync(
+  pixel: Pixel,
+  animation: Profiles.Animation
+): Promise<void> {
+  const dataSet = createDataSetForAnimations([animation]).toDataSet();
+  await pixel.transferInstantAnimations(dataSet);
+  await pixel.playInstantAnimation(0);
 }
 
 interface AnimatedRollCardHandle {
@@ -253,6 +225,7 @@ const AnimatedRollCard = React.forwardRef(function AnimatedRollCard(
               width: "100%",
               height: "100%",
               alignItems: "center",
+              justifyContent: "center",
               marginLeft: width * 0.01,
             }}
             children={children({ width })}
@@ -303,17 +276,104 @@ function CompositeRoll({
   formula,
   result,
   rolls,
-  width, // TODO need to be used
+  width,
 }: {
   formula: string;
   result?: number;
   rolls: { dieType: PixelDieType; value?: number }[];
-  width?: number;
+  width: number;
 }) {
   const { colors } = useTheme();
   return (
-    <View style={{ alignItems: "center", gap: 10 }}>
-      <Text variant="titleLarge">
+    <View style={{ width: "100%" }}>
+      <Text
+        // adjustsFontSizeToFit // Not working
+        numberOfLines={1}
+        style={{
+          width: "100%",
+          fontFamily: "LTInternet-Bold",
+          textAlign: "center",
+          fontSize: width * 0.2,
+          lineHeight: width * 0.22,
+        }}
+      >
+        {formula}
+      </Text>
+      <View style={{ flexDirection: "row", width: "100%" }}>
+        <View
+          style={{
+            width: width * 0.3,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {rolls.map(({ dieType, value }, i) => (
+            <View
+              key={i}
+              style={{
+                flexDirection: "row",
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
+              <DieWireframe dieType={dieType} size={width * 0.15} />
+              <Text
+                style={{
+                  fontFamily: "LTInternet-Bold",
+                  flexGrow: 1,
+                  textAlign: "center",
+                  fontSize: width * 0.14,
+                  lineHeight: width * 0.15,
+                }}
+              >
+                {value}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Divider
+          style={{
+            height: "95%",
+            width: 1,
+            backgroundColor: colors.onPrimary,
+            marginLeft: width * 0.03,
+          }}
+        />
+        <Text
+          style={{
+            fontFamily: "LTInternet-Bold",
+            flexGrow: 1,
+            textAlign: "center",
+            fontSize: width * 0.45,
+            lineHeight: width * 0.5,
+          }}
+        >
+          {result}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function CompositeRoll2({
+  formula,
+  result,
+  rolls,
+}: {
+  formula: string;
+  result?: number;
+  rolls: { dieType: PixelDieType; value?: number }[];
+}) {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        marginVertical: 10,
+        gap: 10,
+      }}
+    >
+      <Text variant="headlineLarge">
         {formula}
         {result !== undefined ? ` = ${result}` : ""}
       </Text>
@@ -322,7 +382,7 @@ function CompositeRoll({
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
-          gap: 10,
+          gap: 20,
         }}
       >
         {rolls.map(({ dieType, value }, i) => (
@@ -339,8 +399,17 @@ function CompositeRoll({
               borderRadius: 10,
             }}
           >
-            <DieWireframe dieType={dieType} size={30} />
-            <Text variant="bodyLarge">{value ?? "?"}</Text>
+            <DieWireframe dieType={dieType} size={40} />
+            <Text
+              style={{
+                fontFamily: "LTInternet-Bold",
+                textAlign: "center",
+                fontSize: 30,
+                lineHeight: 33,
+              }}
+            >
+              {value ?? "?"}
+            </Text>
           </View>
         ))}
       </View>
@@ -383,10 +452,23 @@ function FormulaCard({
     [appRolls]
   );
 
+  const tagsRef = React.useRef<{ tag: string; value: number }[]>([]);
+  const configOverrides = React.useMemo(
+    () => ({
+      context: {
+        addTag: (tag: string, value: number) => {
+          console.log(`Adding tag ${tag} with value ${value}`);
+          tagsRef.current.push({ tag, value });
+        },
+      },
+    }),
+    []
+  );
+
   // Get the expected rolls based on the formula
   const { tokens, tokenizerError } = React.useMemo(() => {
     try {
-      const tokens = tokenize(formula);
+      const tokens = tokenize(formula, configOverrides);
       return {
         tokens,
         tokenizerError: tokens.length ? undefined : "Blank or empty formula",
@@ -397,8 +479,11 @@ function FormulaCard({
         tokenizerError: String(e),
       };
     }
-  }, [formula]);
-  const expectedRolls = React.useMemo(() => getExpectedRolls(tokens), [tokens]);
+  }, [configOverrides, formula]);
+  const expectedRolls = React.useMemo(
+    () => getExpectedRolls(tokens, configOverrides),
+    [configOverrides, tokens]
+  );
 
   // And merge with the actual rolls
   const { results: rollsResults, selectedIndices } = React.useMemo(
@@ -427,13 +512,13 @@ function FormulaCard({
   const { result, resultError } = React.useMemo(() => {
     try {
       const result = tokens.length
-        ? computeRollsResult(tokens, rollsResults)
+        ? computeRollsResult(tokens, rollsResults, configOverrides)
         : 0;
       return { result, resultError: undefined };
     } catch (e) {
       return { result: undefined, resultError: String(e) };
     }
-  }, [rollsResults, tokens]);
+  }, [configOverrides, rollsResults, tokens]);
 
   // Dismiss the card after 5 seconds when done
   const showResult = React.useCallback(() => {
@@ -444,19 +529,22 @@ function FormulaCard({
         result,
         rolls: compositeRolls,
       } as const;
-      dismissTimeoutRef.current = setTimeout(() => onDismiss(entry), 5000);
+      dismissTimeoutRef.current = setTimeout(() => onDismiss(entry), 3000);
       setIsDone(true);
       // Speak the result
       if (speak) {
-        const settings = {
-          volume: 1,
-          pitch: 1,
-          rate: 1,
-        } as const;
+        const settings = { volume: 1, pitch: 1, rate: 1 } as const;
         Speech.speak(result.toString(), settings);
       }
-      // Play the animation
-      if (animation) {
+      // Select winner dice
+      if (tagsRef.current.length && animation) {
+        console.log(
+          "Winning tags " +
+            tagsRef.current
+              .map(({ tag, value }) => `${tag}: ${value}`)
+              .join(", ")
+        );
+        // Play the animation
         const dice = selectedIndices
           .map((i) => {
             const roll = rolls[i]!;
@@ -465,18 +553,27 @@ function FormulaCard({
           .filter(
             (v, i, self) => i === self.findIndex((t) => t.pixelId === v.pixelId)
           );
+        // TODO incorrect!
+        const animDice: typeof dice = [];
+        for (const { value } of tagsRef.current) {
+          const d = dice.find((d) => d.value === value);
+          if (d) {
+            animDice.push(d);
+            dice.splice(dice.indexOf(d), 1);
+          }
+        }
         setTimeout(() => {
-          for (const { dieType, pixel } of dice) {
+          for (const { dieType, pixel } of animDice) {
             console.log(
               `Playing animation ${animation.name} for ${pixel?.name} of type ${dieType}`
             );
             if (pixel) {
-              testInstantAnimationsAsync(pixel).catch((e) =>
+              playInstantAnimationsAsync(pixel, animation).catch((e) =>
                 console.error(String(e))
               );
             }
           }
-        }, 5000);
+        }, 2000);
       }
     }
   }, [
@@ -502,6 +599,7 @@ function FormulaCard({
       clearTimeout(dismissTimeoutRef.current);
       dismissTimeoutRef.current = undefined;
       setIsDone(false);
+      tagsRef.current = [];
     }
   }, [resultError, rollsResults, showResult, tokenizerError]);
 
@@ -554,11 +652,8 @@ function FormulaCard({
           </Text>
         </View>
       ) : (
-        <Pressable
-          onLongPress={() => showOptions()}
-          style={{ width: "100%", marginVertical: 10 }}
-        >
-          <CompositeRoll
+        <Pressable onLongPress={() => showOptions()} style={{ width: "100%" }}>
+          <CompositeRoll2
             formula={formula}
             result={isDone ? result : undefined}
             rolls={compositeRolls}
@@ -702,12 +797,49 @@ function OptionsMenu({
   );
 }
 
+function TabButton({
+  title,
+  selected,
+  onPress,
+}: {
+  title: string;
+  selected?: boolean;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <TouchableRipple
+      style={{
+        borderRadius: 10,
+        borderColor: selected ? colors.primary : colors.onSurfaceDisabled,
+        borderWidth: 1,
+        backgroundColor: selected ? colors.primary : colors.background,
+      }}
+      onPress={onPress}
+    >
+      <Text
+        variant="bodyMedium"
+        style={{
+          padding: 5,
+          minHeight: 24,
+          color: selected ? colors.onPrimary : colors.onSurface,
+          textAlign: "center",
+        }}
+      >
+        {title}
+      </Text>
+    </TouchableRipple>
+  );
+}
+
 const RollerPage = observer(function RollerPage({
   navigation,
 }: {
   navigation: DiceRollerScreenProps["navigation"];
 }) {
+  const store = useAppStore();
   const appDispatch = useAppDispatch();
+  const central = usePixelsCentral();
   const sizeRatio = useAppSelector(
     (state) => state.appSettings.rollerCardsSizeRatio
   );
@@ -749,14 +881,12 @@ const RollerPage = observer(function RollerPage({
   const activeProfile = useOptionalCompositeProfile(
     useAppSelector((state) => state.diceRoller.activeProfileUuid)
   );
-  const formula = activeProfile?.formula ?? "";
-  const [showFormula, setShowFormula] = React.useState(!!formula.length);
-  const clearShowFormulaTimeout = React.useRef<() => void>();
+  const formula = activeProfile?.formula?.trim().length
+    ? activeProfile?.formula
+    : undefined;
   React.useEffect(() => {
     // Reset on profile or formula change
-    setShowFormula(!!formula.length);
     setFormulaCounter((c) => c + 1);
-    return () => clearShowFormulaTimeout.current?.();
   }, [activeProfile, formula]);
   const [formulaCounter, setFormulaCounter] = React.useState(0);
   const resetFormulaCard = React.useCallback(
@@ -765,19 +895,17 @@ const RollerPage = observer(function RollerPage({
   );
   const removeFormulaCard = React.useCallback(
     (entry: Omit<RollerCompositeEntry, "timestamp"> | undefined) => {
-      setShowFormula(false);
       setFormulaCounter((c) => c + 1);
       if (entry) {
         appDispatch(addCompositeRollerEntry(entry));
+        appDispatch(setActiveRollerProfileUuid(""));
       }
-      const id = setTimeout(() => setShowFormula(true), 5000);
-      clearShowFormulaTimeout.current = () => {
-        clearShowFormulaTimeout.current = undefined;
-        clearTimeout(id);
-      };
     },
     [appDispatch]
   );
+
+  // Composite profile
+  const profiles = useAppSelector((state) => state.library.compositeProfiles);
 
   // Scroll to bottom when a new item is added
   const scrollViewRef = React.useRef<Animated.ScrollView>(null);
@@ -789,10 +917,10 @@ const RollerPage = observer(function RollerPage({
 
   // Scroll to bottom when the formula is set
   React.useEffect(() => {
-    if (showFormula && formula.length) {
+    if (formula) {
       scrollViewRef.current?.scrollToEnd();
     }
-  }, [formula.length, showFormula]);
+  }, [formula]);
 
   const [menuVisible, setMenuVisible] = React.useState(false);
   const bottomPadding = useSharedValue(0);
@@ -801,29 +929,99 @@ const RollerPage = observer(function RollerPage({
   }));
 
   const { width: screenWidth } = useWindowDimensions();
+  const { colors } = useTheme();
+  const height = 26;
   return (
     <View style={{ height: "100%" }}>
       <PageHeader
         onGoBack={() => navigation.goBack()}
         rightElement={() => (
-          <OptionsMenu
-            visible={menuVisible}
-            sizeRatio={sizeRatio}
-            onChangeSizeRatio={(r) => {
-              for (const ref of refs.current.values()) {
-                ref.current?.overrideWidth(r * screenWidth);
-              }
+          <View
+            style={{
+              flexDirection: "row",
+              width: 80,
+              justifyContent: "space-between",
+              gap: 10,
             }}
-            onCommitSizeRatio={(r) => appDispatch(setRollerCardsSizeRatio(r))}
-            contentStyle={{ width: 220 }}
-            onShowMenu={() => setMenuVisible(true)}
-            onDismiss={() => setMenuVisible(false)}
-            editSettings={() => navigation.navigate("diceRollerSettings")}
-          />
+          >
+            {/* Make bigger pressable area */}
+            <Pressable
+              style={{ padding: 7 }}
+              onPress={() => {
+                for (const d of store.getState().pairedDice.paired) {
+                  central.scheduleOperation(d.pixelId, { type: "blink" });
+                }
+              }}
+            >
+              <MaterialCommunityIcons
+                name="lightbulb-on-outline"
+                size={height - 8}
+                color={colors.onSurface}
+                style={{
+                  ...iOSBorderRadiusFix,
+                  padding: 2,
+                  borderRadius: height / 2,
+                  borderWidth: 1,
+                  borderColor: colors.onSurface,
+                  backgroundColor: colors.background,
+                  textAlign: "center",
+                  textAlignVertical: "center",
+                }}
+              />
+            </Pressable>
+            <OptionsMenu
+              visible={menuVisible}
+              sizeRatio={sizeRatio}
+              onChangeSizeRatio={(r) => {
+                for (const ref of refs.current.values()) {
+                  ref.current?.overrideWidth(r * screenWidth);
+                }
+              }}
+              onCommitSizeRatio={(r) => appDispatch(setRollerCardsSizeRatio(r))}
+              contentStyle={{ width: 220 }}
+              onShowMenu={() => setMenuVisible(true)}
+              onDismiss={() => setMenuVisible(false)}
+              editSettings={() => navigation.navigate("diceRollerSettings")}
+            />
+          </View>
         )}
       >
         Roller
       </PageHeader>
+      <View style={{ marginBottom: 10 }}>
+        <ScrollView
+          horizontal
+          contentContainerStyle={{
+            minWidth: "100%",
+            gap: 10,
+            justifyContent: "center",
+          }}
+        >
+          {profiles.ids.map((id) => {
+            const uuid = id as string;
+            const profile = profiles.entities[uuid];
+            const selected = activeProfile?.uuid === uuid;
+            return (
+              !!profile?.formula?.trim().length && (
+                <TabButton
+                  key={uuid}
+                  selected={selected}
+                  title={profile.formula}
+                  onPress={() => {
+                    appDispatch(
+                      setActiveRollerProfileUuid(selected ? "" : uuid)
+                    );
+                    if (!selected) {
+                      // Defer scrolling after the next render
+                      setTimeout(() => scrollViewRef.current?.scrollToEnd(), 0);
+                    }
+                  }}
+                />
+              )
+            );
+          })}
+        </ScrollView>
+      </View>
       <ScrollView
         ref={scrollViewRef}
         contentInsetAdjustmentBehavior="automatic"
@@ -888,7 +1086,7 @@ const RollerPage = observer(function RollerPage({
         {/* Padding to have a smooth scroll */}
         <Animated.View style={animatedPadding} />
       </ScrollView>
-      {!!formula.length && showFormula && (
+      {formula && (
         <FormulaCard
           key={formula + formulaCounter} // Create new component when the formula changes
           formula={formula}

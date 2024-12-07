@@ -17,12 +17,19 @@ import { CoreTokenTypes } from "./dice-notation/tokens";
 import {
   getDefaultRollConfigOptions,
   getFinalRollConfig,
+  RollConfigOptions,
 } from "./dice-notation/util/rollConfig";
 
 type ExpectedRolls = (PixelDieType | number)[] | null;
 
-export function getExpectedRolls(tokens: Token[]): ExpectedRolls[] {
-  const rollConfig = getFinalRollConfig(getDefaultRollConfigOptions());
+export function getExpectedRolls(
+  tokens: Token[],
+  overrides: Partial<RollConfigOptions> = {}
+): ExpectedRolls[] {
+  const rollConfig = getFinalRollConfig(
+    getDefaultRollConfigOptions(),
+    overrides
+  );
   const plugins = defaultPlugins;
   return tokens.map((token) =>
     token.type !== CoreTokenTypes.DiceRoll
@@ -75,9 +82,13 @@ export function getRollsResults(
 
 export function computeRollsResult(
   tokens: Token[],
-  partialRolls: RollResults
+  partialRolls: RollResults,
+  overrides: Partial<RollConfigOptions> = {}
 ): number {
-  const rollConfig = getFinalRollConfig(getDefaultRollConfigOptions());
+  const rollConfig = getFinalRollConfig(
+    getDefaultRollConfigOptions(),
+    overrides
+  );
   const rolls = [];
   for (const arr of partialRolls) {
     if (arr) {

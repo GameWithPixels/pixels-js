@@ -38,6 +38,8 @@ export interface AppSettingsState {
   appFirmwareTimestampOverride: number;
   backgroundAudio: boolean;
   playAudioInSilentModeIOS: boolean;
+  rollToWinCounter: number;
+  rollToWinSuccesses: number;
 }
 
 const initialState: AppSettingsState = {
@@ -72,6 +74,8 @@ const initialState: AppSettingsState = {
   appFirmwareTimestampOverride: 0,
   backgroundAudio: true,
   playAudioInSilentModeIOS: true,
+  rollToWinCounter: 0,
+  rollToWinSuccesses: 0,
 };
 
 // Redux slice that stores app settings
@@ -191,6 +195,14 @@ const appSettingsSlice = createSlice({
     setPlayAudioInSilentModeIOS(state, action: PayloadAction<boolean>) {
       state.playAudioInSilentModeIOS = action.payload;
     },
+
+    incrementRollToWinCounter(state) {
+      state.rollToWinCounter += 1;
+    },
+
+    incrementRollToWinSuccesses(state) {
+      state.rollToWinSuccesses += 1;
+    },
   },
 });
 
@@ -220,5 +232,7 @@ export const {
   setAppFirmwareTimestampOverride,
   setBackgroundAudio,
   setPlayAudioInSilentModeIOS,
+  incrementRollToWinCounter,
+  incrementRollToWinSuccesses,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

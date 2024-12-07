@@ -18,11 +18,13 @@ const keepHighestRoll: DiceRule<KeepHighestRollToken> = {
   },
   roll: ({ count, numSides }, { generateRolls }) =>
     generateRolls(count, numSides),
-  calculateValue: (token, rolls) =>
-    rolls
-      .sort((a, b) => b - a)
-      .slice(0, token.keep)
-      .reduce((agg, num) => agg + num, 0),
+  calculateValue: (token, rolls, { context }) => {
+    const winners = rolls.sort((a, b) => b - a).slice(0, token.keep);
+    for (const val of winners) {
+      context["addTag"]?.("kh", val);
+    }
+    return winners.reduce((agg, num) => agg + num, 0);
+  },
 };
 
 export default keepHighestRoll;

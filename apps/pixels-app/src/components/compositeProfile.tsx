@@ -31,9 +31,9 @@ const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
         style={textStyle}
         variant={row ? "titleLarge" : "titleMedium"}
       >
-        {profile.name}
+        {profile.formula?.trim()?.length ? profile.formula : profile.name}
       </Text>
-      {modified && (
+      {/* {modified && (
         <MaterialCommunityIcons
           name="circle-edit-outline"
           size={20}
@@ -50,7 +50,7 @@ const ProfileNameAndDescription = observer(function ProfileNameAndDescription({
         <Text numberOfLines={1} variant="bodyMedium" style={textStyle}>
           Formula: {profile.formula}
         </Text>
-      )}
+      )} */}
     </>
   );
 });
@@ -81,6 +81,7 @@ export function CompositeProfileCard({
   CompositeProfileCardProps,
   "children" | "row" | "noTopBorder" | "noBottomBorder"
 >) {
+  noBorder = true;
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
@@ -92,6 +93,7 @@ export function CompositeProfileCard({
         disabled={disabled}
         style={style}
         contentStyle={[{ padding: 0 }, contentStyle]}
+        gradientBorder="bright"
         squaredTopBorder={squaredTopBorder}
         squaredBottomBorder={squaredBottomBorder}
         noBorder
@@ -103,8 +105,8 @@ export function CompositeProfileCard({
             flex: 1,
             flexDirection: "column",
             justifyContent: "space-around",
-            paddingHorizontal: vertical ? 5 : 10,
-            paddingVertical: vertical ? 0 : 10,
+            paddingHorizontal: vertical ? 5 : 20,
+            paddingVertical: vertical ? 0 : 20,
             // Borders
             borderWidth: noBorder ? 0 : 1,
             borderColor: getBorderColor(colors, selected),
@@ -146,7 +148,7 @@ export function CompositeProfilesList({
   ...props
 }: CompositeProfilesListProps) {
   return (
-    <View style={[{ gap: 10 }, style]} {...props}>
+    <View style={[{ gap: 20 }, style]} {...props}>
       {profiles.map((p, i) => (
         <CompositeProfileCard
           key={i} // Using the index rather than the UUID lets react re-use the component when switching animations

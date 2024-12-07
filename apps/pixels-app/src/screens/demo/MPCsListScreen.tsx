@@ -61,6 +61,15 @@ function MPCsList({
     </View>
   );
 }
+function RollToWinButton({ onPress }: { onPress: () => void }) {
+  const { rollToWinCounter: counter, rollToWinSuccesses: successes } =
+    useAppSelector((state) => state.appSettings);
+  return (
+    <GradientButton onPress={onPress}>
+      Roll to Win ({successes} / {counter})
+    </GradientButton>
+  );
+}
 
 // TODO scan for MPCs
 // Refresh card on MPC found (if paired but not initially found)
@@ -100,9 +109,9 @@ function MPCsListPage({
         >
           <BluetoothStateWarning style={{ marginVertical: 10 }}>
             <View style={{ gap: 10 }}>
-              <OutlineButton onPress={() => navigation.navigate("rollToWin")}>
-                Roll To Win
-              </OutlineButton>
+              <RollToWinButton
+                onPress={() => navigation.navigate("rollToWin")}
+              />
               <Text
                 variant="titleLarge"
                 style={{ alignSelf: "center", margin: 10 }}
