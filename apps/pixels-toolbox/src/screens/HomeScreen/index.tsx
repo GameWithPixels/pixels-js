@@ -150,6 +150,11 @@ function HomePage({ navigation }: HomeScreenProps) {
     }, [])
   );
 
+  const HeaderComponent = React.useCallback(
+    () => <DfuBundleSelection navigation={navigation} />,
+    [navigation]
+  );
+
   // Values for UI
   const { t } = useTranslation();
   const window = useWindowDimensions();
@@ -162,13 +167,13 @@ function HomePage({ navigation }: HomeScreenProps) {
             ⚠️ {t("updateAvailableGoToSettings")}
           </Text>
         )}
-        <DfuBundleSelection navigation={navigation} />
         <SwipeablePixelsList
           flex={1}
           flexGrow={1}
           width="100%"
           onShowDetails={showDetails}
           onPrintLabel={setPrintPixel}
+          ListHeaderComponent={HeaderComponent}
         />
       </BaseBox>
       {/* Footer showing app and system info */}

@@ -2,7 +2,7 @@ import { useActionSheet } from "@expo/react-native-action-sheet";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 
 import {
   AllViewOptions,
@@ -35,8 +35,10 @@ export const SwipeablePixelsList = React.memo(function ({
   onShowDetails,
   onPrintLabel,
   minUpdateInterval,
+  ListHeaderComponent,
   ...props
-}: SwipeablePixelsListProps & BaseBoxProps) {
+}: SwipeablePixelsListProps &
+  BaseBoxProps & { ListHeaderComponent?: React.ComponentType }) {
   // Scanning
   const [scannedDevices, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers({ minUpdateInterval, keepAliveDuration: 0 });
@@ -135,19 +137,55 @@ export const SwipeablePixelsList = React.memo(function ({
   }, [dispatchAll, showActionSheetWithOptions, t]);
   const [optionsVisible, setOptionsVisible] = React.useState(false);
 
-  // FlatList item rendering
-  const renderItem = React.useCallback(
-    ({ item: dispatcher }: { item: PixelDispatcher | ChargerDispatcher }) => (
-      <PixelSwipeableCard
-        key={dispatcher.pixelId}
-        pixelDispatcher={dispatcher as PixelDispatcher} // TODO hack until this component is updated
-        onShowDetails={onShowDetails}
-        onPrintLabel={
-          dispatcher instanceof ChargerDispatcher ? undefined : onPrintLabel
-        }
-      />
+  const { colors } = useTheme();
+  const StickyHeader = React.useCallback(
+    () => (
+      <BaseHStack
+        width="100%"
+        alignItems="baseline"
+        justifyContent="space-between"
+        backgroundColor={colors.background}
+      >
+        <EmojiButton onPress={() => setOptionsVisible(true)}>⋮</EmojiButton>
+        <Text variant="headlineMedium">
+          {t("pixelsWithCount", { count: dispatchers.length })}
+          {allDispatchers.length > dispatchers.length
+            ? ` (${allDispatchers.length})`
+            : ""}
+        </Text>
+        <EmojiButton onPress={showMassOpActions}>⚙️</EmojiButton>
+      </BaseHStack>
     ),
-    [onPrintLabel, onShowDetails]
+    [
+      allDispatchers.length,
+      colors.background,
+      dispatchers.length,
+      showMassOpActions,
+      t,
+    ]
+  );
+
+  // FlatList item rendering
+  const data = ["header", "stickyHeader", ...dispatchers] as const;
+  const renderItem = React.useCallback(
+    ({ item: dispatcher }: { item: (typeof data)[number] }) =>
+      dispatcher === "header" ? (
+        ListHeaderComponent ? (
+          <ListHeaderComponent />
+        ) : null
+      ) : dispatcher === "stickyHeader" ? (
+        <StickyHeader />
+      ) : (
+        <PixelSwipeableCard
+          key={dispatcher.pixelId}
+          pixelDispatcher={dispatcher as PixelDispatcher} // TODO hack until this component is updated
+          onShowDetails={onShowDetails}
+          onPrintLabel={
+            dispatcher instanceof ChargerDispatcher ? undefined : onPrintLabel
+          }
+        />
+      ),
+    [ListHeaderComponent, StickyHeader, onPrintLabel, onShowDetails]
   );
   const refreshControl = React.useMemo(
     () => (
@@ -169,28 +207,18 @@ export const SwipeablePixelsList = React.memo(function ({
   return (
     <>
       <BaseVStack {...props}>
-        <BaseHStack
-          width="100%"
-          alignItems="baseline"
-          justifyContent="space-between"
-        >
-          <EmojiButton onPress={() => setOptionsVisible(true)}>⋮</EmojiButton>
-          <Text variant="headlineMedium">
-            {t("pixelsWithCount", { count: dispatchers.length })}
-          </Text>
-          <EmojiButton onPress={showMassOpActions}>⚙️</EmojiButton>
-        </BaseHStack>
         {!(typeof scanStatus === "string") ? (
           <Text>{String(scanStatus)}</Text>
-        ) : dispatchers.length ? (
+        ) : allDispatchers.length ? (
           <PixelInfoCardModeContext.Provider
             value={viewOptions.includes("expandedInfo") ? "expanded" : "normal"}
           >
             <FlatList
               contentContainerStyle={AppStyles.listContentContainer}
-              data={dispatchers}
+              data={data}
               renderItem={renderItem}
               refreshControl={refreshControl}
+              stickyHeaderIndices={[ListHeaderComponent ? 1 : 0]}
             />
           </PixelInfoCardModeContext.Provider>
         ) : (
