@@ -538,12 +538,12 @@ i18n
 
           // Label printing
           carton: "大箱",
-          diceSetBox: "骰子套装的箱子",
+          diceSetBox: "天地盒",
           asn: "ASN",
           example: "示例",
           productCategory: "产品分类",
           singleDie: "单骰子",
-          diceSet: "骰子套装",
+          diceSet: "大充电盒",
           productType: "产品类别",
           quantity: "数量",
           copies: "打印份数",
