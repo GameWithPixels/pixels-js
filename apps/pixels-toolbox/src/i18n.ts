@@ -174,6 +174,7 @@ i18n
           setDieColorway: "Set Colorway",
           index: "index",
           voltageMV: "Voltage (mV)",
+          chargerId: "Charger Id",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",

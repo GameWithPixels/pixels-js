@@ -511,9 +511,25 @@ function BottomButtons({
             {t(connectStr)}
           </Button>
           {status === "ready" && isCharger && (
-            <Button onPress={() => (pd as ChargerDispatcher).dispatch("blink")}>
-              {t("blink")}
-            </Button>
+            <>
+              <Button
+                onPress={() => (pd as ChargerDispatcher).dispatch("blink")}
+              >
+                {t("blink")}
+              </Button>
+              <Button
+                onPress={() => (pd as ChargerDispatcher).dispatch("turnOff")}
+              >
+                {t("turnOff")}
+              </Button>
+              <Button
+                onPress={() =>
+                  (pd as ChargerDispatcher).dispatch("exitValidation")
+                }
+              >
+                {t("exitValidationMode")}
+              </Button>
+            </>
           )}
           {status === "ready" && !isCharger && (
             <>

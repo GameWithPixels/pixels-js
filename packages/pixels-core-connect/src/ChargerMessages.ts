@@ -5,10 +5,10 @@ import {
   byteSizeOf,
 } from "@systemic-games/pixels-core-utils";
 
+import { ChargerBatteryStateValues } from "./ChargerBatteryState";
 import { ChunkMessage } from "./ChunkMessage";
 import { Constants } from "./Constants";
 import { MessageSerializer } from "./MessageSerializer";
-import { PixelBatteryStateValues } from "./PixelBatteryState";
 import { PixelChipModelValues } from "./PixelChipModel";
 import { PixelMessage } from "./PixelMessage";
 import { TelemetryRequestModeValues } from "./TelemetryRequestMode";
@@ -41,12 +41,18 @@ export const ChargerMessageTypeValues = {
   rssi: enumValue(),
   notifyUser: enumValue(),
   notifyUserAck: enumValue(),
+  storeValue: enumValue(),
+  storeValueAck: enumValue(),
   programDefaultParameters: enumValue(),
   programDefaultParametersFinished: enumValue(),
   setName: enumValue(),
   setNameAck: enumValue(),
+  powerOperation: enumValue(),
+  exitValidation: enumValue(),
   requestTemperature: enumValue(),
   temperature: enumValue(),
+  requestDieChargersStatus: enumValue(),
+  dieChargersStatus: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
@@ -166,7 +172,7 @@ export class StatusInfoChunk implements ChunkMessage {
 
   /** The charging state of the battery. */
   @serializable(1)
-  batteryState = PixelBatteryStateValues.ok;
+  batteryState = ChargerBatteryStateValues.ok;
 }
 
 /**
@@ -217,7 +223,7 @@ export class LegacyIAmALCC implements PixelMessage {
 
   /** The charging state of the battery. */
   @serializable(1)
-  batteryState = PixelBatteryStateValues.ok;
+  batteryState = ChargerBatteryStateValues.ok;
 
   /** Byte size of the LegacyIAmALCC message. */
   static readonly expectedSize = 20;
@@ -332,7 +338,7 @@ export class BatteryLevel implements PixelMessage {
 
   /** The charging state of the battery. */
   @serializable(1)
-  state = PixelBatteryStateValues.ok;
+  state = ChargerBatteryStateValues.ok;
 }
 
 /**
@@ -426,6 +432,32 @@ export class SetName implements PixelMessage {
 }
 
 /**
+ * The different power operations available on a charger.
+ * @enum
+ * @category Message
+ */
+export const ChargerPowerOperationValues = {
+  // Turn off all systems.
+  turnOff: enumValue(0),
+  // Reset die chip.
+  reset: enumValue(),
+} as const;
+
+/**
+ * Message send to a Pixel to modify it's power state.
+ * @category Message
+ */
+export class PowerOperation implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = ChargerMessageTypeValues.powerOperation;
+
+  /** The operation */
+  @serializable(1)
+  operation = ChargerPowerOperationValues.reset;
+}
+
+/**
  * Message send by a Charger to notify of its internal temperature.
  * @category Message
  */
@@ -448,6 +480,112 @@ export class Temperature implements PixelMessage {
   batteryTemperatureTimes100 = 0;
 }
 
+/**
+ * Message send to a Pixel to store a 32 bits value.
+ * @category Message
+ */
+export class StoreValue implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = ChargerMessageTypeValues.storeValue;
+
+  /** Value to write. */
+  @serializable(4)
+  value = 0;
+}
+
+/**
+ * The different possible result of requesting to store a value.
+ * @enum
+ * @category Message
+ */
+export const ChargerStoreValueResultValues = {
+  /** Value stored successfully. */
+  success: enumValue(0),
+  /** Some error occurred. */
+  unknownError: enumValue(),
+  /** Store is full, value wasn't saved. */
+  storeFull: enumValue(),
+  /**
+   * Store request was discarded because the value is outside of the
+   * valid range (value can't be 0).
+   */
+  invalidRange: enumValue(),
+  /* Operation not permitted in the current die state. */
+  notPermitted: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link ChargerStoreValueResultValues}.
+ * @category Message
+ */
+export type ChargerStoreValueResult =
+  keyof typeof ChargerStoreValueResultValues;
+
+/**
+ * Message send by a Pixel is response to receiving a
+ * {@link StoreValue} message.
+ * @category Message
+ */
+export class StoreValueAck implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = ChargerMessageTypeValues.storeValueAck;
+
+  /** Store operation result. */
+  @serializable(1)
+  result = 0;
+
+  /** Index at which the value was written. */
+  @serializable(1)
+  index = ChargerStoreValueResultValues.success;
+}
+
+/**
+ * The different possible result of requesting to store a value.
+ * @enum
+ * @category Message
+ */
+export const DieChargerStateValues = {
+  off: enumValue(0),
+  charging: enumValue(),
+  FOD: enumValue(),
+} as const;
+
+export class DieChargerStatus {
+  @serializable(2, { numberFormat: "signed" })
+  rawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  current = 0;
+  @serializable(1)
+  state = DieChargerStateValues.off;
+  @serializable(1)
+  diePresent = 0;
+  @serializable(1)
+  skipped = 0;
+  @serializable(1)
+  chargedOnce = 0;
+}
+
+/**
+ * Message send by a Charger to reports its dice charger statuses
+ * @category Message
+ */
+export class ChargerStatus implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = ChargerMessageTypeValues.dieChargersStatus;
+
+  dieChargerStatus0: DieChargerStatus = new DieChargerStatus();
+  dieChargerStatus1: DieChargerStatus = new DieChargerStatus();
+  dieChargerStatus2: DieChargerStatus = new DieChargerStatus();
+  dieChargerStatus3: DieChargerStatus = new DieChargerStatus();
+  dieChargerStatus4: DieChargerStatus = new DieChargerStatus();
+  dieChargerStatus5: DieChargerStatus = new DieChargerStatus();
+  dieChargerStatus6: DieChargerStatus = new DieChargerStatus();
+  dieChargerStatus7: DieChargerStatus = new DieChargerStatus();
+}
+
 export const serializer = new MessageSerializer<ChargerMessageType>(
   Object.entries(ChargerMessageTypeValues) as [ChargerMessageType, number][],
   [
@@ -462,7 +600,10 @@ export const serializer = new MessageSerializer<ChargerMessageType>(
     Rssi,
     NotifyUser,
     NotifyUserAck,
+    StoreValue,
+    StoreValueAck,
     SetName,
+    PowerOperation,
     Temperature,
   ]
 );

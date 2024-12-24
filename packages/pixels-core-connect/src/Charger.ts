@@ -18,8 +18,10 @@ import {
   ChargerMessageOrType,
   ChargerMessageType,
   ChargerMessageTypeValues,
+  ChargerPowerOperationValues,
   IAmALCC,
   LegacyIAmALCC,
+  PowerOperation,
   RequestRssi,
   Rssi,
   serializer,
@@ -506,6 +508,19 @@ export class Charger
       "rssi"
     )) as Rssi;
     return rssi.value;
+  }
+
+  /**
+   * Requests the Pixel to completely turn off.
+   * @returns A promise that resolves once the message has been send.
+   */
+  async turnOff(): Promise<void> {
+    await this.sendMessage(
+      safeAssign(new PowerOperation(), {
+        operation: ChargerPowerOperationValues.turnOff,
+      }),
+      true // withoutAck
+    );
   }
 
   /**

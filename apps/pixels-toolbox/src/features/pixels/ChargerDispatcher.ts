@@ -43,6 +43,8 @@ export interface ChargerDispatcherActionMap {
   rename: string;
   queueDFU: undefined;
   dequeueDFU: undefined;
+  turnOff: undefined;
+  exitValidation: undefined;
 }
 
 /** List of possible DFU actions. */
@@ -389,6 +391,13 @@ export class ChargerDispatcher
           ),
           action
         );
+        break;
+      case "turnOff":
+        this._guard(this._charger.turnOff(), action);
+        break;
+      case "exitValidation":
+        // Exit validation mode, don't wait for response as die will restart
+        this._guard(this._charger.sendMessage("exitValidation", true), action);
         break;
       case "queueDFU":
         break;
