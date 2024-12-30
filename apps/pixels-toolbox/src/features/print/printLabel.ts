@@ -46,7 +46,7 @@ export async function printLabelAsync(
     console.log("Sending HTML to BLuetooth ZPL printer");
     const result = await printHtmlToZpl("XP-", html, {
       enableJs: true,
-      imageWidth: smallLabel ? 411 : 980,
+      imageWidth: smallLabel ? 411 : 940,
       numCopies,
     });
     const success = result === "success";
