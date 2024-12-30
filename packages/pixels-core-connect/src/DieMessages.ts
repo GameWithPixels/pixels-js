@@ -432,6 +432,14 @@ export class Telemetry implements PixelMessage {
   @serializable(1)
   vCoilTimes50 = 0;
 
+  /** The measured coil voltage multiplied by 50. */
+  @serializable(1)
+  vCoilMinTimes50 = 0;
+
+  /** The measured coil voltage multiplied by 50. */
+  @serializable(1)
+  vCoilMaxTimes50 = 0;
+
   // RSSI
 
   /** The RSSI value, in dBm. */

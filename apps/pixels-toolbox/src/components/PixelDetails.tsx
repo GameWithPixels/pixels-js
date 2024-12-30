@@ -364,6 +364,14 @@ function TelemetryInfo({ pixel }: { pixel: Pixel }) {
             {t("voltageWithValue", {
               value: telemetry ? telemetry.vCoilTimes50 / 50 : 0,
             })}
+            {t("commaSeparator")}
+            {t("voltageWithValue", {
+              value: telemetry ? telemetry.vCoilMinTimes50 / 50 : 0,
+            })}
+            {t("commaSeparator")}
+            {t("voltageWithValue", {
+              value: telemetry ? telemetry.vCoilMaxTimes50 / 50 : 0,
+            })}
           </TextEntry>
           <TextEntry title={t("chargingState")}>
             {t(

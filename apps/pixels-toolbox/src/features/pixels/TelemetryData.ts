@@ -25,6 +25,8 @@ export type TelemetryData = {
   batteryControllerState: PixelBatteryControllerState;
   voltage: number;
   voltageCoil: number;
+  voltageCoilMin: number;
+  voltageCoilMax: number;
   rssi: number;
   rssiChannelIndex: number;
   mcuTemperature: number;
@@ -56,6 +58,8 @@ export function toTelemetryData(telemetry: Telemetry): TelemetryData {
       ) ?? "unknown",
     voltage: telemetry.voltageTimes50 / 50,
     voltageCoil: telemetry.vCoilTimes50 / 50,
+    voltageCoilMin: telemetry.vCoilMinTimes50 / 50,
+    voltageCoilMax: telemetry.vCoilMaxTimes50 / 50,
     rssi: telemetry.rssi,
     rssiChannelIndex: telemetry.channelIndex,
     mcuTemperature: telemetry.mcuTemperatureTimes100 / 100,
