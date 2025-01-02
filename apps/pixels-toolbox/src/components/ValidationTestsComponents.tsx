@@ -795,12 +795,15 @@ export function WaitCharging({
         async (abortSignal) =>
           ValidationTests.waitCharging(
             pixel,
-            settings.dieType,
             !notCharging,
-            notCharging ? Color.dimGreen : Color.dimOrange,
+            isBoard(settings.sequence)
+              ? false
+              : notCharging
+                ? Color.dimGreen
+                : Color.dimOrange,
             abortSignal
           ),
-        [notCharging, pixel, settings.dieType]
+        [notCharging, pixel, settings.sequence]
       ),
       createTaskStatusContainer({
         children: (
@@ -819,10 +822,14 @@ export function WaitCharging({
     )
     .withTask(
       React.useCallback(async () => {
-        if (!skipBatteryLevelRef.current && pixel.batteryLevel < 75) {
+        if (
+          !skipBatteryLevelRef.current &&
+          !isBoard(settings.sequence) &&
+          pixel.batteryLevel < 75
+        ) {
           throw new LowBatteryError(pixel.batteryLevel);
         }
-      }, [pixel]),
+      }, [pixel, settings.sequence]),
       createTaskStatusContainer(t("batteryLevel")),
       { skip: !notCharging || dieFinal }
     )
