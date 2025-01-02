@@ -281,8 +281,10 @@ export abstract class PixelConnect<
       // Dispatch specific message event
       this._msgEvEmitter.emit(`${msgName}Message`, msgOrType);
     } catch (error) {
-      this._warn(`Message deserialization error: ${error}`);
-      // TODO the error should be propagated to listeners of that message
+      const msg = `Message deserialization error: ${error}`;
+      console.error(this._tagLogString(msg));
+      this._warn(msg);
+      // TODO propagate error to listeners
     }
   }
 
