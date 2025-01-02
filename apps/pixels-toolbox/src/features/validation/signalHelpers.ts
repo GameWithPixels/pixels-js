@@ -29,16 +29,30 @@ export class SignalTimeoutError extends ValidationError {
   }
 }
 
-export class SignalDisconnectedError extends ValidationError {
+export class DisconnectedError extends ValidationError {
   readonly errorCode = ErrorCodes.Disconnected;
   readonly pixel: Pixel;
   constructor(pixel: Pixel) {
     super();
-    this.name = "SignalDisconnectedError";
+    this.name = "DisconnectedError";
     this.pixel = pixel;
   }
   toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
-    return t("disconnectedFromPixel", {});
+    return t("disconnectedFromPixel");
+  }
+}
+
+export class SendMessageError extends ValidationError {
+  readonly errorCode = ErrorCodes.SendMessageFailed;
+  readonly pixel: Pixel;
+  constructor(pixel: Pixel, error: unknown) {
+    super();
+    this.name = "SendMessageError";
+    this.pixel = pixel;
+    this.cause = error;
+  }
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
+    return t("failedToSendMessageToPixel") + ` ${this.cause}`;
   }
 }
 
@@ -69,12 +83,12 @@ export function connectedSignal(
 ): [AbortSignal, (() => void) | undefined] {
   const controller = new AbortControllerWithReason();
   if (pixel.status !== "ready") {
-    controller.abortWithReason(new SignalDisconnectedError(pixel));
+    controller.abortWithReason(new DisconnectedError(pixel));
     return [controller.signal, undefined];
   } else {
     const listener = ({ status }: PixelMutableProps) => {
       if (status === "disconnecting" || status === "disconnected") {
-        controller.abortWithReason(new SignalDisconnectedError(pixel));
+        controller.abortWithReason(new DisconnectedError(pixel));
       }
     };
     pixel.addPropertyListener("status", listener);
@@ -274,12 +288,17 @@ export async function withTelemetry(
     throw getSignalReason(abortSignal, testName);
   } else {
     // Start telemetry
-    await pixel.sendMessage(
-      safeAssign(new RequestTelemetry(), {
-        requestMode: TelemetryRequestModeValues.automatic,
-        minInterval: 100,
-      })
-    );
+    try {
+      await pixel.sendMessage(
+        safeAssign(new RequestTelemetry(), {
+          requestMode: TelemetryRequestModeValues.automatic,
+          minInterval: 100,
+        })
+      );
+    } catch (error) {
+      const er: Error = new SendMessageError(pixel, error); // Help TypeScript understand that we throw an error
+      throw er;
+    }
 
     let firstError: any | undefined;
     let telemetryListener: ((msg: MessageOrType) => void) | undefined;
@@ -315,7 +334,8 @@ export async function withTelemetry(
           // We already got an error, just log this one and forget it
           console.log(`Error while trying to stop telemetry: ${error}`);
         } else {
-          firstError = error;
+          const er: Error = new SendMessageError(pixel, error); // Help TypeScript understand that we throw an error
+          throw er;
         }
       }
       if (firstError) {

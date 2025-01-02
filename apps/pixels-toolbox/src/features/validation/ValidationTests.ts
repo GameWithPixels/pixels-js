@@ -21,8 +21,11 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import { useTranslation } from "react-i18next";
 
-import { ErrorCodes } from "./ErrorCodes";
-import { ValidationError } from "./ValidationError";
+import {
+  AccelerationInvalidValueError,
+  BatteryOutOfRangeVoltageError,
+  LowRSSIError,
+} from "./ValidationError";
 import {
   SignalTimeoutError,
   withBlink,
@@ -34,38 +37,7 @@ import {
 } from "./signalHelpers";
 
 import { getRandomDieNameAsync } from "~/features/getRandomDieNameAsync";
-
-export class AccelerationInvalidValueError extends ValidationError {
-  readonly errorCode = ErrorCodes.AccelerationInvalidValue;
-  readonly x: number;
-  readonly y: number;
-  readonly z: number;
-  constructor(x: number, y: number, z: number) {
-    super(`Invalid accelerometer value ${vectToString(x, y, z)}`);
-    this.name = "AccelerationInvalidValueError";
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
-  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
-    return t("invalidAccelerometerValue", {
-      value: vectToString(this.x, this.y, this.z),
-    });
-  }
-}
-
-export class BatteryOutOfRangeVoltageError extends ValidationError {
-  readonly errorCode = ErrorCodes.BatteryOutOfRangeVoltage;
-  readonly voltage: number;
-  constructor(voltage: number) {
-    super(`Out of range battery voltage: ${voltage}v`);
-    this.name = "BatteryOutOfRangeVoltageError";
-    this.voltage = voltage;
-  }
-  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
-    return t("outOfRangeBatteryVoltage", { value: this.voltage.toFixed(2) });
-  }
-}
+import { vectToString } from "~/features/vectToString";
 
 export class WaitChargingTimeoutError extends SignalTimeoutError {
   readonly shouldBeCharging: boolean;
@@ -125,10 +97,6 @@ export class WaitFaceUpTimeoutError extends SignalTimeoutError {
 
 function vectNorm(x: number, y: number, z: number): number {
   return Math.sqrt(x * x + y * y + z * z);
-}
-
-function vectToString(x: number, y: number, z: number): string {
-  return `${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)}`;
 }
 
 function isBatteryCharging(state: number): "yes" | "no" | "unknown" {
@@ -218,7 +186,7 @@ export const ValidationTests = {
     // Check RSSI
     console.log(`RSSI is ${rssi.value}`);
     if (rssi.value < -70) {
-      throw new Error(`Low RSSI value: ${rssi.value}`);
+      throw new LowRSSIError(rssi.value);
     }
   },
 

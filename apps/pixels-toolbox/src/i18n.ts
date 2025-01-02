@@ -288,8 +288,10 @@ i18n
             "Error trying to update firmware, reset device and try again.",
           dieTypeMismatchWithTypeAndLedCount:
             "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
-          dieTypeMismatchWithExpectedAndReceived:
-            "Die type mismatch, expected {{expected}} but got {{received}}",
+          dieTypeMismatchWithExpectedAndActual:
+            "Die type mismatch, expected {{expected}} but got {{actual}}",
+          storeValueFailedWithResult:
+            "Store value failed with result: {{result}}",
           updateDieTypeWithFromAndTo:
             "Update die type to {{to}}? Programmed type is {{from}}.",
           lowBatteryPleaseCharge: "Low battery, please charge",
@@ -300,8 +302,11 @@ i18n
           diceUpdatedWithCustomFirmwareWarning:
             "Dice will be updated with the firmware selected in the Scanner Page!",
           invalidLedCountWithValue: "Invalid LED count: {{value}}",
-          invalidAccelerometerValue: "Invalid accelerometer value: {{value}}",
-          outOfRangeBatteryVoltage: "Out of range battery voltage: {{value}}v",
+          invalidAccelerometerWithValue:
+            "Invalid accelerometer value: {{value}}",
+          outOfRangeBatteryVoltageWithValue:
+            "Out of range battery voltage: {{value}}v",
+          lowSignalStrengthWithValue: "Low signal strength: {{value}}",
           timeoutWhileWaitingForChargingState:
             "Timeout waiting for 'charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
           timeoutWhileWaitingForNotChargingState:
@@ -309,6 +314,7 @@ i18n
           timeoutWaitingForFace:
             "Timeout waiting for face {{face}}. Face up: {{rollFace}}, roll state: {{rollState}}",
           disconnectedFromPixel: "Disconnected from Pixel",
+          failedToSendMessageToPixel: "Failed to send message to Pixel",
           timedOutWithValue: "Timed out after {{value}}s",
           selectProfile: "Select Profile",
 
@@ -494,8 +500,10 @@ i18n
           validateBoardNoCoil: "测试FPC光板（不带线圈）",
           validateBoard: "测试FPC板",
           validateDie: "测试骰子",
-          validateDieFinal: "最终的验证",
+          validateDieFinalSingle: "骰子最终的验证",
+          validateDieFinalForSet: "大充电盒骰子最后的验证",
           validateDieReconfigure: "重新配置骰子",
+          validateLccFinal: "大充电盒最后的验证",
           startingCamera: "打开摄像头",
           needCameraPermission: "打开摄像头权限",
           die: "骰子",
@@ -558,8 +566,8 @@ i18n
           dfuErrorTryAgain: "更新固件错误，请重置机器并重新尝试。",
           dieTypeMismatchWithTypeAndLedCount:
             "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
-          dieTypeMismatchWithExpectedAndReceived:
-            "骰子类型错误，本应该是{{expected}} 结果是{{received}}",
+          dieTypeMismatchWithExpectedAndActual:
+            "骰子类型错误，本应该是{{expected}} 结果是{{actual}}",
           updateDieTypeWithFromAndTo:
             "更新骰子类型是{{to}}，烧录的类型是{{from}}",
           lowBatteryPleaseCharge: "电池电量低，需要充电",
@@ -568,8 +576,8 @@ i18n
           loadingFirmwareFiles: "装载固件中...",
           errorLoadingFirmwareFiles: "装载固件错误",
           invalidLedCountWithValue: "错误的LED数量：{{value}}",
-          invalidAccelerometerValue: "错误的加速度计值：{{value}}",
-          outOfRangeBatteryVoltage: "电池电压超出范围：{{value}}v",
+          invalidAccelerometerWithValue: "错误的加速度计值：{{value}}",
+          outOfRangeBatteryVoltageWithValue: "电池电压超出范围：{{value}}v",
           timeoutWhileWaitingForChargingState:
             "等待充电状态超时，控制的状态是{{state}}，线圈电压是{{vCoil}}v",
           timeoutWhileWaitingForNotChargingState:
