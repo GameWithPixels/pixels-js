@@ -27,6 +27,7 @@ import {
   LowRSSIError,
 } from "./ValidationError";
 import {
+  convertSendMessageError,
   SignalTimeoutError,
   withBlink,
   withPromise,
@@ -121,27 +122,29 @@ function isBatteryCharging(state: number): "yes" | "no" | "unknown" {
   }
 }
 
-export const testTimeout = 30000; // 30s;
-export const shortTimeout = 3000; // 3s;
+export const testTimeout = 30000; // 30s
 
 export const ValidationTests = {
   // Check that acceleration value is reasonable
   async checkAccelerationValid(
     pixel: Pixel,
-    maxDeviationFactor = 10, // 10x,
-    timeout = shortTimeout
+    maxDeviationFactor = 10 // 10x,
   ): Promise<void> {
-    const msg = (await pixel.sendAndWaitForResponse(
-      safeAssign(new RequestTelemetry(), {
-        requestMode: TelemetryRequestModeValues.once,
-      }),
-      "telemetry",
-      timeout
-    )) as Telemetry;
+    let telemetry: Telemetry;
+    try {
+      telemetry = (await pixel.sendAndWaitForResponse(
+        safeAssign(new RequestTelemetry(), {
+          requestMode: TelemetryRequestModeValues.once,
+        }),
+        "telemetry"
+      )) as Telemetry;
+    } catch (error) {
+      throw convertSendMessageError(pixel, error);
+    }
     // Check acceleration
-    const x = msg.accXTimes1000 / 1000;
-    const y = msg.accYTimes1000 / 1000;
-    const z = msg.accZTimes1000 / 1000;
+    const x = telemetry.accXTimes1000 / 1000;
+    const y = telemetry.accYTimes1000 / 1000;
+    const z = telemetry.accZTimes1000 / 1000;
     const n = vectNorm(x, y, z);
     console.log(`Acceleration: ${vectToString(x, y, z)}, norm: ${n}`);
     if (n > maxDeviationFactor || n < 1 / maxDeviationFactor) {
@@ -149,25 +152,26 @@ export const ValidationTests = {
     }
   },
 
-  async checkBatteryVoltage(
-    pixel: Pixel,
-    timeout = shortTimeout
-  ): Promise<void> {
-    const msg = (await pixel.sendAndWaitForResponse(
-      safeAssign(new RequestTelemetry(), {
-        requestMode: TelemetryRequestModeValues.once,
-      }),
-      "telemetry",
-      timeout
-    )) as Telemetry;
+  async checkBatteryVoltage(pixel: Pixel): Promise<void> {
+    let telemetry: Telemetry;
+    try {
+      telemetry = (await pixel.sendAndWaitForResponse(
+        safeAssign(new RequestTelemetry(), {
+          requestMode: TelemetryRequestModeValues.once,
+        }),
+        "telemetry"
+      )) as Telemetry;
+    } catch (error) {
+      throw convertSendMessageError(pixel, error);
+    }
     // Check battery voltage
-    const voltage = msg.voltageTimes50 / 50;
+    const voltage = telemetry.voltageTimes50 / 50;
     console.log(
       `Battery voltage: ${voltage.toFixed(2)}V,` +
-        ` level: ${msg.batteryLevelPercent}%,` +
+        ` level: ${telemetry.batteryLevelPercent}%,` +
         ` charging: ${
-          msg.batteryState === PixelBatteryStateValues.charging ||
-          msg.batteryState === PixelBatteryStateValues.done
+          telemetry.batteryState === PixelBatteryStateValues.charging ||
+          telemetry.batteryState === PixelBatteryStateValues.done
         }`
     );
     if (voltage < 3 || voltage > 5) {
@@ -175,14 +179,18 @@ export const ValidationTests = {
     }
   },
 
-  async checkRssi(pixel: Pixel, timeout = shortTimeout): Promise<void> {
-    const rssi = (await pixel.sendAndWaitForResponse(
-      safeAssign(new RequestRssi(), {
-        requestMode: TelemetryRequestModeValues.once,
-      }),
-      "rssi",
-      timeout
-    )) as Rssi;
+  async checkRssi(pixel: Pixel): Promise<void> {
+    let rssi: Rssi;
+    try {
+      rssi = (await pixel.sendAndWaitForResponse(
+        safeAssign(new RequestRssi(), {
+          requestMode: TelemetryRequestModeValues.once,
+        }),
+        "rssi"
+      )) as Rssi;
+    } catch (error) {
+      throw convertSendMessageError(pixel, error);
+    }
     // Check RSSI
     console.log(`RSSI is ${rssi.value}`);
     if (rssi.value < -70) {
@@ -190,13 +198,13 @@ export const ValidationTests = {
     }
   },
 
-  waitCharging: async (
+  async waitCharging(
     pixel: Pixel,
     shouldBeCharging: boolean,
     blinkColor: Color | false,
     abortSignal: AbortSignal,
     timeout = testTimeout
-  ): Promise<void> => {
+  ): Promise<void> {
     await withTimeoutAndDisconnect(
       abortSignal,
       pixel,

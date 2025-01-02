@@ -4,6 +4,8 @@ import {
   MessageOrType,
   Pixel,
   PixelMutableProps,
+  PixelWaitForMessageDisconnectError,
+  PixelWaitForMessageTimeoutError,
   RequestTelemetry,
   Telemetry,
   TelemetryRequestModeValues,
@@ -217,17 +219,25 @@ export async function withBlink<T = void>(
   let status: "init" | "blink" | "cancel" = "init";
   const blink = async () => {
     if (!abortSignal.aborted) {
-      await pixelStopAllAnimations(pixel);
+      try {
+        await pixelStopAllAnimations(pixel);
+      } catch (error) {
+        throw convertSendMessageError(pixel, error);
+      }
     }
     if (!abortSignal.aborted && status !== "cancel") {
       status = "blink";
       // Blink for as long as we can
-      await pixel.blink(blinkColor, {
-        count: 65,
-        duration: 65 * 1000,
-        faceMask: opt?.faceMask,
-        loopCount: 0xff,
-      });
+      try {
+        await pixel.blink(blinkColor, {
+          count: 65,
+          duration: 65 * 1000,
+          faceMask: opt?.faceMask,
+          loopCount: 0xff,
+        });
+      } catch (error) {
+        throw convertSendMessageError(pixel, error);
+      }
     }
   };
   try {
@@ -254,7 +264,11 @@ export async function withSolidColor<T = void>(
   let status: "init" | "blink" | "cancel" = "init";
   const lightUp = async () => {
     if (!abortSignal.aborted) {
-      await pixelStopAllAnimations(pixel);
+      try {
+        await pixelStopAllAnimations(pixel);
+      } catch (error) {
+        throw convertSendMessageError(pixel, error);
+      }
     }
     const duration = 0xffff;
     while (!abortSignal.aborted && status !== "cancel") {
@@ -278,6 +292,18 @@ export async function withSolidColor<T = void>(
   }
 }
 
+export function convertSendMessageError(pixel: Pixel, error: unknown): Error {
+  // TODO Assume we got a message timeout because of a disconnection
+  if (
+    error instanceof PixelWaitForMessageDisconnectError ||
+    error instanceof PixelWaitForMessageTimeoutError
+  ) {
+    return new DisconnectedError(pixel);
+  } else {
+    return new SendMessageError(pixel, error);
+  }
+}
+
 export async function withTelemetry(
   abortSignal: AbortSignal,
   testName: string,
@@ -296,8 +322,7 @@ export async function withTelemetry(
         })
       );
     } catch (error) {
-      const er: Error = new SendMessageError(pixel, error); // Help TypeScript understand that we throw an error
-      throw er;
+      throw convertSendMessageError(pixel, error);
     }
 
     let firstError: any | undefined;
@@ -334,8 +359,7 @@ export async function withTelemetry(
           // We already got an error, just log this one and forget it
           console.log(`Error while trying to stop telemetry: ${error}`);
         } else {
-          const er: Error = new SendMessageError(pixel, error); // Help TypeScript understand that we throw an error
-          throw er;
+          firstError = convertSendMessageError(pixel, error);
         }
       }
       if (firstError) {

@@ -71,6 +71,7 @@ import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { useVisibility } from "~/features/useVisibility";
 import {
   AbortControllerWithReason,
+  convertSendMessageError,
   getBoardOrDie,
   getPixelValidationName,
   getSequenceIndex,
@@ -383,15 +384,19 @@ async function storeValueChecked(
   value: number,
   opt?: { allowNotPermitted?: boolean }
 ): Promise<void> {
-  const result = await pixelStoreValue(pixel, valueType, value);
-  if (result !== "success") {
-    if (!opt?.allowNotPermitted || result !== "notPermitted") {
-      throw new StoreValueError(result, valueType);
-    } else {
-      console.log(
-        `Ignoring store value permission error for value type ${valueType}`
-      );
+  try {
+    const result = await pixelStoreValue(pixel, valueType, value);
+    if (result !== "success") {
+      if (!opt?.allowNotPermitted || result !== "notPermitted") {
+        throw new StoreValueError(result, valueType);
+      } else {
+        console.log(
+          `Ignoring store value permission error for value type ${valueType}`
+        );
+      }
     }
+  } catch (error) {
+    throw convertSendMessageError(pixel, error);
   }
 }
 
@@ -653,7 +658,11 @@ export function ConnectPixel({
             () => pixel.disconnect()
           );
           // Make sure we don't have any animation playing
-          await pixelStopAllAnimations(pixel);
+          try {
+            await pixelStopAllAnimations(pixel);
+          } catch (error) {
+            throw convertSendMessageError(pixel, error);
+          }
         },
         [pixel, t]
       ),
@@ -728,7 +737,11 @@ export function CheckBoard({
   const taskChain = useTaskChain(action, "CheckBoard")
     .withTask(
       React.useCallback(async () => {
-        await pixelResetAllSettings(pixel);
+        try {
+          await pixelResetAllSettings(pixel);
+        } catch (error) {
+          throw convertSendMessageError(pixel, error);
+        }
       }, [pixel]),
       createTaskStatusContainer(t("clearSettings"))
     )
