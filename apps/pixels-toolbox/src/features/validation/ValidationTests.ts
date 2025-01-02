@@ -192,9 +192,8 @@ export const ValidationTests = {
 
   waitCharging: async (
     pixel: Pixel,
-    dieType: PixelDieType,
     shouldBeCharging: boolean,
-    blinkColor: Color,
+    blinkColor: Color | false,
     abortSignal: AbortSignal,
     timeout = testTimeout
   ): Promise<void> => {
@@ -203,56 +202,60 @@ export const ValidationTests = {
       pixel,
       timeout,
       async (abortSignal) => {
-        // Blink face
-        const faceMask = getFaceMask(DiceUtils.getTopFace(dieType), dieType);
-        await withBlink(
-          abortSignal,
-          pixel,
-          blinkColor,
-          async () => {
-            // And wait for battery (not)charging
-            let lastMsg: Telemetry | undefined;
-            try {
-              await withTelemetry(
-                abortSignal,
-                shouldBeCharging ? "waitCharging" : "waitNotCharging",
-                pixel,
-                (msg: Telemetry) => {
-                  const state = msg.batteryControllerState;
-                  lastMsg = msg;
-                  const charging = isBatteryCharging(state);
-                  if (charging === (shouldBeCharging ? "yes" : "no")) {
-                    const vCoil = msg.vCoilTimes50 / 50;
-                    if (charging === "no" || vCoil >= 4.2) {
-                      return true;
-                    } else {
-                      const stateStr =
-                        getValueKeyName(
-                          state,
-                          PixelBatteryControllerStateValues
-                        ) ?? "unknown";
-                      console.log(
-                        `Charging state is ${stateStr} but VCoil too low: ${vCoil}`
-                      );
-                    }
+        const onWait = async () => {
+          let lastMsg: Telemetry | undefined;
+          try {
+            await withTelemetry(
+              abortSignal,
+              shouldBeCharging ? "waitCharging" : "waitNotCharging",
+              pixel,
+              (msg: Telemetry) => {
+                const state = msg.batteryControllerState;
+                lastMsg = msg;
+                const charging = isBatteryCharging(state);
+                if (charging === (shouldBeCharging ? "yes" : "no")) {
+                  const vCoil = msg.vCoilTimes50 / 50;
+                  if (charging === "no" || vCoil >= 4.2) {
+                    return true;
+                  } else {
+                    const stateStr =
+                      getValueKeyName(
+                        state,
+                        PixelBatteryControllerStateValues
+                      ) ?? "unknown";
+                    console.log(
+                      `Charging state is ${stateStr} but VCoil too low: ${vCoil}`
+                    );
                   }
-                  return false;
                 }
-              );
-            } catch (error: any) {
-              if (lastMsg && error instanceof SignalTimeoutError) {
-                throw new WaitChargingTimeoutError(
-                  error.timeout,
-                  shouldBeCharging,
-                  lastMsg
-                );
-              } else {
-                throw error;
+                return false;
               }
+            );
+          } catch (error: any) {
+            if (lastMsg && error instanceof SignalTimeoutError) {
+              throw new WaitChargingTimeoutError(
+                error.timeout,
+                shouldBeCharging,
+                lastMsg
+              );
+            } else {
+              throw error;
             }
-          },
-          { faceMask }
-        );
+          }
+        };
+        if (blinkColor === false) {
+          // Wait for battery (not)charging
+          await onWait();
+        } else {
+          // Blink top face and wait for battery (not)charging
+          await withBlink(abortSignal, pixel, blinkColor, onWait, {
+            faceMask: getFaceMask(
+              DiceUtils.getTopFace(pixel.dieType),
+              pixel.dieType,
+              pixel.firmwareDate.getTime()
+            ),
+          });
+        }
       }
     );
   },
@@ -277,7 +280,11 @@ export const ValidationTests = {
       timeout,
       async (abortSignal) => {
         // Blink face
-        const faceMask = getFaceMask(face, dieType);
+        const faceMask = getFaceMask(
+          face,
+          dieType,
+          pixel.firmwareDate.getTime()
+        );
         await withBlink(
           abortSignal,
           pixel,
