@@ -62,7 +62,6 @@ import { setFactoryProfile } from "~/features/store/validationSettingsSlice";
 import {
   createTaskStatusContainer,
   TaskAction,
-  TaskCanceledError,
   TaskComponentProps,
   TaskFaultedError,
   TaskStatus,
@@ -85,6 +84,16 @@ import {
   withTimeoutAndDisconnect,
 } from "~/features/validation";
 import { TaskNames } from "~/features/validation/ErrorCodes";
+import {
+  ConnectionError,
+  DfuAbortedError,
+  DieTypeMismatchError,
+  FirmwareUpdateError,
+  InvalidLedCountError,
+  LedCountMismatchError,
+  LowBatteryError,
+  StoreValueError,
+} from "~/features/validation/ValidationError";
 import { FactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
 
 const useTaskChain: (
@@ -221,9 +230,7 @@ async function repeatConnect(
         break;
       } catch (error) {
         if (retries === 0) {
-          throw new TaskFaultedError(
-            t("connectionErrorTryAgain") + " " + String(error)
-          );
+          throw new ConnectionError(error);
         }
         --retries;
         if (!abortSignal.aborted) {
@@ -336,7 +343,7 @@ async function updateFactoryFirmware(
         !!blAddr
       );
       if (dfuState === "aborted") {
-        throw new Error("Firmware update aborted");
+        throw new DfuAbortedError();
       }
       onFirmwareUpdate?.("success");
     };
@@ -378,11 +385,12 @@ async function storeValueChecked(
 ): Promise<void> {
   const result = await pixelStoreValue(pixel, valueType, value);
   if (result !== "success") {
-    const msg = `Failed to store value, got response ${result}`;
     if (!opt?.allowNotPermitted || result !== "notPermitted") {
-      throw new Error(msg);
+      throw new StoreValueError(result, valueType);
     } else {
-      console.log("Ignoring error: " + msg);
+      console.log(
+        `Ignoring store value permission error for value type ${valueType}`
+      );
     }
   }
 }
@@ -512,14 +520,13 @@ export function ScanAndUpdateFirmware({
             reconfigure
           );
         } catch (error) {
-          throw new TaskFaultedError(`${t("dfuErrorTryAgain")} ${error}`);
+          throw new FirmwareUpdateError(error);
         }
       }, [
         reconfigure,
         scannedPixel,
         settings.dfuFilesBundle,
         onFirmwareUpdate,
-        t,
       ]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
@@ -574,9 +581,9 @@ export function UpdateFirmware({
             onFirmwareUpdate
           );
         } catch (error) {
-          throw new TaskFaultedError(`${t("dfuErrorTryAgain")} ${error}`);
+          throw new FirmwareUpdateError(error);
         }
-      }, [scannedPixel, settings.dfuFilesBundle, onFirmwareUpdate, t]),
+      }, [scannedPixel, settings.dfuFilesBundle, onFirmwareUpdate]),
       createTaskStatusContainer({
         title: t("firmwareUpdate"),
         children: (
@@ -624,21 +631,14 @@ export function ConnectPixel({
       React.useCallback(async () => {
         if (ledCount !== undefined) {
           if (ledCount <= 0) {
-            throw new TaskFaultedError(
-              t("invalidLedCountWithValue", { value: ledCount })
-            );
+            throw new InvalidLedCountError(ledCount);
           }
           // Check LED count
           if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
-            throw new TaskFaultedError(
-              t("dieTypeMismatchWithTypeAndLedCount", {
-                dieType: t(settings.dieType),
-                ledCount,
-              })
-            );
+            throw new LedCountMismatchError(settings.dieType, ledCount);
           }
         }
-      }, [ledCount, settings.dieType, t]),
+      }, [ledCount, settings.dieType]),
       createTaskStatusContainer(t("checkLEDCount")),
       { skip: ledCount === undefined }
     )
@@ -681,16 +681,11 @@ export function ConnectPixel({
                 )
             );
             if (!update) {
-              throw new TaskFaultedError(
-                t("dieTypeMismatchWithExpectedAndReceived", {
-                  expected: t(settings.dieType),
-                  received: t(dieType),
-                })
-              );
+              throw new DieTypeMismatchError(settings.dieType, dieType);
             }
           }
         },
-        [dieType, pixel, settings.dieType, t]
+        [dieType, pixel, settings.dieType]
       ),
       createTaskStatusContainer({
         title: t("checkDieType"),
@@ -825,12 +820,9 @@ export function WaitCharging({
     .withTask(
       React.useCallback(async () => {
         if (!skipBatteryLevelRef.current && pixel.batteryLevel < 75) {
-          throw new TaskCanceledError(
-            "WaitCharging",
-            t("lowBatteryPleaseCharge")
-          );
+          throw new LowBatteryError(pixel.batteryLevel);
         }
-      }, [pixel, t]),
+      }, [pixel]),
       createTaskStatusContainer(t("batteryLevel")),
       { skip: !notCharging || dieFinal }
     )

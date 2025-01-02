@@ -16,22 +16,6 @@ export const TaskNames = [
   "CheckLabel", // 13
 ] as const;
 
-export const ErrorCodes = {
-  // General errors
-  Timeout: 1,
-  Disconnected: 2,
-  // Errors for specific tasks
-  AccelerationInvalidValue: 100 * (TaskNames.indexOf("CheckBoard") + 1) + 10,
-  BatteryOutOfRangeVoltage: 100 * (TaskNames.indexOf("CheckBoard") + 1) + 20,
-} as const;
-
-assert(
-  ((arr: number[]) => arr.length === new Set(arr).size)(
-    Object.values(ErrorCodes)
-  ),
-  "ErrorCodes must have unique values"
-);
-
 export function getTaskErrorCode(
   taskName: (typeof TaskNames)[number]
 ): number | undefined {
@@ -41,3 +25,53 @@ export function getTaskErrorCode(
     return 100 * (index + 1);
   }
 }
+
+const updateFirmwareErrorCode = getTaskErrorCode("UpdateFirmware");
+assert(
+  updateFirmwareErrorCode !== undefined,
+  "UpdateFirmware must have an error code"
+);
+
+const connectPixelErrorCode = getTaskErrorCode("ConnectPixel");
+assert(
+  connectPixelErrorCode !== undefined,
+  "ConnectPixel must have an error code"
+);
+
+const checkBoardErrorCode = getTaskErrorCode("CheckBoard");
+assert(checkBoardErrorCode !== undefined, "CheckBoard must have an error code");
+
+const storeSettingsErrorCode = getTaskErrorCode("StoreSettings");
+assert(
+  storeSettingsErrorCode !== undefined,
+  "StoreSettings must have an error code"
+);
+
+export const ErrorCodes = {
+  // General errors
+  Timeout: 1,
+  Disconnected: 2,
+  SendMessageFailed: 3,
+  // Update Firmware errors
+  DfuAborted: updateFirmwareErrorCode + 10,
+  FirmwareUpdateFailed: updateFirmwareErrorCode + 20,
+  // Connect Pixel errors
+  InvalidLedCount: connectPixelErrorCode + 10,
+  LEDCountMismatch: connectPixelErrorCode + 20,
+  ConnectionError: connectPixelErrorCode + 30,
+  DieTypeMismatch: connectPixelErrorCode + 40,
+  // Check Board errors
+  AccelerationInvalidValue: checkBoardErrorCode + 10,
+  BatteryOutOfRangeVoltage: checkBoardErrorCode + 20,
+  LowRSSI: checkBoardErrorCode + 30,
+  LowBattery: checkBoardErrorCode + 40,
+  // Store Settings errors
+  StoreValueFailed: storeSettingsErrorCode + 10,
+} as const;
+
+assert(
+  ((arr: number[]) => arr.length === new Set(arr).size)(
+    Object.values(ErrorCodes)
+  ),
+  "ErrorCodes must have unique values"
+);
