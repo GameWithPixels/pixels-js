@@ -144,7 +144,10 @@ export class MessageSerializer<MessageType extends string> {
       return this.getMessageType(msgTypeValue);
     } else {
       const msg = this.instantiateMessage(this.getMessageType(msgTypeValue));
-      const bytesRead = deserialize(msg, dataView);
+      const allowSkipLastProps =
+        "allowSkipLastProps" in msg.constructor &&
+        msg.constructor.allowSkipLastProps === true;
+      const bytesRead = deserialize(msg, dataView, { allowSkipLastProps });
       if (bytesRead !== dataView.byteLength) {
         console.warn(
           `The last ${

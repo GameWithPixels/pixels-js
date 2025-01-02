@@ -1027,9 +1027,9 @@ export class Pixel
 
   protected _internalDeserializeMessage(dataView: DataView): MessageOrType {
     let msgOrType: MessageOrType;
+    const type = dataView.byteLength ? dataView.getUint8(0) : 0;
     if (
-      dataView.byteLength &&
-      dataView.getUint8(0) === MessageTypeValues.iAmADie &&
+      type === MessageTypeValues.iAmADie &&
       dataView.byteLength !== LegacyIAmADie.expectedSize
     ) {
       const iAmADie = new IAmADie();

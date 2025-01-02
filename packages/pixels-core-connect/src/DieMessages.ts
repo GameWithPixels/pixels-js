@@ -432,14 +432,6 @@ export class Telemetry implements PixelMessage {
   @serializable(1)
   vCoilTimes50 = 0;
 
-  /** The measured coil voltage multiplied by 50. */
-  @serializable(1)
-  vCoilMinTimes50 = 0;
-
-  /** The measured coil voltage multiplied by 50. */
-  @serializable(1)
-  vCoilMaxTimes50 = 0;
-
   // RSSI
 
   /** The RSSI value, in dBm. */
@@ -476,6 +468,19 @@ export class Telemetry implements PixelMessage {
   /** led power draw in mA */
   @serializable(1)
   ledCurrent = 0;
+
+  // Added in firmware 2024-12-30
+
+  /** The minimum measured coil voltage, multiplied by 50, over a short interval. */
+  @serializable(1)
+  vCoilMinTimes50 = 0;
+
+  /** The maximum measured coil voltage, multiplied by 50, over a short interval.. */
+  @serializable(1)
+  vCoilMaxTimes50 = 0;
+
+  /** The last few props may not be present on older firmware. */
+  static readonly allowSkipLastProps = true;
 }
 
 /**
