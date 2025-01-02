@@ -788,6 +788,9 @@ export function WaitCharging({
 }: ValidationTestProps & { notCharging?: boolean }) {
   const { t } = useTranslation();
 
+  const dieFinal =
+    settings.sequence === "dieFinalSingle" ||
+    settings.sequence === "dieFinalForSet";
   const skipBatteryLevelRef = React.useRef(
     useAppSelector(selectSkipBatteryLevel) // May change during the test
   );
@@ -829,7 +832,7 @@ export function WaitCharging({
         }
       }, [pixel, t]),
       createTaskStatusContainer(t("batteryLevel")),
-      { skip: !notCharging || settings.sequence !== "dieFinal" }
+      { skip: !notCharging || dieFinal }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -971,6 +974,9 @@ export function StoreSettings({
   const [resolveColorwayPromise, setResolveColorwayPromise] =
     React.useState<(colorway: PixelColorway) => void>();
 
+  const dieFinal =
+    settings.sequence === "dieFinalSingle" ||
+    settings.sequence === "dieFinalForSet";
   const storeTimestamp = React.useCallback(
     () =>
       storeValueChecked(
@@ -978,9 +984,9 @@ export function StoreSettings({
         PixelValueStoreType.ValidationTimestampStart +
           getSequenceIndex(settings.sequence),
         get24BitsTimestamp(),
-        { allowNotPermitted: settings.sequence === "dieFinal" }
+        { allowNotPermitted: dieFinal }
       ),
-    [pixel, settings.sequence]
+    [dieFinal, pixel, settings.sequence]
   );
   const storeDieType = React.useCallback(async () => {
     if (pixel.dieType !== settings.dieType) {
