@@ -94,7 +94,8 @@ export function getLEDCount(dieType: PixelDieType): number {
  */
 export function getFaceMask(
   faceValueOrFaceList: number | number[],
-  dieType: PixelDieType
+  dieType: PixelDieType,
+  firmwareTimestamp?: number
 ): number {
   if (typeof faceValueOrFaceList === "number") {
     switch (dieType) {
@@ -103,9 +104,37 @@ export function getFaceMask(
         ++faceValueOrFaceList;
         break;
       case "d00":
-        // TODO fix for D00 rolling as D10
-        faceValueOrFaceList = 1 + Math.round(faceValueOrFaceList / 10);
+        faceValueOrFaceList = 1 + Math.floor(faceValueOrFaceList / 10);
         break;
+    }
+    // Fix for old production FW 2024-01-02
+    if (dieType === "d4") {
+      if (
+        firmwareTimestamp !== undefined &&
+        firmwareTimestamp <= 1704150000000
+      ) {
+        switch (faceValueOrFaceList) {
+          case 2:
+            faceValueOrFaceList = 3;
+            break;
+          case 3:
+            faceValueOrFaceList = 4;
+            break;
+          case 4:
+            faceValueOrFaceList = 6;
+            break;
+        }
+      } else {
+        // TODO fix D4 face mask in FW
+        switch (faceValueOrFaceList) {
+          case 2:
+            faceValueOrFaceList = 3;
+            break;
+          case 3:
+            faceValueOrFaceList = 2;
+            break;
+        }
+      }
     }
   }
   if (typeof faceValueOrFaceList === "number") {
