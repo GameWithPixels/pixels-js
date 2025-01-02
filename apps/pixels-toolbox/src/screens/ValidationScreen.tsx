@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect } from "@react-navigation/native";
 import { range } from "@systemic-games/pixels-core-utils";
 import {
@@ -14,10 +15,11 @@ import { useErrorBoundary } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
 import { ScrollView, TextStyle, View } from "react-native";
 import {
-  Banner,
   Button,
   ButtonProps,
   Card,
+  IconButton,
+  Menu,
   Text,
   TextInput,
   TouchableRipple,
@@ -63,9 +65,11 @@ import { selectSkipPrintLabel } from "~/features/store/validationSelectors";
 import {
   getTaskResult,
   getTaskResultEmoji,
+  TaskComponent,
+  TaskOperation,
   TaskResult,
   useTaskChain,
-  useTaskComponent,
+  useTaskComponent as useTaskComponentUntyped,
 } from "~/features/tasks";
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
@@ -76,7 +80,7 @@ import {
   ValidationSequence,
   ValidationSequences,
 } from "~/features/validation";
-import { getTaskErrorCode } from "~/features/validation/ErrorCodes";
+import { getTaskErrorCode, TaskNames } from "~/features/validation/ErrorCodes";
 import { ValidationError } from "~/features/validation/ValidationError";
 import {
   FactoryDfuFilesBundle,
@@ -84,6 +88,12 @@ import {
 } from "~/hooks/useFactoryDfuFilesBundle";
 import { usePixelIdDecoderFrameProcessor } from "~/hooks/usePixelIdDecoderFrameProcessor";
 import { capitalize } from "~/i18n";
+
+const useTaskComponent = useTaskComponentUntyped as (
+  taskName: (typeof TaskNames)[number],
+  cancel: boolean,
+  taskComponent: TaskComponent
+) => [TaskOperation, React.FC];
 
 function getValidationSequenceName(
   t: ReturnType<typeof useTranslation>["t"],
@@ -197,6 +207,12 @@ function SelectSequencePage({
       return toLocaleDateTimeString(dfuFilesBundle.date);
     }
   }, [dfuFilesBundle]);
+  const extraOptions: ValidationSequence[] = [
+    "firmwareUpdate",
+    "boardNoCoil",
+    "dieReconfigure",
+  ];
+  const [visible, setVisible] = React.useState(false);
   const { colors } = useTheme();
   const { t } = useTranslation();
   return (
@@ -204,38 +220,90 @@ function SelectSequencePage({
       w="100%"
       h="100%"
       px={5}
-      py={20}
+      pb={10}
       gap={30}
       justifyContent="space-around"
     >
-      {dfuFilesError ? (
-        <BaseVStack padding={20} backgroundColor={colors.errorContainer}>
-          <Text style={{ color: colors.onErrorContainer }}>
-            {t("errorLoadingFirmwareFiles") +
-              t("colonSeparator") +
-              dfuFilesError.message}
-          </Text>
-        </BaseVStack>
-      ) : dfuFilesBundle && !isFactoryDfuBundle ? (
-        <Banner visible icon="alert-rhombus-outline" elevation={3}>
-          {t("diceUpdatedWithCustomFirmwareWarning")}
-          {"\n\n"}
-          {t("selection")}
-          {t("colonSeparator")}
-          {dfuFilesBundle?.date
-            ? toLocaleDateTimeString(dfuFilesBundle.date)
-            : t("loadingFirmwareFiles")}
-        </Banner>
-      ) : (
-        <BaseVStack alignItems="center" marginVertical={-10}>
-          <Text variant="titleSmall">
-            {dfuFilesBundle
-              ? t("updateFirmwareIfOlderWithDate", { date: fwDateLabel })
-              : t("loadingFirmwareFiles")}
-          </Text>
-        </BaseVStack>
-      )}
-      {ValidationSequences.map((s) => (
+      <BaseHStack gap={10} mt={10} mb={-10}>
+        {dfuFilesError ? (
+          <BaseVStack
+            flex={1}
+            padding={10}
+            alignSelf="center"
+            backgroundColor={colors.errorContainer}
+          >
+            <Text
+              variant="bodyLarge"
+              style={{ color: colors.onErrorContainer }}
+            >
+              {t("errorLoadingFirmwareFiles") +
+                t("colonSeparator") +
+                dfuFilesError.message}
+            </Text>
+          </BaseVStack>
+        ) : dfuFilesBundle && !isFactoryDfuBundle ? (
+          <BaseVStack
+            flex={1}
+            padding={10}
+            alignSelf="center"
+            backgroundColor={colors.primaryContainer}
+          >
+            <Text
+              variant="bodyLarge"
+              style={{ color: colors.onPrimaryContainer }}
+            >
+              {t("diceUpdatedWithCustomFirmwareWarning")}
+            </Text>
+            <Text
+              variant="bodyLarge"
+              style={{ color: colors.onPrimaryContainer }}
+            >
+              {"-> "}
+              {dfuFilesBundle?.date
+                ? toLocaleDateTimeString(dfuFilesBundle.date)
+                : t("loadingFirmwareFiles")}
+            </Text>
+          </BaseVStack>
+        ) : (
+          <BaseVStack flex={1} alignItems="center" alignSelf="center">
+            <Text variant="titleSmall">
+              {dfuFilesBundle
+                ? t("updateFirmwareIfOlderWithDate", { date: fwDateLabel })
+                : t("loadingFirmwareFiles")}
+            </Text>
+          </BaseVStack>
+        )}
+        <Menu
+          visible={visible}
+          onDismiss={() => setVisible(false)}
+          anchorPosition="bottom"
+          anchor={
+            <IconButton
+              icon={() => (
+                <MaterialIcons
+                  name="more-horiz"
+                  size={24}
+                  color={colors.onSecondaryContainer}
+                />
+              )}
+              onPress={() => setVisible(true)}
+              style={{
+                borderColor: colors.onSecondaryContainer,
+                borderWidth: 1,
+              }}
+            />
+          }
+        >
+          {extraOptions.map((s) => (
+            <Menu.Item
+              key={s}
+              onPress={() => onSelectSequence(s)}
+              title={getValidationSequenceName(t, s)}
+            />
+          ))}
+        </Menu>
+      </BaseHStack>
+      {ValidationSequences.filter((s) => !extraOptions.includes(s)).map((s) => (
         <LargeTonalButton
           key={s}
           disabled={!!dfuFilesError || !dfuFilesBundle}
@@ -586,10 +654,6 @@ function RunTestsPage({
     React.useState<UpdateFirmwareStatus>();
   const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
 
-  const noPrintRef = React.useRef(
-    useAppSelector(selectSkipPrintLabel) // May change during the test
-  );
-
   // We must have a Pixel once past the UpdateFirmware task
   const getPixel = (): Pixel => {
     if (!pixel) throw new Error("No Pixel instance");
@@ -599,7 +663,8 @@ function RunTestsPage({
   // Some conditions to filter tests
   const seq = settings.sequence;
   const isFwUpdate = seq === "firmwareUpdate";
-  const isFinal = seq === "dieFinal";
+  const isFinalForSet = seq === "dieFinalForSet";
+  const isFinal = seq === "dieFinalSingle" || isFinalForSet;
   const isReconfig = seq === "dieReconfigure";
   const skipIfFwUpdate = { skip: isFwUpdate };
   const skipCharging = {
@@ -609,6 +674,11 @@ function RunTestsPage({
   const skipTurnOff = { skip: isFwUpdate || isFinal || isReconfig };
   const skipPrepare = { skip: !isFinal && !isReconfig };
   const skipIfNotReconfig = { skip: !isReconfig };
+
+  const noPrintRef = React.useRef(
+    useAppSelector(selectSkipPrintLabel) || // We use a ref because this setting could change during the test, but we don't want to modify the test sequence in the middle of it
+      isFinalForSet
+  );
 
   // The entire test sequence
   const taskChain = useTaskChain(cancel ? "cancel" : "run")
@@ -624,6 +694,7 @@ function RunTestsPage({
         />
       ))
     )
+    // Skip connecting if only updating firmware
     .withTask(
       ...useTaskComponent("ConnectPixel", cancel, (p) => (
         <ConnectPixel
@@ -636,18 +707,21 @@ function RunTestsPage({
       )),
       skipIfFwUpdate
     )
+    // Wait for die to report charging
     .withTask(
       ...useTaskComponent("WaitCharging", cancel, (p) => (
         <WaitCharging {...p} settings={settings} pixel={getPixel()} />
       )),
       skipCharging
     )
+    // Skip checking board if only updating firmware
     .withTask(
       ...useTaskComponent("CheckBoard", cancel, (p) => (
         <CheckBoard {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfFwUpdate
     )
+    // Wait for die to report not charging
     .withTask(
       ...useTaskComponent("WaitNotCharging", cancel, (p) => (
         <WaitCharging
@@ -659,30 +733,35 @@ function RunTestsPage({
       )),
       skipCharging
     )
+    // Ask operator to confirm all LEDs are on
     .withTask(
       ...useTaskComponent("CheckLEDs", cancel, (p) => (
         <CheckLEDs {...p} settings={settings} pixel={getPixel()} />
       )),
       { skip: isFwUpdate || isReconfig }
     )
+    // Ask operator to place die blinking face up
     .withTask(
       ...useTaskComponent("WaitFaceUp", cancel, (p) => (
         <WaitFaceUp {...p} settings={settings} pixel={getPixel()} />
       )),
       skipFaceUp
     )
+    // Store settings if not updating firmware
     .withTask(
       ...useTaskComponent("StoreSettings", cancel, (p) => (
         <StoreSettings {...p} settings={settings} pixel={getPixel()} />
       )),
       skipIfFwUpdate
     )
+    // Turn die off if not finalizing, updating firmware, or reconfiguring
     .withTask(
       ...useTaskComponent("TurnOffDevice", cancel, (p) => (
         <TurnOffDevice {...p} settings={settings} pixel={getPixel()} />
       )),
       skipTurnOff
     )
+    // Prepare die in final validation or when re-configuring
     .withTask(
       ...useTaskComponent("PrepareDie", cancel, (p) => (
         <PrepareDie
@@ -694,6 +773,7 @@ function RunTestsPage({
       )),
       skipPrepare
     )
+    // Restore firmware when re-configuring
     .withTask(
       ...useTaskComponent("UpdateFirmware", cancel, (p) => (
         <UpdateFirmware
@@ -705,18 +785,28 @@ function RunTestsPage({
       )),
       skipIfNotReconfig
     )
+    // Reconnect to die in final validation or when re-configuring
     .withTask(
       ...useTaskComponent("ConnectPixel", cancel, (p) => (
         <ConnectPixel {...p} settings={settings} pixel={getPixel()} />
       )),
       skipPrepare
     )
+    // Wait for die to be put in case  in final validation except if finalizing die for set
     .withTask(
       ...useTaskComponent("WaitDieInCase", cancel, (p) => (
         <WaitDieInCase {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipPrepare
+      { skip: skipPrepare.skip || isFinalForSet }
     )
+    // Turn die off if finalizing die for set
+    .withTask(
+      ...useTaskComponent("TurnOffDevice", cancel, (p) => (
+        <TurnOffDevice {...p} settings={settings} pixel={getPixel()} />
+      )),
+      { skip: !isFinalForSet }
+    )
+    // Ask operator to confirm label was printed
     .withTask(
       ...useTaskComponent("CheckLabel", cancel, (p) => (
         <LabelPrinting

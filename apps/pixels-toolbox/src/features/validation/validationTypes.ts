@@ -12,7 +12,8 @@ export const ValidationSequences = [
   "boardNoCoil",
   "board",
   "die",
-  "dieFinal",
+  "dieFinalSingle",
+  "dieFinalForSet",
   "dieReconfigure",
 ] as const;
 
