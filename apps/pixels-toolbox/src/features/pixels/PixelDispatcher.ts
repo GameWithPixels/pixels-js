@@ -5,6 +5,7 @@ import {
   delay,
   EventReceiver,
   Mutable,
+  unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import {
   createDataSetForAnimation,
@@ -37,6 +38,7 @@ import {
   serializer,
   Telemetry,
 } from "@systemic-games/react-native-pixels-connect";
+import { Platform } from "react-native";
 import RNFS from "react-native-fs";
 
 import { TelemetryData, toTelemetryData } from "./TelemetryData";
@@ -332,10 +334,8 @@ export class PixelDispatcher
     this._pixel = getPixelOrThrow(scannedPixel.systemId);
     Static.instances.set(this.pixelId, this);
     // Log messages in file
-    const filename = `${getDatedFilename(this.name)}~${Math.round(
-      1e9 * Math.random()
-    )}`;
-    this._messagesLogFilePath = `${RNFS.TemporaryDirectoryPath}/${filename}.json`;
+    const filename = `${getDatedFilename("Pixel" + unsigned32ToHex(this.pixelId))}`;
+    this._messagesLogFilePath = `${Platform.OS === "android" ? RNFS.ExternalDirectoryPath : RNFS.DocumentDirectoryPath}/${filename}.json`;
     RNFS.appendFile(this._messagesLogFilePath, "[\n").catch((e) =>
       console.error(`PixelDispatcher file write error: ${e.message}`)
     );

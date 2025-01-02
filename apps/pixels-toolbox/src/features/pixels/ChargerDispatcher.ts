@@ -3,6 +3,7 @@ import {
   createTypedEventEmitter,
   EventReceiver,
   Mutable,
+  unsigned32ToHex,
 } from "@systemic-games/pixels-core-utils";
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
@@ -16,6 +17,7 @@ import {
   ScannedChargerNotifier,
   ScannedChargerNotifierMutableProps,
 } from "@systemic-games/react-native-pixels-connect";
+import { Platform } from "react-native";
 import RNFS from "react-native-fs";
 
 import { IPixelDispatcher } from "./PixelDispatcher";
@@ -265,10 +267,8 @@ export class ChargerDispatcher
       })();
     Static.instances.set(this.pixelId, this);
     // Log messages in file
-    const filename = `${getDatedFilename(this.name)}~${Math.round(
-      1e9 * Math.random()
-    )}`;
-    this._messagesLogFilePath = `${RNFS.TemporaryDirectoryPath}/${filename}.json`;
+    const filename = `${getDatedFilename("Charger" + unsigned32ToHex(this.pixelId))}`;
+    this._messagesLogFilePath = `${Platform.OS === "android" ? RNFS.ExternalDirectoryPath : RNFS.DocumentDirectoryPath}/${filename}.json`;
     RNFS.appendFile(this._messagesLogFilePath, "[\n").catch((e) =>
       console.error(`ChargerDispatcher file write error: ${e.message}`)
     );
