@@ -105,12 +105,14 @@ export class PixelConnectIdMismatchError extends PixelConnectError {
  * @category Pixels
  */
 export class PixelWaitForMessageTimeoutError extends PixelError {
+  readonly timeout: number; // ms
   constructor(pixel: PixelType, timeoutMs: number, messageType: string) {
     super(
       pixel,
       `Timeout of ${timeoutMs}ms waiting for message ${messageType}`
     );
     this.name = "PixelMessageTimeoutError";
+    this.timeout = timeoutMs;
   }
 }
 
