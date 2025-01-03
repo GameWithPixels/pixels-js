@@ -64,8 +64,8 @@ export class InvalidLedCountError extends ValidationError {
 export class LedCountMismatchError extends ValidationError {
   readonly errorCode = ErrorCodes.LEDCountMismatch;
   readonly ledCount: number;
-  readonly dieType: PixelDieType;
-  constructor(dieType: PixelDieType, ledCount: number) {
+  readonly dieType: PixelDieType | "lcc";
+  constructor(dieType: PixelDieType | "lcc", ledCount: number) {
     super(`LED count mismatch: expected ${dieType} but got ${ledCount} LEDs`);
     this.name = "DieTypeMismatchError";
     this.dieType = dieType;
@@ -81,9 +81,9 @@ export class LedCountMismatchError extends ValidationError {
 
 export class DieTypeMismatchError extends ValidationError {
   readonly errorCode = ErrorCodes.DieTypeMismatch;
-  readonly expectedDieType: PixelDieType;
-  readonly actualDieType: PixelDieType;
-  constructor(expected: PixelDieType, actual: PixelDieType) {
+  readonly expectedDieType: PixelDieType | "lcc";
+  readonly actualDieType: PixelDieType | "lcc";
+  constructor(expected: PixelDieType | "lcc", actual: PixelDieType | "lcc") {
     super(`Die type mismatch: expected ${expected} but got ${actual} LEDs`);
     this.name = "DieTypeMismatchError";
     this.expectedDieType = expected;

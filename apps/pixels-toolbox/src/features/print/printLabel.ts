@@ -15,6 +15,7 @@ import {
 } from "./prepareHtmlAsync";
 import { PrintError, PrintStatus, UnknownProductPrintError } from "./types";
 
+import { getDiceSetDiceList } from "~/features/set";
 import { ProductInfo } from "~/features/validation/ProductInfo";
 
 function getImageFilename(dieType: PixelDieType): string {
@@ -107,12 +108,13 @@ export async function printDiceSetBoxLabelAsync(
   numCopies: number,
   opt?: Omit<PrintOptions, "smallLabel">
 ): Promise<void> {
+  const diceList = getDiceSetDiceList(setInfo.type);
   await printLabelAsync(
     setInfo,
     (product) =>
       prepareDiceSetLabelHtmlAsync({
         ...product,
-        diceImageFilenames: setInfo.dice.map(getImageFilename),
+        diceImageFilenames: diceList.map(getImageFilename),
       }),
     numCopies,
     opt

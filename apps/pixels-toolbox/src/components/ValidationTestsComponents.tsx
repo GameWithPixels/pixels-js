@@ -24,6 +24,7 @@ import {
   PixelDieType,
   PixelDieTypeValues,
   PixelScanner,
+  ScannedCharger,
   ScannedDevice,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
@@ -32,6 +33,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Button, Menu, Text } from "react-native-paper";
+
+import { SelectDiceSetTypeModal } from "./SelectDiceSetTypeModal";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
@@ -52,7 +55,12 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
-import { printDieBoxLabelAsync, PrintStatus } from "~/features/print";
+import {
+  printDiceSetBoxLabelAsync,
+  printDieBoxLabelAsync,
+  PrintStatus,
+} from "~/features/print";
+import { DiceSetType } from "~/features/set";
 import {
   selectCustomFirmwareAndProfile,
   selectProfileName,
@@ -85,6 +93,7 @@ import {
   withTimeoutAndDisconnect,
 } from "~/features/validation";
 import { TaskNames } from "~/features/validation/ErrorCodes";
+import { ProductInfo } from "~/features/validation/ProductInfo";
 import {
   ConnectionError,
   DfuAbortedError,
@@ -103,25 +112,33 @@ const useTaskChain: (
 ) => ReturnType<typeof useTaskChainUntyped> = useTaskChainUntyped;
 
 function printLabel(
-  pixel: Pixel,
-  dieType: PixelDieType,
-  statusCallback: (status: PrintStatus | Error) => void,
+  productInfo: ProductInfo,
+  statusCallback: (_: {
+    status: PrintStatus | Error;
+    productInfo: ProductInfo;
+  }) => void,
   opt?: { smallLabel?: boolean }
 ): void {
-  printDieBoxLabelAsync(
-    {
-      kind: "die",
-      pixelId: pixel.pixelId,
-      name: pixel.name,
-      type: dieType,
-      colorway: pixel.colorway,
-    },
-    1, // 1 copy
-    {
-      statusCallback: (status) => status !== "error" && statusCallback(status),
-      smallLabel: opt?.smallLabel,
-    }
-  ).catch(statusCallback);
+  if (productInfo.kind === "die") {
+    printDieBoxLabelAsync(
+      productInfo,
+      1, // 1 copy
+      {
+        statusCallback: (status) =>
+          status !== "error" && statusCallback({ status, productInfo }),
+        smallLabel: opt?.smallLabel,
+      }
+    ).catch((e) => statusCallback({ status: e, productInfo }));
+  } else {
+    printDiceSetBoxLabelAsync(
+      productInfo,
+      1, // 1 copy
+      {
+        statusCallback: (status) =>
+          status !== "error" && statusCallback({ status, productInfo }),
+      }
+    ).catch((e) => statusCallback({ status: e, productInfo }));
+  }
 }
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
@@ -246,12 +263,12 @@ async function repeatConnect(
   }
 }
 
-async function scanForPixelWithTimeout(
+async function scanForPixelsDeviceWithTimeout(
   abortSignal: AbortSignal,
   t: ReturnType<typeof useTranslation>["t"],
   pixelId: number,
   timeout = 10000 // 10s
-): Promise<ScannedPixel> {
+): Promise<ScannedDevice> {
   assert(pixelId, "Empty Pixel Id");
 
   // Setup scanner
@@ -260,7 +277,7 @@ async function scanForPixelWithTimeout(
   scanner.minNotifyInterval = 0;
 
   // Wait until we find our Pixel or timeout
-  const scannedPixel = await withPromise<ScannedPixel>(
+  const scannedPixel = await withPromise<ScannedDevice>(
     abortSignal,
     "scan",
     (resolve, reject) => {
@@ -277,11 +294,11 @@ async function scanForPixelWithTimeout(
         timeout
       );
       // Setup our scan listener
-      scanner.addListener("scannedPixels", (scannedPixels) => {
-        const scannedPixel = scannedPixels[0];
-        if (scannedPixel) {
+      scanner.addListener("scannedDevices", (scannedDevices) => {
+        const scanned = scannedDevices[0];
+        if (scanned) {
           clearTimeout(timeoutId);
-          resolve(scannedPixel);
+          resolve(scanned);
         }
       });
       // Start scanning
@@ -442,7 +459,7 @@ function MessageYesNo({
 
 export type ValidationTestsSettings = Readonly<{
   sequence: ValidationSequence;
-  dieType: PixelDieType;
+  dieType: PixelDieType | "lcc";
   dfuFilesBundle: FactoryDfuFilesBundle;
 }>;
 
@@ -465,13 +482,15 @@ export function ScanAndUpdateFirmware({
 }: Omit<ValidationTestProps, "pixel"> & {
   pixelId: number;
   reconfigure?: boolean;
-  onPixelFound?: (scannedPixel: ScannedPixel) => void;
+  onPixelFound?: (scannedPixel: ScannedPixel | ScannedCharger) => void;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
   const { t } = useTranslation();
 
   // Our Pixel
-  const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
+  const [scannedPixel, setScannedPixel] = React.useState<
+    ScannedPixel | ScannedCharger
+  >();
 
   // Firmware update state and progress
   const [dfuState, setDfuState] = React.useState<DfuState>();
@@ -482,14 +501,16 @@ export function ScanAndUpdateFirmware({
       React.useCallback(
         async (abortSignal) => {
           // Start scanning for our Pixel
-          const scannedPixel = await scanForPixelWithTimeout(
+          const scanned = await scanForPixelsDeviceWithTimeout(
             abortSignal,
             t,
             pixelId
           );
-          setScannedPixel(scannedPixel);
-          // Notify parent
-          onPixelFound?.(scannedPixel);
+          if (scanned.type === "die" || scanned.type === "charger") {
+            setScannedPixel(scanned);
+            // Notify parent
+            onPixelFound?.(scanned);
+          }
         },
         [onPixelFound, pixelId, t]
       ),
@@ -516,14 +537,16 @@ export function ScanAndUpdateFirmware({
       React.useCallback(async () => {
         assert(scannedPixel, "No scanned Pixel");
         try {
-          await updateFactoryFirmware(
-            scannedPixel,
-            settings.dfuFilesBundle,
-            setDfuState,
-            setDfuProgress,
-            onFirmwareUpdate,
-            reconfigure
-          );
+          if (scannedPixel.type === "die") {
+            await updateFactoryFirmware(
+              scannedPixel,
+              settings.dfuFilesBundle,
+              setDfuState,
+              setDfuProgress,
+              onFirmwareUpdate,
+              reconfigure
+            );
+          }
         } catch (error) {
           throw new FirmwareUpdateError(error);
         }
@@ -624,7 +647,7 @@ export function ConnectPixel({
 }: Omit<ValidationTestProps, "pixel"> & {
   pixel: Pixel;
   ledCount?: number;
-  dieType?: PixelDieType;
+  dieType?: PixelDieType | "lcc";
 }) {
   const { t } = useTranslation();
 
@@ -639,7 +662,12 @@ export function ConnectPixel({
             throw new InvalidLedCountError(ledCount);
           }
           // Check LED count
-          if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
+          if (
+            ledCount !==
+            (settings.dieType === "lcc"
+              ? 3
+              : DiceUtils.getLEDCount(settings.dieType))
+          ) {
             throw new LedCountMismatchError(settings.dieType, ledCount);
           }
         }
@@ -659,7 +687,9 @@ export function ConnectPixel({
           );
           // Make sure we don't have any animation playing
           try {
-            await pixelStopAllAnimations(pixel);
+            if (pixel.type === "die") {
+              await pixelStopAllAnimations(pixel);
+            }
           } catch (error) {
             throw convertSendMessageError(pixel, error);
           }
@@ -728,6 +758,8 @@ export function CheckBoard({
   settings,
   pixel,
 }: ValidationTestProps) {
+  const settingsDieType = settings.dieType;
+  assert(settingsDieType !== "lcc", "CheckBoard not available for LCC");
   const { t } = useTranslation();
 
   const setEmptyProfileRef = React.useRef(
@@ -770,11 +802,11 @@ export function CheckBoard({
         await ValidationTests.updateProfile(
           pixel,
           createDataSetForProfile(
-            createLibraryProfile("empty", settings.dieType)
+            createLibraryProfile("empty", settingsDieType)
           ).toDataSet(),
           setProgress
         );
-      }, [pixel, settings.dieType]),
+      }, [pixel, settingsDieType]),
       createTaskStatusContainer({
         title: t("resetProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
@@ -920,6 +952,8 @@ export function WaitFaceUp({
   settings,
   pixel,
 }: ValidationTestProps) {
+  const settingsDieType = settings.dieType;
+  assert(settingsDieType !== "lcc", "CheckBoard not available for LCC");
   const { t } = useTranslation();
 
   const taskChain = useTaskChain(action, "WaitFaceUp")
@@ -928,12 +962,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            settings.dieType,
-            getFaceUp(settings.dieType, "1"),
+            settingsDieType,
+            getFaceUp(settingsDieType, "1"),
             Color.dimMagenta,
             abortSignal
           ),
-        [pixel, settings.dieType]
+        [pixel, settingsDieType]
       ),
       createTaskStatusContainer(t("placeBlinkingFaceUp"))
     )
@@ -943,12 +977,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            settings.dieType,
-            getFaceUp(settings.dieType, "2"),
+            settingsDieType,
+            getFaceUp(settingsDieType, "2"),
             Color.dimYellow,
             abortSignal
           ),
-        [pixel, settings.dieType]
+        [pixel, settingsDieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -958,12 +992,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            settings.dieType,
-            getFaceUp(settings.dieType, "3"),
+            settingsDieType,
+            getFaceUp(settingsDieType, "3"),
             Color.dimCyan,
             abortSignal
           ),
-        [pixel, settings.dieType]
+        [pixel, settingsDieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -979,6 +1013,8 @@ export function StoreSettings({
   settings,
   pixel,
 }: ValidationTestProps) {
+  const settingsDieType = settings.dieType;
+  assert(settingsDieType !== "lcc", "CheckBoard not available for LCC");
   const { t } = useTranslation();
 
   const [resolveConfirmPromise, setResolveConfirmPromise] =
@@ -1001,15 +1037,15 @@ export function StoreSettings({
     [dieFinal, pixel, settings.sequence]
   );
   const storeDieType = React.useCallback(async () => {
-    if (pixel.dieType !== settings.dieType) {
+    if (pixel.dieType !== settingsDieType) {
       console.log(
-        `Storing die type: ${settings.dieType} (was ${pixel.dieType})`
+        `Storing die type: ${settingsDieType} (was ${pixel.dieType})`
       );
-      const value = PixelDieTypeValues[settings.dieType];
+      const value = PixelDieTypeValues[settingsDieType];
       assert(value);
       await storeValueChecked(pixel, PixelValueStoreType.dieType, value);
     }
-  }, [pixel, settings.dieType]);
+  }, [pixel, settingsDieType]);
 
   const onlyTimestamp = isBoard(settings.sequence);
   const taskChain = useTaskChain(action, "StoreSettings")
@@ -1040,7 +1076,7 @@ export function StoreSettings({
               if (!keepSettings) {
                 colorway = await withPromise(
                   abortSignal,
-                  "storeColorway",
+                  "requestColorway",
                   (resolve) => setResolveColorwayPromise(() => resolve),
                   () => setResolveColorwayPromise(undefined)
                 );
@@ -1099,7 +1135,9 @@ export function StoreSettings({
 }
 
 export interface PrintingProp {
-  onPrintStatus: (status: PrintStatus | Error | undefined) => void;
+  onPrintStatus: (
+    _: { status: PrintStatus | Error; productInfo: ProductInfo } | undefined
+  ) => void;
 }
 
 export function PrepareDie({
@@ -1109,6 +1147,8 @@ export function PrepareDie({
   pixel,
   onPrintStatus,
 }: ValidationTestProps & Partial<PrintingProp>) {
+  const settingsDieType = settings.dieType;
+  assert(settingsDieType !== "lcc", "CheckBoard not available for LCC");
   const { t } = useTranslation();
 
   const appDispatch = useAppDispatch();
@@ -1206,15 +1246,22 @@ export function PrepareDie({
         await ValidationTests.updateProfile(
           pixel,
           createDataSetForProfile(
-            createLibraryProfile(profile, settings.dieType)
+            createLibraryProfile(profile, settingsDieType)
           ).toDataSet(),
           setProgress
         );
         // Start printing ahead of time
         if (onPrintStatus) {
-          printLabel(pixel, settings.dieType, onPrintStatus, { smallLabel });
+          const productInfo = {
+            kind: "die",
+            pixelId: pixel.pixelId,
+            name: pixel.name,
+            type: settingsDieType,
+            colorway: pixel.colorway,
+          } as const;
+          printLabel(productInfo, onPrintStatus, { smallLabel });
         }
-      }, [onPrintStatus, pixel, profile, settings.dieType, smallLabel]),
+      }, [onPrintStatus, pixel, profile, settingsDieType, smallLabel]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
@@ -1244,6 +1291,105 @@ export function PrepareDie({
     .withStatusChanged(onTaskStatus);
 
   return <TaskChainComponent title={t("prepareDie")} taskChain={taskChain} />;
+}
+
+export function SelectLccContents({
+  action,
+  onTaskStatus,
+  settings,
+  pixel,
+  onPrintStatus,
+}: ValidationTestProps & Partial<PrintingProp>) {
+  assert(settings.dieType === "lcc", "CheckBoard not available for LCC");
+  const { t } = useTranslation();
+
+  const [resolveColorwayPromise, setResolveColorwayPromise] =
+    React.useState<(colorway: PixelColorway) => void>();
+  const [resolveSetTypePromise, setResolveSetTypePromise] =
+    React.useState<(setType: DiceSetType) => void>();
+  const [setType, setSetType] = React.useState<DiceSetType>();
+
+  const taskChain = useTaskChain(action, "SelectLccContents")
+    .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          withTimeoutAndDisconnect(
+            abortSignal,
+            pixel,
+            testTimeout,
+            async (abortSignal) => {
+              const setType = await withPromise(
+                abortSignal,
+                "requestSetType",
+                (resolve) => setResolveSetTypePromise(() => resolve),
+                () => setResolveSetTypePromise(undefined)
+              );
+              console.log(`Selected set type: ${setType}`);
+            }
+          ),
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        children: (
+          <BaseHStack gap={20}>
+            <SelectDiceSetTypeModal
+              visible={!!resolveSetTypePromise}
+              onSelect={(st) => {
+                setSetType(st);
+                resolveSetTypePromise?.(st);
+              }}
+              dismissable={false}
+            />
+          </BaseHStack>
+        ),
+      })
+    )
+    .withTask(
+      React.useCallback(
+        (abortSignal) =>
+          withTimeoutAndDisconnect(
+            abortSignal,
+            pixel,
+            testTimeout,
+            async (abortSignal) => {
+              const colorway = await withPromise<PixelColorway>(
+                abortSignal,
+                "requestColorway",
+                (resolve) => setResolveColorwayPromise(() => resolve),
+                () => setResolveColorwayPromise(undefined)
+              );
+              console.log(`Selected colorway: ${colorway}`);
+              // Start printing
+              if (setType && onPrintStatus) {
+                const productInfo = {
+                  kind: "set",
+                  type: setType,
+                  colorway,
+                } as const;
+                printLabel(productInfo, onPrintStatus);
+              }
+            }
+          ),
+        [onPrintStatus, pixel, setType]
+      ),
+      createTaskStatusContainer({
+        children: (
+          <BaseHStack gap={20}>
+            <SelectColorwayModal
+              visible={!!resolveColorwayPromise}
+              onSelect={(c) => resolveColorwayPromise?.(c)}
+              dismissable={false}
+            />
+          </BaseHStack>
+        ),
+      })
+    )
+    .withStatusChanged(playSoundOnResult)
+    .withStatusChanged(onTaskStatus);
+
+  return (
+    <TaskChainComponent title={t("selectContents")} taskChain={taskChain} />
+  );
 }
 
 export function WaitDieInCase({
@@ -1277,13 +1423,13 @@ export function WaitDieInCase({
 export function LabelPrinting({
   action,
   onTaskStatus,
-  settings,
-  pixel,
   printResult,
   onPrintStatus,
-}: ValidationTestProps &
+}: TaskComponentProps &
   PrintingProp & {
-    printResult: PrintStatus | Error | undefined;
+    printResult:
+      | { status: PrintStatus | Error; productInfo: ProductInfo }
+      | undefined;
   }) {
   const { t } = useTranslation();
 
@@ -1293,7 +1439,7 @@ export function LabelPrinting({
   React.useEffect(() => {
     if (resolveResultPromise && printResult) {
       console.log(`Print result: ${printResult}`);
-      if (printResult === "done" || printResult instanceof Error) {
+      if (printResult.status === "done" || printResult instanceof Error) {
         resolveResultPromise();
       }
     }
@@ -1334,16 +1480,16 @@ export function LabelPrinting({
             "labelPrinting",
             (resolve) => setResolvePrintOkPromise(() => resolve)
           );
-          if (!printOk && onPrintStatus) {
+          if (!printOk && onPrintStatus && printResult?.productInfo) {
             console.log("Reprinting label");
             onPrintStatus(undefined);
             setReset(true);
-            printLabel(pixel, settings.dieType, onPrintStatus);
+            printLabel(printResult.productInfo, onPrintStatus);
           } else if (printOk instanceof Error) {
             throw printOk;
           }
         },
-        [onPrintStatus, pixel, settings.dieType]
+        [onPrintStatus, printResult?.productInfo]
       ),
       createTaskStatusContainer({
         children: (

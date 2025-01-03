@@ -1,5 +1,7 @@
 import {
   PixelDieType,
+  ScannedChargerNotifier,
+  ScannedDeviceNotifier,
   ScannedPixelNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
@@ -16,12 +18,14 @@ import { useFocusScannedPixelNotifiers } from "~/hooks/useFocusScannedPixelNotif
 
 export function ScannedPixelsList({
   onSelect,
+  onSelectCharger,
   onClose,
   dieType,
   ledCount,
   minUpdateInterval,
 }: {
   onSelect: (scannedPixel: ScannedPixelNotifier) => void;
+  onSelectCharger?: (scannedCharger: ScannedChargerNotifier) => void;
   onClose?: () => void;
   dieType?: PixelDieType;
   ledCount?: number; // Ignored if dieType is set
@@ -29,14 +33,18 @@ export function ScannedPixelsList({
 }) {
   const [scannedDevices, scannerDispatch, scanStatus] =
     useFocusScannedPixelNotifiers({ minUpdateInterval });
-  const scannedPixels = React.useMemo(
-    () => scannedDevices.filter((i) => i.type === "die"),
-    [scannedDevices]
-  );
   useErrorWithHandler(
     !(typeof scanStatus === "string") ? scanStatus : undefined
   );
-
+  // Filter scanned pixels based on dieType and ledCount
+  const scannedPixels = React.useMemo(
+    () =>
+      scannedDevices.filter(
+        (pixel) =>
+          pixel.type === "die" || (onSelectCharger && pixel.type === "charger")
+      ),
+    [onSelectCharger, scannedDevices]
+  );
   // Filter scanned pixels based on dieType and ledCount
   const matchingPixels = scannedPixels.filter((pixel) =>
     dieType
@@ -46,15 +54,21 @@ export function ScannedPixelsList({
 
   // FlatList item rendering
   const renderItem = React.useCallback(
-    ({ item: scannedPixel }: { item: ScannedPixelNotifier }) => (
+    ({ item: scannedDevice }: { item: ScannedDeviceNotifier }) => (
       <Pressable
-        key={scannedPixel.pixelId}
-        onPress={() => onSelect(scannedPixel)}
+        key={scannedDevice.pixelId}
+        onPress={() => {
+          if (scannedDevice.type === "die") {
+            onSelect(scannedDevice);
+          } else if (scannedDevice.type === "charger") {
+            onSelectCharger?.(scannedDevice);
+          }
+        }}
       >
-        <PixelInfoCard pixelInfo={scannedPixel} />
+        <PixelInfoCard pixelInfo={scannedDevice} />
       </Pressable>
     ),
-    [onSelect]
+    [onSelect, onSelectCharger]
   );
 
   const { t } = useTranslation();

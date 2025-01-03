@@ -14,6 +14,7 @@ export const TaskNames = [
   "TurnOffDevice", // 11
   "LabelPrinting", // 12
   "CheckLabel", // 13
+  "SelectLccContents", // 14
 ] as const;
 
 export function getTaskErrorCode(

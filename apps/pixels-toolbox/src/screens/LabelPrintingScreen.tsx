@@ -29,6 +29,7 @@ import {
   printDiceSetBoxLabelAsync,
   PrintStatus,
 } from "~/features/print";
+import { DiceSetType } from "~/features/set";
 import {
   setCartonLabelAsn,
   setCartonLabelDieColorway,
@@ -40,8 +41,6 @@ import {
   setDiceSetLabelNumCopies,
 } from "~/features/store/validationSettingsSlice";
 import {
-  DiceSetType,
-  getDiceSetDice,
   ValidationColorways,
   ValidationDiceSetTypes,
   ValidationDieTypes,
@@ -383,7 +382,6 @@ function CartonLabelForm() {
                   kind: "set",
                   type: productType as DiceSetType,
                   colorway,
-                  dice: getDiceSetDice(productType as DiceSetType),
                 },
             asn,
             quantity,
@@ -441,7 +439,6 @@ function DiceSetsLabelForm() {
               kind: "set",
               type: setType,
               colorway,
-              dice: getDiceSetDice(setType),
             },
             numCopies,
             { statusCallback: setPrintStatus }

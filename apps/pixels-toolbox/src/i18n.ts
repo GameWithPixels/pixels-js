@@ -276,6 +276,8 @@ i18n
           keepColorway: "Keep colorway?",
           selectColorway: "Select Colorway",
           storeTimestamp: "Store Timestamp",
+          selectContents: "Select Contents",
+          selectSetType: "Select Set Type",
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
           errorPrintingLabel: "Error printing label",

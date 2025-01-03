@@ -7,6 +7,7 @@ import {
   Pixel,
   PixelDieType,
   PixelsNamePrefixes,
+  ScannedCharger,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useKeepAwake } from "expo-keep-awake";
@@ -49,6 +50,7 @@ import {
   LabelPrinting,
   PrepareDie,
   ScanAndUpdateFirmware,
+  SelectLccContents,
   StoreSettings,
   TurnOffDevice,
   UpdateFirmware,
@@ -59,6 +61,7 @@ import {
   WaitFaceUp,
 } from "~/components/ValidationTestsComponents";
 import { getBorderRadius } from "~/features/getBorderRadius";
+import ChargerDispatcher from "~/features/pixels/ChargerDispatcher";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrintStatus } from "~/features/print";
 import { selectSkipPrintLabel } from "~/features/store/validationSelectors";
@@ -81,6 +84,7 @@ import {
   ValidationSequences,
 } from "~/features/validation";
 import { getTaskErrorCode, TaskNames } from "~/features/validation/ErrorCodes";
+import { ProductInfo } from "~/features/validation/ProductInfo";
 import { ValidationError } from "~/features/validation/ValidationError";
 import {
   FactoryDfuFilesBundle,
@@ -108,11 +112,11 @@ function getDieValidationSequenceName(
   t: ReturnType<typeof useTranslation>["t"],
   settings: Pick<ValidationTestsSettings, "dieType" | "sequence">
 ): string {
-  return (
-    getValidationSequenceName(t, settings.sequence) +
-    t("colonSeparator") +
-    t(settings.dieType)
-  );
+  const seqName = getValidationSequenceName(t, settings.sequence);
+
+  return settings.dieType === "lcc"
+    ? seqName
+    : seqName + t("colonSeparator") + t(settings.dieType);
 }
 
 function getErrorCode(error?: Error): number | undefined {
@@ -473,7 +477,7 @@ function DecodePixelIdPage({
   const [showScanList, setShowScanList] = React.useState(false);
 
   const onSelect = React.useCallback(
-    (sp: ScannedPixel) => onDecodePixelId(sp.pixelId),
+    (sp: ScannedPixel | ScannedCharger) => onDecodePixelId(sp.pixelId),
     [onDecodePixelId]
   );
   const onClose = React.useCallback(() => setShowScanList(false), []);
@@ -481,8 +485,13 @@ function DecodePixelIdPage({
   return showScanList ? (
     <BaseBox w="100%" h="100%">
       <ScannedPixelsList
-        ledCount={DiceUtils.getLEDCount(settings.dieType)}
+        ledCount={
+          settings.dieType === "lcc"
+            ? 3
+            : DiceUtils.getLEDCount(settings.dieType)
+        }
         onSelect={onSelect}
+        onSelectCharger={onSelect}
         onClose={onClose}
       />
     </BaseBox>
@@ -641,18 +650,32 @@ function RunTestsPage({
   const { t } = useTranslation();
 
   const [pixel, setPixel] = React.useState<Pixel>();
-  const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
-  const onPixelFound = React.useCallback((scannedPixel: ScannedPixel) => {
-    setScannedPixel({ ...scannedPixel });
-    // Going through the PixelDispatcher to retrieve the Pixel instance
-    // to ensure that logging is enabled
-    setPixel(PixelDispatcher.getOrCreateDispatcher(scannedPixel).pixel);
-  }, []);
+  const [scannedPixel, setScannedPixel] = React.useState<
+    ScannedPixel | ScannedCharger
+  >();
+  const onPixelFound = React.useCallback(
+    (scannedPixel: ScannedPixel | ScannedCharger) => {
+      setScannedPixel({ ...scannedPixel });
+      // Going through the PixelDispatcher to retrieve the Pixel instance
+      // to ensure that logging is enabled
+      if (scannedPixel.type === "die") {
+        setPixel(PixelDispatcher.getOrCreateDispatcher(scannedPixel).pixel);
+      } else {
+        // if (scannedPixel.type === "charger") {
+        // TODO casting charger to Pixel for now
+        setPixel(ChargerDispatcher.getOrCreateDispatcher(scannedPixel).pixel);
+      }
+    },
+    []
+  );
 
   const [cancel, setCancel] = React.useState(false);
   const [firmwareUpdateStatus, setFirmwareUpdateStatus] =
     React.useState<UpdateFirmwareStatus>();
-  const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
+  const [printStatus, setPrintStatus] = React.useState<{
+    status: PrintStatus | Error;
+    productInfo: ProductInfo;
+  }>();
 
   // We must have a Pixel once past the UpdateFirmware task
   const getPixel = (): Pixel => {
@@ -663,21 +686,21 @@ function RunTestsPage({
   // Some conditions to filter tests
   const seq = settings.sequence;
   const isFwUpdate = seq === "firmwareUpdate";
-  const isFinalForSet = seq === "dieFinalForSet";
+  const isLcc = seq === "lccFinal";
+  const isFinalForSet = seq === "dieFinalForSet" || isLcc;
   const isFinal = seq === "dieFinalSingle" || isFinalForSet;
   const isReconfig = seq === "dieReconfigure";
-  const skipIfFwUpdate = { skip: isFwUpdate };
   const skipCharging = {
-    skip: isFwUpdate || seq === "boardNoCoil" || isReconfig,
+    skip: isFwUpdate || seq === "boardNoCoil" || isReconfig || isLcc,
   };
-  const skipFaceUp = { skip: isBoard(seq) || isReconfig };
+  const skipFaceUp = { skip: isBoard(seq) || isReconfig || isLcc };
   const skipTurnOff = { skip: isFwUpdate || isFinal || isReconfig };
-  const skipPrepare = { skip: !isFinal && !isReconfig };
+  const skipPrepare = { skip: (!isFinal && !isReconfig) || isLcc };
   const skipIfNotReconfig = { skip: !isReconfig };
 
   const noPrintRef = React.useRef(
     useAppSelector(selectSkipPrintLabel) || // We use a ref because this setting could change during the test, but we don't want to modify the test sequence in the middle of it
-      isFinalForSet
+      (isFinalForSet && !isLcc)
   );
 
   // The entire test sequence
@@ -702,10 +725,16 @@ function RunTestsPage({
           settings={settings}
           pixel={getPixel()}
           ledCount={scannedPixel?.ledCount ?? 0}
-          dieType={isFinal ? scannedPixel?.dieType : undefined}
+          dieType={
+            isFinal && scannedPixel
+              ? scannedPixel.type === "charger"
+                ? "lcc"
+                : scannedPixel.dieType
+              : undefined
+          }
         />
       )),
-      skipIfFwUpdate
+      { skip: isFwUpdate }
     )
     // Wait for die to report charging
     .withTask(
@@ -719,7 +748,7 @@ function RunTestsPage({
       ...useTaskComponent("CheckBoard", cancel, (p) => (
         <CheckBoard {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfFwUpdate
+      { skip: isFwUpdate || isLcc }
     )
     // Wait for die to report not charging
     .withTask(
@@ -738,7 +767,7 @@ function RunTestsPage({
       ...useTaskComponent("CheckLEDs", cancel, (p) => (
         <CheckLEDs {...p} settings={settings} pixel={getPixel()} />
       )),
-      { skip: isFwUpdate || isReconfig }
+      { skip: isFwUpdate || isReconfig || isLcc }
     )
     // Ask operator to place die blinking face up
     .withTask(
@@ -752,7 +781,7 @@ function RunTestsPage({
       ...useTaskComponent("StoreSettings", cancel, (p) => (
         <StoreSettings {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfFwUpdate
+      { skip: isFwUpdate || isLcc }
     )
     // Turn die off if not finalizing, updating firmware, or reconfiguring
     .withTask(
@@ -772,6 +801,17 @@ function RunTestsPage({
         />
       )),
       skipPrepare
+    )
+    .withTask(
+      ...useTaskComponent("SelectLccContents", cancel, (p) => (
+        <SelectLccContents
+          {...p}
+          settings={settings}
+          pixel={getPixel()}
+          onPrintStatus={noPrintRef.current ? undefined : setPrintStatus}
+        />
+      )),
+      { skip: !isLcc }
     )
     // Restore firmware when re-configuring
     .withTask(
@@ -811,13 +851,11 @@ function RunTestsPage({
       ...useTaskComponent("CheckLabel", cancel, (p) => (
         <LabelPrinting
           {...p}
-          settings={settings}
-          pixel={getPixel()}
           printResult={printStatus}
           onPrintStatus={setPrintStatus}
         />
       )),
-      { skip: noPrintRef.current || skipPrepare.skip }
+      { skip: noPrintRef.current || (skipPrepare.skip && !isLcc) }
     );
 
   // Get result
@@ -913,7 +951,8 @@ function RunTestsPage({
 
 function ValidationPage() {
   const [sequence, setSequence] = React.useState<ValidationSequence>();
-  const [dieType, setDieType] = React.useState<PixelDieType>();
+  const [dieType, setDieType] =
+    React.useState<ValidationTestsSettings["dieType"]>();
   const [pixelId, setPixelId] = React.useState(0);
 
   const [dfuFilesBundle, isFactoryDfuBundle, dfuFilesError] =
@@ -921,12 +960,17 @@ function ValidationPage() {
 
   return !sequence || !dfuFilesBundle ? (
     <SelectSequencePage
-      onSelectSequence={setSequence}
+      onSelectSequence={(s) => {
+        setSequence(s);
+        if (s === "lccFinal") {
+          setDieType("lcc");
+        }
+      }}
       dfuFilesBundle={dfuFilesBundle}
       dfuFilesError={dfuFilesError}
       isFactoryDfuBundle={isFactoryDfuBundle}
     />
-  ) : !dieType ? (
+  ) : !dieType && dieType !== "lcc" ? (
     <SelectDieTypePage
       sequence={sequence}
       onSelectDieType={setDieType}
