@@ -42,9 +42,9 @@ export const MessageTypeValues = {
   transferSettings: enumValue(),
   transferSettingsAck: enumValue(),
   transferSettingsFinished: enumValue(),
-  transferTestAnimationSet: enumValue(),
-  transferTestAnimationSetAck: enumValue(),
-  transferTestAnimationSetFinished: enumValue(),
+  unused3: enumValue(),
+  unused4: enumValue(),
+  unused5: enumValue(),
   debugLog: enumValue(),
   playAnimation: enumValue(),
   playAnimationEvent: enumValue(),
@@ -581,34 +581,6 @@ export class TransferAnimationSetAck implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to request a transfer of a
- * test animation (stored in RAM memory).
- * @category Message
- */
-export class TransferTestAnimationSet implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferTestAnimationSet;
-
-  @serializable(2)
-  paletteSize = 0;
-  @serializable(2)
-  rgbKeyFrameCount = 0;
-  @serializable(2)
-  rgbTrackCount = 0;
-  @serializable(2)
-  keyFrameCount = 0;
-  @serializable(2)
-  trackCount = 0;
-  @serializable(2)
-  animationCount = 0;
-  @serializable(2)
-  animationSize = 0;
-  @serializable(4)
-  hash = 0;
-}
-
-/**
  * Transfer animation ack values.
  * @enum
  * @category Message
@@ -628,20 +600,6 @@ export const TransferInstantAnimationsSetAckTypeValues = {
  */
 export type TransferInstantAnimationsSetAckType =
   keyof typeof TransferInstantAnimationsSetAckTypeValues;
-
-/**
- * Message send by a Pixel after receiving a TransferTestAnimationSet request.
- * @category Message
- */
-export class TransferTestAnimationSetAck implements PixelMessage {
-  /** Type of the message. */
-  @serializable(1)
-  readonly type = MessageTypeValues.transferTestAnimationSetAck;
-
-  /** The expected action to be taken upon receiving this message. */
-  @serializable(1)
-  ackType = TransferInstantAnimationsSetAckTypeValues.download;
-}
 
 /**
  * Message send by a Pixel to report a log message to the application.
@@ -1127,8 +1085,6 @@ export const serializer = new MessageSerializer<MessageType>(
     BulkDataAck,
     TransferAnimationSet,
     TransferAnimationSetAck,
-    TransferTestAnimationSet,
-    TransferTestAnimationSetAck,
     DebugLog,
     RemoteAction,
     Blink,

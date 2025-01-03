@@ -44,8 +44,6 @@ import {
   TransferInstantAnimationSet,
   TransferInstantAnimationSetAck,
   TransferInstantAnimationsSetAckTypeValues,
-  TransferTestAnimationSet,
-  TransferTestAnimationSetAck,
   VersionInfoChunk,
 } from "./DieMessages";
 import {
@@ -791,7 +789,7 @@ export class Pixel
     const hash = DataSet.computeHash(data);
 
     // Prepare the Pixel
-    const prepareMsg = safeAssign(new TransferTestAnimationSet(), {
+    const prepareMsg = safeAssign(new TransferInstantAnimationSet(), {
       paletteSize: dataSet.animationBits.getPaletteSize(),
       rgbKeyFrameCount: dataSet.animationBits.getRgbKeyframeCount(),
       rgbTrackCount: dataSet.animationBits.getRgbTrackCount(),
@@ -810,13 +808,15 @@ export class Pixel
       async () => {
         const ack = await this.sendAndWaitForTypedResponse(
           prepareMsg,
-          TransferTestAnimationSetAck
+          TransferInstantAnimationSetAck
         );
         return ack.ackType;
       },
-      "transferTestAnimationSetFinished",
+      "transferInstantAnimationSetFinished",
       data
     );
+
+    await this.playInstantAnimation(0);
   }
 
   /**
