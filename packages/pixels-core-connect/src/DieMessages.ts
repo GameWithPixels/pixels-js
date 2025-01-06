@@ -127,6 +127,23 @@ export type MessageType = keyof typeof MessageTypeValues;
 export type MessageOrType = PixelMessage | MessageType;
 
 /**
+ * The different possible charger run modes.
+ * @enum
+ * @category Message
+ */
+export const DieRunModeValues = {
+  user: enumValue(0),
+  validation: enumValue(),
+  attract: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link DieRunModeValues}.
+ * @category Message
+ */
+export type DieRunMode = keyof typeof DieRunModeValues;
+
+/**
  * Pixel version info message chunk.
  * @category Message
  */
@@ -180,6 +197,10 @@ export class DieInfoChunk implements ChunkMessage {
   /** Die look. */
   @serializable(1)
   colorway = PixelColorwayValues.unknown;
+
+  /** Run mode. */
+  @serializable(1)
+  runMode = DieRunModeValues.user;
 }
 
 /**
@@ -874,7 +895,7 @@ export class SetName implements PixelMessage {
  * @enum
  * @category Message
  */
-export const PixelPowerOperationValues = {
+export const DiePowerOperationValues = {
   // Turn off all systems.
   turnOff: enumValue(0),
   // Reset die chip.
@@ -882,6 +903,12 @@ export const PixelPowerOperationValues = {
   // Put die in low power mode, will be "awaken" when moved.
   sleep: enumValue(),
 } as const;
+
+/**
+ * The names for the "enum" type {@link DiePowerOperationValues}.
+ * @category Message
+ */
+export type DiePowerOperation = keyof typeof DiePowerOperationValues;
 
 /**
  * Message send to a Pixel to modify it's power state.
@@ -894,7 +921,7 @@ export class PowerOperation implements PixelMessage {
 
   /** The name to set. */
   @serializable(1)
-  operation = PixelPowerOperationValues.sleep;
+  operation = DiePowerOperationValues.sleep;
 }
 
 /**

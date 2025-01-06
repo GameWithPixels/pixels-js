@@ -30,7 +30,7 @@ import {
   MessageTypeValues,
   NotifyUser,
   NotifyUserAck,
-  PixelPowerOperationValues,
+  DiePowerOperationValues,
   PlayInstantAnimation,
   PowerOperation,
   RemoteAction,
@@ -45,6 +45,7 @@ import {
   TransferInstantAnimationSetAck,
   TransferInstantAnimationsSetAckTypeValues,
   VersionInfoChunk,
+  DiePowerOperation,
 } from "./DieMessages";
 import {
   PixelConnect,
@@ -667,15 +668,13 @@ export class Pixel
   }
 
   /**
-   * Requests the Pixel to completely turn off.
+   * Requests the Pixel to completely turn off, reset or sleep.
    * @returns A promise that resolves once the message has been send.
    */
-  async turnOff(
-    powerOperation: keyof typeof PixelPowerOperationValues = "turnOff"
-  ): Promise<void> {
+  async turnOff(powerOperation: DiePowerOperation = "turnOff"): Promise<void> {
     const operation =
-      PixelPowerOperationValues[powerOperation] ??
-      PixelPowerOperationValues.turnOff;
+      DiePowerOperationValues[powerOperation] ??
+      DiePowerOperationValues.turnOff;
     await this.sendMessage(
       safeAssign(new PowerOperation(), { operation }),
       true // withoutAck

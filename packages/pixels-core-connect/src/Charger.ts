@@ -13,6 +13,7 @@ import {
   ChargerMessageOrType,
   ChargerMessageType,
   ChargerMessageTypeValues,
+  ChargerPowerOperation,
   ChargerPowerOperationValues,
   IAmALCC,
   LegacyIAmALCC,
@@ -449,14 +450,17 @@ export class Charger
   }
 
   /**
-   * Requests the Pixel to completely turn off.
+   * Requests the Pixel to completely turn off or reset.
    * @returns A promise that resolves once the message has been send.
    */
-  async turnOff(): Promise<void> {
+  async turnOff(
+    powerOperation: ChargerPowerOperation = "turnOff"
+  ): Promise<void> {
+    const operation =
+      ChargerPowerOperationValues[powerOperation] ??
+      ChargerPowerOperationValues.turnOff;
     await this.sendMessage(
-      safeAssign(new PowerOperation(), {
-        operation: ChargerPowerOperationValues.turnOff,
-      }),
+      safeAssign(new PowerOperation(), { operation }),
       true // withoutAck
     );
   }

@@ -77,6 +77,22 @@ export type ChargerMessageType = keyof typeof ChargerMessageTypeValues;
 export type ChargerMessageOrType = PixelMessage | ChargerMessageType;
 
 /**
+ * The different possible charger run modes.
+ * @enum
+ * @category Message
+ */
+export const ChargerRunModeValues = {
+  user: enumValue(0),
+  validation: enumValue(),
+} as const;
+
+/**
+ * The names for the "enum" type {@link ChargerRunModeValues}.
+ * @category Message
+ */
+export type ChargerRunMode = keyof typeof ChargerRunModeValues;
+
+/**
  * Charger version info message chunk.
  * @category Message
  */
@@ -442,6 +458,12 @@ export const ChargerPowerOperationValues = {
   // Reset die chip.
   reset: enumValue(),
 } as const;
+
+/**
+ * The names for the "enum" type {@link ChargerPowerOperationValues}.
+ * @category Message
+ */
+export type ChargerPowerOperation = keyof typeof ChargerPowerOperationValues;
 
 /**
  * Message send to a Pixel to modify it's power state.
