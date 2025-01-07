@@ -214,12 +214,8 @@ export class LegacyIAmALCC implements PixelMessage {
   readonly type = ChargerMessageTypeValues.iAmALCC;
 
   /** Number of LEDs. */
-  @serializable(1, { padding: 2 })
+  @serializable(1, { padding: 6 })
   ledCount = 0;
-
-  /** Hash of the uploaded profile. */
-  @serializable(4)
-  dataSetHash = 0;
 
   /** The charger unique Pixel id. */
   @serializable(4)

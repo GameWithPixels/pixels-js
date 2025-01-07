@@ -165,7 +165,7 @@ const AnimatedRollCard = React.forwardRef(function AnimatedRollCard(
       <Animated.View
         entering={SlideInDown.springify().mass(1).damping(20).stiffness(200)}
         layout={CurvedTransition.easingY(Easing.linear).duration(300)}
-        style={[{ width: "100%" }, animatedStyles]}
+        style={[AppStyles.fullWidth, animatedStyles]}
       >
         <Card
           row

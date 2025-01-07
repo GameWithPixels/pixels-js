@@ -426,7 +426,7 @@ export abstract class PixelConnect<
   ): Promise<PixelMessage | MessageType> {
     // Gets the session object, throws an error if invalid
     const result = await Promise.all([
-      this._internalWaitForMessage(responseType, timeoutMs),
+      this._internalWaitForMessage(responseType, timeoutMs), // TODO we should unsubscribe as soon the other promise rejects
       this._internalSendMessage(msgOrTypeToSend),
     ]);
     return result[0];

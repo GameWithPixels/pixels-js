@@ -6,6 +6,8 @@ import { Card, IconButton, Text } from "react-native-paper";
 import { CollapsableContainer } from "./CollapsableContainer";
 import { GradientButton } from "./buttons";
 
+import { AppStyles } from "~/app/styles";
+
 export interface BannerProps extends ViewProps {
   visible?: boolean;
   title?: string;
@@ -29,7 +31,7 @@ export function Banner({
     <CollapsableContainer
       visible={visible}
       collapsedMarginBottom={collapsedMarginBottom}
-      style={{ width: "100%" }}
+      style={AppStyles.fullWidth}
     >
       <Card {...props}>
         <Card.Content style={{ gap: 10, paddingBottom: 15 }}>
