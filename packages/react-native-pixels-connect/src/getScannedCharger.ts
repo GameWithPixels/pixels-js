@@ -25,7 +25,7 @@ export function getScannedCharger(
   // Check the manufacturers data
   if (
     manufacturerData &&
-    manufacturerData.data?.length >= 1 &&
+    // manufacturerData.data?.length >= 1 &&
     serviceData &&
     serviceData.data.length >= 8
   ) {
@@ -47,7 +47,11 @@ export function getScannedCharger(
 
     // Read the advertised values from the manufacturer data
     const ledCount = 3;
-    const battery = manufReader.readU8();
+    const battery = manufBuffer.byteLength ? manufReader.readU8() : 0;
+    if (!manufBuffer.byteLength) {
+      // This happens for unknown reason...
+      console.warn(`Charger ${name}: Received empty manufacturer data`);
+    }
     // MSB is battery charging
     const batteryLevel = battery & 0x7f;
     const isCharging = (battery & 0x80) > 0;
@@ -73,12 +77,12 @@ export function getScannedCharger(
       console.error(`Pixel ${name}: Received invalid advertising data`);
     }
   } else {
-    // console.error(
-    //   `Charger ${
-    //     name
-    //   }: Received unsupported advertising data (manufacturerData: ${
-    //     manufacturerData?.data.length ?? -1
-    //   } bytes, serviceData: ${serviceData?.data.length ?? -1} bytes)`
-    // );
+    console.error(
+      `Charger ${
+        name
+      }: Received unsupported advertising data (manufacturerData: ${
+        manufacturerData?.data.length ?? -1
+      } bytes, serviceData: ${serviceData?.data.length ?? -1} bytes)`
+    );
   }
 }
