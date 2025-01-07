@@ -3,6 +3,8 @@ import {
   enumValue,
   serializable,
   byteSizeOf,
+  range,
+  getValueKeyName,
 } from "@systemic-games/pixels-core-utils";
 
 import { ChargerBatteryStateValues } from "./ChargerBatteryState";
@@ -51,8 +53,8 @@ export const ChargerMessageTypeValues = {
   exitValidation: enumValue(),
   requestTemperature: enumValue(),
   temperature: enumValue(),
-  requestDieChargersStatus: enumValue(),
-  dieChargersStatus: enumValue(),
+  requestSlotsStatuses: enumValue(),
+  slotsStatuses: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
@@ -564,49 +566,165 @@ export class StoreValueAck implements PixelMessage {
 }
 
 /**
- * The different possible result of requesting to store a value.
+ * The different possible state of a charger slot.
  * @enum
  * @category Message
  */
-export const DieChargerStateValues = {
+export const ChargerSlotStateValues = {
   off: enumValue(0),
   charging: enumValue(),
   FOD: enumValue(),
 } as const;
 
-export class DieChargerStatus {
-  @serializable(2, { numberFormat: "signed" })
-  rawCurrent = 0;
-  @serializable(2, { numberFormat: "signed" })
-  current = 0;
-  @serializable(1)
-  state = DieChargerStateValues.off;
-  @serializable(1)
-  diePresent = 0;
-  @serializable(1)
-  skipped = 0;
-  @serializable(1)
-  chargedOnce = 0;
-}
+/**
+ * The names for the "enum" type {@link ChargerSlotStateValues}.
+ * @category Message
+ */
+export type ChargerSlotState = keyof typeof ChargerSlotStateValues;
 
 /**
  * Message send by a Charger to reports its dice charger statuses
  * @category Message
  */
-export class ChargerStatus implements PixelMessage {
+export class SlotsStatuses implements PixelMessage {
   /** Type of the message. */
   @serializable(1)
-  readonly type = ChargerMessageTypeValues.dieChargersStatus;
+  readonly type = ChargerMessageTypeValues.slotsStatuses;
 
-  dieChargerStatus0: DieChargerStatus = new DieChargerStatus();
-  dieChargerStatus1: DieChargerStatus = new DieChargerStatus();
-  dieChargerStatus2: DieChargerStatus = new DieChargerStatus();
-  dieChargerStatus3: DieChargerStatus = new DieChargerStatus();
-  dieChargerStatus4: DieChargerStatus = new DieChargerStatus();
-  dieChargerStatus5: DieChargerStatus = new DieChargerStatus();
-  dieChargerStatus6: DieChargerStatus = new DieChargerStatus();
-  dieChargerStatus7: DieChargerStatus = new DieChargerStatus();
+  // Slot 0
+  @serializable(2, { numberFormat: "signed" })
+  slot0RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot0Current = 0;
+  @serializable(1)
+  slot0State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot0DiePresent = false;
+  @serializable(1)
+  slot0Skipped = false;
+  @serializable(1)
+  slot0ChargedOnce = false;
+
+  // Slot 1
+  @serializable(2, { numberFormat: "signed" })
+  slot1RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot1Current = 0;
+  @serializable(1)
+  slot1State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot1DiePresent = false;
+  @serializable(1)
+  slot1Skipped = false;
+  @serializable(1)
+  slot1ChargedOnce = false;
+
+  // Slot 2
+  @serializable(2, { numberFormat: "signed" })
+  slot2RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot2Current = 0;
+  @serializable(1)
+  slot2State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot2DiePresent = false;
+  @serializable(1)
+  slot2Skipped = false;
+  @serializable(1)
+  slot2ChargedOnce = false;
+
+  // Slot 3
+  @serializable(2, { numberFormat: "signed" })
+  slot3RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot3Current = 0;
+  @serializable(1)
+  slot3State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot3DiePresent = false;
+  @serializable(1)
+  slot3Skipped = false;
+  @serializable(1)
+  slot3ChargedOnce = false;
+
+  // Slot 4
+  @serializable(2, { numberFormat: "signed" })
+  slot4RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot4Current = 0;
+  @serializable(1)
+  slot4State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot4DiePresent = false;
+  @serializable(1)
+  slot4Skipped = false;
+  @serializable(1)
+  slot4ChargedOnce = false;
+
+  // Slot 5
+  @serializable(2, { numberFormat: "signed" })
+  slot5RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot5Current = 0;
+  @serializable(1)
+  slot5State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot5DiePresent = false;
+  @serializable(1)
+  slot5Skipped = false;
+  @serializable(1)
+  slot5ChargedOnce = false;
+
+  // Slot 6
+  @serializable(2, { numberFormat: "signed" })
+  slot6RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot6Current = 0;
+  @serializable(1)
+  slot6State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot6DiePresent = false;
+  @serializable(1)
+  slot6Skipped = false;
+  @serializable(1)
+  slot6ChargedOnce = false;
+
+  // Slot 7
+  @serializable(2, { numberFormat: "signed" })
+  slot7RawCurrent = 0;
+  @serializable(2, { numberFormat: "signed" })
+  slot7Current = 0;
+  @serializable(1)
+  slot7State = ChargerSlotStateValues.off;
+  @serializable(1)
+  slot7DiePresent = false;
+  @serializable(1)
+  slot7Skipped = false;
+  @serializable(1)
+  slot7ChargedOnce = false;
+
+  asArray() {
+    return range(0, 8).map((i) => ({
+      // @ts-ignore
+      rawCurrent: this[`slot${i}RawCurrent`] as number,
+      // @ts-ignore
+      current: this[`slot${i}Current`] as number,
+      state: getValueKeyName(
+        // @ts-ignore
+        this[`slot${i}State`] as number,
+        ChargerSlotStateValues
+      ),
+      // @ts-ignore
+      diePresent: this[`slot${i}DiePresent`] as boolean,
+      // @ts-ignore
+      skipped: this[`slot${i}Skipped`] as boolean,
+      // @ts-ignore
+      chargedOnce: this[`slot${i}ChargedOnce`] as boolean,
+    }));
+  }
 }
+
+export type ChargerSlotStatus = ReturnType<SlotsStatuses["asArray"]>[0];
 
 export const serializer = new MessageSerializer<ChargerMessageType>(
   Object.entries(ChargerMessageTypeValues) as [ChargerMessageType, number][],
@@ -627,5 +745,6 @@ export const serializer = new MessageSerializer<ChargerMessageType>(
     SetName,
     PowerOperation,
     Temperature,
+    SlotsStatuses,
   ]
 );
