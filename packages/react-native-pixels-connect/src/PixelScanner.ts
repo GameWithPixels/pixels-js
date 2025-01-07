@@ -111,7 +111,7 @@ export class PixelScanner {
   private _keepAliveDuration = 7000;
   private _pruneTimeoutId?: ReturnType<typeof setTimeout>;
   private _lastUpdateMs = 0;
-  private readonly _touched = new Map<number, ScannedDevice["type"]>();
+  private readonly _touched = new Set<string>(); // string = type+pixelId
   private _onBluetoothState?: (ev: { state: BluetoothState }) => void;
   private readonly _onScannedCb = this._onScannedPeripheral.bind(this);
   private readonly _onStatusCb = this._onScanStatus.bind(this);
@@ -428,7 +428,7 @@ export class PixelScanner {
         ) {
           // Clear all devices if Bluetooth has become unavailable
           for (const { type, pixelId } of this._devices) {
-            this._touched.set(pixelId, type);
+            this._touchDevice(pixelId, type);
           }
           this._devices.length = 0;
         }
@@ -453,17 +453,21 @@ export class PixelScanner {
     if (!this._scanFilter || this._scanFilter(sp)) {
       // Have we already seen this Pixel?
       const index = this._devices.findIndex(
-        ({ pixelId }) => pixelId === sp.pixelId
+        ({ systemId }) => systemId === sp.systemId
       );
       if (index < 0) {
         // New entry
         this._devices.push(sp);
       } else {
         // Replace previous entry
+        const prevType = this._devices[index].type;
+        if (prevType !== sp.type) {
+          this._touchDevice(sp.pixelId, prevType);
+        }
         this._devices[index] = sp;
       }
       // Store the operation for later notification
-      this._touched.set(sp.pixelId, sp.type);
+      this._touchDevice(sp.pixelId, sp.type);
       this._scheduleNotify();
       // Start pruning if needed
       if (this._keepAliveDuration > 0 && !this._pruneTimeoutId) {
@@ -489,6 +493,10 @@ export class PixelScanner {
     }
   }
 
+  private _touchDevice(pixelId: number, type: ScannedDevice["type"]): void {
+    this._touched.add(`${pixelId}+${type}`);
+  }
+
   // TODO We may notify when scanning is stopped or Bluetooth off (from startAsync and _scheduleNotify)
   private _notify(): void {
     if (this._notifyTimeoutId) {
@@ -503,7 +511,10 @@ export class PixelScanner {
       this._lastUpdateMs = Date.now();
 
       const ops: PixelScannerListOperation[] = [];
-      for (const [pixelId, type] of this._touched) {
+      for (const str of this._touched) {
+        const parts = str.split("+");
+        const pixelId = parseInt(parts[0], 10);
+        const type = parts[1] as ScannedDevice["type"];
         const item = this._devices.find(
           (sp) => sp.pixelId === pixelId && sp.type === type
         );
@@ -546,7 +557,7 @@ export class PixelScanner {
         for (const sp of expired.reverse()) {
           const index = this._devices.indexOf(sp);
           this._devices.splice(index, 1);
-          this._touched.set(sp.pixelId, sp.type);
+          this._touchDevice(sp.pixelId, sp.type);
         }
         this._scheduleNotify();
       }
