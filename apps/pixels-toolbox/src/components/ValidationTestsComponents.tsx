@@ -16,6 +16,7 @@ import {
 } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Central,
+  Charger,
   Color,
   DiceUtils,
   Pixel,
@@ -24,6 +25,7 @@ import {
   PixelDieType,
   PixelDieTypeValues,
   PixelScanner,
+  ScannedCharger,
   ScannedDevice,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
@@ -32,6 +34,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { Button, Menu, Text } from "react-native-paper";
+
+import { DiceSetImage } from "./DiceSetImage";
 
 import chimeSound from "!/sounds/chime.mp3";
 import errorSound from "!/sounds/error.mp3";
@@ -52,7 +56,11 @@ import {
   pixelStoreValue,
   PixelValueStoreType,
 } from "~/features/pixels/extensions";
-import { printDieBoxLabelAsync, PrintStatus } from "~/features/print";
+import {
+  printDiceSetBoxLabelAsync,
+  printDieBoxLabelAsync,
+  PrintStatus,
+} from "~/features/print";
 import {
   selectCustomFirmwareAndProfile,
   selectProfileName,
@@ -71,30 +79,31 @@ import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import { useVisibility } from "~/features/useVisibility";
 import {
   AbortControllerWithReason,
+  ConnectionError,
   convertSendMessageError,
+  DfuAbortedError,
+  DeviceTypeMismatchError,
+  FirmwareUpdateError,
   getBoardOrDie,
   getPixelValidationName,
   getSequenceIndex,
   getSignalReason,
+  InvalidLedCountError,
   isBoard,
+  LedCountMismatchError,
+  LowBatteryError,
+  ProductInfo,
+  StoreValueError,
+  TaskNames,
   testTimeout,
+  ValidationDeviceSelection,
   ValidationSequence,
   ValidationTests,
   withPromise,
   withTimeout,
   withTimeoutAndDisconnect,
+  DiceMisplacedError,
 } from "~/features/validation";
-import { TaskNames } from "~/features/validation/ErrorCodes";
-import {
-  ConnectionError,
-  DfuAbortedError,
-  DieTypeMismatchError,
-  FirmwareUpdateError,
-  InvalidLedCountError,
-  LedCountMismatchError,
-  LowBatteryError,
-  StoreValueError,
-} from "~/features/validation/ValidationError";
 import { FactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
 
 const useTaskChain: (
@@ -103,25 +112,37 @@ const useTaskChain: (
 ) => ReturnType<typeof useTaskChainUntyped> = useTaskChainUntyped;
 
 function printLabel(
-  pixel: Pixel,
-  dieType: PixelDieType,
-  statusCallback: (status: PrintStatus | Error) => void,
+  productInfo: ProductInfo,
+  statusCallback: (_: {
+    status: PrintStatus | Error;
+    productInfo: ProductInfo;
+  }) => void,
   opt?: { smallLabel?: boolean }
 ): void {
-  printDieBoxLabelAsync(
-    {
-      kind: "die",
-      pixelId: pixel.pixelId,
-      name: pixel.name,
-      type: dieType,
-      colorway: pixel.colorway,
-    },
-    1, // 1 copy
-    {
-      statusCallback: (status) => status !== "error" && statusCallback(status),
-      smallLabel: opt?.smallLabel,
-    }
-  ).catch(statusCallback);
+  if (productInfo.kind === "dieWithId") {
+    printDieBoxLabelAsync(
+      productInfo,
+      1, // 1 copy
+      {
+        statusCallback: (status) =>
+          status !== "error" && statusCallback({ status, productInfo }),
+        smallLabel: opt?.smallLabel,
+      }
+    ).catch((e) => statusCallback({ status: e, productInfo }));
+  } else if (productInfo.kind === "lcc") {
+    printDiceSetBoxLabelAsync(
+      productInfo,
+      1, // 1 copy
+      {
+        statusCallback: (status) =>
+          status !== "error" && statusCallback({ status, productInfo }),
+      }
+    ).catch((e) => statusCallback({ status: e, productInfo }));
+  } else {
+    throw new Error(
+      `Unsupported product type for printing label: ${productInfo.kind}`
+    );
+  }
 }
 
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
@@ -246,12 +267,12 @@ async function repeatConnect(
   }
 }
 
-async function scanForPixelWithTimeout(
+async function scanForPixelsDeviceWithTimeout(
   abortSignal: AbortSignal,
   t: ReturnType<typeof useTranslation>["t"],
   pixelId: number,
   timeout = 10000 // 10s
-): Promise<ScannedPixel> {
+): Promise<ScannedDevice> {
   assert(pixelId, "Empty Pixel Id");
 
   // Setup scanner
@@ -260,7 +281,7 @@ async function scanForPixelWithTimeout(
   scanner.minNotifyInterval = 0;
 
   // Wait until we find our Pixel or timeout
-  const scannedPixel = await withPromise<ScannedPixel>(
+  const scannedPixel = await withPromise<ScannedDevice>(
     abortSignal,
     "scan",
     (resolve, reject) => {
@@ -277,11 +298,11 @@ async function scanForPixelWithTimeout(
         timeout
       );
       // Setup our scan listener
-      scanner.addListener("scannedPixels", (scannedPixels) => {
-        const scannedPixel = scannedPixels[0];
-        if (scannedPixel) {
+      scanner.addListener("scannedDevices", (scannedDevices) => {
+        const scanned = scannedDevices[0];
+        if (scanned) {
           clearTimeout(timeoutId);
-          resolve(scannedPixel);
+          resolve(scanned);
         }
       });
       // Start scanning
@@ -379,7 +400,7 @@ async function updateFactoryFirmware(
 }
 
 async function storeValueChecked(
-  pixel: Pixel,
+  pixel: Pixel | Charger,
   valueType: number,
   value: number,
   opt?: { allowNotPermitted?: boolean }
@@ -442,13 +463,13 @@ function MessageYesNo({
 
 export type ValidationTestsSettings = Readonly<{
   sequence: ValidationSequence;
-  dieType: PixelDieType;
+  deviceSelection: ValidationDeviceSelection;
   dfuFilesBundle: FactoryDfuFilesBundle;
 }>;
 
 export interface ValidationTestProps extends TaskComponentProps {
   settings: ValidationTestsSettings;
-  pixel: Pixel;
+  pixel: Pixel | Charger;
 }
 
 export type UpdateFirmwareStatus = "updating" | "success" | "error";
@@ -465,13 +486,15 @@ export function ScanAndUpdateFirmware({
 }: Omit<ValidationTestProps, "pixel"> & {
   pixelId: number;
   reconfigure?: boolean;
-  onPixelFound?: (scannedPixel: ScannedPixel) => void;
+  onPixelFound?: (scannedPixel: ScannedPixel | ScannedCharger) => void;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
   const { t } = useTranslation();
 
   // Our Pixel
-  const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
+  const [scannedPixel, setScannedPixel] = React.useState<
+    ScannedPixel | ScannedCharger
+  >();
 
   // Firmware update state and progress
   const [dfuState, setDfuState] = React.useState<DfuState>();
@@ -482,14 +505,16 @@ export function ScanAndUpdateFirmware({
       React.useCallback(
         async (abortSignal) => {
           // Start scanning for our Pixel
-          const scannedPixel = await scanForPixelWithTimeout(
+          const scanned = await scanForPixelsDeviceWithTimeout(
             abortSignal,
             t,
             pixelId
           );
-          setScannedPixel(scannedPixel);
-          // Notify parent
-          onPixelFound?.(scannedPixel);
+          if (scanned.type === "die" || scanned.type === "charger") {
+            setScannedPixel(scanned);
+            // Notify parent
+            onPixelFound?.(scanned);
+          }
         },
         [onPixelFound, pixelId, t]
       ),
@@ -516,14 +541,16 @@ export function ScanAndUpdateFirmware({
       React.useCallback(async () => {
         assert(scannedPixel, "No scanned Pixel");
         try {
-          await updateFactoryFirmware(
-            scannedPixel,
-            settings.dfuFilesBundle,
-            setDfuState,
-            setDfuProgress,
-            onFirmwareUpdate,
-            reconfigure
-          );
+          if (scannedPixel.type === "die") {
+            await updateFactoryFirmware(
+              scannedPixel,
+              settings.dfuFilesBundle,
+              setDfuState,
+              setDfuProgress,
+              onFirmwareUpdate,
+              reconfigure
+            );
+          }
         } catch (error) {
           throw new FirmwareUpdateError(error);
         }
@@ -564,9 +591,10 @@ export function UpdateFirmware({
   scannedPixel,
   onFirmwareUpdate,
 }: Omit<ValidationTestProps, "pixel"> & {
-  scannedPixel?: ScannedPixel;
+  scannedPixel?: ScannedPixel | ScannedCharger;
   onFirmwareUpdate?: (status: UpdateFirmwareStatus) => void;
 }) {
+  assert(scannedPixel?.type !== "charger", "Only die can be updated");
   const { t } = useTranslation();
 
   // Firmware update state and progress
@@ -620,14 +648,17 @@ export function ConnectPixel({
   settings,
   pixel,
   ledCount,
-  dieType,
-}: Omit<ValidationTestProps, "pixel"> & {
-  pixel: Pixel;
+  deviceType,
+}: ValidationTestProps & {
   ledCount?: number;
-  dieType?: PixelDieType;
+  deviceType?: PixelDieType | "lcc";
 }) {
   const { t } = useTranslation();
 
+  const settingsDeviceType =
+    settings.deviceSelection.kind === "charger"
+      ? "lcc"
+      : settings.deviceSelection.dieType;
   const [resolveUpdateDieTypePromise, setResolveUpdateDieTypePromise] =
     React.useState<(updateDieType: boolean) => void>();
 
@@ -639,13 +670,71 @@ export function ConnectPixel({
             throw new InvalidLedCountError(ledCount);
           }
           // Check LED count
-          if (ledCount !== DiceUtils.getLEDCount(settings.dieType)) {
-            throw new LedCountMismatchError(settings.dieType, ledCount);
+          if (
+            ledCount !==
+            (settingsDeviceType === "lcc"
+              ? 3
+              : DiceUtils.getLEDCount(settingsDeviceType))
+          ) {
+            throw new LedCountMismatchError(settingsDeviceType, ledCount);
           }
         }
-      }, [ledCount, settings.dieType]),
+      }, [ledCount, settingsDeviceType]),
       createTaskStatusContainer(t("checkLEDCount")),
       { skip: ledCount === undefined }
+    )
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          if (settingsDeviceType === "lcc" && deviceType !== "lcc") {
+            // Can't update charger type
+            throw new DeviceTypeMismatchError(
+              settingsDeviceType,
+              deviceType ?? "unknown"
+            );
+          } else if (
+            deviceType &&
+            deviceType !== "unknown" &&
+            deviceType !== settingsDeviceType
+          ) {
+            const update = await withTimeout<boolean>(
+              abortSignal,
+              testTimeout,
+              (abortSignal) =>
+                withPromise<boolean>(
+                  abortSignal,
+                  "updateDieType",
+                  (resolve) => {
+                    setResolveUpdateDieTypePromise(() => resolve);
+                  }
+                )
+            );
+            if (!update) {
+              throw new DeviceTypeMismatchError(settingsDeviceType, deviceType);
+            }
+          }
+        },
+        [deviceType, settingsDeviceType]
+      ),
+      createTaskStatusContainer({
+        title: t("checkDieType"),
+        children: (
+          <>
+            {deviceType && resolveUpdateDieTypePromise && (
+              <MessageYesNo
+                message={t("updateDieTypeWithFromAndTo", {
+                  from: t(deviceType),
+                  to: t(settingsDeviceType),
+                })}
+                hideButtons={!resolveUpdateDieTypePromise}
+                onYes={() => resolveUpdateDieTypePromise(true)}
+                onNo={() => resolveUpdateDieTypePromise(false)}
+              />
+            )}
+          </>
+        ),
+      }),
+      { skip: deviceType === undefined }
     )
     .withTask(
       React.useCallback(
@@ -659,7 +748,9 @@ export function ConnectPixel({
           );
           // Make sure we don't have any animation playing
           try {
-            await pixelStopAllAnimations(pixel);
+            if (pixel.type === "die") {
+              await pixelStopAllAnimations(pixel);
+            }
           } catch (error) {
             throw convertSendMessageError(pixel, error);
           }
@@ -667,54 +758,6 @@ export function ConnectPixel({
         [pixel, t]
       ),
       createTaskStatusContainer(t("connect"))
-    )
-    .withTask(
-      React.useCallback(
-        async (abortSignal) => {
-          if (
-            dieType &&
-            dieType !== "unknown" &&
-            dieType !== settings.dieType
-          ) {
-            const update = await withTimeoutAndDisconnect<boolean>(
-              abortSignal,
-              pixel,
-              testTimeout,
-              (abortSignal) =>
-                withPromise<boolean>(
-                  abortSignal,
-                  "updateDieType",
-                  (resolve) => {
-                    setResolveUpdateDieTypePromise(() => resolve);
-                  }
-                )
-            );
-            if (!update) {
-              throw new DieTypeMismatchError(settings.dieType, dieType);
-            }
-          }
-        },
-        [dieType, pixel, settings.dieType]
-      ),
-      createTaskStatusContainer({
-        title: t("checkDieType"),
-        children: (
-          <>
-            {dieType && resolveUpdateDieTypePromise && (
-              <MessageYesNo
-                message={t("updateDieTypeWithFromAndTo", {
-                  from: t(dieType),
-                  to: t(settings.dieType),
-                })}
-                hideButtons={!resolveUpdateDieTypePromise}
-                onYes={() => resolveUpdateDieTypePromise(true)}
-                onNo={() => resolveUpdateDieTypePromise(false)}
-              />
-            )}
-          </>
-        ),
-      }),
-      { skip: dieType === undefined }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -728,6 +771,11 @@ export function CheckBoard({
   settings,
   pixel,
 }: ValidationTestProps) {
+  const dieType =
+    settings.deviceSelection.kind === "die" && settings.deviceSelection.dieType;
+  assert(dieType, "CheckBoard not available for LCC");
+  assert(pixel.type !== "charger", "CheckBoard not available for LCC");
+
   const { t } = useTranslation();
 
   const setEmptyProfileRef = React.useRef(
@@ -770,11 +818,11 @@ export function CheckBoard({
         await ValidationTests.updateProfile(
           pixel,
           createDataSetForProfile(
-            createLibraryProfile("empty", settings.dieType)
+            createLibraryProfile("empty", dieType)
           ).toDataSet(),
           setProgress
         );
-      }, [pixel, settings.dieType]),
+      }, [pixel, dieType]),
       createTaskStatusContainer({
         title: t("resetProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
@@ -794,6 +842,7 @@ export function WaitCharging({
   pixel,
   notCharging,
 }: ValidationTestProps & { notCharging?: boolean }) {
+  assert(pixel.type !== "charger", "WaitCharging not available for LCC");
   const { t } = useTranslation();
 
   const dieFinal =
@@ -863,6 +912,7 @@ export function CheckLEDs({
   settings,
   pixel,
 }: ValidationTestProps) {
+  assert(pixel.type !== "charger", "CheckLEDs not available for LCC");
   const { t } = useTranslation();
 
   const [resolvePromise, setResolvePromise] = React.useState<() => void>();
@@ -920,6 +970,10 @@ export function WaitFaceUp({
   settings,
   pixel,
 }: ValidationTestProps) {
+  const dieType =
+    settings.deviceSelection.kind === "die" && settings.deviceSelection.dieType;
+  assert(dieType, "WaitFaceUp not available for LCC");
+  assert(pixel.type !== "charger", "WaitFaceUp not available for LCC");
   const { t } = useTranslation();
 
   const taskChain = useTaskChain(action, "WaitFaceUp")
@@ -928,12 +982,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            settings.dieType,
-            getFaceUp(settings.dieType, "1"),
+            dieType,
+            getFaceUp(dieType, "1"),
             Color.dimMagenta,
             abortSignal
           ),
-        [pixel, settings.dieType]
+        [pixel, dieType]
       ),
       createTaskStatusContainer(t("placeBlinkingFaceUp"))
     )
@@ -943,12 +997,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            settings.dieType,
-            getFaceUp(settings.dieType, "2"),
+            dieType,
+            getFaceUp(dieType, "2"),
             Color.dimYellow,
             abortSignal
           ),
-        [pixel, settings.dieType]
+        [pixel, dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -958,12 +1012,12 @@ export function WaitFaceUp({
         (abortSignal) =>
           ValidationTests.waitFaceUp(
             pixel,
-            settings.dieType,
-            getFaceUp(settings.dieType, "3"),
+            dieType,
+            getFaceUp(dieType, "3"),
             Color.dimCyan,
             abortSignal
           ),
-        [pixel, settings.dieType]
+        [pixel, dieType]
       ),
       createTaskStatusContainer(t("placeNewBlinkingFaceUp"))
     )
@@ -979,6 +1033,9 @@ export function StoreSettings({
   settings,
   pixel,
 }: ValidationTestProps) {
+  const dieType =
+    settings.deviceSelection.kind === "die" && settings.deviceSelection.dieType;
+
   const { t } = useTranslation();
 
   const [resolveConfirmPromise, setResolveConfirmPromise] =
@@ -1000,21 +1057,20 @@ export function StoreSettings({
       ),
     [dieFinal, pixel, settings.sequence]
   );
-  const storeDieType = React.useCallback(async () => {
-    if (pixel.dieType !== settings.dieType) {
-      console.log(
-        `Storing die type: ${settings.dieType} (was ${pixel.dieType})`
-      );
-      const value = PixelDieTypeValues[settings.dieType];
+  const storeDeviceType = React.useCallback(async () => {
+    assert(pixel.type === "die", "Only die can store device type");
+    if (dieType && pixel.dieType !== dieType) {
+      console.log(`Storing new die type: ${dieType} (was ${pixel.dieType})`);
+      const value = PixelDieTypeValues[dieType];
       assert(value);
       await storeValueChecked(pixel, PixelValueStoreType.dieType, value);
     }
-  }, [pixel, settings.dieType]);
+  }, [pixel, dieType]);
 
-  const onlyTimestamp = isBoard(settings.sequence);
+  const onlyTimestamp = isBoard(settings.sequence) || !dieType;
   const taskChain = useTaskChain(action, "StoreSettings")
     .withTask(
-      onlyTimestamp ? storeTimestamp : storeDieType,
+      onlyTimestamp ? storeTimestamp : storeDeviceType,
       createTaskStatusContainer(
         t(onlyTimestamp ? "storeTimestamp" : "storeDieType")
       )
@@ -1040,7 +1096,7 @@ export function StoreSettings({
               if (!keepSettings) {
                 colorway = await withPromise(
                   abortSignal,
-                  "storeColorway",
+                  "requestColorway",
                   (resolve) => setResolveColorwayPromise(() => resolve),
                   () => setResolveColorwayPromise(undefined)
                 );
@@ -1099,10 +1155,12 @@ export function StoreSettings({
 }
 
 export interface PrintingProp {
-  onPrintStatus: (status: PrintStatus | Error | undefined) => void;
+  onPrintStatus: (
+    _: { status: PrintStatus | Error; productInfo: ProductInfo } | undefined
+  ) => void;
 }
 
-export function PrepareDie({
+export function PrepareDevice({
   action,
   onTaskStatus,
   settings,
@@ -1110,6 +1168,11 @@ export function PrepareDie({
   onPrintStatus,
 }: ValidationTestProps & Partial<PrintingProp>) {
   const { t } = useTranslation();
+
+  const settingsDeviceType =
+    settings.deviceSelection.kind === "charger"
+      ? "lcc"
+      : settings.deviceSelection.dieType;
 
   const appDispatch = useAppDispatch();
   const selectProfileRef = React.useRef(
@@ -1123,6 +1186,8 @@ export function PrepareDie({
 
   const [resolveSelectProfilePromise, setResolveSelectProfilePromise] =
     React.useState<() => void>();
+  const [resolveIsSetReadyPromise, setResolveIsSetReadyPromise] =
+    React.useState<(ready: boolean | undefined) => void>();
   const {
     visible: profileMenuVisible,
     show: showProfileMenu,
@@ -1133,11 +1198,11 @@ export function PrepareDie({
     (state) => state.validationSettings.dieLabel.smallLabel
   );
   const [progress, setProgress] = React.useState(-1);
-  const taskChain = useTaskChain(action, "PrepareDie")
+  const taskChain = useTaskChain(action, "PrepareDevice")
     .withTask(
       React.useCallback(
-        async (abortSignal) => {
-          await withTimeoutAndDisconnect(
+        async (abortSignal) =>
+          withTimeoutAndDisconnect(
             abortSignal,
             pixel,
             60 * 60 * 1000, // 1h timeout
@@ -1148,8 +1213,7 @@ export function PrepareDie({
                 (resolve) => setResolveSelectProfilePromise(() => resolve),
                 () => setResolveSelectProfilePromise(undefined)
               )
-          );
-        },
+          ),
         [pixel]
       ),
       createTaskStatusContainer({
@@ -1188,37 +1252,116 @@ export function PrepareDie({
           </BaseHStack>
         ),
       }),
-      { skip: !selectProfileRef.current }
+      { skip: settingsDeviceType === "lcc" || !selectProfileRef.current }
+    )
+    .withTask(
+      React.useCallback(
+        async (abortSignal) => {
+          const ready = await withTimeoutAndDisconnect<boolean>(
+            abortSignal,
+            pixel,
+            60 * 60 * 1000, // 1h timeout
+            (abortSignal) =>
+              withPromise(
+                abortSignal,
+                "confirmSetReady",
+                (resolve) => setResolveIsSetReadyPromise(() => resolve),
+                () => setResolveIsSetReadyPromise(undefined)
+              )
+          );
+          if (!ready) {
+            throw new DiceMisplacedError();
+          }
+        },
+        [pixel]
+      ),
+      createTaskStatusContainer({
+        title: t("confirmAllDiceProperlyPlaced"),
+        children: (
+          <BaseVStack w="100%" alignItems="center" gap={20}>
+            {settings.deviceSelection.kind === "charger" && (
+              <DiceSetImage
+                setType={settings.deviceSelection.setType}
+                colorway={settings.deviceSelection.colorway}
+              />
+            )}
+            <BaseHStack w="100%" justifyContent="space-around">
+              <Button
+                mode="outlined"
+                onPress={() => resolveIsSetReadyPromise?.(false)}
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                mode="contained-tonal"
+                onPress={() => resolveIsSetReadyPromise?.(true)}
+              >
+                {t("ok")}
+              </Button>
+            </BaseHStack>
+          </BaseVStack>
+        ),
+      }),
+      { skip: settingsDeviceType !== "lcc" }
     )
     .withTask(
       React.useCallback(
         // Note: renaming die also reset profile to default
-        async () =>
-          ValidationTests.renameDie(pixel, getPixelValidationName(pixel)),
-        [pixel]
+        async () => {
+          await ValidationTests.renamePixelsDevice(
+            pixel,
+            getPixelValidationName(settingsDeviceType)
+          );
+          // Start printing ahead of time
+          if (onPrintStatus && settings.deviceSelection.kind === "charger") {
+            const productInfo = {
+              kind: "lcc",
+              name: pixel.name,
+              type: settings.deviceSelection.setType,
+              colorway: settings.deviceSelection.colorway,
+            } as const;
+            printLabel(productInfo, onPrintStatus, { smallLabel });
+          }
+        },
+        [
+          onPrintStatus,
+          pixel,
+          settings.deviceSelection,
+          settingsDeviceType,
+          smallLabel,
+        ]
       ),
-      createTaskStatusContainer(t("setDieName"))
+      createTaskStatusContainer(t("setDeviceName"))
     )
     .withTask(
       React.useCallback(async () => {
+        assert(pixel.type === "die");
         console.log(`Programming profile: ${profile}`);
         // Update profile
         await ValidationTests.updateProfile(
           pixel,
           createDataSetForProfile(
-            createLibraryProfile(profile, settings.dieType)
+            createLibraryProfile(profile, pixel.dieType)
           ).toDataSet(),
           setProgress
         );
         // Start printing ahead of time
         if (onPrintStatus) {
-          printLabel(pixel, settings.dieType, onPrintStatus, { smallLabel });
+          const productInfo = {
+            kind: "dieWithId",
+            pixelId: pixel.pixelId,
+            name: pixel.name,
+            type: pixel.dieType,
+            colorway: pixel.colorway,
+          } as const;
+          printLabel(productInfo, onPrintStatus, { smallLabel });
         }
-      }, [onPrintStatus, pixel, profile, settings.dieType, smallLabel]),
+      }, [onPrintStatus, pixel, profile, smallLabel]),
       createTaskStatusContainer({
         title: t("updateProfile"),
         children: <>{progress >= 0 && <ProgressBar percent={progress} />}</>,
-      })
+      }),
+      { skip: settingsDeviceType === "lcc" }
     )
     .withTask(
       React.useCallback(
@@ -1243,7 +1386,9 @@ export function PrepareDie({
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
 
-  return <TaskChainComponent title={t("prepareDie")} taskChain={taskChain} />;
+  return (
+    <TaskChainComponent title={t("prepareDevice")} taskChain={taskChain} />
+  );
 }
 
 export function WaitDieInCase({
@@ -1251,6 +1396,7 @@ export function WaitDieInCase({
   onTaskStatus,
   pixel,
 }: ValidationTestProps) {
+  assert(pixel.type !== "charger", "WaitDieInCase not available for LCC");
   const { t } = useTranslation();
 
   const taskChain = useTaskChain(action, "WaitDieInCase")
@@ -1277,13 +1423,13 @@ export function WaitDieInCase({
 export function LabelPrinting({
   action,
   onTaskStatus,
-  settings,
-  pixel,
   printResult,
   onPrintStatus,
-}: ValidationTestProps &
+}: TaskComponentProps &
   PrintingProp & {
-    printResult: PrintStatus | Error | undefined;
+    printResult:
+      | { status: PrintStatus | Error; productInfo: ProductInfo }
+      | undefined;
   }) {
   const { t } = useTranslation();
 
@@ -1292,8 +1438,11 @@ export function LabelPrinting({
     React.useState<() => void>();
   React.useEffect(() => {
     if (resolveResultPromise && printResult) {
-      console.log(`Print result: ${printResult}`);
-      if (printResult === "done" || printResult instanceof Error) {
+      console.log(`Print result: ${JSON.stringify(printResult)}`);
+      if (
+        printResult.status === "done" ||
+        printResult.status instanceof Error
+      ) {
         resolveResultPromise();
       }
     }
@@ -1303,7 +1452,8 @@ export function LabelPrinting({
   const [resolvePrintOkPromise, setResolvePrintOkPromise] =
     React.useState<(okOrError: boolean | Error) => void>();
 
-  const printError = printResult instanceof Error ? printResult : undefined;
+  const printError =
+    printResult?.status instanceof Error ? printResult.status : undefined;
 
   // Reset task chain
   const [reset, setReset] = React.useState(false);
@@ -1334,16 +1484,16 @@ export function LabelPrinting({
             "labelPrinting",
             (resolve) => setResolvePrintOkPromise(() => resolve)
           );
-          if (!printOk && onPrintStatus) {
+          if (!printOk && onPrintStatus && printResult?.productInfo) {
             console.log("Reprinting label");
             onPrintStatus(undefined);
             setReset(true);
-            printLabel(pixel, settings.dieType, onPrintStatus);
+            printLabel(printResult.productInfo, onPrintStatus);
           } else if (printOk instanceof Error) {
             throw printOk;
           }
         },
-        [onPrintStatus, pixel, settings.dieType]
+        [onPrintStatus, printResult?.productInfo]
       ),
       createTaskStatusContainer({
         children: (

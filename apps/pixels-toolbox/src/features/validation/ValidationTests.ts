@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-throw-literal */
 import { getValueKeyName, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
+  Charger,
   Color,
   DataSet,
   DiceUtils,
@@ -9,9 +10,10 @@ import {
   Pixel,
   PixelBatteryControllerStateValues,
   PixelBatteryStateValues,
+  PixelConnect,
+  PixelConnectMutableProps,
   PixelDieType,
   PixelEventMap,
-  PixelMutableProps,
   RequestRssi,
   RequestTelemetry,
   RollEvent,
@@ -433,36 +435,36 @@ export const ValidationTests = {
     }
   },
 
-  async renameDie(pixel: Pixel, name?: string): Promise<void> {
+  async renamePixelsDevice(
+    pixel: Pixel | Charger,
+    name?: string
+  ): Promise<void> {
     const _unused = getRandomDieNameAsync;
     // Disabled until we have a good list of names
     // name ??= await getRandomDieNameAsync();
     if (name?.length) {
-      console.log("Setting die name to " + name);
+      console.log(`Setting ${pixel.type} name to ${name}`);
       await pixel.rename(name);
     }
   },
 
-  async exitValidationMode(pixel: Pixel): Promise<void> {
+  async exitValidationMode(pixel: Pixel | Charger): Promise<void> {
     // Exit validation mode, don't wait for response as die will immediately reboot
     await pixel.sendMessage("exitValidation", true);
     // Replace above line by this code for testing
-    // await pixel.sendMessage(
-    //   safeAssign(new PowerOperation(), {
-    //     operation: PixelPowerOperationValues.reset,
-    //   }),
-    //   true
-    // );
+    // await pixel.turnOff("reset");
   },
 
   async waitDisconnected(
-    pixel: Pixel,
+    pixel: Pixel | Charger,
     blinkColor: Color,
     abortSignal: AbortSignal,
     timeout = testTimeout
   ) {
     await withTimeout(abortSignal, timeout, async (abortSignal) => {
-      let statusListener: (({ status }: PixelMutableProps) => void) | undefined;
+      let statusListener:
+        | (({ status }: PixelConnectMutableProps) => void)
+        | undefined;
       // Blink all faces
       await withBlink(abortSignal, pixel, blinkColor, async () =>
         withPromise(
@@ -478,12 +480,18 @@ export const ValidationTests = {
                   resolve();
                 }
               };
-              pixel.addPropertyListener("status", statusListener);
+              (pixel as PixelConnect).addPropertyListener(
+                "status",
+                statusListener
+              );
             }
           },
           () => {
             if (statusListener) {
-              pixel.removePropertyListener("status", statusListener);
+              (pixel as PixelConnect).removePropertyListener(
+                "status",
+                statusListener
+              );
             }
           }
         )

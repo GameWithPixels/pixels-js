@@ -1,4 +1,4 @@
-import { ProductInfo } from "~/features/validation/ProductInfo";
+import { ProductInfo } from "~/features/validation";
 
 export function getProductName(info: ProductInfo) {
   if (info.colorway === "unknown") {

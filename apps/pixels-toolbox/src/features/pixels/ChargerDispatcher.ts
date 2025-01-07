@@ -32,6 +32,7 @@ import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
 import { areSameFirmwareDates } from "~/features/dfu/areSameFirmwareDates";
 import { getDatedFilename } from "~/features/files/getDatedFilename";
+import { getPixelValidationName } from "~/features/validation";
 
 /**
  * Action map for {@link ChargerDispatcher} class.
@@ -389,7 +390,9 @@ export class ChargerDispatcher
       case "rename":
         this._guard(
           this._charger.rename(
-            typeof params === "string" && params.length ? params : "Charger"
+            typeof params === "string" && params.length
+              ? params
+              : getPixelValidationName("lcc")
           ),
           action
         );

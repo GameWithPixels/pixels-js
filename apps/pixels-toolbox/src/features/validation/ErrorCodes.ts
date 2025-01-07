@@ -9,7 +9,7 @@ export const TaskNames = [
   "CheckLEDs", // 6
   "WaitFaceUp", // 7
   "StoreSettings", // 8
-  "PrepareDie", // 9
+  "PrepareDevice", // 9
   "WaitDieInCase", // 10
   "TurnOffDevice", // 11
   "LabelPrinting", // 12
@@ -47,6 +47,12 @@ assert(
   "StoreSettings must have an error code"
 );
 
+const prepareDeviceErrorCode = getTaskErrorCode("PrepareDevice");
+assert(
+  prepareDeviceErrorCode !== undefined,
+  "PrepareDevice must have an error code"
+);
+
 export const ErrorCodes = {
   // General errors
   Timeout: 1,
@@ -67,6 +73,8 @@ export const ErrorCodes = {
   LowBattery: checkBoardErrorCode + 40,
   // Store Settings errors
   StoreValueFailed: storeSettingsErrorCode + 10,
+  // Prepare Device errors
+  SetNotReady: prepareDeviceErrorCode + 10,
 } as const;
 
 assert(

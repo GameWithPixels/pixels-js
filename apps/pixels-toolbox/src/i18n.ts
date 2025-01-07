@@ -43,6 +43,9 @@ i18n
           next: "Next",
           yes: "Yes",
           no: "No",
+          colonSeparator: ": ",
+          commaSeparator: ", ",
+          // Dice
           d4: "D4",
           d6: "D6",
           d6pipped: "Pipped D6",
@@ -52,9 +55,8 @@ i18n
           d00: "D00",
           d12: "D12",
           d20: "D20",
+          lcc: "LCC",
           charger: "Charger",
-          colonSeparator: ": ",
-          commaSeparator: ", ",
           // Connection statuses
           disconnected: "disconnected",
           connecting: "connecting",
@@ -96,6 +98,12 @@ i18n
           default: "Default",
           forceDisableCharging: " ",
           forceEnableCharging: "Force Enable Charging",
+          // Store value result
+          success: "success",
+          unknownError: "unknown error",
+          storeFull: "store full",
+          invalidRange: "invalid range",
+          notPermitted: "not permitted",
 
           // Pixels Scan List
           noPixelsFound: "No Pixels die found so far...",
@@ -121,6 +129,7 @@ i18n
           secondsWithValue: "{{value}} secs",
           minutesWithValue: "{{value}} mins",
           pixelId: "Pixel Id",
+          chargerId: "Charger Id",
           leds: "LEDs",
           colorway: "Colorway",
           dieType: "Die Type",
@@ -175,7 +184,6 @@ i18n
           setRunMode: "Set Run Mode",
           index: "index",
           voltageMV: "Voltage (mV)",
-          chargerId: "Charger Id",
 
           // Home Screen
           pixelsScanner: "Pixels Scanner",
@@ -260,8 +268,8 @@ i18n
           placeBlinkingFaceUp: "Place blinking face up",
           placeNewBlinkingFaceUp: "Place new blinking face up",
           isBlinkingFaceUp: "Is blinking face up?",
-          prepareDie: "Prepare Die",
-          setDieName: "Set Die Name",
+          prepareDevice: "Prepare Device",
+          setDeviceName: "Set Device Name",
           exitValidationMode: "Exit Validation Mode",
           waitDieInCase: "Wait Die In Case",
           placeDieInCaseAndCloseLid: "Place die in case and close the lid",
@@ -276,6 +284,8 @@ i18n
           keepColorway: "Keep colorway?",
           selectColorway: "Select Colorway",
           storeTimestamp: "Store Timestamp",
+          selectContents: "Select Contents",
+          selectSetType: "Select Set Type",
           labelPrinting: "Label Printing",
           waitingOnPrint: "Waiting On Print",
           errorPrintingLabel: "Error printing label",
@@ -287,10 +297,10 @@ i18n
             "Connection error, reset device and try again.",
           dfuErrorTryAgain:
             "Error trying to update firmware, reset device and try again.",
-          dieTypeMismatchWithTypeAndLedCount:
-            "Die type mismatch, expected {{dieType}} but die has {{ledCount}} LEDs",
-          dieTypeMismatchWithExpectedAndActual:
-            "Die type mismatch, expected {{expected}} but got {{actual}}",
+          deviceMismatchWithTypeAndLedCount:
+            "Device mismatch, expected {{dieType}} but device has {{ledCount}} LEDs",
+          deviceMismatchWithExpectedAndActual:
+            "Device type mismatch, expected {{expected}} but received {{actual}}",
           storeValueFailedWithResult:
             "Store value failed with result: {{result}}",
           updateDieTypeWithFromAndTo:
@@ -314,10 +324,13 @@ i18n
             "Timeout waiting for 'not charging' state. Controller state: {{state}}, coil: {{vCoil}}v",
           timeoutWaitingForFace:
             "Timeout waiting for face {{face}}. Face up: {{rollFace}}, roll state: {{rollState}}",
-          disconnectedFromPixel: "Disconnected from Pixel",
-          failedToSendMessageToPixel: "Failed to send message to Pixel",
+          disconnectedFromPixel: "Disconnected from Pixels device",
+          failedToSendMessageToPixel: "Failed to send message to Pixels device",
           timedOutWithValue: "Timed out after {{value}}s",
           selectProfile: "Select Profile",
+          confirmAllDiceProperlyPlaced:
+            "Tap 'Ok' once all dice are properly placed.",
+          diceNotProperlyPlaced: "Dice not all properly placed",
 
           // Label printing
           carton: "Carton",
@@ -368,6 +381,9 @@ i18n
           no: "否",
           colonSeparator: "：",
           commaSeparator: "，",
+          // Dice
+          lcc: "大充电盒",
+          charger: "充电器",
           // Connection statuses
           disconnected: "已断开连接",
           connecting: "连接中",
@@ -409,6 +425,12 @@ i18n
           default: "默认",
           forceDisableCharging: "强制禁用充电",
           forceEnableCharging: "强制启用充电",
+          // Store value result
+          success: "成功",
+          unknownError: "未知错误",
+          storeFull: "存储已满",
+          invalidRange: "无效的范围",
+          notPermitted: "不允许",
 
           // Pixels Scan List
           noPixelsFound: "没有发现骰子",
@@ -467,7 +489,8 @@ i18n
           preparingAsPrintStatus: "准备标贴",
           sendingAsPrintStatus: "发送标贴到打印机",
           doneAsPrintStatus: "打印成功",
-          charger: "充电器",
+          setColorway: "设置颜色",
+          setRunMode: "设置运行模式",
           index: "指数",
 
           // Home Screen
@@ -540,8 +563,8 @@ i18n
           placeBlinkingFaceUp: "等待骰子闪光面朝上",
           placeNewBlinkingFaceUp: "等待骰子新的闪光面朝上",
           isBlinkingFaceUp: "闪光面是否朝上？",
-          prepareDie: "准备骰子",
-          setDieName: "设置骰子名字",
+          prepareDevice: "准备设备",
+          setDeviceName: "设置设备名字",
           exitValidationMode: "退出测试模式",
           waitDieInCase: "等待骰子放入盒中",
           placeDieInCaseAndCloseLid: "将骰子放在盒中并关闭盖子",
@@ -556,6 +579,8 @@ i18n
           keepColorway: "保持亮光方式",
           selectColorway: "选择亮光方式",
           storeTimestamp: "保存时间戳",
+          selectContents: "选择内容",
+          selectSetType: "选择组合",
           labelPrinting: "标签印刷",
           waitingOnPrint: "等待印刷",
           errorPrintingLabel: "标签不会被打印",
@@ -565,10 +590,11 @@ i18n
             "扫描时间已经超时{{id}}，请重置设备并重新开始。",
           connectionErrorTryAgain: "连接错误，请重置设备并重新开始。",
           dfuErrorTryAgain: "更新固件错误，请重置机器并重新尝试。",
-          dieTypeMismatchWithTypeAndLedCount:
-            "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs。",
-          dieTypeMismatchWithExpectedAndActual:
+          deviceMismatchWithTypeAndLedCount:
+            "骰子类型错误，应该是{{dieType}}但是骰子显示有{{ledCount}}LEDs",
+          deviceMismatchWithExpectedAndActual:
             "骰子类型错误，本应该是{{expected}} 结果是{{actual}}",
+          storeValueFailedWithResult: "保存数据失败 值：{{result}}",
           updateDieTypeWithFromAndTo:
             "更新骰子类型是{{to}}，烧录的类型是{{from}}",
           lowBatteryPleaseCharge: "电池电量低，需要充电",
@@ -579,14 +605,19 @@ i18n
           invalidLedCountWithValue: "错误的LED数量：{{value}}",
           invalidAccelerometerWithValue: "错误的加速度计值：{{value}}",
           outOfRangeBatteryVoltageWithValue: "电池电压超出范围：{{value}}v",
+          lowSignalStrengthWithValue: "信号弱：{{value}}",
           timeoutWhileWaitingForChargingState:
             "等待充电状态超时，控制的状态是{{state}}，线圈电压是{{vCoil}}v",
           timeoutWhileWaitingForNotChargingState:
             "等待不充电超时，控制的状态是{{state}}，线圈电压是{{vCoil}}v",
           timeoutWaitingForFace:
             "等待{{face}}面朝上超时，朝上面是{{rollFace}}，状态是{{rollState}}",
-          disconnectedFromPixel: "从Pixel断开连接",
+          disconnectedFromPixel: "与Pixels设备断开连接",
+          failedToSendMessageToPixel: "给Pixels设备发送消息失败",
           timedOutWithValue: "等待{{value}}s后超时",
+          selectProfile: "选择配置文件",
+          confirmAllDiceProperlyPlaced: "所有骰子放置正确后请按“正确。",
+          diceNotProperlyPlaced: "骰子未摆放好。",
 
           // Label printing
           carton: "大箱",

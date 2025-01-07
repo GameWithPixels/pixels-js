@@ -1,8 +1,5 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import {
-  PixelDieType,
-  PixelInfo,
-} from "@systemic-games/react-native-pixels-connect";
+import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 
 function dieTypeStr(dieType: PixelDieType): string {
   switch (dieType) {
@@ -31,8 +28,6 @@ function dieTypeStr(dieType: PixelDieType): string {
   }
 }
 
-export function getPixelValidationName({
-  dieType,
-}: Pick<PixelInfo, "dieType">): string {
-  return `Pixels ${dieTypeStr(dieType)}`;
+export function getPixelValidationName(type: PixelDieType | "lcc"): string {
+  return type === "lcc" ? "Pixels Charger" : `Pixels ${dieTypeStr(type)}`;
 }

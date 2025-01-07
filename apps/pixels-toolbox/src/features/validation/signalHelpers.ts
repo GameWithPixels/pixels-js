@@ -1,9 +1,11 @@
 import { delay, safeAssign } from "@systemic-games/pixels-core-utils";
 import {
+  Charger,
   Color,
   MessageOrType,
   Pixel,
-  PixelMutableProps,
+  PixelConnect,
+  PixelConnectMutableProps,
   PixelWaitForMessageDisconnectError,
   PixelWaitForMessageTimeoutError,
   RequestTelemetry,
@@ -33,8 +35,8 @@ export class SignalTimeoutError extends ValidationError {
 
 export class DisconnectedError extends ValidationError {
   readonly errorCode = ErrorCodes.Disconnected;
-  readonly pixel: Pixel;
-  constructor(pixel: Pixel) {
+  readonly pixel: PixelConnect;
+  constructor(pixel: PixelConnect) {
     super();
     this.name = "DisconnectedError";
     this.pixel = pixel;
@@ -46,8 +48,8 @@ export class DisconnectedError extends ValidationError {
 
 export class SendMessageError extends ValidationError {
   readonly errorCode = ErrorCodes.SendMessageFailed;
-  readonly pixel: Pixel;
-  constructor(pixel: Pixel, error: unknown) {
+  readonly pixel: PixelConnect;
+  constructor(pixel: PixelConnect, error: unknown) {
     super();
     this.name = "SendMessageError";
     this.pixel = pixel;
@@ -81,14 +83,14 @@ export function timeoutSignal(ms: number): [AbortSignal, () => void] {
 }
 
 export function connectedSignal(
-  pixel: Pixel
+  pixel: PixelConnect
 ): [AbortSignal, (() => void) | undefined] {
   const controller = new AbortControllerWithReason();
   if (pixel.status !== "ready") {
     controller.abortWithReason(new DisconnectedError(pixel));
     return [controller.signal, undefined];
   } else {
-    const listener = ({ status }: PixelMutableProps) => {
+    const listener = ({ status }: PixelConnectMutableProps) => {
       if (status === "disconnecting" || status === "disconnected") {
         controller.abortWithReason(new DisconnectedError(pixel));
       }
@@ -183,7 +185,7 @@ export async function withTimeout<T = void>(
 
 export async function withTimeoutAndDisconnect<T = void>(
   signal: AbortSignal,
-  pixel: Pixel,
+  pixel: PixelConnect,
   timeoutMs: number,
   promise: (signal: AbortSignal) => Promise<T>
 ): Promise<T> {
@@ -209,7 +211,7 @@ export async function withTimeoutAndDisconnect<T = void>(
 
 export async function withBlink<T = void>(
   abortSignal: AbortSignal,
-  pixel: Pixel,
+  pixel: Pixel | Charger,
   blinkColor: Color,
   promise: () => Promise<T>,
   opt?: {
@@ -218,34 +220,26 @@ export async function withBlink<T = void>(
 ): Promise<T> {
   let status: "init" | "blink" | "cancel" = "init";
   const blink = async () => {
-    if (!abortSignal.aborted) {
-      try {
-        await pixelStopAllAnimations(pixel);
-      } catch (error) {
-        throw convertSendMessageError(pixel, error);
-      }
+    if (!abortSignal.aborted && pixel instanceof Pixel) {
+      await pixelStopAllAnimations(pixel);
     }
     if (!abortSignal.aborted && status !== "cancel") {
       status = "blink";
       // Blink for as long as we can
-      try {
-        await pixel.blink(blinkColor, {
-          count: 65,
-          duration: 65 * 1000,
-          faceMask: opt?.faceMask,
-          loopCount: 0xff,
-        });
-      } catch (error) {
-        throw convertSendMessageError(pixel, error);
-      }
+      await pixel.blink(blinkColor, {
+        count: 65,
+        duration: 65 * 1000,
+        faceMask: opt?.faceMask,
+        loopCount: 0xff,
+      });
     }
   };
   try {
     blink().catch(() => {});
     return await promise();
   } finally {
-    // @ts-ignore status may have been changed in async task
-    if (status === "blink") {
+    // @ts-ignore Status may have changed in async task
+    if (status === "blink" && pixel instanceof Pixel) {
       pixelStopAllAnimations(pixel).catch(() => {});
     }
     status = "cancel";
@@ -292,7 +286,10 @@ export async function withSolidColor<T = void>(
   }
 }
 
-export function convertSendMessageError(pixel: Pixel, error: unknown): Error {
+export function convertSendMessageError(
+  pixel: PixelConnect,
+  error: unknown
+): Error {
   // TODO Assume we got a message timeout because of a disconnection
   if (
     error instanceof PixelWaitForMessageDisconnectError ||

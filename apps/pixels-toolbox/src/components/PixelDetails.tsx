@@ -140,6 +140,8 @@ function BaseInfo({ pixel }: { pixel: PixelInfoNotifier }) {
 }
 
 function ChargerInfo({ charger }: { charger: PixelDispatcher }) {
+  const chargerDev = (charger as unknown as ChargerDispatcher).charger;
+
   const forceUpdate = useForceUpdate();
   React.useEffect(() => {
     charger.addPropertyListener("firmwareDate", forceUpdate);
@@ -150,23 +152,39 @@ function ChargerInfo({ charger }: { charger: PixelDispatcher }) {
   const status = usePixelStatus(charger.pixel);
   const rssi = usePixelProp(charger.pixel, "rssi");
   const [battery, setBattery] = React.useState<ChargerMessages.BatteryLevel>();
+  const [slotsStatuses, setSlotsStatuses] = React.useState<
+    ChargerMessages.ChargerSlotStatus[]
+  >([]);
+  const [showSlots, setShowSlots] = React.useState(false);
   React.useEffect(() => {
     if (status === "ready") {
-      const id = setInterval(
-        () =>
-          charger.pixel
-            .sendAndWaitForResponse("requestBatteryLevel", "batteryLevel")
-            .then((msg) => setBattery(msg as ChargerMessages.BatteryLevel))
-            .catch((e) =>
-              console.log(`Error requesting charger battery level: ${e}`)
-            ),
-        200
-      ); // Fast updates
+      const onBattery = (msg: ChargerMessages.ChargerMessageOrType) => {
+        setBattery(msg as ChargerMessages.BatteryLevel);
+      };
+      chargerDev.addMessageListener("batteryLevel", onBattery);
+      return () => {
+        chargerDev.removeMessageListener("batteryLevel", onBattery);
+      };
+    }
+  }, [chargerDev, status]);
+  React.useEffect(() => {
+    if (status === "ready" && showSlots) {
+      const id = setInterval(() => {
+        chargerDev
+          .sendAndWaitForResponse("requestSlotsStatuses", "slotsStatuses")
+          .then((msg) => {
+            setSlotsStatuses((msg as ChargerMessages.SlotsStatuses).asArray());
+          })
+          .catch((e) =>
+            console.log(`Error requesting charger slot statuses: ${e}`)
+          );
+      }, 1000); // Fast updates
       return () => {
         clearInterval(id);
       };
     }
-  }, [charger, status]);
+  }, [chargerDev, showSlots, status]);
+
   const { t } = useTranslation();
   const TextEntry = useTextEntry(t("colonSeparator"));
   return (
@@ -195,6 +213,36 @@ function ChargerInfo({ charger }: { charger: PixelDispatcher }) {
       <TextEntry title={t("rssi")}>
         {t("dBmWithValue", { value: rssi ?? 0 })}
       </TextEntry>
+      {showSlots &&
+        slotsStatuses.map((slot, i) => (
+          <View key={i}>
+            <TextEntry title={`Slot ${i}`} />
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                flexWrap: "wrap",
+                alignContent: "flex-start",
+                marginLeft: 20,
+              }}
+            >
+              {Object.entries(slot).map(([key, value]) => (
+                <Text key={key} style={{ width: "50%" }}>
+                  {key}:{" "}
+                  {typeof value === "boolean" ? (value ? "yes" : "no") : value}
+                  {key.toLowerCase().includes("current") ? " mA" : ""}
+                </Text>
+              ))}
+            </View>
+          </View>
+        ))}
+      <Divider style={{ height: 3, marginVertical: 5 }} />
+      <BaseHStack w="100%" alignContent="space-around">
+        <Text style={[AppStyles.flex, AppStyles.bold]} variant="bodyLarge">
+          Show Slots
+        </Text>
+        <Switch onValueChange={setShowSlots} value={showSlots} />
+      </BaseHStack>
     </>
   );
 }

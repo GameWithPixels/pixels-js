@@ -5,7 +5,7 @@ import {
   PixelDieType,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { DiceSetType } from "~/features/validation";
+import { DiceSetType } from "~/features/set";
 
 export interface ValidationSettingsState {
   customFirmwareAndProfile?: boolean; // Select with selectCustomFirmwareAndProfile

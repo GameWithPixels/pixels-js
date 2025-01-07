@@ -64,33 +64,36 @@ export class InvalidLedCountError extends ValidationError {
 export class LedCountMismatchError extends ValidationError {
   readonly errorCode = ErrorCodes.LEDCountMismatch;
   readonly ledCount: number;
-  readonly dieType: PixelDieType;
-  constructor(dieType: PixelDieType, ledCount: number) {
+  readonly dieType: PixelDieType | "lcc";
+  constructor(dieType: LedCountMismatchError["dieType"], ledCount: number) {
     super(`LED count mismatch: expected ${dieType} but got ${ledCount} LEDs`);
     this.name = "DieTypeMismatchError";
     this.dieType = dieType;
     this.ledCount = ledCount;
   }
   toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
-    return t("dieTypeMismatchWithTypeAndLedCount", {
+    return t("deviceMismatchWithTypeAndLedCount", {
       dieType: t(this.dieType),
       ledCount: this.ledCount,
     });
   }
 }
 
-export class DieTypeMismatchError extends ValidationError {
+export class DeviceTypeMismatchError extends ValidationError {
   readonly errorCode = ErrorCodes.DieTypeMismatch;
-  readonly expectedDieType: PixelDieType;
-  readonly actualDieType: PixelDieType;
-  constructor(expected: PixelDieType, actual: PixelDieType) {
-    super(`Die type mismatch: expected ${expected} but got ${actual} LEDs`);
-    this.name = "DieTypeMismatchError";
+  readonly expectedDieType: LedCountMismatchError["dieType"];
+  readonly actualDieType: LedCountMismatchError["dieType"];
+  constructor(
+    expected: LedCountMismatchError["dieType"],
+    actual: LedCountMismatchError["dieType"]
+  ) {
+    super(`Device type mismatch: expected ${expected} but got ${actual} LEDs`);
+    this.name = "DeviceTypeMismatchError";
     this.expectedDieType = expected;
     this.actualDieType = actual;
   }
   toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
-    return t("dieTypeMismatchWithExpectedAndActual", {
+    return t("deviceMismatchWithExpectedAndActual", {
       expected: t(this.expectedDieType),
       actual: t(this.actualDieType),
     });
@@ -168,6 +171,17 @@ export class StoreValueError extends ValidationError {
     this.valueType = valueType;
   }
   toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
-    return t("storeValueFailedWithResult", { result: this.result });
+    return t("storeValueFailedWithResult", { result: t(this.result) });
+  }
+}
+
+export class DiceMisplacedError extends ValidationError {
+  readonly errorCode = ErrorCodes.SetNotReady;
+  constructor() {
+    super(`Dice not properly placed`);
+    this.name = "DiceMisplacedError";
+  }
+  toLocalizedString(t: ReturnType<typeof useTranslation>["t"]): string {
+    return t("diceNotProperlyPlaced");
   }
 }

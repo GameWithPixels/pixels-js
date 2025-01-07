@@ -1,10 +1,13 @@
 import { PixelColorway } from "@systemic-games/react-native-pixels-connect";
-import { Image, ImageProps } from "react-native";
+import { Image, ImageProps, StyleSheet } from "react-native";
+import { useTheme } from "react-native-paper";
 
 export function ColorwayImage({
   colorway,
+  style,
   ...props
 }: { colorway: PixelColorway } & Omit<ImageProps, "source">) {
+  const { colors } = useTheme();
   let source;
   switch (colorway) {
     case "onyxBlack":
@@ -28,5 +31,18 @@ export function ColorwayImage({
     default:
       source = require("!images/colorways/unknown.png");
   }
-  return <Image source={source} {...props} />;
+  return (
+    <Image
+      source={source}
+      style={[
+        {
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.inverseSurface,
+          borderRadius: 1e9, // Large number to make it a circle
+        },
+        style,
+      ]}
+      {...props}
+    />
+  );
 }

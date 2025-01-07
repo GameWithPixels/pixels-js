@@ -15,7 +15,8 @@ import {
 } from "./prepareHtmlAsync";
 import { PrintError, PrintStatus, UnknownProductPrintError } from "./types";
 
-import { ProductInfo } from "~/features/validation/ProductInfo";
+import { getDiceSetDiceList } from "~/features/set";
+import { ProductInfo } from "~/features/validation";
 
 function getImageFilename(dieType: PixelDieType): string {
   assert(dieType !== "unknown", "getImageFilename: dieType is unknown");
@@ -78,10 +79,7 @@ export async function printLabelAsync(
  * @returns A promise resolving when the data has been send to the printer.
  */
 export async function printDieBoxLabelAsync(
-  dieInfo: Extract<ProductInfo, { kind: "die" }> & {
-    name: string;
-    pixelId: number;
-  },
+  dieInfo: Extract<ProductInfo, { kind: "dieWithId" }>,
   numCopies: number,
   opt?: PrintOptions
 ): Promise<void> {
@@ -103,16 +101,17 @@ export async function printDieBoxLabelAsync(
 }
 
 export async function printDiceSetBoxLabelAsync(
-  setInfo: Extract<ProductInfo, { kind: "set" }>,
+  setInfo: Extract<ProductInfo, { kind: "lcc" }>,
   numCopies: number,
   opt?: Omit<PrintOptions, "smallLabel">
 ): Promise<void> {
+  const diceList = getDiceSetDiceList(setInfo.type);
   await printLabelAsync(
     setInfo,
     (product) =>
       prepareDiceSetLabelHtmlAsync({
         ...product,
-        diceImageFilenames: setInfo.dice.map(getImageFilename),
+        diceImageFilenames: diceList.map(getImageFilename),
       }),
     numCopies,
     opt

@@ -500,7 +500,7 @@ export class PixelDispatcher
           this._pixel.rename(
             typeof params === "string" && params.length
               ? params
-              : getPixelValidationName(this._pixel)
+              : getPixelValidationName(this.dieType)
           ),
           action
         );

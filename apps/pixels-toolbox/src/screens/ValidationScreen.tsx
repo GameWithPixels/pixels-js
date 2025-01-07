@@ -1,19 +1,28 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect } from "@react-navigation/native";
-import { range } from "@systemic-games/pixels-core-utils";
+import { assert, range } from "@systemic-games/pixels-core-utils";
 import {
+  Charger,
   DiceUtils,
   getPixelIdFromName,
   Pixel,
-  PixelDieType,
+  PixelColorway,
   PixelsNamePrefixes,
+  ScannedCharger,
   ScannedPixel,
 } from "@systemic-games/react-native-pixels-connect";
 import { useKeepAwake } from "expo-keep-awake";
 import React from "react";
 import { useErrorBoundary } from "react-error-boundary";
 import { useTranslation } from "react-i18next";
-import { ScrollView, TextStyle, View } from "react-native";
+import {
+  ScrollView,
+  StyleProp,
+  StyleSheet,
+  TextStyle,
+  View,
+  ViewStyle,
+} from "react-native";
 import {
   Button,
   ButtonProps,
@@ -40,14 +49,18 @@ import { AppPage } from "~/components/AppPage";
 import { BaseBox } from "~/components/BaseBox";
 import { BaseHStack } from "~/components/BaseHStack";
 import { BaseVStack } from "~/components/BaseVStack";
+import { ColorwayImage } from "~/components/ColorwayImage";
+import { DiceSetImage } from "~/components/DiceSetImage";
 import { ProgressBar } from "~/components/ProgressBar";
 import { ScannedPixelsList } from "~/components/ScannedPixelsList";
+import { SelectColorwayModal } from "~/components/SelectColorwayModal";
+import { SelectDiceSetTypeModal } from "~/components/SelectDiceSetTypeModal";
 import {
   CheckBoard,
   CheckLEDs,
   ConnectPixel,
   LabelPrinting,
-  PrepareDie,
+  PrepareDevice,
   ScanAndUpdateFirmware,
   StoreSettings,
   TurnOffDevice,
@@ -59,8 +72,10 @@ import {
   WaitFaceUp,
 } from "~/components/ValidationTestsComponents";
 import { getBorderRadius } from "~/features/getBorderRadius";
+import ChargerDispatcher from "~/features/pixels/ChargerDispatcher";
 import PixelDispatcher from "~/features/pixels/PixelDispatcher";
 import { PrintStatus } from "~/features/print";
+import { DiceSetType } from "~/features/set";
 import { selectSkipPrintLabel } from "~/features/store/validationSelectors";
 import {
   getTaskResult,
@@ -74,14 +89,17 @@ import {
 import { toLocaleDateTimeString } from "~/features/toLocaleDateTimeString";
 import {
   getBoardOrDie,
+  getTaskErrorCode,
   isBoard,
+  ProductInfo,
+  TaskNames,
   ValidationBoardTypes,
+  ValidationDeviceSelection,
   ValidationDieTypes,
+  ValidationError,
   ValidationSequence,
   ValidationSequences,
 } from "~/features/validation";
-import { getTaskErrorCode, TaskNames } from "~/features/validation/ErrorCodes";
-import { ValidationError } from "~/features/validation/ValidationError";
 import {
   FactoryDfuFilesBundle,
   useFactoryDfuFilesBundle,
@@ -106,13 +124,13 @@ function getValidationSequenceName(
 
 function getDieValidationSequenceName(
   t: ReturnType<typeof useTranslation>["t"],
-  settings: Pick<ValidationTestsSettings, "dieType" | "sequence">
+  settings: Pick<ValidationTestsSettings, "deviceSelection" | "sequence">
 ): string {
-  return (
-    getValidationSequenceName(t, settings.sequence) +
-    t("colonSeparator") +
-    t(settings.dieType)
-  );
+  const seqName = getValidationSequenceName(t, settings.sequence);
+
+  return settings.deviceSelection.kind === "charger"
+    ? seqName
+    : seqName + t("colonSeparator") + t(settings.deviceSelection.dieType);
 }
 
 function getErrorCode(error?: Error): number | undefined {
@@ -318,18 +336,139 @@ function SelectSequencePage({
 
 function SelectDieTypePage({
   sequence,
-  onSelectDieType,
-  onBack,
-}: {
-  sequence: ValidationSequence;
-  onSelectDieType: (type: PixelDieType) => void;
-  onBack?: () => void;
-}) {
+  onSelectDevice,
+}: Omit<React.ComponentProps<typeof SelectDeviceTypePage>, "onBack">) {
+  assert(sequence !== "lccFinal", "Only dice validation sequence supported");
   const types = isBoard(sequence) ? ValidationBoardTypes : ValidationDieTypes;
   const items =
     types.length > 6
       ? range(types.length / 2).map((i) => [types[2 * i], types[2 * i + 1]]) // Breaks in 2 columns
       : types.map((t) => [t]);
+  const { t } = useTranslation();
+  return (
+    <>
+      {items.map((items, i) => (
+        <View key={i} style={{ flex: 1, flexDirection: "row", gap: 20 }}>
+          {items.map((dieType) =>
+            dieType ? (
+              <LargeTonalButton
+                key={dieType}
+                onPress={() => onSelectDevice({ kind: "die", dieType })}
+              >
+                {t(dieType)}
+              </LargeTonalButton>
+            ) : (
+              // Empty item
+              <View key="empty" style={{ flex: 1 }} />
+            )
+          )}
+        </View>
+      ))}
+    </>
+  );
+}
+
+function ButtonCard({
+  children,
+  style,
+  ...props
+}: TouchableRippleProps & { style?: StyleProp<ViewStyle> }) {
+  const { colors, roundness } = useTheme();
+  return (
+    <TouchableRipple
+      style={[
+        {
+          width: "100%",
+          padding: 20,
+          alignItems: "center",
+          borderWidth: StyleSheet.hairlineWidth,
+          borderRadius: getBorderRadius(roundness),
+          backgroundColor: colors.secondaryContainer,
+        },
+        style,
+      ]}
+      {...props}
+    >
+      <>{children}</>
+    </TouchableRipple>
+  );
+}
+
+function SelectSetTypePage({
+  sequence,
+  onSelectDevice,
+}: Omit<React.ComponentProps<typeof SelectDeviceTypePage>, "onBack">) {
+  assert(sequence === "lccFinal", "Only LCC validation sequence supported");
+
+  const [colorway, setColorway] = React.useState<PixelColorway>("unknown");
+  const [selectColorway, setSelectColorway] = React.useState(false);
+  const [setType, setSetType] = React.useState<DiceSetType>("unknown");
+  const [selectSetType, setSelectSetType] = React.useState(false);
+
+  const { t } = useTranslation();
+  return (
+    <BaseVStack
+      flex={1}
+      px={10}
+      alignItems="center"
+      justifyContent="space-between"
+    >
+      <ButtonCard onPress={() => setSelectColorway(true)}>
+        <Text variant="headlineSmall" style={{ marginBottom: 10 }}>
+          {t("selectColorway")}
+        </Text>
+        <ColorwayImage
+          colorway={colorway}
+          style={colorway === "unknown" && { borderWidth: 0 }}
+        />
+        <SelectColorwayModal
+          visible={selectColorway}
+          onDismiss={() => setSelectColorway(false)}
+          onSelect={(c) => {
+            setColorway(c);
+            setSelectColorway(false);
+          }}
+        />
+      </ButtonCard>
+      <ButtonCard onPress={() => setSelectSetType(true)}>
+        <Text variant="headlineSmall">{t("selectSetType")}</Text>
+        <Text variant="headlineSmall" style={{ marginVertical: 10 }}>
+          {setType !== "unknown" ? t(setType) : "???"}
+        </Text>
+        <SelectDiceSetTypeModal
+          visible={selectSetType}
+          onDismiss={() => setSelectSetType(false)}
+          onSelect={(st) => {
+            setSetType(st);
+            setSelectSetType(false);
+          }}
+        />
+      </ButtonCard>
+      <DiceSetImage
+        setType={setType}
+        colorway={colorway}
+        style={colorway === "unknown" && { borderWidth: 0 }}
+      />
+      <Button
+        mode="contained-tonal"
+        style={AppStyles.fullWidth}
+        disabled={colorway === "unknown" || setType === "unknown"}
+        onPress={() => onSelectDevice({ kind: "charger", setType, colorway })}
+      >
+        {t("ok")}
+      </Button>
+    </BaseVStack>
+  );
+}
+
+function SelectDeviceTypePage({
+  onBack,
+  ...props
+}: {
+  sequence: ValidationSequence;
+  onSelectDevice: (selection: ValidationDeviceSelection) => void;
+  onBack?: () => void;
+}) {
   const { t } = useTranslation();
   return (
     <BaseVStack
@@ -341,23 +480,15 @@ function SelectDieTypePage({
       paddingVertical={10}
     >
       <Text variant="headlineSmall" style={AppStyles.textCentered}>
-        {getValidationSequenceName(t, sequence)}
+        {getValidationSequenceName(t, props.sequence)}
       </Text>
-      {items.map((items, i) => (
-        <View key={i} style={{ flex: 1, flexDirection: "row", gap: 20 }}>
-          {items.map((dt) =>
-            dt ? (
-              <LargeTonalButton key={dt} onPress={() => onSelectDieType(dt)}>
-                {t(dt)}
-              </LargeTonalButton>
-            ) : (
-              // Empty item
-              <View key="empty" style={{ flex: 1 }} />
-            )
-          )}
-        </View>
-      ))}
-      <BaseBox paddingHorizontal={10}>
+
+      {props.sequence === "lccFinal" ? (
+        <SelectSetTypePage {...props} />
+      ) : (
+        <SelectDieTypePage {...props} />
+      )}
+      <BaseBox px={10}>
         <BottomButton onPress={onBack}>{t("back")}</BottomButton>
       </BaseBox>
     </BaseVStack>
@@ -375,7 +506,7 @@ function DecodePixelIdPage({
   onDecodePixelId,
   onBack,
 }: {
-  settings: Pick<ValidationTestsSettings, "dieType" | "sequence">;
+  settings: Pick<ValidationTestsSettings, "deviceSelection" | "sequence">;
   onDecodePixelId: (pixelId: number) => void;
   onBack?: () => void;
 }) {
@@ -473,7 +604,7 @@ function DecodePixelIdPage({
   const [showScanList, setShowScanList] = React.useState(false);
 
   const onSelect = React.useCallback(
-    (sp: ScannedPixel) => onDecodePixelId(sp.pixelId),
+    (sp: ScannedPixel | ScannedCharger) => onDecodePixelId(sp.pixelId),
     [onDecodePixelId]
   );
   const onClose = React.useCallback(() => setShowScanList(false), []);
@@ -481,8 +612,13 @@ function DecodePixelIdPage({
   return showScanList ? (
     <BaseBox w="100%" h="100%">
       <ScannedPixelsList
-        ledCount={DiceUtils.getLEDCount(settings.dieType)}
+        ledCount={
+          settings.deviceSelection.kind === "charger"
+            ? 3
+            : DiceUtils.getLEDCount(settings.deviceSelection.dieType)
+        }
         onSelect={onSelect}
+        onSelectCharger={onSelect}
         onClose={onClose}
       />
     </BaseBox>
@@ -640,44 +776,58 @@ function RunTestsPage({
 
   const { t } = useTranslation();
 
-  const [pixel, setPixel] = React.useState<Pixel>();
-  const [scannedPixel, setScannedPixel] = React.useState<ScannedPixel>();
-  const onPixelFound = React.useCallback((scannedPixel: ScannedPixel) => {
-    setScannedPixel({ ...scannedPixel });
-    // Going through the PixelDispatcher to retrieve the Pixel instance
-    // to ensure that logging is enabled
-    setPixel(PixelDispatcher.getOrCreateDispatcher(scannedPixel).pixel);
-  }, []);
+  const [pixel, setPixel] = React.useState<Pixel | Charger>();
+  const [scannedPixel, setScannedPixel] = React.useState<
+    ScannedPixel | ScannedCharger
+  >();
+  const onPixelFound = React.useCallback(
+    (scannedPixel: ScannedPixel | ScannedCharger) => {
+      setScannedPixel({ ...scannedPixel });
+      // Going through the PixelDispatcher to retrieve the Pixel instance
+      // to ensure that logging is enabled
+      if (scannedPixel.type === "die") {
+        setPixel(PixelDispatcher.getOrCreateDispatcher(scannedPixel).pixel);
+      } else {
+        // if (scannedPixel.type === "charger") {
+        // TODO casting charger to Pixel for now
+        setPixel(ChargerDispatcher.getOrCreateDispatcher(scannedPixel).pixel);
+      }
+    },
+    []
+  );
 
   const [cancel, setCancel] = React.useState(false);
   const [firmwareUpdateStatus, setFirmwareUpdateStatus] =
     React.useState<UpdateFirmwareStatus>();
-  const [printStatus, setPrintStatus] = React.useState<PrintStatus | Error>();
+  const [printStatus, setPrintStatus] = React.useState<{
+    status: PrintStatus | Error;
+    productInfo: ProductInfo;
+  }>();
 
   // We must have a Pixel once past the UpdateFirmware task
-  const getPixel = (): Pixel => {
-    if (!pixel) throw new Error("No Pixel instance");
+  const getPixel = (): Pixel | Charger => {
+    if (!pixel) throw new Error("No Pixel or Charger instance");
     return pixel;
   };
 
   // Some conditions to filter tests
   const seq = settings.sequence;
   const isFwUpdate = seq === "firmwareUpdate";
-  const isFinalForSet = seq === "dieFinalForSet";
+  const isLcc = seq === "lccFinal";
+  const isFinalForSet = seq === "dieFinalForSet" || isLcc;
   const isFinal = seq === "dieFinalSingle" || isFinalForSet;
   const isReconfig = seq === "dieReconfigure";
-  const skipIfFwUpdate = { skip: isFwUpdate };
   const skipCharging = {
-    skip: isFwUpdate || seq === "boardNoCoil" || isReconfig,
+    skip: isFwUpdate || seq === "boardNoCoil" || isReconfig || isLcc,
   };
-  const skipFaceUp = { skip: isBoard(seq) || isReconfig };
+  const skipFaceUp = { skip: isBoard(seq) || isReconfig || isLcc };
   const skipTurnOff = { skip: isFwUpdate || isFinal || isReconfig };
   const skipPrepare = { skip: !isFinal && !isReconfig };
   const skipIfNotReconfig = { skip: !isReconfig };
 
   const noPrintRef = React.useRef(
     useAppSelector(selectSkipPrintLabel) || // We use a ref because this setting could change during the test, but we don't want to modify the test sequence in the middle of it
-      isFinalForSet
+      (isFinalForSet && !isLcc)
   );
 
   // The entire test sequence
@@ -701,11 +851,17 @@ function RunTestsPage({
           {...p}
           settings={settings}
           pixel={getPixel()}
-          ledCount={scannedPixel?.ledCount ?? 0}
-          dieType={isFinal ? scannedPixel?.dieType : undefined}
+          ledCount={scannedPixel?.ledCount}
+          deviceType={
+            scannedPixel?.type === "charger"
+              ? "lcc"
+              : isFinal
+                ? scannedPixel?.dieType
+                : undefined
+          }
         />
       )),
-      skipIfFwUpdate
+      { skip: isFwUpdate }
     )
     // Wait for die to report charging
     .withTask(
@@ -719,7 +875,7 @@ function RunTestsPage({
       ...useTaskComponent("CheckBoard", cancel, (p) => (
         <CheckBoard {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfFwUpdate
+      { skip: isFwUpdate || isLcc }
     )
     // Wait for die to report not charging
     .withTask(
@@ -738,7 +894,7 @@ function RunTestsPage({
       ...useTaskComponent("CheckLEDs", cancel, (p) => (
         <CheckLEDs {...p} settings={settings} pixel={getPixel()} />
       )),
-      { skip: isFwUpdate || isReconfig }
+      { skip: isFwUpdate || isReconfig || isLcc }
     )
     // Ask operator to place die blinking face up
     .withTask(
@@ -752,7 +908,7 @@ function RunTestsPage({
       ...useTaskComponent("StoreSettings", cancel, (p) => (
         <StoreSettings {...p} settings={settings} pixel={getPixel()} />
       )),
-      skipIfFwUpdate
+      { skip: isFwUpdate }
     )
     // Turn die off if not finalizing, updating firmware, or reconfiguring
     .withTask(
@@ -763,8 +919,8 @@ function RunTestsPage({
     )
     // Prepare die in final validation or when re-configuring
     .withTask(
-      ...useTaskComponent("PrepareDie", cancel, (p) => (
-        <PrepareDie
+      ...useTaskComponent("PrepareDevice", cancel, (p) => (
+        <PrepareDevice
           {...p}
           settings={settings}
           pixel={getPixel()}
@@ -792,7 +948,7 @@ function RunTestsPage({
       )),
       skipPrepare
     )
-    // Wait for die to be put in case  in final validation except if finalizing die for set
+    // Wait for die to be put in case in final validation except if finalizing die for set
     .withTask(
       ...useTaskComponent("WaitDieInCase", cancel, (p) => (
         <WaitDieInCase {...p} settings={settings} pixel={getPixel()} />
@@ -811,13 +967,11 @@ function RunTestsPage({
       ...useTaskComponent("CheckLabel", cancel, (p) => (
         <LabelPrinting
           {...p}
-          settings={settings}
-          pixel={getPixel()}
           printResult={printStatus}
           onPrintStatus={setPrintStatus}
         />
       )),
-      { skip: noPrintRef.current || skipPrepare.skip }
+      { skip: skipPrepare.skip || noPrintRef.current }
     );
 
   // Get result
@@ -913,7 +1067,8 @@ function RunTestsPage({
 
 function ValidationPage() {
   const [sequence, setSequence] = React.useState<ValidationSequence>();
-  const [dieType, setDieType] = React.useState<PixelDieType>();
+  const [deviceSelection, setDeviceSelection] =
+    React.useState<ValidationDeviceSelection>();
   const [pixelId, setPixelId] = React.useState(0);
 
   const [dfuFilesBundle, isFactoryDfuBundle, dfuFilesError] =
@@ -926,35 +1081,35 @@ function ValidationPage() {
       dfuFilesError={dfuFilesError}
       isFactoryDfuBundle={isFactoryDfuBundle}
     />
-  ) : !dieType ? (
-    <SelectDieTypePage
+  ) : !deviceSelection ? (
+    <SelectDeviceTypePage
       sequence={sequence}
-      onSelectDieType={setDieType}
+      onSelectDevice={setDeviceSelection}
       onBack={() => setSequence(undefined)}
     />
   ) : !pixelId ? (
     sequence !== "dieReconfigure" ? (
       <DecodePixelIdPage
-        settings={{ sequence, dieType }}
+        settings={{ sequence, deviceSelection }}
         onDecodePixelId={(pixelId) => {
           console.log("Decoded PixelId:", pixelId);
           setPixelId(pixelId);
         }}
-        onBack={() => setDieType(undefined)}
+        onBack={() => setDeviceSelection(undefined)}
       />
     ) : (
       <InputPixelIdPage
-        settings={{ sequence, dieType, dfuFilesBundle }}
+        settings={{ sequence, deviceSelection, dfuFilesBundle }}
         onEnterPixelId={(pixelId) => {
           console.log("Entered PixelId:", pixelId);
           setPixelId(pixelId);
         }}
-        onBack={() => setDieType(undefined)}
+        onBack={() => setDeviceSelection(undefined)}
       />
     )
   ) : (
     <RunTestsPage
-      settings={{ sequence, dieType, dfuFilesBundle }}
+      settings={{ sequence, deviceSelection, dfuFilesBundle }}
       pixelId={pixelId}
       onResult={(result) => {
         console.log("Validation tests result:", result);
