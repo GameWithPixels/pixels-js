@@ -55,6 +55,7 @@ export type PixelScannerEventMap = Readonly<{
   // Properties
   isReady: boolean;
   status: ScanStatus;
+  scannedDevices: readonly ScannedDevice[];
   scannedPixels: readonly ScannedPixel[];
   scannedChargers: readonly ScannedCharger[];
   scannedMPCs: readonly ScannedMPC[];
@@ -131,9 +132,18 @@ export class PixelScanner {
   }
 
   /**
+   * A copy of the list of scanned devices (cleared on loosing Bluetooth access
+   * if {@link PixelScanner.keepAliveDuration} is greater than zero).
+   * Only devices matching the {@link PixelScanner.scanFilter} are included.
+   */
+  get scannedDevices(): ScannedDevice[] {
+    return [...this._devices];
+  }
+
+  /**
    * A copy of the list of scanned dice (cleared on loosing Bluetooth access
    * if {@link PixelScanner.keepAliveDuration} is greater than zero).
-   * Only Pixels matching the {@link PixelScanner.scanFilter} are included.
+   * Only dice matching the {@link PixelScanner.scanFilter} are included.
    */
   get scannedPixels(): ScannedPixel[] {
     return this._devices.filter((i) => i.type === "die");
@@ -142,6 +152,7 @@ export class PixelScanner {
   /**
    * A copy of the list of scanned chargers (cleared on loosing Bluetooth access
    * if {@link PixelScanner.keepAliveDuration} is greater than zero).
+   * Only chargers matching the {@link PixelScanner.scanFilter} are included.
    */
   get scannedChargers(): ScannedCharger[] {
     return this._devices.filter((i) => i.type === "charger");
@@ -150,6 +161,7 @@ export class PixelScanner {
   /**
    * A copy of the list of scanned MPCs (cleared on loosing Bluetooth access
    * if {@link PixelScanner.keepAliveDuration} is greater than zero).
+   * Only MPCs matching the {@link PixelScanner.scanFilter} are included.
    */
   get scannedMPCs(): ScannedMPC[] {
     return this._devices.filter((i) => i.type === "mpc");
@@ -526,6 +538,7 @@ export class PixelScanner {
       }
       this._touched.clear();
       this._emitEvent("onScanListChange", { ops });
+      this._emitEvent("scannedDevices", this.scannedDevices);
       if (ops.find((op) => op.item.type === "die")) {
         this._emitEvent("scannedPixels", this.scannedPixels);
       }
