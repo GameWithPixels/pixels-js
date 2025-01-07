@@ -26,6 +26,7 @@ import {
   getChargerDispatcher,
   DeviceDispatcherStatic as Static,
 } from "./dispatchers";
+import { pixelStoreValue, PixelValueStoreType } from "./extensions";
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
@@ -47,6 +48,7 @@ export interface ChargerDispatcherActionMap {
   dequeueDFU: undefined;
   turnOff: undefined;
   exitValidation: undefined;
+  setRunMode: ChargerMessages.ChargerRunMode;
 }
 
 /** List of possible DFU actions. */
@@ -403,6 +405,13 @@ export class ChargerDispatcher
         break;
       case "dequeueDFU":
         break;
+      case "setRunMode":
+        console.log(`[${this.name}] Setting run mode to: ${params}`);
+        this._guard(
+          this._setRunMode(params as ChargerMessages.ChargerRunMode),
+          action
+        );
+        break;
       default:
         assertNever(action, `Unknown action ${action}`);
     }
@@ -468,6 +477,17 @@ export class ChargerDispatcher
     }
     // Disconnect
     await this._charger.disconnect();
+  }
+
+  private async _setRunMode(
+    mode: ChargerMessages.ChargerRunMode
+  ): Promise<void> {
+    await pixelStoreValue(
+      this._charger,
+      PixelValueStoreType.runMode,
+      ChargerMessages.ChargerRunModeValues[mode]
+    );
+    await this._charger.turnOff("reset");
   }
 
   private _updateIsDFUAvailable() {

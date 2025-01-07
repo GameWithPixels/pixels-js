@@ -17,6 +17,8 @@ import {
 import { DfuState } from "@systemic-games/react-native-nordic-nrf5-dfu";
 import {
   Color,
+  DieRunMode,
+  DieRunModeValues,
   getPixelOrThrow,
   MessageOrType,
   MessageTypeValues,
@@ -91,7 +93,7 @@ export interface PixelDispatcherActionMap {
   dequeueDFU: undefined;
   setDieType: PixelDieType;
   setColorway: PixelColorway;
-  setRunMode: number;
+  setRunMode: DieRunMode;
 }
 
 /** List of possible DFU actions. */
@@ -546,14 +548,7 @@ export class PixelDispatcher
         }
         break;
       case "setRunMode":
-        this._guard(
-          pixelStoreValue(
-            this._pixel,
-            PixelValueStoreType.runMode,
-            params as number
-          ),
-          action
-        );
+        this._guard(this._setRunMode(params as DieRunMode), action);
         break;
       default:
         assertNever(action, `Unknown action ${action}`);
@@ -673,6 +668,15 @@ export class PixelDispatcher
       this._isUpdatingProfile = false;
       this._pixel.removeEventListener("dataTransfer", onProgress);
     }
+  }
+
+  private async _setRunMode(mode: DieRunMode): Promise<void> {
+    await pixelStoreValue(
+      this._pixel,
+      PixelValueStoreType.runMode,
+      DieRunModeValues[mode]
+    );
+    await this._pixel.turnOff("reset");
   }
 
   private _updateIsDFUAvailable() {

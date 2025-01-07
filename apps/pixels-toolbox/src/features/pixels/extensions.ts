@@ -5,6 +5,8 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import {
   BlinkId,
+  Charger,
+  ChargerMessages,
   Discharge,
   Pixel,
   PixelBatteryControllerMode,
@@ -21,8 +23,8 @@ import {
   TransferTest,
 } from "@systemic-games/react-native-pixels-connect";
 
-function log(pixel: Pixel, message: string): void {
-  console.log(`[Pixel ${pixel.name}] ${message}`);
+function log(pixel: { name: string }, message: string): void {
+  console.log(`[${pixel.name}] ${message}`);
 }
 
 /**
@@ -181,20 +183,32 @@ export const PixelValueStoreType = {
  * @returns A promise that resolves to the result of the store operation.
  */
 export async function pixelStoreValue(
-  pixel: Pixel,
+  pixel: Pixel | Charger,
   valueType: number,
   value: number
 ): Promise<StoreValueResult> {
   // Check boundaries
-  assert(valueType > 0 && valueType <= 0xff);
-  assert(value >= 0 && value <= 0xffffff);
+  assert(
+    valueType > 0 && valueType <= 0xff,
+    `pixelStoreValue(): Invalid value type: ${valueType}`
+  );
+  assert(
+    value >= 0 && value <= 0xffffff,
+    `pixelStoreValue(): Invalid value: ${value}`
+  );
   // Build value to send
   const storeValue = ((valueType << 24) | value) >>> 0;
   // And send it to die
-  const ack = (await pixel.sendAndWaitForResponse(
-    safeAssign(new StoreValue(), { value: storeValue }),
-    "storeValueAck"
-  )) as StoreValueAck;
+  const ack =
+    pixel instanceof Pixel
+      ? ((await pixel.sendAndWaitForResponse(
+          safeAssign(new StoreValue(), { value: storeValue }),
+          "storeValueAck"
+        )) as StoreValueAck)
+      : ((await pixel.sendAndWaitForResponse(
+          safeAssign(new ChargerMessages.StoreValue(), { value: storeValue }),
+          "storeValueAck"
+        )) as ChargerMessages.StoreValueAck);
   // Check result
   const result =
     getValueKeyName(ack.result, StoreValueResultValues) ?? "unknownError";
