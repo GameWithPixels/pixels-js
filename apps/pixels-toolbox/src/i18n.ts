@@ -74,6 +74,7 @@ i18n
           // Battery statuses
           low: "Low",
           charging: "Charging",
+          trickleCharging: "Trickle Charging",
           done: "Done",
           badCharging: "Bad Charging",
           error: "Error",

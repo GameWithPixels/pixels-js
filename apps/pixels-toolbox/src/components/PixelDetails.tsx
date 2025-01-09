@@ -11,6 +11,7 @@ import {
   PrebuildAnimationsExt,
 } from "@systemic-games/pixels-edit-animation";
 import {
+  ChargerBatteryStateValues,
   ChargerMessages,
   DiceUtils,
   Pixel,
@@ -207,7 +208,8 @@ function ChargerInfo({ charger }: { charger: PixelDispatcher }) {
       </TextEntry>
       <TextEntry title={t("chargingState")}>
         {t(
-          getValueKeyName(battery?.state, PixelBatteryStateValues) ?? "unknown"
+          getValueKeyName(battery?.state, ChargerBatteryStateValues) ??
+            "unknown"
         )}
       </TextEntry>
       <TextEntry title={t("rssi")}>

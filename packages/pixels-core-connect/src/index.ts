@@ -1,4 +1,5 @@
 export * from "./Charger";
+export * from "./ChargerBatteryState";
 export * as ChargerMessages from "./ChargerMessages";
 export * from "./Constants";
 export * from "./DieMessages";
