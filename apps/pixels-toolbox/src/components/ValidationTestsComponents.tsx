@@ -883,14 +883,10 @@ export function WaitCharging({
     )
     .withTask(
       React.useCallback(async () => {
-        if (
-          !skipBatteryLevelRef.current &&
-          !isBoard(settings.sequence) &&
-          pixel.batteryLevel < 75
-        ) {
+        if (!skipBatteryLevelRef.current && pixel.batteryLevel < 75) {
           throw new LowBatteryError(pixel.batteryLevel);
         }
-      }, [pixel, settings.sequence]),
+      }, [pixel]),
       createTaskStatusContainer(t("batteryLevel")),
       { skip: !notCharging || !dieFinal }
     )
