@@ -521,7 +521,8 @@ function BottomButtons({
 }) {
   const status = usePixelStatus(pd.pixel);
   const connectStr = status === "disconnected" ? "connect" : "disconnect";
-  const isCharger = pd instanceof ChargerDispatcher; // TODO until we have a better support for chargers
+  const charger =
+    pd instanceof ChargerDispatcher ? (pd as ChargerDispatcher) : null; // TODO until we have a better support for chargers
 
   // Charger mode modal
   const {
@@ -575,7 +576,7 @@ function BottomButtons({
           <Button onPress={() => pd.dispatch(connectStr)}>
             {t(connectStr)}
           </Button>
-          {status === "ready" && !isCharger && (
+          {status === "ready" && !charger && (
             <>
               <Button onPress={showDischarge}>{t("discharge")}</Button>
               <Button onPress={() => pd.dispatch("blinkId")}>
@@ -711,33 +712,28 @@ function BottomButtons({
               </Button>
             </>
           )}
-          {!isCharger && (
+          {!charger && (
             <Button onPress={onPrintLabel}>{t("printLabel")}</Button>
           )}
-          {status === "ready" && isCharger && (
+          {status === "ready" && charger && (
             <>
-              <Button
-                onPress={() => (pd as ChargerDispatcher).dispatch("blink")}
-              >
+              <Button onPress={() => charger.dispatch("blink")}>
                 {t("blink")}
               </Button>
-              <Button
-                onPress={() => (pd as ChargerDispatcher).dispatch("turnOff")}
-              >
+              <Button onPress={() => pd.dispatch("blinkId")}>
+                {t("blinkId")}
+              </Button>
+              <Button onPress={() => charger.dispatch("turnOff")}>
                 {t("turnOff")}
               </Button>
-              <Button
-                onPress={() =>
-                  (pd as ChargerDispatcher).dispatch("exitValidation")
-                }
-              >
+              <Button onPress={() => charger.dispatch("exitValidation")}>
                 {t("exitValidationMode")}
               </Button>
             </>
           )}
         </BaseVStack>
         <BaseVStack gap={4}>
-          {status === "ready" && !isCharger && (
+          {status === "ready" && !charger && (
             <>
               <Button onPress={() => pd.dispatch("turnOff")}>
                 {t("turnOff")}
@@ -781,11 +777,9 @@ function BottomButtons({
               </Button>
             </>
           )}
-          {status === "ready" && isCharger && (
+          {status === "ready" && charger && (
             <>
-              <Button
-                onPress={() => (pd as ChargerDispatcher).dispatch("rename")}
-              >
+              <Button onPress={() => charger.dispatch("rename")}>
                 {t("rename")}
               </Button>
               <Menu
@@ -803,7 +797,7 @@ function BottomButtons({
                     key={runMode}
                     title={runMode}
                     onPress={() => {
-                      (pd as ChargerDispatcher).dispatch("setRunMode", runMode);
+                      charger.dispatch("setRunMode", runMode);
                       hideSetRunModeMenu();
                     }}
                   />

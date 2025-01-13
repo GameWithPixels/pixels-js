@@ -26,7 +26,11 @@ import {
   getChargerDispatcher,
   DeviceDispatcherStatic as Static,
 } from "./dispatchers";
-import { pixelStoreValue, PixelValueStoreType } from "./extensions";
+import {
+  pixelBlinkId,
+  pixelStoreValue,
+  PixelValueStoreType,
+} from "./extensions";
 
 import { store } from "~/app/store";
 import DfuFilesBundle from "~/features/dfu/DfuFilesBundle";
@@ -44,6 +48,7 @@ export interface ChargerDispatcherActionMap {
   disconnect: undefined;
   reportRssi: boolean;
   blink: undefined;
+  blinkId: undefined;
   rename: string;
   queueDFU: undefined;
   dequeueDFU: undefined;
@@ -386,6 +391,9 @@ export class ChargerDispatcher
           this._charger.blink(Color.dimOrange, { count: 2, fade: 64 }),
           action
         );
+        break;
+      case "blinkId":
+        this._guard(pixelBlinkId(this._charger, { loop: true }), action);
         break;
       case "rename":
         this._guard(

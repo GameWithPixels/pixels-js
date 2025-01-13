@@ -35,14 +35,24 @@ function log(pixel: { name: string }, message: string): void {
  * @param opt.loop Whether to indefinitely loop the animation.
  */
 export async function pixelBlinkId(
-  pixel: Pixel,
+  pixel: Pixel | Charger,
   opt?: { brightness?: number; loop?: boolean }
 ): Promise<void> {
-  const blinkMsg = safeAssign(new BlinkId(), {
+  const data = {
     brightness: opt?.brightness ? opt?.brightness : 0x10,
     loopCount: opt?.loop ? 0xff : 1,
-  });
-  await pixel.sendAndWaitForResponse(blinkMsg, "blinkIdAck");
+  };
+  if (pixel instanceof Pixel) {
+    await pixel.sendAndWaitForResponse(
+      safeAssign(new BlinkId(), data),
+      "blinkIdAck"
+    );
+  } else {
+    await pixel.sendAndWaitForResponse(
+      safeAssign(new ChargerMessages.BlinkId(), data),
+      "blinkIdAck"
+    );
+  }
 }
 
 /**
