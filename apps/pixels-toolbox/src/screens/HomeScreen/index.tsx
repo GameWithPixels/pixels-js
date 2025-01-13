@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { assert } from "@systemic-games/pixels-core-utils";
 import * as Updates from "expo-updates";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -28,6 +29,14 @@ function DfuBundleSelection({
   // DFU files bundles are loaded asynchronously
   const [selectedDfuBundle, availableDfuBundles, dfuBundlesError] =
     useAppDfuFilesBundles();
+  const validationFW = availableDfuBundles.find(
+    (b) => b.kind === "factory" && b.date.getTime() > 0 // Ignore reconfigure FW
+  );
+  assert(
+    !availableDfuBundles.length || validationFW,
+    "Validation FW not found"
+  );
+
   const noDFUFilesError = dfuBundlesError instanceof NoDfuFileLoadedError;
   const dfuFilesLoading = !selectedDfuBundle && !dfuBundlesError;
 
@@ -73,10 +82,11 @@ function DfuBundleSelection({
               </Text>
               {selectedDfuBundle && (
                 <Text>
-                  {availableDfuBundles.indexOf(selectedDfuBundle) === 0
+                  {selectedDfuBundle === validationFW
                     ? "(Same As Validation)"
                     : `(${
-                        selectedDfuBundle.date > availableDfuBundles[0].date
+                        !validationFW ||
+                        selectedDfuBundle.date > validationFW.date
                           ? "More recent"
                           : "Older"
                       } than Validation)`}
