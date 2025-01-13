@@ -7,7 +7,7 @@ import {
 import React from "react";
 import { View } from "react-native";
 import { Button, Text, ThemeProvider, useTheme } from "react-native-paper";
-import { FadeIn } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { useAppStore } from "~/app/hooks";
@@ -19,7 +19,6 @@ import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { ScanningIndicator } from "~/components/ScanningIndicator";
 import { TouchableCard } from "~/components/TouchableCard";
-import { AnimatedText } from "~/components/animated";
 import { GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { pairDie } from "~/features/dice";
@@ -147,27 +146,34 @@ function SelectScannedPixels({
             />
           ))
         ) : (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-              marginLeft: 10,
-            }}
-          >
-            <ScanningIndicator />
-            <AnimatedText
-              key={showNoDie ? "empty" : "scanning"}
-              entering={FadeIn.duration(300)}
-              variant="bodyMedium"
-              style={{}}
+          <View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: 20,
+                marginLeft: 20,
+                gap: 30,
+              }}
             >
-              {showNoDie
-                ? getNoAvailableDiceMessage() +
-                  `\n\nFor help about turning on your dice go in the "More" tab`
-                : "Scanning for dice..."}
-              .
-            </AnimatedText>
+              <ScanningIndicator />
+              <Text variant="bodyMedium">Scanning for dice...</Text>
+            </View>
+            {showNoDie && (
+              <Animated.View
+                entering={FadeIn.duration(300)}
+                style={{
+                  marginTop: 30,
+                  marginHorizontal: 20,
+                  gap: 20,
+                }}
+              >
+                <Text variant="bodyMedium">{getNoAvailableDiceMessage()}</Text>
+                <Text variant="bodyMedium">
+                  For help about turning on your dice go in the "More" tab.
+                </Text>
+              </Animated.View>
+            )}
           </View>
         )}
       </BottomSheetScrollView>
