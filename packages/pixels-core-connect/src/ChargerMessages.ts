@@ -55,6 +55,8 @@ export const ChargerMessageTypeValues = {
   temperature: enumValue(),
   requestSlotsStatuses: enumValue(),
   slotsStatuses: enumValue(),
+  blinkId: enumValue(),
+  blinkIdAck: enumValue(),
 
   // Testing
   testBulkSend: enumValue(),
@@ -720,6 +722,26 @@ export class SlotsStatuses implements PixelMessage {
   }
 }
 
+/**
+ * Message send to a Charger to make it blink its Pixel Id.
+ * @category Message
+ */
+export class BlinkId implements PixelMessage {
+  /** Type of the message. */
+  @serializable(1)
+  readonly type = ChargerMessageTypeValues.blinkId;
+
+  /**
+   * The brightness of the blinking LEDs.
+   */
+  @serializable(1)
+  brightness = 0;
+
+  /** How many times to loop the animation. */
+  @serializable(1)
+  loopCount = 1;
+}
+
 export type ChargerSlotStatus = ReturnType<SlotsStatuses["asArray"]>[0];
 
 export const serializer = new MessageSerializer<ChargerMessageType>(
@@ -742,5 +764,6 @@ export const serializer = new MessageSerializer<ChargerMessageType>(
     PowerOperation,
     Temperature,
     SlotsStatuses,
+    BlinkId,
   ]
 );

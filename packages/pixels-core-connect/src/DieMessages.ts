@@ -1044,7 +1044,7 @@ export class Discharge implements PixelMessage {
 }
 
 /**
- * Message send to a Pixel to make it blink it Pixel Id.
+ * Message send to a Pixel to make it blink its Pixel Id.
  * @category Message
  */
 export class BlinkId implements PixelMessage {
