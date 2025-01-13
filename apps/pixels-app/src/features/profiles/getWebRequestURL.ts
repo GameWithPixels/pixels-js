@@ -62,7 +62,7 @@ export function getWebRequestURL(
     value4: string
   ) {
     url = url.trim();
-    const params = `value1=${value1}&value2=${value2}&value3=${value3}&value4=${value4}`;
+    const params = `value1=${encodeURIComponent(value1)}&value2=${encodeURIComponent(value2)}&value3=${encodeURIComponent(value3)}&value4=${encodeURIComponent(value4)}`;
     return `${url}${
       !url.includes("?") ? "?" : !url.endsWith("&") ? "&" : ""
     }${params}`;
