@@ -9,10 +9,12 @@ import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import { logWrite } from "./logWrite";
 import { LibraryData } from "./types";
 
-export type GradientsState = EntityState<Serializable.GradientData>;
+type GradientData = Serializable.GradientData;
+
+export type GradientsState = EntityState<GradientData>;
 
 export const gradientsAdapter = createEntityAdapter({
-  selectId: (gradient: Readonly<Serializable.GradientData>) => gradient.uuid,
+  selectId: (gradient: Readonly<GradientData>) => gradient.uuid,
 });
 
 const gradientsSlice = createSlice({
@@ -25,13 +27,13 @@ const gradientsSlice = createSlice({
       return gradientsAdapter.addMany(state, action.payload.gradients);
     },
 
-    add(state, action: PayloadAction<Serializable.GradientData>) {
+    add(state, action: PayloadAction<GradientData>) {
       const gradient = action.payload;
       gradientsAdapter.addOne(state, gradient);
       logWrite("add", "gradient", gradient.uuid);
     },
 
-    update(state, action: PayloadAction<Serializable.GradientData>) {
+    update(state, action: PayloadAction<GradientData>) {
       const gradient = action.payload;
       gradientsAdapter.setOne(state, gradient);
       logWrite("update", "gradient", gradient.uuid);

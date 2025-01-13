@@ -86,8 +86,7 @@ export function PixelFocusViewHeader({
   const store = useAppStore();
   const central = usePixelsCentral();
   const pixel = useRegisteredPixel(pairedDie);
-  const status = usePixelStatus(pixel);
-  const ready = status === "ready";
+  const ready = usePixelStatus(pixel) === "ready";
   const hasFirmwareUpdate = useHasFirmwareUpdate(pairedDie.pixelId);
   const [actionsMenuVisible, setActionsMenuVisible] = React.useState(false);
 
@@ -187,7 +186,7 @@ export function PixelFocusViewHeader({
               x: (windowWidth - 230) / 2,
               y: Platform.OS === "ios" ? 40 : 50,
             }}
-            disconnected={!ready}
+            ready={ready}
             onDismiss={() => setActionsMenuVisible(false)}
             onUnpair={onUnpair}
             onUpdateFirmware={hasFirmwareUpdate ? onFirmwareUpdate : undefined}

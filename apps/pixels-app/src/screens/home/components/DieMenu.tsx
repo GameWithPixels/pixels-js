@@ -12,7 +12,7 @@ import { AppStyles } from "~/app/styles";
 import { getBorderRadius } from "~/features/getBorderRadius";
 
 export function DieMenu({
-  disconnected,
+  ready,
   onUnpair,
   onUpdateFirmware,
   onRename,
@@ -21,7 +21,7 @@ export function DieMenu({
   onTurnOff,
   ...props
 }: {
-  disconnected?: boolean;
+  ready?: boolean;
   onUnpair: () => void;
   onUpdateFirmware?: () => void;
   onRename?: () => void;
@@ -65,7 +65,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Rename"
-            disabled={!!disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
                 name="rename-box"
@@ -86,7 +86,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Calibrate"
-            disabled={disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <CalibrateIcon size={size} color={color} />
             )}
@@ -103,7 +103,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Reset Die Settings"
-            disabled={disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <Feather name="refresh-ccw" size={size} color={color} />
             )}
@@ -120,7 +120,7 @@ export function DieMenu({
         <>
           <Menu.Item
             title="Turn Off"
-            disabled={disconnected}
+            disabled={!ready}
             trailingIcon={({ size, color }) => (
               <MaterialCommunityIcons
                 name="power-standby"

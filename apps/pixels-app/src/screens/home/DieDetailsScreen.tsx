@@ -3,7 +3,6 @@ import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import {
   Pixel,
   Profiles,
-  usePixelEvent,
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
@@ -55,7 +54,7 @@ export function DieStatus({
   ...props
 }: { pixel?: Pixel } & ViewProps) {
   const status = usePixelStatus(pixel);
-  const [rssi] = usePixelEvent(pixel, "rssi");
+  const rssi = usePixelProp(pixel, "rssi");
   const batteryLevel = usePixelProp(pixel, "batteryLevel");
   const isCharging = usePixelProp(pixel, "isCharging");
   const rollState = usePixelProp(pixel, "rollState");
@@ -90,7 +89,7 @@ export function DieStatus({
                 size={16}
                 color={colors.onSurface}
               />{" "}
-              {rssi ?? pixel.rssi} dBm
+              {rssi ?? 0} dBm
             </Text>
             <Text>
               Battery:{" "}
@@ -245,11 +244,12 @@ export function DieDetailsScreen({
   navigation,
 }: DieDetailsScreenProps) {
   const pairedDie = useSetSelectedPairedDie(pixelId);
-  if (!pairedDie) {
-    navigation.goBack();
-    return null;
-  }
-  return (
+  React.useEffect(() => {
+    if (!pairedDie) {
+      navigation.goBack();
+    }
+  }, [pairedDie, navigation]);
+  return !pairedDie ? null : (
     <AppBackground>
       <DieDetailsPage pairedDie={pairedDie} navigation={navigation} />
       <SelectedPixelTransferProgressBar />

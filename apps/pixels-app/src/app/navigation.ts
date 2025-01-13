@@ -121,9 +121,7 @@ export type DiceRollerScreenProps = NativeStackScreenProps<
 
 // Edit Die Profile screens
 export type EditDieProfileStackParamList = {
-  editDieProfile: {
-    pixelId: number;
-  };
+  editDieProfile: { pixelId: number };
 } & EditProfileSubStackParamList;
 
 export type EditDieProfileScreenProps = NativeStackScreenProps<

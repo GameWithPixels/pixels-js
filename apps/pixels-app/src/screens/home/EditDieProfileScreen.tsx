@@ -105,7 +105,7 @@ function SaveToLibraryDialog({
                 }
               }
               if (profileData && profileName.length) {
-                const profile = profileStore.profile;
+                const profile = profileStore.object;
                 if (profile) {
                   // Save to library
                   const uuid = generateProfileUuid(store.getState().library);
@@ -288,11 +288,12 @@ export function EditDieProfileScreen({
   navigation,
 }: EditDieProfileScreenProps) {
   const pairedDie = useSetSelectedPairedDie(pixelId);
-  if (!pairedDie) {
-    navigation.goBack();
-    return null;
-  }
-  return (
+  React.useEffect(() => {
+    if (!pairedDie) {
+      navigation.goBack();
+    }
+  }, [pairedDie, navigation]);
+  return !pairedDie ? null : (
     <AppBackground>
       <SaveProfileOnLeave
         profileUuid={pairedDie.profileUuid}

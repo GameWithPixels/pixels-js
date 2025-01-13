@@ -286,7 +286,7 @@ export function ProfilesList({
               profile={p}
               selected={p === selected}
               fadeInDelay={i * 50}
-              onPress={() => onSelectProfile?.(p)}
+              onPress={onSelectProfile ? () => onSelectProfile(p) : undefined}
             />
           ))}
         </View>
@@ -317,7 +317,7 @@ function ProfilesColumn({
           fadeInDuration={500}
           fadeInDelay={i * 100}
           contentStyle={{ height: 200 }}
-          onPress={() => onSelectProfile?.(p)}
+          onPress={onSelectProfile ? () => onSelectProfile(p) : undefined}
         />
       ))}
     </View>

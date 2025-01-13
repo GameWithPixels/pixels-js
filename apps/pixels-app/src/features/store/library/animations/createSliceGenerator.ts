@@ -9,14 +9,15 @@ import { Serializable } from "@systemic-games/react-native-pixels-connect";
 import { logWrite } from "../logWrite";
 import { LibraryData } from "../types";
 
-export type AnimationsState<T extends Serializable.AnimationData> =
-  EntityState<T>;
+type AnimationData = Serializable.AnimationData;
+
+export type AnimationsState<T extends AnimationData> = EntityState<T>;
 
 export const animationsAdapter = createEntityAdapter({
-  selectId: (anim: Readonly<Serializable.AnimationData>) => anim.uuid,
+  selectId: (anim: Readonly<AnimationData>) => anim.uuid,
 });
 
-export function createSliceGenerator<T extends Serializable.AnimationData>(
+export function createSliceGenerator<T extends AnimationData>(
   name: keyof Serializable.AnimationSetData
 ) {
   return createSlice({

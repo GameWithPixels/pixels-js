@@ -2,82 +2,18 @@ import {
   Profiles,
   Serializable,
 } from "@systemic-games/react-native-pixels-connect";
-import { makeAutoObservable, reaction, runInAction } from "mobx";
+import { reaction, runInAction } from "mobx";
 import React from "react";
 
 import { useAppStore } from "~/app/hooks";
 import { AppStore } from "~/app/store";
 import { computeProfileHashWithOverrides } from "~/features/profiles";
-import { Library, readProfile } from "~/features/store";
+import { ObservableObjectStore, Library, readProfile } from "~/features/store";
 import { logError } from "~/features/utils";
 
-export class EditableProfileStore {
-  private readonly _profileUuid: string;
-  private _profile?: Profiles.Profile;
-  private readonly _createProfile: () => Profiles.Profile;
-  private _disposer?: () => void;
-  private _counter = 0;
-  private _version = 0;
-
-  get isTaken(): boolean {
-    return this._counter > 0;
-  }
-
-  get profile(): Profiles.Profile | undefined {
-    return this._profile;
-  }
-
-  get version(): number {
-    return this._version;
-  }
-
-  constructor(profileUuid: string, createProfile: () => Profiles.Profile) {
-    this._profileUuid = profileUuid;
-    this._createProfile = createProfile;
-    makeAutoObservable(this);
-  }
-
-  getOrCreateProfile(): Profiles.Profile {
-    if (!this._profile) {
-      this._profile = this._createProfile();
-    }
-    return this._profile;
-  }
-
-  take(): () => void {
-    if (!this._disposer) {
-      this._disposer = reaction(
-        () => {
-          const profile = this.getOrCreateProfile();
-          // React on all properties of the profile except `lastModified`
-          const keys = Object.getOwnPropertyNames(profile);
-          return (keys as (keyof Profiles.Profile)[])
-            .filter((k) => k !== "lastModified")
-            .map((k) => JSON.stringify(profile[k]))
-            .join(",");
-        },
-        () => this._version++
-      );
-    }
-    this._counter++;
-    return () => this.release();
-  }
-
-  release(): void {
-    this._counter--;
-    if (this._counter <= 0) {
-      this._disposer?.();
-      this._disposer = undefined;
-      this._version = 0;
-      this._counter = 0;
-      this._profile = undefined;
-    }
-  }
-
-  resetVersion(): void {
-    this._version = 0;
-  }
-}
+export const EditableProfileStore = ObservableObjectStore<Profiles.Profile>;
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type EditableProfileStore = InstanceType<typeof EditableProfileStore>;
 
 export const EditableProfileStoreGetterContext = React.createContext({
   getEditableProfileStore(_profileUuid: string): EditableProfileStore {
@@ -97,7 +33,7 @@ export function useEditableProfileStore(
 
 // Returns an observable profile that is editable
 export function useEditableProfile(profileUuid: string): Profiles.Profile {
-  return useEditableProfileStore(profileUuid).getOrCreateProfile();
+  return useEditableProfileStore(profileUuid).getOrCreate();
 }
 
 export function useIsEditableProfileModified(profileUuid: string): boolean {
@@ -123,7 +59,7 @@ export function useCommitEditableProfile(
   const profileStore = useEditableProfileStore(profileUuid);
   return React.useCallback(
     (sourceUuid?: string) => {
-      const profile = profileStore.profile;
+      const profile = profileStore.object;
       if (profile && profileStore.version) {
         commitEditableProfile(profile, store, sourceUuid);
         profileStore.resetVersion();
