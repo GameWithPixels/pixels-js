@@ -45,7 +45,9 @@ function ConnectionStatusBar() {
     return () => clearInterval(id);
   }, [pairedDice, forceUpdate]);
   const central = usePixelsCentral();
-  const pixels = pairedDice.map(({ pixelId }) => central.getPixel(pixelId));
+  const pixels = pairedDice.map(({ pixelId }) =>
+    central.getPixelConnect(pixelId)
+  );
   const connectingCount = pixels.filter(
     (p) => p?.status === "connecting" || p?.status === "identifying"
   ).length;

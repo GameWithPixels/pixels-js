@@ -11,14 +11,18 @@ import {
 import {
   Color,
   ConnectError,
+  getScannedDeviceNotifier,
   Pixel,
+  PixelConnect,
   PixelConnectEventMap,
+  PixelConnectMutableProps,
   PixelEventMap,
-  PixelMutableProps,
   ScannedBootloaderNotifier,
+  ScannedDeviceNotifier,
   ScannedPixel,
   ScannedPixelNotifier,
   ScanStatus,
+  updateScannedDeviceNotifier,
 } from "@systemic-games/react-native-pixels-connect";
 
 import {
@@ -75,7 +79,7 @@ function getScheduler(pixelId: number): PixelScheduler {
   return PixelScheduler.getScheduler(pixelId);
 }
 
-function getPixel(pixelId?: number): Pixel | undefined {
+function getPixel(pixelId?: number): PixelConnect | undefined {
   return pixelId ? PixelScheduler.getScheduler(pixelId).pixel : undefined;
 }
 
@@ -99,12 +103,12 @@ function isGattError(error: Error): boolean {
 }
 
 async function waitConnectedAsync(
-  pixel: Pixel,
+  pixel: PixelConnect,
   timeout = 20000
 ): Promise<boolean> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   let resolveConnected: () => void;
-  const onStatus = ({ status }: PixelMutableProps) =>
+  const onStatus = ({ status }: PixelConnectMutableProps) =>
     isConnected(status) && resolveConnected();
   pixel.addPropertyListener("status", onStatus);
   try {
@@ -157,32 +161,36 @@ export type PixelsCentralEventMap = Readonly<{
   connectQueue: Readonly<ConnectQueue>;
   pixelInDFU: number | undefined;
 
-  // Events
-  onScanError: Readonly<{ error: Error }>;
-  onAvailability: Readonly<{
-    status: "available" | "lost" | "registered";
-    notifier: ScannedPixelNotifier;
-  }>;
+  // Registration events
   onRegisterPixel: Readonly<{ pixelId: number }>; // New registered Pixel
   onUnregisterPixel: Readonly<{ pixelId: number }>; // Pixel was unregistered
-  onPixelScanned: Readonly<{
-    status: "scanned" | "lost";
-    notifier: ScannedPixelNotifier;
+
+  // Scanning
+  onScanError: Readonly<{ error: Error }>;
+  onDeviceFound: Readonly<{ device: PixelConnect }>; // Registered Pixel was found (only happens on the first scan)
+  onUnregisteredDeviceScanned: Readonly<{
+    status: "scanned" | "lost" | "registered";
+    notifier: Exclude<ScannedDeviceNotifier, ScannedBootloaderNotifier>;
   }>;
-  onPixelFound: Readonly<{ pixel: Pixel }>; // Registered Pixel was found (scanned)
-  onPixelBootloader: Readonly<{
+  onRegisteredDeviceScanned: Readonly<{
+    status: "scanned" | "lost";
+    notifier: Exclude<ScannedDeviceNotifier, ScannedBootloaderNotifier>;
+  }>;
+  onPixelBootloaderScanned: Readonly<{
     status: "scanned" | "lost";
     notifier: ScannedBootloaderNotifier;
   }>;
+
+  // Connection
   onConnectionLimitReached: Readonly<{
     pixelId: number;
     disconnectId?: number;
   }>; // Failed to connect Pixel because connection limit was reached
 
-  // Data transfer events
+  // Data transfer
   onDataTransfer: Readonly<{ pixelId: number } & PixelEventMap["dataTransfer"]>;
 
-  // DFU events
+  // DFU
   onDfuState: Readonly<{ pixelId: number; state: PixelsCentralDfuState }>;
   onDfuProgress: Readonly<{ pixelId: number; progress: number }>;
 }>;
@@ -249,7 +257,9 @@ export class PixelsCentral {
     const pixels: Pixel[] = [];
     for (const pixelId of this._pixels.keys()) {
       const pixel = getPixel(pixelId);
-      pixel && pixels.push(pixel);
+      if (pixel instanceof Pixel) {
+        pixels.push(pixel);
+      }
     }
     return pixels;
   }
@@ -360,7 +370,7 @@ export class PixelsCentral {
   }
 
   // Returns the Pixel with the given id, if it is registered
-  getPixel(pixelId: number): Pixel | undefined {
+  getPixelConnect(pixelId: number): PixelConnect | undefined {
     if (this._pixels.has(pixelId)) {
       return getPixel(pixelId);
     }
@@ -380,21 +390,19 @@ export class PixelsCentral {
     }
     if (!this._pixels.has(pixelId)) {
       log(pixelId, "Registering Pixel");
-      this._pixels.set(pixelId, {});
+      const data = {};
+      this._pixels.set(pixelId, data);
       this._emitEvent("onRegisterPixel", { pixelId });
       // Emit "registered" event so this Pixel is not
       // reported as available anymore
-      const notifier = ScannedPixelNotifier.findInstance(pixelId);
+      const notifier = getScannedDeviceNotifier(pixelId);
       notifier &&
-        this._emitEvent("onAvailability", {
+        notifier.type !== "bootloader" &&
+        this._emitEvent("onUnregisteredDeviceScanned", {
           status: "registered",
           notifier,
         });
-      // Pixels list changes only if Pixel instance exists
-      if (getPixel(pixelId)) {
-        // We have a Pixel instance, meaning it has already been scanned
-        this._onPixelFound(pixelId);
-      }
+      this._onPixelFound(pixelId, data);
     }
   }
 
@@ -433,68 +441,71 @@ export class PixelsCentral {
         ev: ScanRequesterEventMap["onScanListChange"]
       ) => {
         for (const op of ev.ops) {
-          if (op.item.type === "die") {
-            const { pixelId } = op.item;
-            const scanStatus = op.status;
-            switch (scanStatus) {
-              case "scanned": {
-                this._connectQueue.includes(pixelId) &&
+          const scanStatus = op.status;
+          const { pixelId } = op.item;
+          switch (scanStatus) {
+            case "scanned": {
+              // Always update notifier
+              const notifier = updateScannedDeviceNotifier(op.item);
+              if (notifier.type !== "bootloader") {
+                // Not in bootloader if getting scanned
+                this._notifyNotInBootloader(pixelId);
+                const data = this._pixels.get(pixelId);
+                if (!data) {
+                  // Report device as available
+                  this._emitEvent("onUnregisteredDeviceScanned", {
+                    status: "scanned",
+                    notifier,
+                  });
+                } else {
+                  this._onScannedPixel(notifier, data);
+                }
+              } else {
+                // Track time of first & last bootloader scan
+                const data = this._bootloaderDice.get(pixelId);
+                if (!data) {
                   log(
                     pixelId,
-                    `Scanned connecting Pixel, delay=${Date.now() - op.item.timestamp.getTime()}`
+                    `Scanned Bootloader, delay=${Date.now() - op.item.timestamp.getTime()}`
                   );
-                // Always update notifier
-                this._onScannedPixel(ScannedPixelNotifier.getInstance(op.item));
-                break;
+                  this._bootloaderDice.set(pixelId, {
+                    firstScan: notifier.timestamp.getTime(),
+                    lastScan: notifier.timestamp.getTime(),
+                  });
+                } else {
+                  data.lastScan = notifier.timestamp.getTime();
+                  // Notify
+                  if (data.lastScan - data.firstScan > bootloaderScanTimeSpan) {
+                    this._emitEvent("onPixelBootloaderScanned", {
+                      status: "scanned",
+                      notifier,
+                    });
+                  }
+                }
               }
-              case "lost": {
-                this._connectQueue.includes(pixelId) &&
-                  log(pixelId, "Lost connecting Pixel");
-                const notifier = ScannedPixelNotifier.findInstance(pixelId);
-                notifier &&
+              break;
+            }
+            case "lost": {
+              const notifier = getScannedDeviceNotifier(pixelId);
+              if (notifier) {
+                if (notifier.type !== "bootloader") {
                   this._emitEvent(
                     this._pixels.has(pixelId)
-                      ? "onPixelScanned"
-                      : "onAvailability",
+                      ? "onRegisteredDeviceScanned"
+                      : "onUnregisteredDeviceScanned",
                     {
                       status: "lost",
                       notifier,
                     }
                   );
-                break;
-              }
-              default:
-                assertNever(scanStatus);
-            }
-          } else if (op.item.type === "bootloader") {
-            if (op.status === "scanned") {
-              // Always update notifier
-              const notifier = ScannedBootloaderNotifier.getInstance(op.item);
-              const { pixelId } = notifier;
-              // Track time of first & last bootloader scan
-              const data = this._bootloaderDice.get(pixelId);
-              if (!data) {
-                log(
-                  pixelId,
-                  `Scanned Bootloader, delay=${Date.now() - op.item.timestamp.getTime()}`
-                );
-                this._bootloaderDice.set(pixelId, {
-                  firstScan: notifier.timestamp.getTime(),
-                  lastScan: notifier.timestamp.getTime(),
-                });
-              } else {
-                data.lastScan = notifier.timestamp.getTime();
-                // Notify
-                if (data.lastScan - data.firstScan > bootloaderScanTimeSpan) {
-                  this._emitEvent("onPixelBootloader", {
-                    status: "scanned",
-                    notifier,
-                  });
+                } else {
+                  this._notifyNotInBootloader(pixelId);
                 }
               }
-            } else {
-              this._notifyNotInBootloader(op.item.pixelId);
+              break;
             }
+            default:
+              assertNever(scanStatus);
           }
         }
       };
@@ -675,7 +686,7 @@ export class PixelsCentral {
         : undefined;
 
       // Get Pixel instance again as it might have been discovered during the scan
-      const pixel = this.getPixel(pixelId);
+      const pixel = this.getPixelConnect(pixelId);
       // We also might have connected during the scan
       const timestamp = (
         isConnected(pixel?.status) // Don't use old timestamp if not connected
@@ -785,7 +796,11 @@ export class PixelsCentral {
         // TODO: What we should really do is store the fact that we need to reset
         // the settings and let the app handle the reset on the next connection
         const FW_2024_03_25 = 1711398391000;
-        if (timestamp <= FW_2024_03_25 && pixel.ledCount <= 6) {
+        if (
+          pixel instanceof Pixel &&
+          timestamp <= FW_2024_03_25 &&
+          pixel.ledCount <= 6
+        ) {
           try {
             warn(pixelId, "🔄 DFU: Resetting settings");
             await this._reprogramNormals(pixel);
@@ -846,96 +861,99 @@ export class PixelsCentral {
     }
   }
 
-  private _onScannedPixel(notifier: ScannedPixelNotifier): void {
+  private _onScannedPixel(
+    notifier: Exclude<ScannedDeviceNotifier, ScannedBootloaderNotifier>,
+    data: NonNullable<ReturnType<typeof this._pixels.get>>
+  ): void {
     const pixelId = notifier.pixelId;
-    // Not in bootloader if getting scanned
-    this._notifyNotInBootloader(pixelId);
-    // Check if Pixel is registered
-    const data = this._pixels.get(pixelId);
-    if (data) {
-      // Report Pixel as available
-      this._emitEvent("onPixelScanned", { status: "scanned", notifier });
-      // Emit event if Pixel registered and scanned for the first time
-      if (this._onPixelFound(pixelId)) {
-        // Try to immediately connect if queued for connection
-        this._scheduleConnectIfQueued(pixelId, data);
-      } else {
-        // Track time of last scan
-        const scanTime = notifier.timestamp.getTime();
-        if (
-          // Check that we are still scanning for this Pixel
-          data.scanEndTime &&
-          scanTime < data.scanEndTime + connectionRelease.gracePeriod &&
-          // And that we are past the time to attempt to release a connection
-          data.nextDiscoOnScan &&
-          scanTime > data.nextDiscoOnScan && // Use last scan time to be sure we're not using a scan that occurred while disconnected
-          // Only for dice connecting as high priority
-          this._connectQueue.isHighPriority(pixelId)
-        ) {
-          // We might end up here while being disconnected but still in the connect queue
-          // (meaning a reconnection is or will be scheduled)
-          if (getPixel(pixelId)?.status === "connecting") {
-            // Set new connection release time
-            data.nextDiscoOnScan = Date.now() + connectionRelease.interval;
-            // We've probably reach the maximum number of connections, attempt to disconnect one die
-            this._tryReleaseOneConnection(pixelId);
-          } else {
-            data.nextDiscoOnScan += reconnectionDelay.short;
-          }
-          // Schedule new scan
-          this._scheduleScan(pixelId, data);
-        }
-      }
+    this._connectQueue.includes(pixelId) &&
+      log(
+        pixelId,
+        `Scanned connecting Pixels ${notifier.type}, delay=${Date.now() - notifier.timestamp.getTime()}`
+      );
+    // Report Pixel as available
+    this._emitEvent("onRegisteredDeviceScanned", {
+      status: "scanned",
+      notifier,
+    });
+    // Emit event if Pixel registered and scanned for the first time
+    if (this._onPixelFound(pixelId, data)) {
+      // Try to immediately connect if queued for connection
+      this._scheduleConnectIfQueued(pixelId, data);
     } else {
-      // Report Pixel as available
-      this._emitEvent("onAvailability", {
-        status: "available",
-        notifier,
-      });
+      // Track time of last scan
+      const scanTime = notifier.timestamp.getTime();
+      if (
+        // Check that we are still scanning for this Pixel
+        data.scanEndTime &&
+        scanTime < data.scanEndTime + connectionRelease.gracePeriod &&
+        // And that we are past the time to attempt to release a connection
+        data.nextDiscoOnScan &&
+        scanTime > data.nextDiscoOnScan && // Use last scan time to be sure we're not using a scan that occurred while disconnected
+        // Only for dice connecting as high priority
+        this._connectQueue.isHighPriority(pixelId)
+      ) {
+        // We might end up here while being disconnected but still in the connect queue
+        // (meaning a reconnection is or will be scheduled)
+        if (getPixel(pixelId)?.status === "connecting") {
+          // Set new connection release time
+          data.nextDiscoOnScan = Date.now() + connectionRelease.interval;
+          // We've probably reach the maximum number of connections, attempt to disconnect one die
+          this._tryReleaseOneConnection(pixelId);
+        } else {
+          data.nextDiscoOnScan += reconnectionDelay.short;
+        }
+        // Schedule new scan
+        this._scheduleScan(pixelId, data);
+      }
     }
   }
 
-  private _onPixelFound(pixelId: number): true | undefined {
-    // Emit event once for registered Pixels
-    const data = this._pixels.get(pixelId);
-    if (data && !data.disposer) {
-      const pixel = getPixel(pixelId);
-      if (pixel) {
-        // Watch for Pixel connection status changes
-        const onStatus = (ev: PixelConnectEventMap["statusChanged"]) =>
-          this._onConnectionStatus(pixelId, ev);
-        pixel.addEventListener("statusChanged", onStatus);
+  private _onPixelFound(
+    pixelId: number,
+    data: NonNullable<ReturnType<typeof this._pixels.get>>
+  ): true | undefined {
+    const pixel = getPixel(pixelId);
+    if (!data.disposer && pixel) {
+      // Watch for Pixel connection status changes
+      const onStatus = (ev: PixelConnectEventMap["statusChanged"]) =>
+        this._onConnectionStatus(pixelId, ev);
+      pixel.addEventListener("statusChanged", onStatus);
 
-        // Data transfer progress
-        const onDataTransfer = (ev: PixelEventMap["dataTransfer"]) => {
-          this._transferStatuses.set(pixelId, ev);
-          this._emitEvent("onDataTransfer", { pixelId, ...ev });
-        };
+      // Data transfer progress
+      const onDataTransfer = (ev: PixelEventMap["dataTransfer"]) => {
+        this._transferStatuses.set(pixelId, ev);
+        this._emitEvent("onDataTransfer", { pixelId, ...ev });
+      };
+      if (pixel instanceof Pixel) {
         pixel.addEventListener("dataTransfer", onDataTransfer);
-
-        // Listen for scheduler events
-        const scheduler = getScheduler(pixelId);
-        const onConnectOpStatus = (
-          ev: PixelSchedulerEventMap["onOperationStatus"]
-        ) =>
-          ev.operation.type === "connect" &&
-          ev.status === "failed" &&
-          this._onConnectOperationFailed(pixel, ev.error);
-        scheduler.addListener("onOperationStatus", onConnectOpStatus);
-
-        // Store unhook function
-        data.disposer = () => {
-          pixel.removeEventListener("statusChanged", onStatus);
-          pixel.removeEventListener("dataTransfer", onDataTransfer);
-          scheduler.removeListener("onOperationStatus", onConnectOpStatus);
-        };
-
-        // Notify Pixels list changed
-        this._emitEvent("pixels", this.pixels);
-        // Notify Pixel found
-        this._emitEvent("onPixelFound", { pixel });
-        return true;
       }
+
+      // Listen for scheduler events
+      const scheduler = getScheduler(pixelId);
+      const onConnectOpStatus = (
+        ev: PixelSchedulerEventMap["onOperationStatus"]
+      ) =>
+        ev.operation.type === "connect" &&
+        ev.status === "failed" &&
+        this._onConnectOperationFailed(pixel, ev.error);
+      scheduler.addListener("onOperationStatus", onConnectOpStatus);
+
+      // Store unhook function
+      data.disposer = () => {
+        // Weird TypeScript error, but this is the correct type
+        (pixel as PixelConnect).removeEventListener("statusChanged", onStatus);
+        if (pixel instanceof Pixel) {
+          pixel.removeEventListener("dataTransfer", onDataTransfer);
+        }
+        scheduler.removeListener("onOperationStatus", onConnectOpStatus);
+      };
+
+      // Notify Pixels list changed
+      this._emitEvent("pixels", this.pixels);
+      // Notify Pixel found
+      this._emitEvent("onDeviceFound", { device: pixel });
+      return true;
     }
   }
 
@@ -988,11 +1006,14 @@ export class PixelsCentral {
     if (this._bootloaderDice.delete(pixelId)) {
       const notifier = ScannedBootloaderNotifier.findInstance(pixelId);
       notifier &&
-        this._emitEvent("onPixelBootloader", { status: "lost", notifier });
+        this._emitEvent("onPixelBootloaderScanned", {
+          status: "lost",
+          notifier,
+        });
     }
   }
 
-  _onConnectOperationFailed(pixel: Pixel, error: Error) {
+  _onConnectOperationFailed(pixel: PixelConnect, error: Error) {
     // Ignore connection canceled errors (and un-registered dice)
     const data = this._pixels.get(pixel.pixelId);
     if (!data || !isConnectionErrored(error)) {
@@ -1213,7 +1234,7 @@ export class PixelsCentral {
       return true;
     }
     return new Promise<boolean>((resolve) => {
-      const onStatus = ({ status }: PixelMutableProps) => {
+      const onStatus = ({ status }: PixelConnectMutableProps) => {
         if (status !== "disconnecting") {
           pixel.removePropertyListener("status", onStatus);
           resolve(status === "disconnected");

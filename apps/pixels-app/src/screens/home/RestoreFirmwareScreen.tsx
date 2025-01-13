@@ -241,7 +241,7 @@ function RestoreFirmwarePage({
   React.useEffect(() => {
     if (updateStep === "scanning")
       return central.addListener(
-        "onPixelBootloader",
+        "onPixelBootloaderScanned",
         ({ status, notifier }) => {
           setBootloaders((prev) => {
             if (status === "scanned") {

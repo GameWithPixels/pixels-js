@@ -150,12 +150,15 @@ function PixelDfuItem({
     });
   }, [central, pairedDie]);
   React.useEffect(() => {
-    return central.addListener("onPixelScanned", ({ status, notifier }) => {
-      if (notifier.pixelId === pairedDie.pixelId) {
-        lastScannedRef.current = status === "scanned";
-        setNotifier(lastScannedRef.current ? notifier : undefined);
+    return central.addListener(
+      "onRegisteredDeviceScanned",
+      ({ status, notifier }) => {
+        if (notifier.pixelId === pairedDie.pixelId) {
+          lastScannedRef.current = status === "scanned";
+          setNotifier(lastScannedRef.current ? notifier : undefined);
+        }
       }
-    });
+    );
   }, [central, pairedDie]);
 
   const connected = status === "ready" || status === "identifying";

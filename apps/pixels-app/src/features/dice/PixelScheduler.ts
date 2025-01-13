@@ -7,8 +7,9 @@ import {
 import {
   Color,
   DataSet,
-  getPixel,
+  getPixelsDevice,
   Pixel,
+  PixelConnect,
 } from "@systemic-games/react-native-pixels-connect";
 
 import { updateFirmware } from "~/features/dfu";
@@ -59,11 +60,11 @@ export type PixelSchedulerEventMap = Readonly<{
       | { status: "queued" | "dropped" }
       | {
           status: "starting" | "succeeded";
-          pixel: Pixel;
+          pixel: PixelConnect;
         }
       | {
           status: "failed";
-          pixel: Pixel;
+          pixel: PixelConnect;
           error: Error;
         }
     >;
@@ -134,7 +135,7 @@ class OperationsMap {
 export class PixelScheduler {
   private readonly _evEmitter =
     createTypedEventEmitter<PixelSchedulerEventMap>();
-  private _pixel?: Pixel;
+  private _pixel?: PixelConnect;
   private _currentOperation?: PixelOperationParams;
   private readonly _operations = new OperationsMap();
   private _triggerProcessPromise?: () => void;
@@ -152,7 +153,7 @@ export class PixelScheduler {
       this._allSchedulers.set(pixelId, scheduler);
     }
     if (!scheduler._pixel) {
-      scheduler._pixel = getPixel(pixelId);
+      scheduler._pixel = getPixelsDevice(pixelId);
       scheduler._pixel && scheduler._triggerProcessPromise?.();
     }
     return scheduler;
@@ -166,7 +167,7 @@ export class PixelScheduler {
     return this._operations.hasAny;
   }
 
-  get pixel(): Pixel | undefined {
+  get pixel(): PixelConnect | undefined {
     return this._pixel;
   }
 
@@ -207,7 +208,9 @@ export class PixelScheduler {
             // Process operation
             let error: Error | undefined;
             try {
-              await this._processOperationAsync(pixel, operation);
+              if (pixel instanceof Pixel) {
+                await this._processOpForDieAsync(pixel, operation);
+              }
             } catch (e) {
               error = e instanceof Error ? e : new Error(String(e));
             }
@@ -454,7 +457,7 @@ export class PixelScheduler {
     }
   }
 
-  private async _processOperationAsync(
+  private async _processOpForDieAsync(
     pixel: Pixel,
     op: PixelOperationParams
   ): Promise<void> {
