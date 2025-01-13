@@ -103,6 +103,7 @@ import {
   withTimeout,
   withTimeoutAndDisconnect,
   DiceMisplacedError,
+  isDieFinal,
 } from "~/features/validation";
 import { FactoryDfuFilesBundle } from "~/hooks/useFactoryDfuFilesBundle";
 
@@ -845,9 +846,7 @@ export function WaitCharging({
   assert(pixel.type !== "charger", "WaitCharging not available for LCC");
   const { t } = useTranslation();
 
-  const dieFinal =
-    settings.sequence === "dieFinalSingle" ||
-    settings.sequence === "dieFinalForSet";
+  const dieFinal = isDieFinal(settings.sequence);
   const skipBatteryLevelRef = React.useRef(
     useAppSelector(selectSkipBatteryLevel) // May change during the test
   );
@@ -893,7 +892,7 @@ export function WaitCharging({
         }
       }, [pixel, settings.sequence]),
       createTaskStatusContainer(t("batteryLevel")),
-      { skip: !notCharging || dieFinal }
+      { skip: !notCharging || !dieFinal }
     )
     .withStatusChanged(playSoundOnResult)
     .withStatusChanged(onTaskStatus);
@@ -1043,9 +1042,6 @@ export function StoreSettings({
   const [resolveColorwayPromise, setResolveColorwayPromise] =
     React.useState<(colorway: PixelColorway) => void>();
 
-  const dieFinal =
-    settings.sequence === "dieFinalSingle" ||
-    settings.sequence === "dieFinalForSet";
   const storeTimestamp = React.useCallback(
     () =>
       storeValueChecked(
@@ -1053,9 +1049,11 @@ export function StoreSettings({
         PixelValueStoreType.validationTimestampStart +
           getSequenceIndex(settings.sequence),
         get24BitsTimestamp(),
-        { allowNotPermitted: dieFinal }
+        {
+          allowNotPermitted: isDieFinal(settings.sequence),
+        }
       ),
-    [dieFinal, pixel, settings.sequence]
+    [pixel, settings.sequence]
   );
   const storeDeviceType = React.useCallback(async () => {
     assert(pixel.type === "die", "Only die can store device type");

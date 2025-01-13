@@ -6,6 +6,8 @@ import {
 
 import { DiceSetType } from "~/features/set";
 
+// Validation sequences used for validation
+// Order is important, as the index is stored when writing timestamp to the device
 export const ValidationSequences = [
   "firmwareUpdate",
   "boardNoCoil",
@@ -78,6 +80,10 @@ export function getBoardOrDie(sequence: ValidationSequence): "board" | "die" {
 
 export function isBoard(sequence: ValidationSequence): boolean {
   return getBoardOrDie(sequence) === "board";
+}
+
+export function isDieFinal(sequence: ValidationSequence): boolean {
+  return sequence.startsWith("dieFinal");
 }
 
 export function getSequenceIndex(sequence: ValidationSequence): number {
