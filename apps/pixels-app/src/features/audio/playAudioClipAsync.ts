@@ -3,8 +3,6 @@ import { Platform } from "react-native";
 
 import { getAudioClipPathname } from "./path";
 
-import { logError } from "~/features/utils";
-
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 
 async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
@@ -23,26 +21,24 @@ export async function playAudioClipAsync(
 ): Promise<void> {
   const uri = getAudioClipPathname(filename);
   if (!uri) {
-    logError("Failed to play audio clip: audio clips directory not valid");
-    return;
+    throw new Error(
+      "Failed to play audio clip: audio clips directory not valid"
+    );
   }
-  try {
-    const sound = await getSound({ uri });
-    await sound.setPositionAsync(0);
-    await sound.setVolumeAsync(volume);
-    return new Promise((resolve, reject) => {
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          resolve();
-        } else if (!status.isLoaded) {
-          reject(new Error(status.error));
-        }
-      });
-      sound.playAsync();
+
+  const sound = await getSound({ uri });
+  await sound.setPositionAsync(0);
+  await sound.setVolumeAsync(volume);
+  return new Promise((resolve, reject) => {
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.isLoaded && status.didJustFinish) {
+        resolve();
+      } else if (!status.isLoaded) {
+        reject(new Error(status.error));
+      }
     });
-  } catch (e) {
-    logError(`Error playing audio clip ${uri}: ${e}`);
-  }
+    sound.playAsync();
+  });
 }
 
 export function setAudioSettingsAsync(

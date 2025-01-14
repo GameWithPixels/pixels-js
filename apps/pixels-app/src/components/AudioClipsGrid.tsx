@@ -1,24 +1,29 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { range } from "@systemic-games/pixels-core-utils";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleSheet, View, ViewProps } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
-import { playAudioClipAsync } from "~/features/audio";
+import { useAppSelector } from "~/app/hooks";
+import { playActionAudioClip } from "~/features/profiles";
 import { AudioClipAsset } from "~/features/store/libraryAssets";
 
 export function AudioClipCard({
   name,
   fileType,
-  audioClipUuid,
+  clipUuid,
   ...props
-}: { name: string; fileType: string; audioClipUuid: string } & Omit<
+}: { name: string; fileType: string; clipUuid: string } & Omit<
   TouchableCardProps,
   "children" | "contentStyle"
 >) {
   const { colors } = useTheme();
+  const audioClips = useAppSelector(
+    (state) => state.libraryAssets.audioClips.entities
+  );
   return (
     <TouchableCard contentStyle={{ paddingVertical: 20 }} {...props}>
       <View style={{ alignItems: "center", gap: 20 }}>
@@ -39,7 +44,12 @@ export function AudioClipCard({
         size={30}
         color={colors.onSurface}
         style={{ position: "absolute", top: 0, right: 0, padding: 5 }}
-        onPress={() => playAudioClipAsync(audioClipUuid + "." + fileType)}
+        onPress={() =>
+          playActionAudioClip(
+            new Profiles.ActionPlayAudioClip({ clipUuid }),
+            audioClips
+          )
+        }
       />
     </TouchableCard>
   );
@@ -60,7 +70,7 @@ function AudioClipsColumn({
           key={c.uuid}
           name={c.name}
           fileType={c.type}
-          audioClipUuid={c.uuid}
+          clipUuid={c.uuid}
           selected={c.uuid === selected}
           onPress={() => onPressClip?.(c.uuid)}
           onLongPress={() => onLongPressClip?.(c.uuid)}

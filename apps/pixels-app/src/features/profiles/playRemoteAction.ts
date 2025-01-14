@@ -18,14 +18,22 @@ import {
 import { RootState } from "~/app/store";
 import { ToastSettings } from "~/app/themes";
 import { playAudioClipAsync } from "~/features/audio";
+import { logError } from "~/features/utils";
 
 const baseDiceIconUrl =
   "https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes";
 
-function showToast(message: string, options?: ToastOptions): void {
+function showToast(
+  message: string,
+  options: ToastOptions = ToastSettings
+): void {
   if (AppState.currentState === "active") {
     Toast.show(message, options);
   }
+}
+
+function showLongToast(message: string): void {
+  showToast(message, { ...ToastSettings, duration: Toast.durations.LONG });
 }
 
 export function getDiscordWebhookPayload(
@@ -95,37 +103,42 @@ export function playActionMakeWebRequest(
       console.log(
         `Action web request to ${url} returned with status ${status}`
       );
-      showToast(
-        `Web Request Send${forPixelMsg}!${toastMsg}Status: ${status}`,
-        ToastSettings
-      );
+      showToast(`Web Request Send${forPixelMsg}!${toastMsg}Status: ${status}`);
     })
     .catch((e: Error) => {
       console.log(
         `Action web request to ${url} failed with error ${e.message ?? e}`
       );
-      showToast(
+      showLongToast(
         `Failed Sending Web Request${forPixelMsg}!${toastMsg}Error: ${
           e.message ?? e
-        }`,
-        { ...ToastSettings, duration: Toast.durations.LONG }
+        }`
       );
     });
 }
 
-export function playActionSpeakText(action: Profiles.ActionSpeakText): void {
-  console.log(`Play Speak Text: ${action.text}`);
-  if (action.text?.trim()?.length) {
-    showToast(
-      `Playing Text to Speak action.\nText: ${action.text}`,
-      ToastSettings
-    );
-    const settings = {
-      volume: action.volume,
-      pitch: action.pitch,
-      rate: action.rate,
-    } as const;
-    Speech.speak(action.text, settings);
+export function playActionSpeakText({
+  text,
+  volume,
+  pitch,
+  rate,
+}: Profiles.ActionSpeakText): void {
+  console.log(`Play Speak Text: ${text}`);
+  if (text?.trim()?.length) {
+    showToast(`Playing Speak Text action.\nText: ${text}`);
+    Speech.speak(text, {
+      volume,
+      pitch,
+      rate,
+      onError: (e: Error) => {
+        logError(
+          `Speak Text error: ${e}, with params: ${JSON.stringify({ text, volume, pitch, rate })}`
+        );
+        showLongToast(
+          `Error playing Speak Text action:\n${e.message ?? e}\nText: ${text}`
+        );
+      },
+    });
   } else {
     console.log("No text to speak");
   }
@@ -140,10 +153,19 @@ export function playActionAudioClip(
   if (clip) {
     const filename = clip.uuid + "." + clip.type;
     console.log(`Play Audio Clip: ${filename} ${loopCount} time(s)`);
-    showToast(`Playing Audio Clip action.\nClip: ${clip.name}`, ToastSettings);
+    showToast(`Playing Audio Clip action.\nClip: ${clip.name}`);
     const play = async () => {
-      for (let i = 0; i < loopCount; i++) {
-        await playAudioClipAsync(filename, volume);
+      try {
+        for (let i = 0; i < loopCount; i++) {
+          await playAudioClipAsync(filename, volume);
+        }
+      } catch (e) {
+        logError(
+          `Audio Clip error: ${e}, with params: ${JSON.stringify({ filename, volume, loopCount })}`
+        );
+        showLongToast(
+          `Error playing Audio Clip action:\n${(e as Error).message ?? e}\nClip: ${clip.name}`
+        );
       }
     };
     play();
