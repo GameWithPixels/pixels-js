@@ -727,7 +727,8 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
       {Platform.OS === "android" && (
         <Text style={{ color: colors.onSurfaceDisabled, marginVertical: 5 }}>
           Only works if you have Google Play on your device.{"\n"}
-          You may need to enable "Text-to-speech" in your device settings.
+          You may need to enable "Text-to-Speech" or "TalkBack" in your device
+          settings.
         </Text>
       )}
       <OutlineButton onPress={() => playActionSpeakText(action)}>

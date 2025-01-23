@@ -56,11 +56,11 @@ public final class Scanner
      *
      * If a scan is already running, it is stopped before starting the new one.
      *
-     * @param requiredServicesUuids Comma separated list of services UUIDs that the peripheral
-     *                              should advertise, may be null or empty.
+     * @param servicesUuids Comma separated list of services UUIDs. Peripherals advertising at least one of
+     *                      the services will be reported. Notify for all peripherals if the list is null or empty.
      * @param callback The callback for notifying of the scan results (called for each advertisement packet).
      */
-    public static void startScan(final String requiredServicesUuids, final ScannerCallback callback)
+    public static void startScan(final String servicesUuids, final ScannerCallback callback)
     {
         Log.v(TAG, "==> startScan");
 
@@ -77,10 +77,10 @@ public final class Scanner
 
         // Convert the comma separated list of UUIDs
         List<ScanFilter> filters = null;
-        if (requiredServicesUuids != null)
+        if (servicesUuids != null)
         {
             filters = new ArrayList<>();
-            for (String uuidStr : requiredServicesUuids.split(","))
+            for (String uuidStr : servicesUuids.split(","))
             {
                 try
                 {
@@ -93,7 +93,7 @@ public final class Scanner
                 }
                 catch (IllegalArgumentException e)
                 {
-                    throw new IllegalArgumentException("requiredServicesUuids must be either null, an empty string or a comma separated list of UUIDs");
+                    throw new IllegalArgumentException("servicesUuids must be either null, an empty string or a comma separated list of UUIDs");
                 }
             }
         }

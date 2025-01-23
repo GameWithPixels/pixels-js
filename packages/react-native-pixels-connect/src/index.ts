@@ -14,6 +14,7 @@ export * from "./ScannedBootloaderNotifier";
 export * from "./ScannedCharger";
 export * from "./ScannedChargerNotifier";
 export * from "./ScannedDeviceNotifier";
+export * from "./ScannedDevicesRegistry";
 export * from "./ScannedMPC";
 export * from "./ScannedMPCNotifier";
 export * from "./ScannedPixel";

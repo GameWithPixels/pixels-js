@@ -213,7 +213,7 @@ export function getFacesAsText(faces: number[]): string {
       sorted.length > 2 &&
       sorted.every((v, i) => i === 0 || v + 1 === sorted[i - 1])
     ) {
-      return `${sorted[0]} to ${sorted[sorted.length - 1]}`;
+      return `${sorted[sorted.length - 1]} to ${sorted[0]}`;
     } else {
       return listToText(sorted.map(String));
     }
