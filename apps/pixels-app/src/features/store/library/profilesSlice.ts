@@ -17,7 +17,7 @@ export const profilesAdapter = createEntityAdapter({
 
 const profilesSlice = createSlice({
   name: "profiles",
-  initialState: profilesAdapter.getInitialState(),
+  initialState: profilesAdapter.getInitialState,
   reducers: {
     reset(_, action: PayloadAction<LibraryData>) {
       const state = profilesAdapter.getInitialState();

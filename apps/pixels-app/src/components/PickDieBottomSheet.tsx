@@ -88,7 +88,7 @@ export function PickDieBottomSheet({
     } else {
       sheetRef.current?.dismiss();
     }
-  }, [central, visible]);
+  }, [visible]);
 
   const dismiss = (pairedDie?: PairedDie) => {
     // Connect to the selected die (high priority)

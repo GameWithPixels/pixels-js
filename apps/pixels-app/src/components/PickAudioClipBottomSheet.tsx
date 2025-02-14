@@ -11,7 +11,7 @@ import { OutlineButton } from "./buttons";
 import { useAppStore } from "~/app/hooks";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
-import { importAudioClip, removeAudioClip } from "~/features/audio";
+import { importFileAsset, removeFileAsset } from "~/features/audio";
 import {
   useAudioClipsList,
   useBottomSheetBackHandler,
@@ -67,7 +67,7 @@ export function PickAudioClipBottomSheet({
             <Text variant="titleMedium" style={AppStyles.selfCentered}>
               Select Audio Clip
             </Text>
-            <OutlineButton onPress={() => importAudioClip(store)}>
+            <OutlineButton onPress={() => importFileAsset(store, "audio")}>
               Import Audio File
             </OutlineButton>
             <GHScrollView ref={scrollRef} contentContainerStyle={{ gap: 20 }}>
@@ -85,7 +85,7 @@ export function PickAudioClipBottomSheet({
                       {
                         text: "Remove",
                         style: "destructive",
-                        onPress: () => removeAudioClip(uuid, store),
+                        onPress: () => removeFileAsset(store, uuid, "audio"),
                       },
                     ]
                   )

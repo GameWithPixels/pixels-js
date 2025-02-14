@@ -9,7 +9,7 @@ import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
 import { useAppSelector } from "~/app/hooks";
 import { playActionAudioClip } from "~/features/profiles";
-import { AudioClipAsset } from "~/features/store/libraryAssets";
+import { FileAsset } from "~/features/store/libraryAssets";
 
 export function AudioClipCard({
   name,
@@ -81,7 +81,7 @@ function AudioClipsColumn({
 }
 
 export interface ClipsListProps extends ViewProps {
-  clips: AudioClipAsset[];
+  clips: FileAsset[];
   selected?: string;
   onPressClip?: (clipUuid: string) => void;
   onLongPressClip?: (clipUuid: string) => void;

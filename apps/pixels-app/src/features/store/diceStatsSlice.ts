@@ -7,12 +7,12 @@ import {
 
 import { logWrite } from "./logWrite";
 
-export interface DieSession {
+export type DieSession = {
   index: number;
   startTime: number; // Timestamp of first roll, or if none, of session creation
   endTime: number; // Timestamp of last roll, or if none, of session creation
   rolls: number[];
-}
+};
 
 export type DieSessionsState = EntityState<DieSession>;
 
@@ -20,12 +20,12 @@ export const sessionsAdapter = createEntityAdapter({
   selectId: (dieSession: Readonly<DieSession>) => dieSession.index,
 });
 
-export interface DieStats {
+export type DieStats = {
   pixelId: number;
   lastRolls: number[]; // The last few rolls
   sessions: DieSessionsState;
   paused: boolean;
-}
+};
 
 export type DiceStatsState = EntityState<DieStats>;
 
@@ -80,7 +80,7 @@ function addSession(stats: DieStats, startTime: number): DieSession {
 // Redux slice that stores paired dice statistics
 const DiceStatsSlice = createSlice({
   name: "DiceStats",
-  initialState: diceStatsAdapter.getInitialState(),
+  initialState: diceStatsAdapter.getInitialState,
   reducers: {
     resetDiceStats() {
       log("resetDiceStats");

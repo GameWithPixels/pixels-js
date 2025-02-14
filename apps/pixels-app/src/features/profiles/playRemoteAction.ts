@@ -17,7 +17,7 @@ import {
 
 import { RootState } from "~/app/store";
 import { ToastSettings } from "~/app/themes";
-import { playAudioClipAsync } from "~/features/audio";
+import { getAssetPathname, playAudioClipAsync } from "~/features/audio";
 import { logError } from "~/features/utils";
 
 const baseDiceIconUrl =
@@ -151,17 +151,20 @@ export function playActionAudioClip(
   const { clipUuid, volume, loopCount } = action;
   const clip = clipUuid && assets[clipUuid];
   if (clip) {
-    const filename = clip.uuid + "." + clip.type;
-    console.log(`Play Audio Clip: ${filename} ${loopCount} time(s)`);
     showToast(`Playing Audio Clip action.\nClip: ${clip.name}`);
     const play = async () => {
+      const uri = getAssetPathname(clip, "audio");
       try {
+        if (!uri) {
+          throw new Error("Invalid audio clip directory");
+        }
+        console.log(`Play Audio Clip: ${uri} ${loopCount} time(s)`);
         for (let i = 0; i < loopCount; i++) {
-          await playAudioClipAsync(filename, volume);
+          await playAudioClipAsync(uri, volume);
         }
       } catch (e) {
         logError(
-          `Audio Clip error: ${e}, with params: ${JSON.stringify({ filename, volume, loopCount })}`
+          `Audio Clip error: ${e}, with params: ${JSON.stringify({ uri, volume, loopCount })}`
         );
         showLongToast(
           `Error playing Audio Clip action:\n${(e as Error).message ?? e}\nClip: ${clip.name}`

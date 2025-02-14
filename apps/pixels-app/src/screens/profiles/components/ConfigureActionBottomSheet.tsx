@@ -497,7 +497,7 @@ const PlayAnimationColor = observer(function PlayAnimationColor({
                 alignSelf: "center",
               }}
             >
-              Tap to modify
+              Tap to edit
             </Text>
           </View>
         </TouchableRipple>
@@ -561,7 +561,7 @@ const PlayAnimationGradient = observer(function PlayAnimationGradient({
           marginTop: 10,
         }}
       >
-        Tap to modify
+        Tap to edit
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableRipple

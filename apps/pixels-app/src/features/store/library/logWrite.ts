@@ -5,7 +5,7 @@ type RemovePlural<S extends string> = S extends `${infer A}s` ? A : S;
 
 export function logWrite(
   action: "add" | "update" | "remove" | "reset",
-  type: RemovePlural<keyof LibraryData>,
+  type: RemovePlural<keyof LibraryData> | "image",
   uuid: string,
   message?: unknown
 ) {

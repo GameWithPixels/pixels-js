@@ -509,6 +509,27 @@ export function OutlineButton({ style, ...props }: ButtonProps) {
   );
 }
 
+export function ToggleButton({
+  selected,
+  style,
+  ...props
+}: ButtonProps & { selected?: boolean }) {
+  const { colors } = useTheme();
+  return (
+    <Button
+      mode="outlined"
+      textColor={colors.onSurface}
+      style={[
+        {
+          backgroundColor: selected ? colors.primaryContainer : colors.surface,
+        },
+        style,
+      ]}
+      {...props}
+    />
+  );
+}
+
 export function Chip({
   children,
   disabled,

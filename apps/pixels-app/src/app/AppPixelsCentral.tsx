@@ -29,7 +29,8 @@ import {
 } from "~/features/profiles";
 import {
   addDieRoll,
-  addRollerEntry,
+  addRollEntry,
+  generateRollEntryUuid,
   Library,
   readProfile,
   updatePairedDieBrightness,
@@ -254,7 +255,9 @@ function hookToPixel(
     if (pairedDie) {
       store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
       store.dispatch(
-        addRollerEntry({
+        addRollEntry({
+          uuid: generateRollEntryUuid(store.getState().diceRoller),
+          timestamp: Date.now(),
           pixelId: pixel.pixelId,
           dieType: pixel.dieType,
           value: roll,

@@ -14,7 +14,6 @@ import {
   useWindowDimensions,
   ScrollViewProps,
   StyleSheet,
-  Pressable,
 } from "react-native";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
 import {
@@ -187,7 +186,7 @@ function RolledConditionCard({
               faces.length > 1 ? " one of" : ""
             } ${getFacesAsText(faces)}`}
           </Text>
-          <Pressable
+          <TouchableRipple
             sentry-label="remove-rolled-rule"
             style={styles.actionIconBox}
             onPress={props.disabled ? undefined : onDelete}
@@ -198,7 +197,7 @@ function RolledConditionCard({
               size={24}
               style={styles.actionDeleteIcon}
             />
-          </Pressable>
+          </TouchableRipple>
         </Card>
         <View
           style={{

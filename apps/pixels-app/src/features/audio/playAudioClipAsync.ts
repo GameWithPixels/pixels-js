@@ -1,8 +1,6 @@
 import { Audio, AudioMode, AVPlaybackSource } from "expo-av";
 import { Platform } from "react-native";
 
-import { getAudioClipPathname } from "./path";
-
 const soundMap = new Map<AVPlaybackSource, Audio.Sound>();
 
 async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
@@ -16,10 +14,9 @@ async function getSound(source: AVPlaybackSource): Promise<Audio.Sound> {
 }
 
 export async function playAudioClipAsync(
-  filename: string,
+  uri: string,
   volume = 1
 ): Promise<void> {
-  const uri = getAudioClipPathname(filename);
   if (!uri) {
     throw new Error(
       "Failed to play audio clip: audio clips directory not valid"

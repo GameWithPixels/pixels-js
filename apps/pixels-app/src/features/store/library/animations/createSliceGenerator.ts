@@ -22,7 +22,7 @@ export function createSliceGenerator<T extends AnimationData>(
 ) {
   return createSlice({
     name,
-    initialState: animationsAdapter.getInitialState() as AnimationsState<T>,
+    initialState: animationsAdapter.getInitialState as () => AnimationsState<T>,
     reducers: {
       reset(_, action: PayloadAction<LibraryData>) {
         const state = animationsAdapter.getInitialState();

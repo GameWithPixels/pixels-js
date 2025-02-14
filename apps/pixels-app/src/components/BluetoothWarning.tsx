@@ -7,7 +7,7 @@ export function BluetoothStateWarning({
   children,
   style,
 }: React.PropsWithChildren<{
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>; // ViewProps["style"]
 }>) {
   const bluetoothState = useBluetoothState();
   // Render children if Bluetooth is ready or unknown. The later is reported

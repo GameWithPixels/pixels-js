@@ -7,12 +7,10 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
-import {
-  computeProfileHashWithOverrides,
-  generateProfileUuid,
-} from "../profiles";
+import { generateProfileUuid } from "../profiles/generateProfileUuid"; // Avoid cyclic import
 
 import { AppStore } from "~/app/store";
+import { computeProfileHashWithOverrides } from "~/features/profiles/createProfileDataSetWithOverrides"; // Avoid cyclic import
 import { Library, addPairedDie, preSerializeProfile } from "~/features/store";
 
 export function pairDie(

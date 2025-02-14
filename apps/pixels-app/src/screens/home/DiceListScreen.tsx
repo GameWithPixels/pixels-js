@@ -16,12 +16,13 @@ import { DiceListScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { BluetoothStateWarning } from "~/components/BluetoothWarning";
 import { DebugConnectionStatusesBar } from "~/components/DebugConnectionStatusesBar";
+import { RotatingGradientBorderCard } from "~/components/GradientBorderCard";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
 import { Banner } from "~/components/banners";
-import { EmptyDiceBagCard } from "~/components/cards";
+import { GradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
@@ -340,7 +341,30 @@ function DiceListPage({
               )}
             </BluetoothStateWarning>
           ) : (
-            <EmptyDiceBagCard onPress={() => setShowPairDice(true)} />
+            <RotatingGradientBorderCard
+              style={{
+                width: "80%",
+                marginTop: 20,
+                alignSelf: "center",
+              }}
+              contentStyle={{
+                paddingVertical: 40,
+                paddingHorizontal: 20,
+                gap: 40,
+              }}
+            >
+              <Text variant="titleLarge">Welcome!</Text>
+              <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+                In order to customize your Pixels dice you need to pair them
+                with the app.
+              </Text>
+              <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+                Tap on the "Add Die" button to get started.
+              </Text>
+              <GradientButton onPress={() => setShowPairDice(true)}>
+                Add Die
+              </GradientButton>
+            </RotatingGradientBorderCard>
           )}
         </ScrollView>
       </View>

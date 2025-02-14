@@ -1,7 +1,7 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
-import { ColorValue, View } from "react-native";
+import { ColorValue, View, ViewProps } from "react-native";
 import { useTheme } from "react-native-paper";
 
 import { getIconColor } from "./colors";
@@ -113,10 +113,12 @@ export function DieWireframe({
   dieType,
   size,
   disabled,
+  style,
 }: {
   dieType: PixelDieType;
   size?: number;
   disabled?: boolean;
+  style?: ViewProps["style"];
 }) {
   const getImage = () => {
     switch (dieType) {
@@ -144,7 +146,7 @@ export function DieWireframe({
     }
   };
   return (
-    <View style={{ width: size, height: size }}>
+    <View style={[{ width: size, aspectRatio: 1 }, style]}>
       <Image
         contentFit="cover"
         style={{ flex: 1, opacity: disabled ? 0.5 : 1 }}
