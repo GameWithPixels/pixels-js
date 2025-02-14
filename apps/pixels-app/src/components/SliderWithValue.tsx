@@ -121,7 +121,7 @@ export function NumberInputButton({
         },
       })}
       <Portal>
-        <Dialog visible={showDialog} onDismiss={() => validateInput()}>
+        <Dialog visible={showDialog} onDismiss={validateInput}>
           <Dialog.Content style={{ gap: 10 }}>
             <Text variant="bodyMedium">
               Enter a Value
@@ -196,6 +196,7 @@ export function SliderWithValue({
   unit,
   fractionDigits: fDigits,
   percentage,
+  onValueChange,
   onEndEditing,
   style,
   contentStyle,
@@ -219,7 +220,7 @@ export function SliderWithValue({
           style={contentStyle}
           onValueChange={(v) => {
             setInputValue(v);
-            props.onValueChange?.(v);
+            onValueChange?.(v);
           }}
           onSlidingComplete={(v) => {
             setInputValue(v);
@@ -238,7 +239,7 @@ export function SliderWithValue({
         maximumValue={props.maximumValue}
         onEndEditing={(v) => {
           setInputValue(v);
-          v !== props.value && props.onValueChange?.(v);
+          v !== props.value && onValueChange?.(v);
           onEndEditing?.(v);
         }}
         button={({ label, onPress }) => (

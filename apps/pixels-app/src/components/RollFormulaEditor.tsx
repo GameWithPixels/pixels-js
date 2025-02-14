@@ -85,10 +85,8 @@ export function RollFormulaEditor({
   const modifier = simpleFormula.modifier;
   const bonus = simpleFormula.bonus;
   const setDieType = (dieType: AvailableDieType) =>
-    simpleFormula &&
     onFormulaChange(createRollFormula({ ...simpleFormula, dieType }));
   const setDieCount = (dieCount: number) =>
-    simpleFormula &&
     onFormulaChange(
       createRollFormula({
         ...simpleFormula,
@@ -97,15 +95,12 @@ export function RollFormulaEditor({
       })
     );
   const setConstant = (constant: number) =>
-    simpleFormula &&
     onFormulaChange(createRollFormula({ ...simpleFormula, constant }));
   const setModifier = (modifier: SimplifiedRollFormula["modifier"]) =>
-    simpleFormula &&
     onFormulaChange(
       createRollFormula({ ...simpleFormula, dieCount: 2, modifier })
     );
   const setBonus = (bonus: SimplifiedRollFormula["bonus"]) =>
-    simpleFormula &&
     onFormulaChange(createRollFormula({ ...simpleFormula, bonus }));
 
   const { colors, roundness } = useTheme();
@@ -130,7 +125,7 @@ export function RollFormulaEditor({
               aspectRatio: 1,
               padding: 2,
               borderRadius,
-              borderWidth: 2,
+              borderWidth: 1,
               borderColor: dieType === dt ? colors.primary : colors.background,
             }}
             onPress={() => setDieType(dt)}

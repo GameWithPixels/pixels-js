@@ -152,6 +152,9 @@ const DiceRollerSlice = createSlice({
             id: formulaEntry.uuid,
             changes: { rolls, result },
           });
+          if (result) {
+            state.settings.activeEntryUuid = undefined;
+          }
         } else {
           log("addRollEntry", { entry: "single", value });
           singleRollsAdapter.addOne(state.singleRolls, roll);
