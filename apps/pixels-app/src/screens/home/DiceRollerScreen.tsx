@@ -1,4 +1,4 @@
-import { addListener, UnsubscribeListener } from "@reduxjs/toolkit";
+import { UnsubscribeListener } from "@reduxjs/toolkit";
 import { assertNever, range } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import * as Haptics from "expo-haptics";
@@ -32,7 +32,7 @@ import { OptionsMenu } from "./components/RollerOptionsMenu";
 
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { DiceRollerScreenProps } from "~/app/navigation";
-import { RootState } from "~/app/store";
+import { addAppListener } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { Card, CardProps } from "~/components/Card";
@@ -635,10 +635,10 @@ function useScrollToEndOnNewItem(
   React.useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const unsubscribe = appDispatch(
-      addListener({
+      addAppListener({
         actionCreator: addRollEntry,
         effect: (action, listenerApi) => {
-          const state = listenerApi.getState() as RootState;
+          const state = listenerApi.getState();
           if (action.payload.uuid === state.diceRoller.singleRolls.ids.at(-1)) {
             timeoutId = scrollToEnd();
           }
@@ -654,7 +654,7 @@ function useScrollToEndOnNewItem(
   React.useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const unsubscribe = appDispatch(
-      addListener({
+      addAppListener({
         actionCreator: addFormulaRollEntry,
         effect: () => {
           timeoutId = scrollToEnd();
@@ -668,39 +668,75 @@ function useScrollToEndOnNewItem(
   }, [appDispatch, scrollToEnd, scrollViewRef]);
 }
 
-function GenericRollerEntryCard({
-  ref,
-  uuid,
-  roll,
-  formula,
-  isNew,
-  sizeRatio,
-  parentViewWidth,
-  position,
-  onRemove,
-}: {
-  ref: React.RefObject<AnimatedRollCardHandle>;
-  uuid: string;
-  roll?: SingleRollEntry;
-  formula?: FormulaRollEntry;
-  isNew: boolean;
-  sizeRatio: number;
-  parentViewWidth: number;
-  position?: "left" | "right" | "center" | "center-left" | "center-right";
-  onRemove?: () => void;
-}) {
+const GenericRollerEntryCard = React.forwardRef(function GenericRollerEntryCard(
+  {
+    uuid,
+    rollEntry,
+    formulaEntry,
+    isNew,
+    sizeRatio,
+    parentViewWidth,
+    position,
+    onRemove,
+  }: {
+    uuid: string;
+    rollEntry?: SingleRollEntry;
+    formulaEntry?: FormulaRollEntry;
+    isNew: boolean;
+    sizeRatio: number;
+    parentViewWidth: number;
+    position?: "left" | "right" | "center" | "center-left" | "center-right";
+    onRemove?: () => void;
+  },
+  ref: React.ForwardedRef<AnimatedRollCardHandle>
+) {
+  const store = useAppStore();
   const appDispatch = useAppDispatch();
   // TODO improve perf of counting items, make it general
-  const simpleFormula = formula
-    ? getSimplifiedRollFormula(formula.formula)
+  const simpleFormula = formulaEntry
+    ? getSimplifiedRollFormula(formulaEntry.formula)
     : undefined;
   const numberOfItems =
     (simpleFormula?.dieCount ?? 1) +
     (simpleFormula?.constant ? 1 : 0) +
     (simpleFormula?.bonus ? 1 : 0);
-  const selected = useAppSelector(
-    (state) => state.diceRoller.settings.activeEntryUuid === uuid
+  const [selected, setSelected] = React.useState(
+    () => store.getState().diceRoller.settings.activeEntryUuid === uuid
   );
+  React.useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const unsubscribe1 = appDispatch(
+      addAppListener({
+        actionCreator: addRollEntry,
+        effect: (action, listenerApi) => {
+          const prevActiveUuid =
+            listenerApi.getOriginalState().diceRoller.settings.activeEntryUuid;
+          const newActiveUuid =
+            listenerApi.getState().diceRoller.settings.activeEntryUuid;
+          if (!timeoutId && !newActiveUuid && prevActiveUuid === uuid) {
+            timeoutId = setTimeout(() => setSelected(false), 3000);
+          }
+        },
+      })
+    ) as unknown as UnsubscribeListener;
+    const unsubscribe2 = appDispatch(
+      addAppListener({
+        actionCreator: setRollerActiveEntryUuid,
+        effect: (action, listenerApi) => {
+          const newActiveUuid =
+            listenerApi.getState().diceRoller.settings.activeEntryUuid;
+          setSelected(newActiveUuid === uuid);
+          clearTimeout(timeoutId);
+          timeoutId = undefined;
+        },
+      })
+    ) as unknown as UnsubscribeListener;
+    return () => {
+      unsubscribe1();
+      unsubscribe2();
+      clearTimeout(timeoutId);
+    };
+  }, [appDispatch, uuid]);
   return (
     <AnimatedTouchableCard
       ref={ref}
@@ -713,19 +749,19 @@ function GenericRollerEntryCard({
       // withSlideIn={timestamp > startTimestampRef.current} // New cards only
       onRemove={selected ? undefined : onRemove}
       card={({ sizeFactor, cardWidth, style }) =>
-        roll ? (
+        rollEntry ? (
           <RollTouchableCard
-            result={roll.value.toString()}
-            expectedRolls={[{ dieType: roll.dieType, count: 1 }]}
+            result={rollEntry.value.toString()}
+            expectedRolls={[{ dieType: rollEntry.dieType, count: 1 }]}
             sizeFactor={sizeFactor}
             cardWidth={cardWidth}
             withEnteringAnim={isNew}
             style={style}
             onLongPress={onRemove}
           />
-        ) : formula ? (
+        ) : formulaEntry ? (
           <FormulaTouchableCard
-            formulaEntry={formula}
+            formulaEntry={formulaEntry}
             showEditor={selected}
             sizeFactor={sizeFactor}
             cardWidth={cardWidth}
@@ -739,7 +775,7 @@ function GenericRollerEntryCard({
       }
     />
   );
-}
+});
 
 function getSortedRollsIds(
   singleRolls: SingleRollsState,
@@ -887,8 +923,8 @@ function RollerPage({
               key={id}
               ref={ref}
               uuid={id as string}
-              roll={roll}
-              formula={formula}
+              rollEntry={roll}
+              formulaEntry={formula}
               isNew={
                 (roll?.timestamp ?? formula?.timestamp ?? 0) >
                 startTimestampRef.current

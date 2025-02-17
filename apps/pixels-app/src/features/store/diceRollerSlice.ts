@@ -173,6 +173,7 @@ const DiceRollerSlice = createSlice({
           formula,
           rolls,
         });
+        state.settings.activeEntryUuid = uuid;
       }
     },
 

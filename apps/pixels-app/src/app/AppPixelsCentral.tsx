@@ -38,7 +38,6 @@ import {
   updatePairedDieName,
   updatePairedDieProfileHash,
 } from "~/features/store";
-import { AppProfileData } from "~/features/store/library";
 import { logError } from "~/features/utils";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
@@ -423,7 +422,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         return Library.Profiles.update.match(action);
       },
       effect: (action, listenerApi) => {
-        const { uuid } = action.payload as AppProfileData;
+        const { uuid } = action.payload;
         const pairedDie = pairedDiceSelectors.selectByProfileUuid(
           listenerApi.getState(),
           uuid

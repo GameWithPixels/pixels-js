@@ -180,6 +180,7 @@ export const startAppListening =
     RootState,
     AppDispatch
   >;
+
 export const addAppListener = addListener as TypedAddListener<
   RootState,
   AppDispatch
