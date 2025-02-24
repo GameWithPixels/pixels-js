@@ -24,6 +24,7 @@ import {
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
+import { dddice } from "~/features/dddice";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   DiceGrouping,
@@ -322,6 +323,7 @@ function DiceListPage({
                 style={{ marginVertical: 10 }}
               />
               <DebugConnectionStatusesBar />
+              <GradientButton onPress={() => dddice()}>DDDice</GradientButton>
               {viewMode === "grid" ? (
                 <DiceGrid
                   pairedDice={pairedDice}
