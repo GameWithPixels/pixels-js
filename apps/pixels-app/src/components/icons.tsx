@@ -1,8 +1,12 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
-import { ColorValue, View } from "react-native";
+import { ColorValue, View, ViewProps } from "react-native";
 import { useTheme } from "react-native-paper";
+import Animated, {
+  AnimatedProps,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 
 import { getIconColor } from "./colors";
 
@@ -109,48 +113,84 @@ export function BatteryIcon({
   );
 }
 
+function getDieImage(dieType: PixelDieType) {
+  switch (dieType) {
+    case "d4":
+      return require("#/wireframes/d4.png");
+    case "d6":
+      return require("#/wireframes/d6.png");
+    case "d6pipped":
+      return require("#/wireframes/d6pipped.png");
+    case "d6fudge":
+      return require("#/wireframes/d6fudge.png");
+    case "d8":
+      return require("#/wireframes/d8.png");
+    case "d10":
+      return require("#/wireframes/d10.png");
+    case "d00":
+      return require("#/wireframes/d00.png");
+    case "d12":
+      return require("#/wireframes/d12.png");
+    case "unknown":
+    case "d20":
+      return require("#/wireframes/d20.png");
+    default:
+      assertNever(dieType);
+  }
+}
+
+type DieImageProps = {
+  dieType: PixelDieType;
+  disabled?: boolean;
+};
+
+function DieImage({ dieType, disabled }: DieImageProps) {
+  return (
+    <Image
+      contentFit="cover"
+      style={{ flex: 1, opacity: disabled ? 0.5 : 1 }}
+      source={getDieImage(dieType)}
+      blurRadius={disabled ? 1.5 : undefined}
+    />
+  );
+}
+
 export function DieWireframe({
   dieType,
-  size,
   disabled,
+  size,
+  style,
+  ...props
 }: {
-  dieType: PixelDieType;
   size?: number;
-  disabled?: boolean;
-}) {
-  const getImage = () => {
-    switch (dieType) {
-      case "d4":
-        return require("#/wireframes/d4.png");
-      case "d6":
-        return require("#/wireframes/d6.png");
-      case "d6pipped":
-        return require("#/wireframes/d6pipped.png");
-      case "d6fudge":
-        return require("#/wireframes/d6fudge.png");
-      case "d8":
-        return require("#/wireframes/d8.png");
-      case "d10":
-        return require("#/wireframes/d10.png");
-      case "d00":
-        return require("#/wireframes/d00.png");
-      case "d12":
-        return require("#/wireframes/d12.png");
-      case "unknown":
-      case "d20":
-        return require("#/wireframes/d20.png");
-      default:
-        assertNever(dieType);
-    }
-  };
+} & DieImageProps &
+  ViewProps) {
   return (
-    <View style={{ width: size, height: size }}>
-      <Image
-        contentFit="cover"
-        style={{ flex: 1, opacity: disabled ? 0.5 : 1 }}
-        source={getImage()}
-        blurRadius={disabled ? 1.5 : undefined}
-      />
+    <View style={[{ width: size, aspectRatio: 1 }, style]} {...props}>
+      <DieImage dieType={dieType} disabled={disabled} />
     </View>
+  );
+}
+
+export function AnimatedDieWireframe({
+  dieType,
+  disabled,
+  size,
+  style,
+  ...props
+}: DieImageProps &
+  AnimatedProps<
+    {
+      size?: number;
+    } & ViewProps
+  >) {
+  const animStyle = useAnimatedStyle(() => ({
+    width: typeof size === "object" ? size.value : size,
+    aspectRatio: 1,
+  }));
+  return (
+    <Animated.View style={[animStyle, style]} {...props}>
+      <DieImage dieType={dieType} disabled={disabled} />
+    </Animated.View>
   );
 }

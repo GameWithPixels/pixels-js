@@ -17,6 +17,7 @@ import {
   TouchableRipple,
   useTheme,
 } from "react-native-paper";
+import { ViewProps } from "react-native-svg/lib/typescript/fabric/utils";
 
 import { getBorderRadius } from "~/features/getBorderRadius";
 
@@ -25,7 +26,7 @@ function round(value: number, places: number): number {
   return Number(Math.round(Number(value + "e+" + places)) + "e-" + places);
 }
 
-function valueToString(
+function numberToString(
   value?: number,
   fractionDigits?: number,
   percentage?: boolean
@@ -47,7 +48,7 @@ function stringToValue(
   return v;
 }
 
-function boundsString(
+export function getValueBoundsMessage(
   min?: number,
   max?: number,
   fractionDigits?: number,
@@ -56,12 +57,93 @@ function boundsString(
   const f = fractionDigits;
   const p = percentage;
   return min !== undefined && max !== undefined
-    ? ` Between ${valueToString(min, f, p)} And ${valueToString(max, f, p)}`
+    ? ` Between ${numberToString(min, f, p)} And ${numberToString(max, f, p)}`
     : min !== undefined
-      ? ` Greater Than ${valueToString(min, f, p)}`
+      ? ` Greater Than ${numberToString(min, f, p)}`
       : max !== undefined
-        ? ` Less Than ${valueToString(max, f, p)}`
+        ? ` Less Than ${numberToString(max, f, p)}`
         : "";
+}
+
+export interface NumberInputWithDialogHandle {
+  updateValue: (v: number) => void;
+}
+
+export function NumberInputButton({
+  button,
+  value,
+  unit,
+  fDigits,
+  percentage,
+  minimumValue,
+  maximumValue,
+  onEndEditing,
+}: {
+  button: (props: { label: string; onPress: () => void }) => React.ReactNode;
+  value?: number;
+  unit?: string;
+  fDigits?: number;
+  percentage?: boolean;
+  minimumValue?: number;
+  maximumValue?: number;
+  onEndEditing?: (value: number) => void;
+} & ViewProps) {
+  const min = minimumValue ?? (percentage ? 0 : undefined);
+  const max = maximumValue ?? (percentage ? 1 : undefined);
+  const [showDialog, setShowDialog] = React.useState(false);
+  const inputRef = React.useRef<RNTextInput>(null);
+  const valueToString = React.useCallback(
+    (v?: number) => numberToString(v, fDigits, percentage),
+    [fDigits, percentage]
+  );
+  const [inputValue, setInputValue] = React.useState(valueToString(value));
+  React.useEffect(
+    () => setInputValue(() => valueToString(value)),
+    [value, valueToString]
+  );
+  const validateInput = () => {
+    const v = stringToValue(inputValue, percentage, min, max);
+    if (!isNaN(v)) {
+      setInputValue(valueToString(v));
+      onEndEditing?.(v);
+    }
+    setShowDialog(false);
+  };
+  return (
+    <>
+      {button({
+        label: valueToString(value) + (percentage ? "%" : (unit ?? "")),
+        onPress: () => {
+          setInputValue(valueToString(value));
+          setShowDialog(true);
+          // Schedule the focus to the next frame otherwise it won't work
+          setTimeout(() => inputRef.current?.focus(), 0);
+        },
+      })}
+      <Portal>
+        <Dialog visible={showDialog} onDismiss={validateInput}>
+          <Dialog.Content style={{ gap: 10 }}>
+            <Text variant="bodyMedium">
+              Enter a Value
+              {getValueBoundsMessage(min, max, fDigits, percentage)}
+            </Text>
+            <TextInput
+              ref={inputRef}
+              mode="outlined"
+              dense
+              keyboardType={fDigits ? "decimal-pad" : "number-pad"}
+              value={inputValue}
+              onChangeText={setInputValue}
+              onEndEditing={validateInput}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={validateInput}>Done</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </>
+  );
 }
 
 type SliderWrapperProps = SliderProps & {
@@ -114,28 +196,13 @@ export function SliderWithValue({
   unit,
   fractionDigits: fDigits,
   percentage,
+  onValueChange,
   onEndEditing,
   style,
   contentStyle,
   ...props
 }: SliderWithValueProps) {
-  const min = props.minimumValue ?? (percentage ? 0 : undefined);
-  const max = props.maximumValue ?? (percentage ? 1 : undefined);
-  const [showDialog, setShowDialog] = React.useState(false);
-  const inputRef = React.useRef<RNTextInput>(null);
-  const [inputValue, setInputValue] = React.useState(
-    valueToString(props.value, fDigits, percentage)
-  );
-  React.useEffect(
-    () => setInputValue(valueToString(props.value, fDigits, percentage)),
-    [fDigits, percentage, props.value]
-  );
-  const validateInput = () => {
-    const v = stringToValue(inputValue, percentage, min, max);
-    props.onValueChange?.(v);
-    onEndEditing?.(v);
-    setShowDialog(false);
-  };
+  const [inputValue, setInputValue] = React.useState(props.value);
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
@@ -151,62 +218,49 @@ export function SliderWithValue({
           maximumTrackTintColor={colors.onSurfaceDisabled}
           thumbTintColor={colors.onSurface}
           style={contentStyle}
-          {...props}
           onValueChange={(v) => {
-            props.onValueChange?.(v);
-            setInputValue(valueToString(v, fDigits, percentage));
+            setInputValue(v);
+            onValueChange?.(v);
           }}
           onSlidingComplete={(v) => {
+            setInputValue(v);
             props.onSlidingComplete?.(v);
             onEndEditing?.(v);
           }}
+          {...props}
         />
       </View>
-      <TouchableRipple
-        style={{
-          width: Math.max(2, fDigits ?? 0) * 20,
-          paddingVertical: 8,
-          alignItems: "center",
-          borderWidth: StyleSheet.hairlineWidth,
-          borderColor: colors.onSurface,
-          borderRadius,
+      <NumberInputButton
+        value={inputValue}
+        unit={unit}
+        fDigits={fDigits}
+        percentage={percentage}
+        minimumValue={props.minimumValue}
+        maximumValue={props.maximumValue}
+        onEndEditing={(v) => {
+          setInputValue(v);
+          v !== props.value && onValueChange?.(v);
+          onEndEditing?.(v);
         }}
-        onPress={() => {
-          setShowDialog(true);
-          // Schedule the focus to the next frame otherwise it won't work
-          setTimeout(() => inputRef.current?.focus(), 0);
-        }}
-      >
-        <Text>{inputValue + (percentage ? "%" : (unit ?? ""))}</Text>
-      </TouchableRipple>
-      <Portal>
-        <Dialog
-          visible={showDialog}
-          onDismiss={() => {
-            validateInput();
-            setShowDialog(false);
-          }}
-        >
-          <Dialog.Content style={{ gap: 10 }}>
-            <Text variant="bodyMedium">
-              Enter a Value
-              {boundsString(min, max, fDigits, percentage)}
-            </Text>
-            <TextInput
-              ref={inputRef}
-              mode="outlined"
-              dense
-              keyboardType={fDigits ? "decimal-pad" : "number-pad"}
-              value={inputValue}
-              onChangeText={setInputValue}
-              onEndEditing={validateInput}
-            />
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={validateInput}>Done</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+        button={({ label, onPress }) => (
+          <TouchableRipple
+            style={[
+              {
+                width: Math.max(2, fDigits ?? 0) * 20,
+                paddingVertical: 8,
+                alignItems: "center",
+                borderWidth: StyleSheet.hairlineWidth,
+                borderColor: colors.onSurface,
+                borderRadius,
+              },
+              style,
+            ]}
+            onPress={onPress}
+          >
+            <Text numberOfLines={1}>{label}</Text>
+          </TouchableRipple>
+        )}
+      />
     </View>
   );
 }

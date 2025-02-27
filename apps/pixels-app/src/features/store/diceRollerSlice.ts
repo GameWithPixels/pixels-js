@@ -8,113 +8,260 @@ import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 
 import { logWrite } from "./logWrite";
 
-export interface DatedRoll {
-  timestamp: number; // Unique identifier
+import {
+  computeRollFormulaResult,
+  parseRollFormula,
+} from "~/features/rollFormula";
+import { generateUuid, logError } from "~/features/utils";
+
+export type DieRoll = {
+  timestamp: number;
   pixelId: number;
   dieType: PixelDieType;
   value: number;
-}
+};
 
-export type DatedRollsState = EntityState<DatedRoll>;
+export type RollerEntry = {
+  uuid: string;
+  rolls: DieRoll[];
+  formula?: string; // Optional formula, if none it's a single roll
+  result?: {
+    value: number;
+    rollsIndices: number[];
+  };
+};
 
-export const datedRollsAdapter = createEntityAdapter({
-  selectId: (roll: Readonly<DatedRoll>) => roll.timestamp,
+export type RollerEntryWithFormula = Omit<RollerEntry, "formula"> &
+  Required<Pick<RollerEntry, "formula">>;
+
+export type RollerEntriesState = EntityState<RollerEntry>;
+
+export const rollerEntriesAdapter = createEntityAdapter<RollerEntry>({
+  selectId: (roll: Readonly<RollerEntry>) => roll.uuid,
 });
 
-export interface DiceRollerState {
-  allRolls: DatedRollsState;
-  visibleRolls: number[]; // Timestamps
+export type DiceRollerState = {
+  entries: RollerEntriesState;
   paused: boolean;
-}
-
-const initialState: DiceRollerState = {
-  allRolls: datedRollsAdapter.getInitialState(),
-  visibleRolls: [],
-  paused: false,
+  lastRollFormula: string;
+  activeRollFormula?: RollerEntryWithFormula;
+  settings: {
+    cardsAlignment: "left" | "right" | "center" | "alternate";
+    cardsSizeRatio: number;
+  };
 };
+
+function getInitialState(): DiceRollerState {
+  return {
+    entries: rollerEntriesAdapter.getInitialState(),
+    paused: false,
+    lastRollFormula: "1d20",
+    settings: {
+      cardsAlignment: "right",
+      cardsSizeRatio: 0.5,
+    },
+  };
+}
 
 function log(
   action:
     | "resetDiceRoller"
-    | "addRollerEntry"
-    | "hideRollerEntry"
-    | "hideAllRollerEntries"
-    | "setRollerPaused"
+    | "addRollToRoller"
+    | "activateRollerFormula"
+    | "updateRollerActiveFormula"
+    | "commitRollerActiveFormula"
+    | "removeRollerEntry"
+    | "removeAllRollerEntries"
+    | "setRollerPaused",
+  payload?: unknown
 ) {
-  logWrite(action);
+  logWrite(payload ? `${action}, payload: ${JSON.stringify(payload)}` : action);
 }
 
-function generateTimestamp(state: DiceRollerState) {
-  const { allRolls } = state;
-  const lastTimestamp = allRolls.entities[allRolls.ids.at(-1) ?? -1]?.timestamp;
-  return Math.max(Date.now(), (lastTimestamp ?? -1) + 1);
+function generateRollEntryUuid({ entries }: DiceRollerState): string {
+  let uuid: string;
+  do {
+    uuid = generateUuid();
+  } while (entries.entities[uuid]);
+  return uuid;
 }
 
 // 128 because we are geeks!
-function keepLessThan128Rolls(state: DiceRollerState) {
-  const { allRolls, visibleRolls } = state;
-  if (allRolls.ids.length >= 128) {
-    const oldest = allRolls.ids[0];
-    datedRollsAdapter.removeOne(allRolls, oldest);
-    const i = visibleRolls.indexOf(oldest as number);
-    if (i >= 0) {
-      visibleRolls.splice(i, 1);
+function keepAtMost128Entries(state: DiceRollerState) {
+  const { entries } = state;
+  const maxEntries = 128;
+  if (entries.ids.length > maxEntries) {
+    rollerEntriesAdapter.removeMany(
+      entries,
+      entries.ids.slice(0, entries.ids.length - maxEntries)
+    );
+  }
+}
+
+function getFormulaResult(
+  formula: string,
+  rolls: readonly Readonly<{
+    pixelId: number;
+    dieType: PixelDieType;
+    value: number;
+  }>[]
+): { value: number; rollsIndices: number[] } | undefined {
+  try {
+    const leftRolls = [...rolls];
+    const value = computeRollFormulaResult(
+      parseRollFormula(formula),
+      leftRolls
+    );
+    if (value !== undefined) {
+      const rollsIndices = [];
+      for (let i = 0; i < rolls.length; ++i) {
+        const j = leftRolls.findIndex((r) => r.pixelId === rolls[i].pixelId);
+        if (j < 0) {
+          rollsIndices.push(i);
+        } else {
+          leftRolls.splice(j, 1);
+        }
+      }
+      return { value, rollsIndices };
     }
+  } catch (e) {
+    logError(`Error while computing roll formula result: ${e}`);
   }
 }
 
 // Redux slice that stores rolls for the dice roller
 const DiceRollerSlice = createSlice({
   name: "DiceRoller",
-  initialState,
+  initialState: getInitialState,
   reducers: {
     resetDiceRoller() {
       log("resetDiceRoller");
-      return initialState;
+      return getInitialState();
     },
 
-    addRollerEntry(state, action: PayloadAction<Omit<DatedRoll, "timestamp">>) {
-      if (!state.paused) {
-        log("addRollerEntry");
-        keepLessThan128Rolls(state);
-        const { allRolls, visibleRolls } = state;
-        const timestamp = generateTimestamp(state);
+    addRollToRoller(state, action: PayloadAction<Omit<DieRoll, "timestamp">>) {
+      const { paused, activeRollFormula } = state;
+      if (!paused) {
+        keepAtMost128Entries(state);
         const { pixelId, dieType, value } = action.payload;
-        datedRollsAdapter.addOne(allRolls, {
-          timestamp,
+        const roll = {
+          timestamp: Date.now(),
           pixelId,
           dieType,
           value,
-        });
-        visibleRolls.push(timestamp);
+        } as const;
+        if (activeRollFormula) {
+          // Add roll to active formula
+          log("addRollToRoller", { entry: "formula", roll });
+          activeRollFormula.rolls.push(roll);
+          activeRollFormula.result ??= getFormulaResult(
+            activeRollFormula.formula,
+            activeRollFormula.rolls
+          );
+        } else {
+          // Add single roll
+          log("addRollToRoller", { entry: "single", roll });
+          rollerEntriesAdapter.addOne(state.entries, {
+            uuid: generateRollEntryUuid(state),
+            rolls: [roll],
+            result: {
+              value,
+              rollsIndices: [0],
+            },
+          });
+        }
       }
     },
 
-    hideRollerEntry(state, action: PayloadAction<number>) {
-      log("hideRollerEntry");
-      const i = state.visibleRolls.indexOf(action.payload);
-      if (i >= 0) {
-        state.visibleRolls.splice(i, 1);
+    activateRollerFormula(state, action: PayloadAction<string | undefined>) {
+      log("activateRollerFormula");
+      const entry = state.entries.entities[action.payload ?? ""];
+      if (entry) {
+        const { uuid, formula, rolls, result } = entry;
+        state.activeRollFormula = {
+          uuid,
+          formula: formula ?? state.lastRollFormula,
+          rolls,
+          result,
+        };
+      } else {
+        state.activeRollFormula = {
+          uuid: generateRollEntryUuid(state),
+          formula: state.lastRollFormula,
+          rolls: [],
+        };
       }
     },
 
-    hideAllRollerEntries(state) {
-      log("hideAllRollerEntries");
-      state.visibleRolls.length = 0;
+    updateRollerActiveFormula(state, action: PayloadAction<string>) {
+      log("updateRollerActiveFormula");
+      const { activeRollFormula } = state;
+      if (activeRollFormula) {
+        activeRollFormula.formula = action.payload;
+        activeRollFormula.result = getFormulaResult(
+          activeRollFormula.formula,
+          activeRollFormula.rolls
+        );
+      }
+    },
+
+    commitRollerActiveFormula(state) {
+      const { activeRollFormula } = state;
+      if (activeRollFormula) {
+        // Add or update entry only if there are rolls or entry already exists
+        const commit =
+          activeRollFormula.rolls.length > 0 ||
+          !!state.entries.entities[activeRollFormula.uuid];
+        log("commitRollerActiveFormula", { commit });
+        if (commit) {
+          keepAtMost128Entries(state);
+          rollerEntriesAdapter.upsertOne(state.entries, activeRollFormula);
+          state.lastRollFormula = activeRollFormula.formula;
+          state.activeRollFormula = undefined;
+        }
+        state.lastRollFormula = activeRollFormula.formula;
+        state.activeRollFormula = undefined;
+      }
+    },
+
+    removeRollerEntry(state, action: PayloadAction<string>) {
+      log("removeRollerEntry");
+      rollerEntriesAdapter.removeOne(state.entries, action.payload);
+    },
+
+    removeAllRollerEntries(state) {
+      log("removeAllRollerEntries");
+      rollerEntriesAdapter.removeAll(state.entries);
     },
 
     setRollerPaused(state, action: PayloadAction<boolean>) {
       log("setRollerPaused");
       state.paused = action.payload;
     },
+
+    setRollerCardsSizeRatio(state, action: PayloadAction<number>) {
+      state.settings.cardsSizeRatio = action.payload;
+    },
+
+    setRollerCardsAlignment(
+      state,
+      action: PayloadAction<DiceRollerState["settings"]["cardsAlignment"]>
+    ) {
+      state.settings.cardsAlignment = action.payload;
+    },
   },
 });
 
 export const {
   resetDiceRoller,
-  addRollerEntry,
-  hideRollerEntry,
-  hideAllRollerEntries,
+  addRollToRoller,
+  activateRollerFormula,
+  updateRollerActiveFormula,
+  commitRollerActiveFormula,
+  removeRollerEntry,
+  removeAllRollerEntries,
   setRollerPaused,
+  setRollerCardsSizeRatio,
+  setRollerCardsAlignment,
 } = DiceRollerSlice.actions;
 export default DiceRollerSlice.reducer;

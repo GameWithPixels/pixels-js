@@ -509,6 +509,27 @@ export function OutlineButton({ style, ...props }: ButtonProps) {
   );
 }
 
+export function ToggleButton({
+  selected,
+  style,
+  ...props
+}: ButtonProps & { selected?: boolean }) {
+  const { colors } = useTheme();
+  return (
+    <Button
+      mode="outlined"
+      textColor={colors.onSurface}
+      style={[
+        {
+          backgroundColor: selected ? colors.primaryContainer : colors.surface,
+        },
+        style,
+      ]}
+      {...props}
+    />
+  );
+}
+
 export function Chip({
   children,
   disabled,
@@ -737,5 +758,23 @@ export function AddDieButton({
     >
       <PairIcon size={iconSize} color={colors.onSurfaceVariant} />
     </TouchableCard>
+  );
+}
+
+export function BottomSheetModalCloseButton({
+  style,
+  onPress,
+}: {
+  style?: ViewProps["style"];
+  onPress?: () => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <IconButton
+      icon="close"
+      iconColor={colors.primary}
+      style={[{ position: "absolute", right: 0, top: -15 }, style]}
+      onPress={() => onPress?.()} // Create local function to prevent passing event argument to onPress
+    />
   );
 }

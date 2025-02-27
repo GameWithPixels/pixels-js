@@ -29,7 +29,6 @@ export interface AppSettingsState {
   animationsSortMode: SortMode;
   updateBootloader: boolean;
   diceBrightnessFactor: number;
-  rollerCardsSizeRatio: number;
   disablePlayingAnimations: boolean;
   screensTheme: Record<RootScreenName, keyof typeof AppThemes>;
   showAdvancedSettings: boolean;
@@ -56,7 +55,6 @@ const initialState: AppSettingsState = {
   animationsSortMode: "alphabetical",
   updateBootloader: false,
   diceBrightnessFactor: 1,
-  rollerCardsSizeRatio: 0.5,
   disablePlayingAnimations: false,
   screensTheme: {
     onboarding: "blue",
@@ -142,10 +140,6 @@ const appSettingsSlice = createSlice({
       state.diceBrightnessFactor = action.payload;
     },
 
-    setRollerCardsSizeRatio(state, action: PayloadAction<number>) {
-      state.rollerCardsSizeRatio = action.payload;
-    },
-
     setDisablePlayingAnimations(state, action: PayloadAction<boolean>) {
       state.disablePlayingAnimations = action.payload;
     },
@@ -210,7 +204,6 @@ export const {
   setAnimationsSortMode,
   setUpdateBootloader,
   setDiceBrightnessFactor,
-  setRollerCardsSizeRatio,
   setDisablePlayingAnimations,
   setScreenTheme,
   setShowAdvancedSettings,

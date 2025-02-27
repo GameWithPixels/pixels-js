@@ -1,3 +1,4 @@
+import { UnsubscribeListener } from "@reduxjs/toolkit";
 import {
   Color,
   ColorUtils,
@@ -13,10 +14,10 @@ import { Alert, AppState } from "react-native";
 import { PairedDie } from "./PairedDie";
 import { useAppSelector, useAppStore } from "./hooks";
 import {
+  addAppListener,
   AppStore,
   pairedDiceSelectors,
   RootState,
-  startAppListening,
 } from "./store";
 
 import { PixelsCentral } from "~/features/dice";
@@ -29,7 +30,7 @@ import {
 } from "~/features/profiles";
 import {
   addDieRoll,
-  addRollerEntry,
+  addRollToRoller,
   Library,
   readProfile,
   updatePairedDieBrightness,
@@ -37,7 +38,6 @@ import {
   updatePairedDieName,
   updatePairedDieProfileHash,
 } from "~/features/store";
-import { AppProfileData } from "~/features/store/library";
 import { logError } from "~/features/utils";
 import { isSameBrightness } from "~/hackGetDieBrightness";
 import {
@@ -254,7 +254,7 @@ function hookToPixel(
     if (pairedDie) {
       store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
       store.dispatch(
-        addRollerEntry({
+        addRollToRoller({
           pixelId: pixel.pixelId,
           dieType: pixel.dieType,
           value: roll,
@@ -413,23 +413,21 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
 
   // Watch profiles changes
   React.useEffect(() => {
-    // Using the proper 'addAppListener' displays a Redux 'non serializable' error check
-    // const unsubscribe = store.dispatch(addAppListener({
-    return startAppListening({
-      predicate: (action) => {
-        return Library.Profiles.update.match(action);
-      },
-      effect: (action, listenerApi) => {
-        const { uuid } = action.payload as AppProfileData;
-        const pairedDie = pairedDiceSelectors.selectByProfileUuid(
-          listenerApi.getState(),
-          uuid
-        );
-        pairedDie &&
-          programProfileIfNeeded(pairedDie, central, listenerApi.getState);
-      },
-    });
-    // return () => unsubscribe.payload.unsubscribe(); // For some reason unsubscribe is undefined
+    const unsubscribe = store.dispatch(
+      addAppListener({
+        actionCreator: Library.Profiles.update,
+        effect: (action, listenerApi) => {
+          const { uuid } = action.payload;
+          const pairedDie = pairedDiceSelectors.selectByProfileUuid(
+            listenerApi.getState(),
+            uuid
+          );
+          pairedDie &&
+            programProfileIfNeeded(pairedDie, central, listenerApi.getState);
+        },
+      })
+    ) as unknown as UnsubscribeListener;
+    return () => unsubscribe();
   }, [central, store]);
 
   // Profiles edition

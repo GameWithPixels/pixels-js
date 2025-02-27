@@ -19,6 +19,7 @@ import {
   Library,
   resetAppSettings,
   resetAppTransientState,
+  resetDiceRoller,
   resetDiceStats,
   resetPairedDice,
   setBackgroundAudio,
@@ -28,7 +29,6 @@ import {
   setPlayAudioInSilentModeIOS,
   setShowAdvancedSettings,
 } from "~/features/store";
-import { resetDiceRoller } from "~/features/store/diceRollerSlice";
 import { useConfirmActionSheet } from "~/hooks";
 
 function AppSettingsPage({

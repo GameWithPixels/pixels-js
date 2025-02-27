@@ -8,11 +8,11 @@ import {
 
 import { ProfileDieTypes } from "./ProfileDieTypes";
 import { getColorwayLabel, getProfileDieTypeLabel } from "./descriptions";
-import { AvailableDieTypes } from "../dice/AvailableDieTypes";
 
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
 import { PairedDie } from "~/app/PairedDie";
+import { AvailableDieTypeValues } from "~/features/dice";
 
 function SortByDateDescendingIcon({
   size,
@@ -470,7 +470,7 @@ export function groupAndSortDice(
       case "none":
         return [{ title: defaultTitle, values: sort(dice) }];
       case "dieType": {
-        const arr = AvailableDieTypes.map((dieType) => ({
+        const arr = AvailableDieTypeValues.map((dieType) => ({
           title: getProfileDieTypeLabel(dieType),
           values: sort(dice.filter((p) => p.dieType === dieType)),
         })).filter((group) => group.values.length > 0);

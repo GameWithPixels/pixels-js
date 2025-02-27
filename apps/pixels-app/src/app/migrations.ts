@@ -9,7 +9,7 @@ import { PairedDie } from "./PairedDie";
 import { AppStore } from "./store";
 
 import { pairDie } from "~/features/dice/pairDie";
-import { computeProfileHashWithOverrides } from "~/features/profiles";
+import { computeProfileHashWithOverrides } from "~/features/profiles/createProfileDataSetWithOverrides"; // Avoid cyclic import
 import { Library, readProfile } from "~/features/store";
 import { AppProfileData } from "~/features/store/library";
 import animationsRainbowReducer from "~/features/store/library/animations/rainbowSlice";
