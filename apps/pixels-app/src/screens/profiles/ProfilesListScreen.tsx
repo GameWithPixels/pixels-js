@@ -19,13 +19,13 @@ import {
   profileSearchbarMinHeight,
 } from "~/components/AnimatedProfileSearchbar";
 import { AppBackground } from "~/components/AppBackground";
+import { RotatingGradientBorderCard } from "~/components/GradientBorderCard";
 import { HeaderMenuButton } from "~/components/HeaderMenuButton";
 import {
   SortBottomSheet,
   SortBottomSheetSortIcon,
 } from "~/components/SortBottomSheet";
-import { FloatingAddButton } from "~/components/buttons";
-import { EmptyLibraryCard } from "~/components/cards";
+import { FloatingAddButton, GradientButton } from "~/components/buttons";
 import { ProfilesGrid, ProfilesList } from "~/components/profile";
 import {
   getProfilesGroupingLabel,
@@ -64,7 +64,10 @@ function PageHeader({
     <>
       <HeaderMenuButton
         visible={menuVisible}
-        contentStyle={{ width: 190 }}
+        style={{
+          position: "absolute",
+          right: 0,
+        }}
         onShowMenu={() => setMenuVisible(true)}
         onDismiss={() => setMenuVisible(false)}
       >
@@ -223,7 +226,31 @@ function ProfilesListPage({
             )}
           </>
         ) : (
-          <EmptyLibraryCard onPress={createProfile} />
+          <RotatingGradientBorderCard
+            style={{
+              width: "80%",
+              marginTop: 60,
+              alignSelf: "center",
+            }}
+            contentStyle={{
+              paddingVertical: 40,
+              paddingHorizontal: 20,
+              gap: 40,
+            }}
+          >
+            <Text variant="titleLarge">The Profiles Library</Text>
+            <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+              A Profile stores all the data required to animate the LEDs of a
+              Pixels die and trigger actions on rolls.
+            </Text>
+            <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+              Save any of your dice Profile that your like to the library or
+              create new ones from scratch.
+            </Text>
+            <GradientButton onPress={createProfile}>
+              Create Profile
+            </GradientButton>
+          </RotatingGradientBorderCard>
         )}
       </GHScrollView>
       {profiles.length > 0 && (

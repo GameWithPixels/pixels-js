@@ -6,10 +6,10 @@ import { logWrite } from "./logWrite";
 import { PairedDie } from "~/app/PairedDie";
 import { logError } from "~/features/utils";
 
-export interface PairedDiceState {
+export type PairedDiceState = {
   paired: PairedDie[];
   unpaired: PairedDie[];
-}
+};
 
 const initialState: PairedDiceState = {
   paired: [],
@@ -43,8 +43,10 @@ const PairedDiceSlice = createSlice({
       return initialState;
     },
 
-    addPairedDie(state, action: PayloadAction<Omit<PairedDie, "profileHash">>) {
-      const { payload } = action;
+    addPairedDie(
+      state,
+      { payload }: PayloadAction<Omit<PairedDie, "profileHash">>
+    ) {
       log("addPairedDie", payload);
       const index = state.paired.findIndex(
         (d) => d.pixelId === payload.pixelId
@@ -74,8 +76,7 @@ const PairedDiceSlice = createSlice({
       }
     },
 
-    removePairedDie(state, action: PayloadAction<number>) {
-      const { payload } = action;
+    removePairedDie(state, { payload }: PayloadAction<number>) {
       const index = state.paired.findIndex((i) => i.pixelId === payload);
       if (index >= 0) {
         log("removePairedDie", payload);
@@ -97,12 +98,13 @@ const PairedDiceSlice = createSlice({
 
     updatePairedDieName(
       state,
-      action: PayloadAction<{
+      {
+        payload,
+      }: PayloadAction<{
         pixelId: number;
         name: string;
       }>
     ) {
-      const { payload } = action;
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
       if (die && die.name !== payload.name) {
         log("updatePairedDieName", payload);
@@ -112,12 +114,13 @@ const PairedDiceSlice = createSlice({
 
     updatePairedDieFirmwareTimestamp(
       state,
-      action: PayloadAction<{
+      {
+        payload,
+      }: PayloadAction<{
         pixelId: number;
         timestamp: number;
       }>
     ) {
-      const { payload } = action;
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
       if (die && die.firmwareTimestamp !== payload.timestamp) {
         log("updatePairedDieFirmwareTimestamp", payload);
@@ -127,12 +130,13 @@ const PairedDiceSlice = createSlice({
 
     updatePairedDieProfileHash(
       state,
-      action: PayloadAction<{
+      {
+        payload,
+      }: PayloadAction<{
         pixelId: number;
         hash: number;
       }>
     ) {
-      const { payload } = action;
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
       if (die && die.profileHash !== payload.hash) {
         log("updatePairedDieProfileHash", payload, `was: ${die.profileHash}`);
@@ -142,12 +146,13 @@ const PairedDiceSlice = createSlice({
 
     updatePairedDieBrightness(
       state,
-      action: PayloadAction<{
+      {
+        payload,
+      }: PayloadAction<{
         pixelId: number;
         brightness: number;
       }>
     ) {
-      const { payload } = action;
       const die = state.paired.find((d) => d.pixelId === payload.pixelId);
       if (die && die.brightness !== payload.brightness) {
         log("updatePairedDieBrightness", payload, `was: ${die.brightness}`);

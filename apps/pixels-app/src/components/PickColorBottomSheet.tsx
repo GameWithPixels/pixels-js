@@ -1,10 +1,11 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { ColorUtils } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { ColorWheel } from "./ColorWheel";
+import { BottomSheetModalCloseButton } from "./buttons";
 
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
@@ -60,13 +61,7 @@ export function PickColorBottomSheet({
               onColorChange={onSelectColor}
             />
           </BottomSheetScrollView>
-          <IconButton
-            icon="close"
-            iconColor={colors.primary}
-            sentry-label="close-pick-color"
-            style={{ position: "absolute", right: 0, top: -15 }}
-            onPress={onDismiss}
-          />
+          <BottomSheetModalCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

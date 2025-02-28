@@ -8,7 +8,7 @@ export type DfuFilesInfo = {
   bootloaderPath?: string;
 };
 
-export interface AppTransientState {
+export type AppTransientState = {
   update: {
     gotResponse: boolean;
     manifest?: {
@@ -24,7 +24,7 @@ export interface AppTransientState {
       [dieId: number]: number;
     };
   };
-}
+};
 
 const initialState: AppTransientState = {
   update: { gotResponse: false },

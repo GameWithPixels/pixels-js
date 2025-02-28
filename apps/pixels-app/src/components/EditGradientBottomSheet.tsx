@@ -3,7 +3,6 @@ import { Color, Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import {
-  IconButton,
   Text,
   ThemeProvider,
   TouchableRipple,
@@ -13,6 +12,7 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { ColorWheel } from "./ColorWheel";
 import { KeyframeGradient } from "./KeyframeGradient";
+import { BottomSheetModalCloseButton } from "./buttons";
 
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
@@ -136,13 +136,7 @@ export function EditGradientBottomSheet({
               }}
             />
           </BottomSheetScrollView>
-          <IconButton
-            icon="close"
-            iconColor={colors.primary}
-            sentry-label="close-edit-gradient"
-            style={{ position: "absolute", right: 0, top: -15 }}
-            onPress={onDismiss}
-          />
+          <BottomSheetModalCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

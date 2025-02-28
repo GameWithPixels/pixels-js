@@ -19,7 +19,7 @@ export const gradientsAdapter = createEntityAdapter({
 
 const gradientsSlice = createSlice({
   name: "gradients",
-  initialState: gradientsAdapter.getInitialState(),
+  initialState: gradientsAdapter.getInitialState,
   reducers: {
     reset(_, action: PayloadAction<LibraryData>) {
       const state = gradientsAdapter.getInitialState();

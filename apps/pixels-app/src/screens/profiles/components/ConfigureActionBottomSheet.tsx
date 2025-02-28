@@ -19,7 +19,6 @@ import React from "react";
 import { Platform, View } from "react-native";
 import {
   Button,
-  IconButton,
   Switch,
   Text,
   ThemeProvider,
@@ -44,7 +43,11 @@ import {
   SliderWithValueProps,
 } from "~/components/SliderWithValue";
 import { TabsHeaders } from "~/components/TabsHeaders";
-import { GradientButton, OutlineButton } from "~/components/buttons";
+import {
+  BottomSheetModalCloseButton,
+  GradientButton,
+  OutlineButton,
+} from "~/components/buttons";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   getColorOverrideLabel,
@@ -497,7 +500,7 @@ const PlayAnimationColor = observer(function PlayAnimationColor({
                 alignSelf: "center",
               }}
             >
-              Tap to modify
+              Tap to edit
             </Text>
           </View>
         </TouchableRipple>
@@ -561,7 +564,7 @@ const PlayAnimationGradient = observer(function PlayAnimationGradient({
           marginTop: 10,
         }}
       >
-        Tap to modify
+        Tap to edit
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableRipple
@@ -969,13 +972,7 @@ export const ConfigureActionBottomSheet = observer(
                 <ConfigureBatteryCondition condition={condition} />
               ) : null}
             </BottomSheetScrollView>
-            <IconButton
-              icon="close"
-              iconColor={colors.primary}
-              sentry-label="close-configure-action"
-              style={{ position: "absolute", right: 0, top: -15 }}
-              onPress={onDismiss}
-            />
+            <BottomSheetModalCloseButton onPress={onDismiss} />
             <SelectedPixelTransferProgressBar style={{ top: 30 }} />
           </ThemeProvider>
         </RootSiblingParent>

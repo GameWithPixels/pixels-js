@@ -48,6 +48,7 @@ import profilesReducer, {
   profilesAdapter,
 } from "~/features/store/library/profilesSlice";
 import audioClipsReducer from "~/features/store/libraryAssets/audioClipsSlice";
+import imagesReducer from "~/features/store/libraryAssets/imagesSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
 
 const MyStorage = !__DEV__
@@ -129,6 +130,7 @@ const rootReducer = combineReducers({
   // Library assets
   libraryAssets: combineReducers({
     audioClips: persistAnim("libraryAssets/audioClips", audioClipsReducer),
+    images: persistAnim("libraryAssets/images", imagesReducer),
   }),
   // Dice roller
   diceRoller: persist("diceRoller", diceRollerReducer),
@@ -174,6 +176,7 @@ export const startAppListening =
     RootState,
     AppDispatch
   >;
+
 export const addAppListener = addListener as TypedAddListener<
   RootState,
   AppDispatch

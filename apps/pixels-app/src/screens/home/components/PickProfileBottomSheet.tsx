@@ -1,13 +1,14 @@
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
-import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { PairedDie } from "~/app/PairedDie";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
 import { ProfilePicker } from "~/components/ProfilePicker";
+import { BottomSheetModalCloseButton } from "~/components/buttons";
 import { useBottomSheetBackHandler } from "~/hooks";
 
 export function PickProfileBottomSheet({
@@ -56,13 +57,7 @@ export function PickProfileBottomSheet({
               marginTop: 10,
             }}
           />
-          <IconButton
-            icon="close"
-            iconColor={colors.primary}
-            sentry-label="close-pick-profile"
-            style={{ position: "absolute", right: 0, top: -15 }}
-            onPress={onDismiss}
-          />
+          <BottomSheetModalCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

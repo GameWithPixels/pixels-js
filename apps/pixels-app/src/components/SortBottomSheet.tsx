@@ -1,10 +1,10 @@
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import React from "react";
 import { View } from "react-native";
-import { useTheme, Text, ThemeProvider, IconButton } from "react-native-paper";
+import { useTheme, Text, ThemeProvider } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { SelectionButton } from "./buttons";
+import { BottomSheetModalCloseButton, SelectionButton } from "./buttons";
 
 import { getBottomSheetProps } from "~/app/themes";
 import { useBottomSheetBackHandler } from "~/hooks";
@@ -97,13 +97,7 @@ export function SortBottomSheet({
               ))}
             </View>
           </BottomSheetScrollView>
-          <IconButton
-            icon="close"
-            iconColor={colors.primary}
-            sentry-label="close-sort"
-            style={{ position: "absolute", right: 0, top: -15 }}
-            onPress={onDismiss}
-          />
+          <BottomSheetModalCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

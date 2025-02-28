@@ -93,18 +93,20 @@ function SaveToLibraryDialog({
             disabled={!name.trim()}
             onPress={() => {
               const { profiles } = store.getState().library;
-              const profileData = profiles.entities[profileUuid];
               const profileName = name.trim();
-              for (const uuid of profiles.ids) {
-                if (profiles.entities[uuid]?.name === profileName) {
+              const profileData = profiles.entities[profileUuid];
+              if (profileData && profileName.length) {
+                if (
+                  profiles.ids.find(
+                    (uuid) => profiles.entities[uuid]?.name === profileName
+                  )
+                ) {
                   Alert.alert(
-                    "Profile Name Taken",
+                    "Name Not Available",
                     `A profile named "${profileName}" already exists in the library. Please choose a different name.`
                   );
                   return;
                 }
-              }
-              if (profileData && profileName.length) {
                 const profile = profileStore.object;
                 if (profile) {
                   // Save to library

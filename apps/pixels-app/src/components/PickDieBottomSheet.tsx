@@ -6,6 +6,7 @@ import { View } from "react-native";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
+import { BottomSheetModalCloseButton } from "./buttons";
 import { PixelCard } from "./cards";
 
 import { PairedDie } from "~/app/PairedDie";
@@ -88,7 +89,7 @@ export function PickDieBottomSheet({
     } else {
       sheetRef.current?.dismiss();
     }
-  }, [central, visible]);
+  }, [visible]);
 
   const dismiss = (pairedDie?: PairedDie) => {
     // Connect to the selected die (high priority)
@@ -153,6 +154,7 @@ export function PickDieBottomSheet({
               </Text>
             )}
           </View>
+          <BottomSheetModalCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

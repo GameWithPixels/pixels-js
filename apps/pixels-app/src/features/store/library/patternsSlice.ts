@@ -19,7 +19,7 @@ export const patternsAdapter = createEntityAdapter({
 
 const patternsSlice = createSlice({
   name: "patterns",
-  initialState: patternsAdapter.getInitialState(),
+  initialState: patternsAdapter.getInitialState,
   reducers: {
     reset(_, action: PayloadAction<LibraryData>) {
       const state = patternsAdapter.getInitialState();

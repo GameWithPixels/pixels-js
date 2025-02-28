@@ -6,25 +6,25 @@ import {
 } from "@reduxjs/toolkit";
 import { assert } from "@systemic-games/pixels-core-utils";
 
-import { AudioClipAsset } from "./types";
+import { FileAsset } from "./types";
 import { logWrite } from "../library/logWrite";
 
-export type AudioClipAssetsState = EntityState<AudioClipAsset>;
+export type AudioClipAssetsState = EntityState<FileAsset>;
 
 export const audioClipsAdapter = createEntityAdapter({
-  selectId: (ac: Readonly<AudioClipAsset>) => ac.uuid,
+  selectId: (ac: Readonly<FileAsset>) => ac.uuid,
 });
 
 const audioClipsSlice = createSlice({
   name: "audioClips",
-  initialState: audioClipsAdapter.getInitialState(),
+  initialState: audioClipsAdapter.getInitialState,
   reducers: {
     reset() {
       return audioClipsAdapter.getInitialState();
     },
 
     // Add only if new clip
-    add(state, action: PayloadAction<AudioClipAsset>) {
+    add(state, action: PayloadAction<FileAsset>) {
       const audioClip = action.payload;
       logWrite("add", "audioClip", audioClip.uuid, audioClip.name);
       assert(audioClip.uuid.length, "AudioClipAsset must have a uuid");

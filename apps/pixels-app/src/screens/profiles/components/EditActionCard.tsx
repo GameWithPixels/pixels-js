@@ -3,7 +3,7 @@ import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { Pressable, StyleSheet, TextStyle } from "react-native";
+import { StyleSheet, TextStyle } from "react-native";
 import { Text, TouchableRipple, useTheme } from "react-native-paper";
 import Animated, {
   CurvedTransition,
@@ -139,7 +139,7 @@ export const EditActionCard = observer(function EditActionCard({
             <AnimatedText variant="titleMedium" style={animColorStyle}>
               {getActionTypeLabel(actionType)}
             </AnimatedText>
-            <Pressable
+            <TouchableRipple
               sentry-label="remove-action"
               style={styles.actionIconBox}
               onPress={() => {
@@ -151,7 +151,7 @@ export const EditActionCard = observer(function EditActionCard({
               }}
             >
               <AnimatedTrashIcon size={24} style={animColorStyle} />
-            </Pressable>
+            </TouchableRipple>
           </Card>
           <Animated.View
             layout={FadeIn.duration(300)}

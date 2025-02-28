@@ -1,4 +1,4 @@
-export * from "./importAudioClip";
+export * from "./importFileAsset";
 export * from "./path";
 export * from "./playAudioClipAsync";
-export * from "./removeAudioClip";
+export * from "./removeFileAsset";

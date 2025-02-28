@@ -5,10 +5,11 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 import React from "react";
 import { ScrollView as GHScrollView } from "react-native-gesture-handler";
-import { IconButton, Text, ThemeProvider, useTheme } from "react-native-paper";
+import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { AnimationsGrid } from "./AnimationsGrid";
+import { BottomSheetModalCloseButton } from "./buttons";
 
 import { AnimationsCategories } from "~/app/displayNames";
 import { AppStyles } from "~/app/styles";
@@ -123,13 +124,7 @@ export function PickAnimationBottomSheet({
               />
             </GHScrollView>
           </BottomSheetView>
-          <IconButton
-            icon="close"
-            iconColor={colors.primary}
-            sentry-label="close-pick-animation"
-            style={{ position: "absolute", right: 0, top: -15 }}
-            onPress={onDismiss}
-          />
+          <BottomSheetModalCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

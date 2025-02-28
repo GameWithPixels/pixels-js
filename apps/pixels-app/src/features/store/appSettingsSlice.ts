@@ -13,7 +13,7 @@ import { ProfilesViewMode } from "~/screens/profiles/ProfilesListScreen";
 
 export type ThemeMode = "system" | "dark" | "light";
 
-export interface AppSettingsState {
+export type AppSettingsState = {
   themeMode: ThemeMode;
   showOnboarding: boolean;
   showNewPixelsAppBanner: boolean;
@@ -37,7 +37,7 @@ export interface AppSettingsState {
   appFirmwareTimestampOverride: number;
   backgroundAudio: boolean;
   playAudioInSilentModeIOS: boolean;
-}
+};
 
 const initialState: AppSettingsState = {
   themeMode: "dark",
