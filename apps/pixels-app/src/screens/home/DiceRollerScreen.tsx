@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { UnsubscribeListener } from "@reduxjs/toolkit";
-import { assertNever, range } from "@systemic-games/pixels-core-utils";
+import { assertNever, Mutable, range } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
@@ -244,7 +244,7 @@ function RollTouchableCard({
   expectedRolls: readonly Readonly<{
     dieType: PixelDieType;
     count: number;
-    twice?: boolean;
+    twice?: "same" | "high" | "low";
   }>[];
   rolls?: readonly Readonly<{
     dieType: PixelDieType;
@@ -340,35 +340,54 @@ function RollTouchableCard({
                         if (index >= 0) {
                           remainingRolls.splice(index, 1);
                         }
+                        const highOrLow =
+                          roll &&
+                          (dice.twice === "high" || dice.twice === "low") &&
+                          dice.twice;
+                        const scale =
+                          (highOrLow === "high" && k === 1) ||
+                          (highOrLow === "low" && k === 0)
+                            ? 0.8
+                            : 1;
+                        const onRemove =
+                          roll && onRemoveRoll
+                            ? () => onRemoveRoll?.(roll)
+                            : undefined;
                         return (
-                          <LayoutAnimationConfig
+                          <View
                             key={`${i}-${j}-${k}-${dice.dieType}-${value}`}
-                            skipEntering={!animateDice || !isMounted}
-                            skipExiting={!animateDice}
+                            style={{
+                              zIndex:
+                                scale >= 1
+                                  ? roll && dice.twice === "same"
+                                    ? 2
+                                    : 1
+                                  : 0,
+                            }}
                           >
-                            <SlidableDie
-                              onRemove={
-                                roll && onRemoveRoll
-                                  ? () => onRemoveRoll?.(roll)
-                                  : undefined
-                              }
+                            <LayoutAnimationConfig
+                              skipEntering={!animateDice || !isMounted}
+                              skipExiting={!animateDice}
                             >
-                              <AnimatedRolledDie
-                                entering={
-                                  newRoll
-                                    ? SlideInDown.duration(300)
-                                    : undefined
-                                }
-                                exiting={FadeOut.duration(100)}
-                                dieType={dice.dieType}
-                                value={value}
-                                size={sizeFactor * 0.3}
-                                style={{
-                                  marginTop: !k ? 0 : -sizeFactor * 0.15,
-                                }}
-                              />
-                            </SlidableDie>
-                          </LayoutAnimationConfig>
+                              <SlidableDie onRemove={onRemove}>
+                                <AnimatedRolledDie
+                                  entering={
+                                    newRoll
+                                      ? SlideInDown.duration(300)
+                                      : undefined
+                                  }
+                                  exiting={FadeOut.duration(100)}
+                                  dieType={dice.dieType}
+                                  value={value}
+                                  size={sizeFactor * 0.3}
+                                  style={{
+                                    marginTop: !k ? 0 : -sizeFactor * 0.15,
+                                    transform: [{ scale }],
+                                  }}
+                                />
+                              </SlidableDie>
+                            </LayoutAnimationConfig>
+                          </View>
                         );
                       })}
                     </View>
@@ -450,6 +469,14 @@ function RollTouchableCard({
   );
 }
 
+function compareRolls(
+  rolls: readonly Readonly<{ dieType: PixelDieType; value: number }>[]
+): number | undefined {
+  if (rolls.length >= 2) {
+    return rolls[0].value - rolls[1].value;
+  }
+}
+
 function FormulaTouchableCard({
   formulaEntry,
   onRollFormulaChange,
@@ -473,14 +500,6 @@ function FormulaTouchableCard({
   const endText = constant
     ? `${simpleFormula.constant >= 0 ? "+" : ""}${constant}`
     : undefined;
-  const rollTwice =
-    simpleFormula?.modifier === "advantage" ||
-    simpleFormula?.modifier === "disadvantage";
-
-  const expectedRolls = [{ dieType, count: dieCount, twice: rollTwice }];
-  if (simpleFormula?.bonus === "guidance") {
-    expectedRolls.push({ dieType: "d4", count: 1, twice: false });
-  }
 
   const newRolls = useNewArrayItems(rolls);
   const unusedRolls = React.useMemo(() => {
@@ -489,6 +508,26 @@ function FormulaTouchableCard({
     unusedRolls.reverse();
     return unusedRolls;
   }, [rollFormula, rolls]);
+
+  const mod = simpleFormula?.modifier;
+  const diff = compareRolls(
+    rolls.filter((r) => r.dieType === simpleFormula.dieType)
+  );
+  const twice =
+    mod && diff !== undefined
+      ? (diff >= 0 && mod === "advantage") ||
+        (diff <= 0 && mod === "disadvantage")
+        ? "high"
+        : "low"
+      : mod
+        ? "same"
+        : undefined;
+  const expectedRolls: Mutable<
+    React.ComponentProps<typeof RollTouchableCard>["expectedRolls"]
+  > = [{ dieType, count: dieCount, twice }];
+  if (simpleFormula?.bonus === "guidance") {
+    expectedRolls.push({ dieType: "d4", count: 1 });
+  }
 
   const { colors } = useTheme();
   return (
@@ -778,10 +817,8 @@ function SlidableDie({
           offset.value = withSpring(0);
         } else {
           // Remove item
-          const dest = Math.sign(offset.value) * cutoffDist;
-          offset.value = withTiming(dest, {
-            duration: cutoffDist - Math.abs(dest),
-          });
+          offset.value = 0;
+          // offset.value = withDelay(100, withTiming(0, { duration: 0 }));
           onRemove && runOnJS(onRemove)();
         }
       } else {
@@ -1040,9 +1077,9 @@ function OpenedFormulaCard({
         onRollFormulaChange={showEditor ? onChange : undefined}
         onDismiss={onClose}
         onRemoveRoll={(roll) => {
-          console.log("REMOVE " + JSON.stringify(roll));
           if ("timestamp" in roll && typeof roll.timestamp === "number") {
             appDispatch(removeRollerActiveFormulaRoll(roll.timestamp));
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           }
         }}
         onWidthAnimationEnd={(w) => {
