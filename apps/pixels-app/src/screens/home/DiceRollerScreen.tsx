@@ -289,6 +289,14 @@ function RollTouchableCard({
   const newRolls = useNewArrayItems(rolls);
   const isMounted = useIsMounted();
 
+  const itemsCount =
+    expectedRolls.reduce((acc, r) => acc + r.count, 0) + (endText ? 1 : 0);
+  const dieMarginLeft = Math.min(
+    0,
+    (cardWidth - 2 * borderSize - ((itemsCount + 1) * 0.3 + 0.4) * sizeFactor) /
+      itemsCount
+  );
+
   const { colors } = useTheme();
   return (
     <AnimatedCard
@@ -382,6 +390,7 @@ function RollTouchableCard({
                                 value={value}
                                 size={sizeFactor * 0.3}
                                 style={{
+                                  marginLeft: !(i + j) ? 0 : dieMarginLeft,
                                   marginTop: !k ? 0 : -sizeFactor * 0.15,
                                   transform: [{ scale }],
                                 }}
@@ -1278,13 +1287,19 @@ function RollerPage({
             >
               <Text variant="titleLarge">The Dice Roller</Text>
               <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
-                All connected dice rolls will show here. Slide rolls to remove
-                them and change the layout using the option menu on the top
-                right.
+                All connected dice rolls will be shown here.
               </Text>
               <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
-                Create Roll Formulas using the button at the bottom. Rolls will
-                be stored in the formula card as long as it is opened.
+                Slide rolls to remove them and customize the view layout using
+                the option menu on the top right.
+              </Text>
+              <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+                Create Roll Formulas using the bottom button. Rolls will be
+                stored in the Roll Formula card as long as it stays opened.
+              </Text>
+              <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+                In the Roll Formula card, slide away unwanted rolls. Completed
+                Roll Formulas may be edited.
               </Text>
             </RotatingGradientBorderCard>
           )}

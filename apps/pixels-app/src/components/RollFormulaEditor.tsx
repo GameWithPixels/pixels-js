@@ -147,7 +147,7 @@ export function RollFormulaEditor({
         value={dieCount}
         onValueChange={setDieCount}
         minimumValue={1}
-        maximumValue={20}
+        maximumValue={10}
         buttonsStartValue={1}
         buttonsEndValue={4}
       />
