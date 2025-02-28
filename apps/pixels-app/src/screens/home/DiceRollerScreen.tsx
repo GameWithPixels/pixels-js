@@ -22,7 +22,6 @@ import { Divider, Text, TouchableRipple, useTheme } from "react-native-paper";
 import Animated, {
   AnimatedProps,
   AnimatedRef,
-  CurvedTransition,
   Easing,
   FadeIn,
   FadeOut,
@@ -35,8 +34,11 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
+  withDelay,
+  withSequence,
   withSpring,
   withTiming,
+  ZoomIn,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -170,7 +172,7 @@ function AnimatedRolledDie({
       <AnimatedDieWireframe
         dieType={dieType}
         size={size}
-        disabled={value !== undefined}
+        mode={value === undefined ? "normal" : "empty"}
         entering={FadeIn}
       />
       {value !== undefined && (
@@ -313,7 +315,10 @@ function RollTouchableCard({
           alignItems: "center",
         }}
       >
-        <>
+        <LayoutAnimationConfig
+          skipEntering={!animateDice || !isMounted}
+          skipExiting={!animateDice}
+        >
           <View style={{ flexGrow: 1, flexShrink: 1 }}>
             {title && <CustomText lineHeight={titleSize}>{title}</CustomText>}
             <View
@@ -365,28 +370,23 @@ function RollTouchableCard({
                                   : 0,
                             }}
                           >
-                            <LayoutAnimationConfig
-                              skipEntering={!animateDice || !isMounted}
-                              skipExiting={!animateDice}
-                            >
-                              <SlidableDie onRemove={onRemove}>
-                                <AnimatedRolledDie
-                                  entering={
-                                    newRoll
-                                      ? SlideInDown.duration(300)
-                                      : undefined
-                                  }
-                                  exiting={FadeOut.duration(100)}
-                                  dieType={dice.dieType}
-                                  value={value}
-                                  size={sizeFactor * 0.3}
-                                  style={{
-                                    marginTop: !k ? 0 : -sizeFactor * 0.15,
-                                    transform: [{ scale }],
-                                  }}
-                                />
-                              </SlidableDie>
-                            </LayoutAnimationConfig>
+                            <SlidableDie onRemove={onRemove}>
+                              <AnimatedRolledDie
+                                entering={
+                                  newRoll
+                                    ? SlideInDown.duration(300)
+                                    : undefined
+                                }
+                                exiting={FadeOut.duration(100)}
+                                dieType={dice.dieType}
+                                value={value}
+                                size={sizeFactor * 0.3}
+                                style={{
+                                  marginTop: !k ? 0 : -sizeFactor * 0.15,
+                                  transform: [{ scale }],
+                                }}
+                              />
+                            </SlidableDie>
                           </View>
                         );
                       })}
@@ -397,7 +397,7 @@ function RollTouchableCard({
               {endText && (
                 <AnimatedCustomText
                   entering={FadeIn.duration(300)}
-                  // layout={CurvedTransition.easingY(Easing.linear).duration(200)}
+                  exiting={FadeOut.duration(100)}
                   numberOfLines={1}
                   adjustsFontSizeToFit
                   lineHeight={0.3 * sizeFactor}
@@ -414,7 +414,10 @@ function RollTouchableCard({
               backgroundColor: colors.onPrimary,
             }}
           />
-          <CustomText
+          <AnimatedCustomText
+            key={result ?? "result"} // Force re-render on result change
+            entering={ZoomIn.duration(300)}
+            exiting={FadeOut.duration(100)}
             numberOfLines={1}
             adjustsFontSizeToFit
             lineHeight={sizeFactor * 0.3}
@@ -424,8 +427,8 @@ function RollTouchableCard({
             }}
           >
             {result}
-          </CustomText>
-        </>
+          </AnimatedCustomText>
+        </LayoutAnimationConfig>
       </TouchableRipple>
       {children && (
         <View
@@ -752,7 +755,7 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
     <GestureDetector gesture={pan}>
       <Animated.View
         entering={SlideInDown.springify().mass(1).damping(20).stiffness(200)}
-        // layout={CurvedTransition.easingY(Easing.linear).duration(300)}
+        // layout={LinearTransition.duration(300)}
         style={[AppStyles.fullWidth, animStyle]}
         {...props}
       >
@@ -816,9 +819,12 @@ function SlidableDie({
           // Cancel gesture
           offset.value = withSpring(0);
         } else {
+          // Move away and return it after a small delay
+          offset.value = withSequence(
+            withTiming(10000, { duration: 0 }),
+            withDelay(1000, withTiming(0, { duration: 0 }))
+          );
           // Remove item
-          offset.value = 0;
-          // offset.value = withDelay(100, withTiming(0, { duration: 0 }));
           onRemove && runOnJS(onRemove)();
         }
       } else {
@@ -1256,12 +1262,6 @@ function RollerPage({
           onScroll={(event) =>
             (scrollOffsetRef.current = event.nativeEvent.contentOffset.y)
           }
-          // onLayout={(e) => {
-          //   scrollViewPosRef.current = {
-          //     x: e.nativeEvent.layout.x,
-          //     y: e.nativeEvent.layout.y,
-          //   };
-          // }}
         >
           {!rollsIds.length && (
             <RotatingGradientBorderCard
@@ -1278,10 +1278,13 @@ function RollerPage({
             >
               <Text variant="titleLarge">The Dice Roller</Text>
               <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
-                Show all rolls.
+                All connected dice rolls will show here. Slide rolls to remove
+                them and change the layout using the option menu on the top
+                right.
               </Text>
               <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
-                Compose formulas.
+                Create Roll Formulas using the button at the bottom. Rolls will
+                be stored in the formula card as long as it is opened.
               </Text>
             </RotatingGradientBorderCard>
           )}
@@ -1324,9 +1327,7 @@ function RollerPage({
                   onRemove={() => {
                     appDispatch(removeRollerEntry(id as string));
                     bottomPadding.value = sizeRatio * screenWidth;
-                    bottomPadding.value = withTiming(0, {
-                      duration: 300,
-                    });
+                    bottomPadding.value = withTiming(0, { duration: 300 });
                     Haptics.notificationAsync(
                       Haptics.NotificationFeedbackType.Success
                     );
@@ -1335,7 +1336,7 @@ function RollerPage({
               );
             })}
           </LayoutAnimationConfig>
-          {/* Padding to have a smooth scroll when removing a roll entry */}
+          {/* Padding to not clip the last entry when removing another one */}
           <Animated.View style={animatedPadding} />
         </Animated.ScrollView>
         {/* Bottom button */}

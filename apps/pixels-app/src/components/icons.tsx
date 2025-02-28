@@ -113,43 +113,68 @@ export function BatteryIcon({
   );
 }
 
-function getDieImage(dieType: PixelDieType) {
-  switch (dieType) {
-    case "d4":
-      return require("#/wireframes/d4.png");
-    case "d6":
-      return require("#/wireframes/d6.png");
-    case "d6pipped":
-      return require("#/wireframes/d6pipped.png");
-    case "d6fudge":
-      return require("#/wireframes/d6fudge.png");
-    case "d8":
-      return require("#/wireframes/d8.png");
-    case "d10":
-      return require("#/wireframes/d10.png");
-    case "d00":
-      return require("#/wireframes/d00.png");
-    case "d12":
-      return require("#/wireframes/d12.png");
-    case "unknown":
-    case "d20":
-      return require("#/wireframes/d20.png");
-    default:
-      assertNever(dieType);
+function getDieImage(dieType: PixelDieType, mode?: "normal" | "empty") {
+  if (mode === "empty") {
+    switch (dieType) {
+      case "d4":
+        return require("#/wireframes/empty/d4.png");
+      case "d6":
+        return require("#/wireframes/empty/d6.png");
+      case "d6pipped":
+      case "d6fudge":
+        return require("#/wireframes/empty/d6-round.png");
+      case "d8":
+        return require("#/wireframes/empty/d8.png");
+      case "d10":
+      case "d00":
+        return require("#/wireframes/empty/d10.png");
+      case "d12":
+        return require("#/wireframes/empty/d12.png");
+      case "unknown":
+      case "d20":
+        return require("#/wireframes/empty/d20.png");
+      default:
+        assertNever(dieType);
+    }
+  } else {
+    switch (dieType) {
+      case "d4":
+        return require("#/wireframes/d4.png");
+      case "d6":
+        return require("#/wireframes/d6.png");
+      case "d6pipped":
+        return require("#/wireframes/d6pipped.png");
+      case "d6fudge":
+        return require("#/wireframes/d6fudge.png");
+      case "d8":
+        return require("#/wireframes/d8.png");
+      case "d10":
+        return require("#/wireframes/d10.png");
+      case "d00":
+        return require("#/wireframes/d00.png");
+      case "d12":
+        return require("#/wireframes/d12.png");
+      case "unknown":
+      case "d20":
+        return require("#/wireframes/d20.png");
+      default:
+        assertNever(dieType);
+    }
   }
 }
 
 type DieImageProps = {
   dieType: PixelDieType;
   disabled?: boolean;
+  mode?: "normal" | "empty";
 };
 
-function DieImage({ dieType, disabled }: DieImageProps) {
+function DieImage({ dieType, disabled, mode }: DieImageProps) {
   return (
     <Image
       contentFit="cover"
       style={{ flex: 1, opacity: disabled ? 0.5 : 1 }}
-      source={getDieImage(dieType)}
+      source={getDieImage(dieType, mode)}
       blurRadius={disabled ? 1.5 : undefined}
     />
   );
@@ -158,6 +183,7 @@ function DieImage({ dieType, disabled }: DieImageProps) {
 export function DieWireframe({
   dieType,
   disabled,
+  mode,
   size,
   style,
   ...props
@@ -167,7 +193,7 @@ export function DieWireframe({
   ViewProps) {
   return (
     <View style={[{ width: size, aspectRatio: 1 }, style]} {...props}>
-      <DieImage dieType={dieType} disabled={disabled} />
+      <DieImage dieType={dieType} disabled={disabled} mode={mode} />
     </View>
   );
 }
@@ -175,6 +201,7 @@ export function DieWireframe({
 export function AnimatedDieWireframe({
   dieType,
   disabled,
+  mode,
   size,
   style,
   ...props
@@ -190,7 +217,7 @@ export function AnimatedDieWireframe({
   }));
   return (
     <Animated.View style={[animStyle, style]} {...props}>
-      <DieImage dieType={dieType} disabled={disabled} />
+      <DieImage dieType={dieType} disabled={disabled} mode={mode} />
     </Animated.View>
   );
 }
