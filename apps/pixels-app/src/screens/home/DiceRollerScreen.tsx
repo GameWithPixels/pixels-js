@@ -68,6 +68,7 @@ import {
   updateRollerActiveFormula,
   activateRollerFormula,
   RollerEntryWithFormula,
+  removeRollerActiveFormulaRoll,
 } from "~/features/store";
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
@@ -205,8 +206,15 @@ type RollCardCommonProps = CardProps & {
   sizeFactor: number;
   cardWidth: number;
   leftPos: number;
+  animateDice?: boolean;
   onPress?: () => void;
   onDismiss?: () => void;
+  onRemoveRoll?: (
+    roll: Readonly<{
+      dieType: PixelDieType;
+      value: number;
+    }>
+  ) => void;
   onWidthAnimationEnd?: (w: number) => void;
   onHeightAnimationEnd?: (h: number) => void;
   onFinalSize?: (layout: { width: number; height: number }) => void;
@@ -222,9 +230,11 @@ function RollTouchableCard({
   sizeFactor,
   cardWidth,
   leftPos,
+  animateDice,
   style,
   onPress,
   onDismiss,
+  onRemoveRoll,
   onWidthAnimationEnd,
   onHeightAnimationEnd,
   onFinalSize,
@@ -289,7 +299,6 @@ function RollTouchableCard({
           margin: borderSize,
           padding: 0,
           backgroundColor: colors.background,
-          overflow: "hidden",
         },
         animContentStyle,
       ]}
@@ -323,24 +332,42 @@ function RollTouchableCard({
                         const index = remainingRolls.findIndex(
                           (r) => r.dieType === dice.dieType
                         );
-                        const value = remainingRolls[index]?.value;
-                        const isNew = newRolls?.includes(remainingRolls[index]);
+                        const roll = remainingRolls[index] as
+                          | (typeof remainingRolls)[number]
+                          | undefined; // For type checking
+                        const value = roll?.value;
+                        const newRoll = roll && newRolls?.includes(roll);
                         if (index >= 0) {
                           remainingRolls.splice(index, 1);
                         }
                         return (
                           <LayoutAnimationConfig
                             key={`${i}-${j}-${k}-${dice.dieType}-${value}`}
-                            skipEntering={!isMounted || !isNew}
+                            skipEntering={!animateDice || !isMounted}
+                            skipExiting={!animateDice}
                           >
-                            <AnimatedRolledDie
-                              entering={SlideInDown.duration(300)}
-                              exiting={FadeOut.duration(100)}
-                              dieType={dice.dieType}
-                              value={value}
-                              size={sizeFactor * 0.3}
-                              style={{ marginTop: !k ? 0 : -sizeFactor * 0.15 }}
-                            />
+                            <SlidableDie
+                              onRemove={
+                                roll && onRemoveRoll
+                                  ? () => onRemoveRoll?.(roll)
+                                  : undefined
+                              }
+                            >
+                              <AnimatedRolledDie
+                                entering={
+                                  newRoll
+                                    ? SlideInDown.duration(300)
+                                    : undefined
+                                }
+                                exiting={FadeOut.duration(100)}
+                                dieType={dice.dieType}
+                                value={value}
+                                size={sizeFactor * 0.3}
+                                style={{
+                                  marginTop: !k ? 0 : -sizeFactor * 0.15,
+                                }}
+                              />
+                            </SlidableDie>
                           </LayoutAnimationConfig>
                         );
                       })}
@@ -384,24 +411,33 @@ function RollTouchableCard({
       {children && (
         <View
           style={{
-            position: "absolute",
-            width: cardWidth - borderSize * 2,
-            left: 0,
-            top: touchHeight,
+            flexGrow: 1,
+            width: "100%",
+            overflow: "hidden",
           }}
-          onLayout={(e) => {
-            if (children) {
+        >
+          <View
+            style={{
+              position: "absolute",
+              width: cardWidth - borderSize * 2,
+              left: 0,
+              top: 0,
+            }}
+            onLayout={(e) => {
               // For some reason the animation of the card width creates some vibration in the layout
               const h = touchHeight + e.nativeEvent.layout.height;
               if (h > maxHeightRef.current) {
                 maxHeightRef.current = h + 1;
                 animHeight.value = withTiming(h);
-                onFinalSize?.({ width: cardWidth, height: h + borderSize * 2 });
+                onFinalSize?.({
+                  width: cardWidth,
+                  height: h + borderSize * 2,
+                });
               }
-            }
-          }}
-        >
-          {children}
+            }}
+          >
+            {children}
+          </View>
         </View>
       )}
       {onDismiss && (
@@ -535,7 +571,7 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
     onRemove,
     card,
     ...props
-  }: React.PropsWithChildren<{
+  }: {
     sizeRatio: number;
     numberOfItems: number;
     fullWidth?: boolean;
@@ -547,8 +583,7 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
       cardWidth: number;
       leftPos: number;
     }) => React.ReactNode;
-  }> &
-    ViewProps,
+  } & Omit<ViewProps, "children">,
   ref: React.ForwardedRef<AnimatedRollCardHandle>
 ) {
   const [sizeFactor, setSizeFactor] = React.useState(
@@ -646,6 +681,8 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
           offset.value = withTiming(dest, { duration: 200 });
           onRemove && runOnJS(onRemove)();
         }
+      } else {
+        offset.value = 0;
       }
     });
 
@@ -689,6 +726,80 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
     </GestureDetector>
   );
 });
+
+function SlidableDie({
+  onRemove,
+  ...props
+}: React.PropsWithChildren<{
+  onRemove?: () => void;
+}> &
+  ViewProps) {
+  const pressed = useSharedValue(false);
+  const offset = useSharedValue(0);
+  const initialTouchLocation = useSharedValue<{ x: number; y: number } | null>(
+    null
+  );
+  const panActive = useSharedValue(false);
+  panActive.value = !!onRemove;
+
+  const cutoffDist = 200;
+
+  // https://github.com/software-mansion/react-native-gesture-handler/issues/1933#issuecomment-1566953466
+  const pan = Gesture.Pan()
+    .manualActivation(true)
+    .onBegin((ev) => {
+      initialTouchLocation.value = { x: ev.x, y: ev.y };
+    })
+    .onTouchesMove((ev, state) => {
+      // Sanity checks
+      if (!initialTouchLocation.value || !ev.changedTouches.length) {
+        state.fail();
+      } else {
+        const touch = ev.changedTouches[0];
+        const xDiff = Math.abs(touch.x - initialTouchLocation.value.x);
+        const yDiff = Math.abs(touch.y - initialTouchLocation.value.y);
+        // Check if the gesture is vertical or if it's already activated
+        // as we don't want to interrupt an ongoing swipe
+        if (pressed.value || yDiff > xDiff) {
+          // Vertical panning
+          state.activate();
+        } else {
+          state.fail();
+        }
+      }
+    })
+    .onStart(() => (pressed.value = true))
+    .onChange((ev) => panActive.value && (offset.value = ev.translationY))
+    .onEnd(() => {
+      pressed.value = false;
+      if (panActive.value) {
+        if (Math.abs(offset.value) < 0.5 * cutoffDist) {
+          // Cancel gesture
+          offset.value = withSpring(0);
+        } else {
+          // Remove item
+          const dest = Math.sign(offset.value) * cutoffDist;
+          offset.value = withTiming(dest, {
+            duration: cutoffDist - Math.abs(dest),
+          });
+          onRemove && runOnJS(onRemove)();
+        }
+      } else {
+        offset.value = 0;
+      }
+    });
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: offset.value }],
+    opacity: 1 - Math.abs(offset.value) / cutoffDist,
+  }));
+
+  return (
+    <GestureDetector gesture={pan}>
+      <Animated.View style={animStyle} {...props} />
+    </GestureDetector>
+  );
+}
 
 const GenericRollerEntryCard = React.forwardRef(function GenericRollerEntryCard(
   {
@@ -804,7 +915,7 @@ function OpenFormulaCardButton({
     <View style={[{ height: fullHeight }, style]} {...props}>
       <AnimatedLinearGradient
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.8 }}
+        end={{ x: 0, y: 0.95 }}
         colors={[colors.primary, colors.tertiary]}
         style={[
           {
@@ -832,7 +943,7 @@ function OpenFormulaCardButton({
       {/* Safe area bottom inset */}
       {marginBottom > 0 && (
         <LinearGradient
-          start={{ x: 0, y: 0.2 }}
+          start={{ x: 0, y: 0.05 }}
           end={{ x: 0, y: 1 }}
           colors={[colors.tertiary, colors.background]}
           style={{
@@ -924,9 +1035,16 @@ function OpenedFormulaCard({
         sizeFactor={sizeRatio * parentViewSize.width}
         cardWidth={cardWidth}
         leftPos={leftPos}
+        animateDice
         style={animStyle}
         onRollFormulaChange={showEditor ? onChange : undefined}
         onDismiss={onClose}
+        onRemoveRoll={(roll) => {
+          console.log("REMOVE " + JSON.stringify(roll));
+          if ("timestamp" in roll && typeof roll.timestamp === "number") {
+            appDispatch(removeRollerActiveFormulaRoll(roll.timestamp));
+          }
+        }}
         onWidthAnimationEnd={(w) => {
           w === cardWidth && setShowEditor(true);
         }}

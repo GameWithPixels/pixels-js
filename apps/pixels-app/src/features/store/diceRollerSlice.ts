@@ -69,6 +69,7 @@ function log(
     | "addRollToRoller"
     | "activateRollerFormula"
     | "updateRollerActiveFormula"
+    | "removeRollerActiveFormulaRoll"
     | "commitRollerActiveFormula"
     | "removeRollerEntry"
     | "removeAllRollerEntries"
@@ -205,6 +206,25 @@ const DiceRollerSlice = createSlice({
       }
     },
 
+    removeRollerActiveFormulaRoll(state, action: PayloadAction<number>) {
+      log("removeRollerActiveFormulaRoll");
+      const timestamp = action.payload;
+      const { activeRollFormula } = state;
+      if (activeRollFormula) {
+        const i = activeRollFormula.rolls.findIndex(
+          (r) => r.timestamp === timestamp,
+          1
+        );
+        if (i >= 0) {
+          activeRollFormula.rolls.splice(i, 1);
+          activeRollFormula.result = getFormulaResult(
+            activeRollFormula.formula,
+            activeRollFormula.rolls
+          );
+        }
+      }
+    },
+
     commitRollerActiveFormula(state) {
       const { activeRollFormula } = state;
       if (activeRollFormula) {
@@ -257,6 +277,7 @@ export const {
   addRollToRoller,
   activateRollerFormula,
   updateRollerActiveFormula,
+  removeRollerActiveFormulaRoll,
   commitRollerActiveFormula,
   removeRollerEntry,
   removeAllRollerEntries,
