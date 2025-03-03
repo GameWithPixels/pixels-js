@@ -204,9 +204,9 @@ function getDieName(dieType: PixelDieType): string {
     case "d00":
       return "d00";
     case "d6pipped":
-      return "pd6";
+      return "d6";
     case "d6fudge":
-      return "fd6";
+      return "dF";
     default:
       assertNever(dieType, `Unknown die type ${dieType}`);
   }
