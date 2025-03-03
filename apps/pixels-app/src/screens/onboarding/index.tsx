@@ -5,11 +5,11 @@ import {
   BluetoothNotAuthorizedError,
   Pixel,
   PixelDieType,
+  ScannedDevicesRegistry,
   ScannedPixel,
   usePixelProp,
   usePixelStatus,
 } from "@systemic-games/react-native-pixels-connect";
-import { ScannedDevicesRegistry } from "@systemic-games/react-native-pixels-connect/src/ScannedDevicesRegistry";
 import { Image, ImageProps } from "expo-image";
 import React from "react";
 import {

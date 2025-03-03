@@ -301,7 +301,7 @@ RCT_EXPORT_METHOD(bleInitialize:(RCTPromiseResolveBlock)resolve
     resolve(nil);
 }
 
-RCT_EXPORT_METHOD(startScan:(NSString *)requiredServicesUuids
+RCT_EXPORT_METHOD(startScan:(NSString *)servicesUuids
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -311,7 +311,7 @@ RCT_EXPORT_METHOD(startScan:(NSString *)requiredServicesUuids
     }
     else
     {
-        [_central.centralManager scanForPeripheralsWithServices:toCBUUIDArray(requiredServicesUuids)
+        [_central.centralManager scanForPeripheralsWithServices:toCBUUIDArray(servicesUuids)
                                                         options:@{ CBCentralManagerScanOptionAllowDuplicatesKey: @YES }];
         resolve(nil);
     }

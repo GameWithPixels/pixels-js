@@ -85,7 +85,7 @@ export type BluetoothState =
 export interface NativeBluetoothLE extends NativeModule {
   bleInitialize(): Promise<void>;
   bleShutdown(): Promise<void>;
-  startScan(requiredServicesUuids?: string): Promise<void>;
+  startScan(servicesUuids?: string): Promise<void>;
   stopScan(): Promise<void>;
   createPeripheral(deviceSystemId: string): Promise<Device>;
   releasePeripheral(deviceSystemId: string): Promise<void>;

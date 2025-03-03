@@ -472,7 +472,8 @@ export const Central = {
   // switch back to "stopped" status and give a stop reason).
   // On Android, BLE scanning will fail without error when started
   // more than 5 times over the last 30 seconds.
-  // Devices supporting at least one of the services will be reported.
+  // Peripheral advertising at least one of the services will be reported.
+  // Notify for all peripherals if the list is undefined or empty.
   async startScan(
     services?: string | readonly string[],
     context?: unknown

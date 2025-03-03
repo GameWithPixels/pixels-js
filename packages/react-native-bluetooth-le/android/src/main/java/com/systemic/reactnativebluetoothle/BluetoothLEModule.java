@@ -258,9 +258,9 @@ public final class BluetoothLEModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void startScan(String requiredServicesUuids, Promise promise) {
+    public void startScan(String servicesUuids, Promise promise) {
         try {
-            Scanner.startScan(requiredServicesUuids,
+            Scanner.startScan(servicesUuids,
                 new Scanner.ScannerCallback() {
                     public void onScanResult(ScanResult scanResult) {
                         BluetoothDevice device = scanResult.getDevice();
