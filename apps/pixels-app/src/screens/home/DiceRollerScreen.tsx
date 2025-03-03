@@ -49,7 +49,7 @@ import { DiceRollerScreenProps } from "~/app/navigation";
 import { addAppListener } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
-import { AnimatedCard, CardProps } from "~/components/Card";
+import { Card, CardProps } from "~/components/Card";
 import { RotatingGradientBorderCard } from "~/components/GradientBorderCard";
 import { PageHeader } from "~/components/PageHeader";
 import { RollFormulaEditor } from "~/components/RollFormulaEditor";
@@ -299,7 +299,7 @@ function RollTouchableCard({
 
   const { colors } = useTheme();
   return (
-    <AnimatedCard
+    <Card
       frameless
       noBorder
       vivid
@@ -477,7 +477,7 @@ function RollTouchableCard({
           style={{ top: -10, right: -10 }}
         />
       )}
-    </AnimatedCard>
+    </Card>
   );
 }
 
