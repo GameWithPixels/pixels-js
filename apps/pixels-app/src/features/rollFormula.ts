@@ -1,24 +1,21 @@
-import { PixelDieType } from "@systemic-games/pixels-core-animation";
+import {
+  PixelDieType,
+  PixelDieTypeValues,
+} from "@systemic-games/pixels-core-animation";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
-import {
-  AvailableDieType,
-  AvailableDieTypeValues,
-} from "~/features/dice/AvailableDieType";
-
-export type RollFormulaOperator = "+" | "-";
-
-// https://wiki.roll20.net/Dice_Reference#Roll_Modifiers
-export type RollModifier = "kh" | "kl" | "dh" | "dl";
+import { Operator, RollModifier, Token } from "./rollFormula/tokenizer";
 
 export type RollFormula =
   | RollFormulaElement
   | {
       kind: "operation";
-      operator: RollFormulaOperator;
+      operator: Operator;
       left: RollFormula;
       right: RollFormula;
     };
+
+type RollDieType = Exclude<PixelDieType, "unknown" | "d6pipped">;
 
 export type RollFormulaElement =
   | {
@@ -27,18 +24,18 @@ export type RollFormulaElement =
     }
   | {
       kind: "dice";
-      dieType: AvailableDieType;
-      dieCount: number;
+      dieType: RollDieType;
+      count: number;
     }
   | {
       kind: "modifier";
       modifier: RollModifier;
-      parameter: number;
+      count: number;
       groups: RollFormula[];
     };
 
 export type SimplifiedRollFormula = {
-  dieType: AvailableDieType;
+  dieType: RollDieType;
   dieCount: number; // Always 1 if modifier is set
   constant: number;
   modifier?: "advantage" | "disadvantage";
@@ -67,14 +64,14 @@ export function createRollFormula({
       right: {
         kind: "dice",
         dieType: "d4",
-        dieCount: 1,
+        count: 1,
       },
     };
   }
   const dice = {
     kind: "dice",
     dieType,
-    dieCount,
+    count: dieCount,
   } as const;
   switch (modifier) {
     case undefined:
@@ -94,12 +91,12 @@ export function createRollFormula({
       const formula: RollFormula = {
         kind: "modifier",
         modifier: modifier === "advantage" ? "kh" : "kl",
-        parameter: 1,
+        count: 1,
         groups: [
           {
             kind: "dice",
             dieType,
-            dieCount: 2,
+            count: 2,
           },
         ],
       };
@@ -131,7 +128,7 @@ export function getSimplifiedRollFormula(
   if (formula.kind === "dice") {
     return {
       dieType: formula.dieType,
-      dieCount: formula.dieCount,
+      dieCount: formula.count,
       constant: 0,
     };
   }
@@ -141,7 +138,7 @@ export function getSimplifiedRollFormula(
     (formula.modifier === "kh" || formula.modifier === "kl") &&
     formula.groups.length === 1 &&
     formula.groups[0].kind === "dice" &&
-    formula.groups[0].dieCount === 2
+    formula.groups[0].count === 2
   ) {
     // Simple advantage/disadvantage
     return {
@@ -172,9 +169,7 @@ export function getSimplifiedRollFormula(
       (diceOrModifier.kind === "dice" || diceOrModifier.kind === "modifier") &&
       (!constant || constant.kind === "constant") &&
       (!bonus ||
-        (bonus.kind === "dice" &&
-          bonus.dieType === "d4" &&
-          bonus.dieCount === 1))
+        (bonus.kind === "dice" && bonus.dieType === "d4" && bonus.count === 1))
     ) {
       const parts = getSimplifiedRollFormula(diceOrModifier);
       if (parts) {
@@ -190,10 +185,8 @@ export function getSimplifiedRollFormula(
   }
 }
 
-function getDieName(dieType: PixelDieType): string {
+function getDieName(dieType: Exclude<PixelDieType, "unknown">): string {
   switch (dieType) {
-    case "unknown":
-      return "?";
     case "d4":
     case "d6":
     case "d8":
@@ -218,7 +211,7 @@ export function rollFormulaToString(formula: Readonly<RollFormula>): string {
     case "constant":
       return formula.value.toString();
     case "dice":
-      return `${formula.dieCount}${getDieName(formula.dieType)}`;
+      return `${formula.count}${getDieName(formula.dieType)}`;
     case "modifier": {
       if (!formula.groups.length) {
         return "";
@@ -229,7 +222,7 @@ export function rollFormulaToString(formula: Readonly<RollFormula>): string {
         const close = hasGroups ? "}" : "";
         return `${open}${formula.groups
           .map((g) => rollFormulaToString(g))
-          .join(",")}${close}${formula.modifier}${formula.parameter}`;
+          .join(",")}${close}${formula.modifier}${formula.count}`;
       }
     }
     case "operation": {
@@ -254,11 +247,11 @@ type DieRoll = Readonly<{
 }>;
 
 function getUsedRolls(
-  { dieType, dieCount }: { dieType: AvailableDieType; dieCount: number },
+  { dieType, count }: { dieType: RollDieType; count: number },
   refRolls: DieRoll[]
 ): DieRoll[] | undefined {
   const rolls = [];
-  for (let i = 0; i < dieCount; ++i) {
+  for (let i = 0; i < count; ++i) {
     const index = refRolls.findIndex((r) => r.dieType === dieType);
     if (index >= 0) {
       rolls.push(refRolls[index]);
@@ -278,14 +271,14 @@ function computeForModifier(
   values: number[],
   {
     modifier,
-    parameter,
+    count,
   }: Pick<
     Extract<RollFormulaElement, { kind: "modifier" }>,
-    "modifier" | "parameter"
+    "modifier" | "count"
   >
 ): number {
   values.sort((a, b) => a - b);
-  const p = Math.min(Math.max(0, parameter), values.length);
+  const p = Math.min(Math.max(0, count), values.length);
   switch (modifier) {
     case "kh":
       return sum(values.slice(values.length - p));
@@ -374,10 +367,13 @@ function parseElement(str: string): RollFormulaElement {
   if (mod) {
     return mod;
   } else if (str.includes("d")) {
-    for (const dieType of AvailableDieTypeValues) {
-      const dice = parseDice(str, dieType);
-      if (dice) {
-        return dice;
+    for (const dt in PixelDieTypeValues) {
+      const dieType = dt as PixelDieType;
+      if (dieType !== "unknown" && dieType !== "d6pipped") {
+        const dice = parseDice(str, dieType);
+        if (dice) {
+          return dice;
+        }
       }
     }
     throw new RollFormulaParseError(`Invalid dice element: ${str}`);
@@ -392,7 +388,7 @@ function parseElement(str: string): RollFormulaElement {
 
 function parseDice(
   str: string,
-  dieType: AvailableDieType
+  dieType: RollDieType
 ): Extract<RollFormulaElement, { kind: "dice" }> | undefined {
   const i = str.indexOf(getDieName(dieType));
   if (i === 0) {
@@ -400,13 +396,13 @@ function parseDice(
       `Missing parameter for die type ${dieType}`
     );
   } else if (i > 0) {
-    const dieCount = parseInt(str.slice(0, i), 10);
-    if (isNaN(dieCount)) {
+    const count = parseInt(str.slice(0, i), 10);
+    if (isNaN(count)) {
       throw new RollFormulaParseError(
         `Invalid die count for die type ${dieType}`
       );
     }
-    return { kind: "dice", dieType, dieCount };
+    return { kind: "dice", dieType, count };
   }
 }
 
@@ -429,7 +425,7 @@ function parseModifier(
     return {
       kind: "modifier",
       modifier,
-      parameter,
+      count: parameter,
       groups: [parseElement(str.slice(0, i))],
     };
   }
@@ -442,7 +438,7 @@ function parseFormula(formula: string): RollFormula {
   } else {
     const left = parseElement(formula.slice(0, opIndex));
     const right = parseFormula(formula.slice(opIndex + 1));
-    const op = formula[opIndex] as RollFormulaOperator;
+    const op = formula[opIndex] as Operator;
     if (op === "-") {
       let firstNode = right;
       while (firstNode.kind === "operation") {
@@ -457,16 +453,132 @@ function parseFormula(formula: string): RollFormula {
           "Subtraction of non-constant not supported"
         );
       }
+    } else if (op === "+") {
+      return {
+        kind: "operation",
+        operator: "+",
+        left,
+        right,
+      };
     }
-    return {
-      kind: "operation",
-      operator: "+",
-      left,
-      right,
-    };
+    throw new RollFormulaParseError(`Invalid operator ${op}`);
   }
 }
 
 export function parseRollFormula(formula: string): RollFormula {
   return parseFormula(formula.replace(/\s/g, ""));
+}
+
+function makeFormula(
+  operator?: Operator,
+  left?: RollFormula,
+  right?: RollFormula
+): RollFormula {
+  if (operator) {
+    if (!left || !right) {
+      throw new RollFormulaParseError("Unexpected group");
+    }
+    return {
+      kind: "operation",
+      operator,
+      left,
+      right,
+    };
+  } else {
+    const form = left ?? right;
+    if (!form || (left && right)) {
+      console.log(
+        `operator=${operator}, left=${JSON.stringify(left)}, right=${JSON.stringify(right)}`
+      );
+      throw new RollFormulaParseError("Invalid group");
+    }
+    return form;
+  }
+}
+
+export function buildRollFormula(
+  tokens: Token[],
+  rStart?: number // exclusive, reading backwards!
+): {
+  formula: RollFormula;
+  rEnd: number;
+} {
+  let formula: RollFormula | undefined;
+  let currentOp: Operator | undefined;
+  for (let i = rStart ?? tokens.length - 1; i >= 0; i--) {
+    const token = tokens[i];
+    switch (token.type) {
+      case "grouping": {
+        if (token.operator === "(") {
+          if (!formula || currentOp) {
+            throw new RollFormulaParseError("Unexpected closing parenthesis");
+          }
+          return { formula, rEnd: i };
+        } else if (token.operator !== ")") {
+          throw new RollFormulaParseError(
+            `Unexpected grouping operator ${token.operator}`
+          );
+        }
+        const { formula: form, rEnd } = buildRollFormula(tokens, i - 1);
+        const prev = tokens[rEnd];
+        if (prev?.type !== "grouping" || prev.operator !== "(") {
+          throw new RollFormulaParseError("Expecting opening parenthesis");
+        }
+        console.log(
+          `grouping op=${currentOp}, formula=${!!formula}, form=${!!form}, rEnd=${rEnd}`
+        );
+        formula = makeFormula(currentOp, form, formula);
+        currentOp = undefined;
+        i = rEnd;
+        break;
+      }
+      case "operator":
+        if (token.operator === ",") {
+          throw new RollFormulaParseError("Comma not yet supported");
+        } else if (!formula || currentOp) {
+          throw new RollFormulaParseError("Unexpected operator");
+        } else {
+          currentOp = token.operator;
+        }
+        break;
+      case "constant":
+        formula = makeFormula(
+          currentOp,
+          { kind: "constant", value: token.value },
+          formula
+        );
+        currentOp = undefined;
+        break;
+      case "dice":
+        formula = makeFormula(
+          currentOp,
+          { kind: "dice", dieType: token.dieType, count: token.count },
+          formula
+        );
+        currentOp = undefined;
+        break;
+      case "modifier": {
+        const { formula: form, rEnd } = buildRollFormula(tokens, i - 1);
+        i = rEnd;
+        formula = makeFormula(
+          currentOp,
+          {
+            kind: "modifier",
+            modifier: token.modifier,
+            count: token.count,
+            groups: [form],
+          },
+          formula
+        );
+        currentOp = undefined;
+        break;
+      }
+    }
+  }
+  if (currentOp) {
+    throw new RollFormulaParseError("Missing operand");
+  } else if (!formula) {
+    throw new RollFormulaParseError("Empty formula");
+  }
+  return { formula, rEnd: 0 };
 }
