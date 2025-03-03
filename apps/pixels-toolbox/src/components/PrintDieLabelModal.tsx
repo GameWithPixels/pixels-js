@@ -56,7 +56,7 @@ export function PrintDieLabelModal({
             kind: "dieWithId",
             pixelId: pixel.pixelId,
             name: pixel.name,
-            type: pixel.dieType !== "unknown" ? pixel.dieType : "d12",
+            type: pixel.dieType !== "unknown" ? pixel.dieType : "d20",
             colorway,
           },
           1, // 1 copy

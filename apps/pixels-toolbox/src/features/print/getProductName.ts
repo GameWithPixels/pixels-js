@@ -7,6 +7,6 @@ export function getProductName(info: ProductInfo) {
   if (info.type === "unknown") {
     throw new Error("getProductName: got unknown product type");
   }
-  const prefix = info.kind === "die" ? "" : "set";
+  const prefix = info.kind === "lcc" ? "set" : "";
   return `${prefix}${info.type}-${info.colorway}`.toLowerCase();
 }
