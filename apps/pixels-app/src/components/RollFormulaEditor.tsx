@@ -16,9 +16,9 @@ import { ToggleButton } from "~/components/buttons";
 import { AvailableDieType, AvailableDieTypeValues } from "~/features/dice";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
-  createRollFormula,
+  convertSimplifiedFormula,
   getSimplifiedRollFormula,
-  RollFormula,
+  RollFormulaTree,
   SimplifiedRollFormula,
 } from "~/features/rollFormula";
 
@@ -73,8 +73,8 @@ export function RollFormulaEditor({
   rollFormula,
   onRollFormulaChange,
 }: {
-  rollFormula: RollFormula;
-  onRollFormulaChange: (formula: RollFormula) => void;
+  rollFormula: RollFormulaTree;
+  onRollFormulaChange: (formula: RollFormulaTree) => void;
 }) {
   const simpleFormula = React.useMemo(
     () => getSimplifiedRollFormula(rollFormula),
@@ -85,27 +85,31 @@ export function RollFormulaEditor({
   const modifier = simpleFormula.modifier;
   const bonus = simpleFormula.bonus;
   const setDieType = (dieType: AvailableDieType) =>
-    onRollFormulaChange(createRollFormula({ ...simpleFormula, dieType }));
+    onRollFormulaChange(
+      convertSimplifiedFormula({ ...simpleFormula, dieType })
+    );
   const setDieCount = (dieCount: number) =>
     onRollFormulaChange(
-      createRollFormula({
+      convertSimplifiedFormula({
         ...simpleFormula,
         dieCount,
         modifier: undefined,
       })
     );
   const setConstant = (constant: number) =>
-    onRollFormulaChange(createRollFormula({ ...simpleFormula, constant }));
+    onRollFormulaChange(
+      convertSimplifiedFormula({ ...simpleFormula, constant })
+    );
   const setModifier = (modifier: SimplifiedRollFormula["modifier"]) =>
     onRollFormulaChange(
-      createRollFormula({
+      convertSimplifiedFormula({
         ...simpleFormula,
         dieCount: modifier ? 2 : 1,
         modifier,
       })
     );
   const setBonus = (bonus: SimplifiedRollFormula["bonus"]) =>
-    onRollFormulaChange(createRollFormula({ ...simpleFormula, bonus }));
+    onRollFormulaChange(convertSimplifiedFormula({ ...simpleFormula, bonus }));
 
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });

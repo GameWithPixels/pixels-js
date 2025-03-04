@@ -9,6 +9,8 @@ import {
 } from "@systemic-games/pixels-core-utils";
 import moo from "moo";
 
+export type RollDieType = Exclude<PixelDieType, "unknown" | "d6pipped">;
+
 export const OperatorValues = {
   "+": enumValue(),
   "-": enumValue(),
@@ -73,7 +75,7 @@ export interface ConstantToken extends BaseToken {
 
 export interface DiceToken extends BaseToken {
   type: "dice";
-  dieType: Exclude<PixelDieType, "unknown" | "d6pipped">;
+  dieType: RollDieType;
   count: number;
 }
 
@@ -100,38 +102,6 @@ export type Rolls = number[];
 
 export type RollResults = (Rolls | null)[];
 
-// export interface DiceRule<T> {
-//   regex: RegExp;
-//   typeConstant: "constant" | "dice";
-//   tokenize: (raw: string) => T;
-//   roll: (token: T) => Rolls;
-//   calculateValue: (token: T, rolls: number[]) => number;
-// }
-
-// export interface SimpleDiceRollToken {
-//   count: number;
-//   numSides: number;
-// }
-
-// const constantRule: DiceRule<number> = {
-//   regex: /\d+/,
-//   typeConstant: "constant",
-//   tokenize: (raw) => parseInt(raw, 10),
-//   roll: () => [],
-//   calculateValue: (token) => token,
-// };
-
-// const simpleDieRoll: DiceRule<SimpleDiceRollToken> = {
-//   regex: /\d+d\d+/,
-//   typeConstant: "dice",
-//   tokenize: (raw) => {
-//     const [count, numSides] = raw.split("d").map((num) => parseInt(num, 10));
-//     return { count, numSides };
-//   },
-//   roll: ({ count, numSides }) => [],
-//   calculateValue: (token, rolls) => rolls.reduce((agg, num) => agg + num, 0),
-// };
-
 export type Tokenizer = (notation: string) => Token[];
 
 export type FaultTolerantTokenizer = (notation: string) => {
@@ -145,7 +115,7 @@ function parseNumber(str: string): number {
   return i;
 }
 
-function parseDieType(str: string): DiceToken["dieType"] {
+function parseDieType(str: string): RollDieType {
   if (str === "dF") {
     return "d6fudge";
   } else {
@@ -167,106 +137,100 @@ function parseModifier(str: string): RollModifier {
   return mod;
 }
 
-export function createTokenizer(): {
-  tokenizer: Tokenizer;
-  faultTolerantTokenizer: FaultTolerantTokenizer;
+function processToken(token: moo.Token): Token {
+  const type = token.type as TokenType;
+  const position = token.col - 1;
+  const content = token.value;
+  switch (type) {
+    case "operator":
+      return {
+        type,
+        position,
+        content,
+        operator: token.value as Operator,
+      };
+
+    case "grouping":
+      return {
+        type,
+        position,
+        content,
+        operator: token.value as GroupingOperator,
+      };
+
+    case "constant":
+      return {
+        type,
+        position,
+        content,
+        value: parseNumber(token.value),
+      };
+
+    case "dice": {
+      const [count, numSides] = token.value.split("d");
+      return {
+        type,
+        position,
+        content,
+        dieType: parseDieType("d" + numSides),
+        count: parseNumber(count),
+      };
+    }
+
+    case "modifier": {
+      const modifier = parseModifier(token.value.slice(0, 2));
+      const count = parseNumber(token.value.slice(2));
+      return {
+        type,
+        position,
+        content,
+        modifier,
+        count,
+      };
+    }
+
+    case "whiteSpace":
+      throw new Error("Unexpected whitespace token");
+
+    default:
+      assertNever(type, `Unrecognized token type: ${type}`);
+  }
+}
+
+let lexer: moo.Lexer;
+let faultTolerantLexer: moo.Lexer;
+
+export function formulaTokenizer(notation: string): Token[] {
+  lexer ??= moo.compile(LexerRules);
+  lexer.reset(notation);
+  return Array.from(lexer)
+    .filter((token) => token.type !== "whiteSpace")
+    .map((token) => processToken(token));
+}
+
+export function faultTolerantFormulaTokenizer(notation: string): {
+  tokens: Token[];
+  error: ErrorToken | null;
 } {
-  const lexer = moo.compile(LexerRules);
-  const faultTolerantLexer = moo.compile({
+  faultTolerantLexer ??= moo.compile({
     ...LexerRules,
     error: moo.error,
   });
-
-  function tokenizer(notation: string): Token[] {
-    lexer.reset(notation);
-    return Array.from(lexer)
-      .filter((token) => token.type !== "whiteSpace")
-      .map((token) => processToken(token));
-  }
-
-  function faultTolerantTokenizer(notation: string): {
-    tokens: Token[];
-    error: ErrorToken | null;
-  } {
-    faultTolerantLexer.reset(notation);
-    const allTokens = Array.from(faultTolerantLexer);
-    const tokens = allTokens
-      .filter(
-        (token) => token.type && !["whiteSpace", "error"].includes(token.type)
-      )
-      .map((token) => processToken(token));
-    const lastToken = allTokens[allTokens.length - 1];
-    const error =
-      lastToken?.type === "error"
-        ? ({
-            type: "error",
-            position: lastToken.col - 1,
-            content: lastToken.text,
-          } as ErrorToken)
-        : null;
-    return { tokens, error };
-  }
-
-  function processToken(token: moo.Token): Token {
-    console.log("processToken: " + JSON.stringify(token));
-    const type = token.type as TokenType;
-    const position = token.col - 1;
-    const content = token.value;
-    switch (type) {
-      case "operator":
-        return {
-          type,
-          position,
-          content,
-          operator: token.value as Operator,
-        };
-
-      case "grouping":
-        return {
-          type,
-          position,
-          content,
-          operator: token.value as GroupingOperator,
-        };
-
-      case "constant":
-        return {
-          type,
-          position,
-          content,
-          value: parseNumber(token.value),
-        };
-
-      case "dice": {
-        const [count, numSides] = token.value.split("d");
-        return {
-          type,
-          position,
-          content,
-          dieType: parseDieType("d" + numSides),
-          count: parseNumber(count),
-        };
-      }
-
-      case "modifier": {
-        const modifier = parseModifier(token.value.slice(0, 2));
-        const count = parseNumber(token.value.slice(2));
-        return {
-          type,
-          position,
-          content,
-          modifier,
-          count,
-        };
-      }
-
-      case "whiteSpace":
-        throw new Error("Unexpected whitespace token");
-
-      default:
-        assertNever(type, `Unrecognized token type: ${type}`);
-    }
-  }
-
-  return { tokenizer, faultTolerantTokenizer };
+  faultTolerantLexer.reset(notation);
+  const allTokens = Array.from(faultTolerantLexer);
+  const tokens = allTokens
+    .filter(
+      (token) => token.type && !["whiteSpace", "error"].includes(token.type)
+    )
+    .map((token) => processToken(token));
+  const lastToken = allTokens[allTokens.length - 1];
+  const error =
+    lastToken?.type === "error"
+      ? ({
+          type: "error",
+          position: lastToken.col - 1,
+          content: lastToken.text,
+        } as ErrorToken)
+      : null;
+  return { tokens, error };
 }
