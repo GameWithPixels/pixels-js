@@ -45,7 +45,7 @@ export async function importFileAsset(
         type === "audio"
           ? LibraryAssets.AudioClips.add
           : LibraryAssets.Images.add;
-      const asset = { uuid, name, type } as const;
+      const asset = { uuid, name, type: ext };
       store.dispatch(add(asset));
       assets.push(asset);
     } catch (e: any) {
