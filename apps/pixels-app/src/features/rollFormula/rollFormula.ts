@@ -1,13 +1,12 @@
-import { PixelDieType } from "@systemic-games/pixels-core-animation";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
-import { Operator, RollDieType, RollModifier } from "./tokenizer";
+import { RollDieType, RollModifier, RollOperator } from "./types";
 
 export type RollFormulaTree =
   | RollFormulaElement
   | {
       kind: "operation";
-      operator: Operator;
+      operator: RollOperator;
       left: RollFormulaTree;
       right: RollFormulaTree;
     };
@@ -29,7 +28,7 @@ export type RollFormulaElement =
       groups: RollFormulaTree[];
     };
 
-function getDieName(dieType: Exclude<PixelDieType, "unknown">): string {
+export function convertDieTypeForFormula(dieType: RollDieType): string {
   switch (dieType) {
     case "d4":
     case "d6":
@@ -37,11 +36,10 @@ function getDieName(dieType: Exclude<PixelDieType, "unknown">): string {
     case "d10":
     case "d12":
     case "d20":
+    case "d100":
       return dieType;
     case "d00":
       return "d00";
-    case "d6pipped":
-      return "d6";
     case "d6fudge":
       return "dF";
     default:
@@ -57,7 +55,7 @@ export function rollFormulaToString(
     case "constant":
       return formula.value.toString();
     case "dice":
-      return `${formula.count}${getDieName(formula.dieType)}`;
+      return `${formula.count}${convertDieTypeForFormula(formula.dieType)}`;
     case "modifier": {
       if (!formula.groups.length) {
         return "";

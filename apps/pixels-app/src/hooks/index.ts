@@ -14,6 +14,7 @@ export * from "./useFilteredProfiles";
 export * from "./useFlashAnimationStyle";
 export * from "./useIsDieUpdating";
 export * from "./useIsModifiedDieProfile";
+export * from "./useIsMounted";
 export * from "./useIsPixelRolling";
 export * from "./usePatternsList";
 export * from "./usePixelDfuAvailability";

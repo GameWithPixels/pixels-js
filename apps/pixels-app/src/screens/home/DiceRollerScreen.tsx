@@ -1,7 +1,5 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { UnsubscribeListener } from "@reduxjs/toolkit";
-import { assertNever, Mutable, range } from "@systemic-games/pixels-core-utils";
-import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
+import { assertNever } from "@systemic-games/pixels-core-utils";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
@@ -9,59 +7,45 @@ import {
   LayoutRectangle,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
-  Text as RNText,
-  TextProps,
   View,
   ViewProps,
   useWindowDimensions,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { Divider, Text, TouchableRipple, useTheme } from "react-native-paper";
+import { Text, TouchableRipple, useTheme } from "react-native-paper";
 import Animated, {
-  AnimatedProps,
   AnimatedRef,
-  Easing,
-  FadeIn,
-  FadeOut,
   LayoutAnimationConfig,
-  LinearTransition,
   runOnJS,
   SlideInDown,
-  SlideInRight,
   useAnimatedRef,
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
-  withDelay,
-  withSequence,
   withSpring,
   withTiming,
-  ZoomIn,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { OptionsMenu } from "./components/RollerOptionsMenu";
+import {
+  computeFormulaViewWidth,
+  FormulaTouchableCard,
+  RollTouchableCard,
+  useNewArrayItems,
+} from "./components/roller";
 
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { DiceRollerScreenProps } from "~/app/navigation";
 import { addAppListener } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
-import { AnimatedCard, CardProps } from "~/components/Card";
+import { CardProps } from "~/components/Card";
 import { RotatingGradientBorderCard } from "~/components/GradientBorderCard";
 import { PageHeader } from "~/components/PageHeader";
-import { RollFormulaEditor } from "~/components/RollFormulaEditor";
-import { BottomSheetModalCloseButton } from "~/components/buttons";
-import { AnimatedDieWireframe } from "~/components/icons";
 import { getBorderRadius } from "~/features/getBorderRadius";
-import {
-  computeRollFormulaResult,
-  getSimplifiedRollFormula,
-  parseRollFormula,
-  rollFormulaToString,
-} from "~/features/rollFormula";
+import { parseRollFormula } from "~/features/rollFormula";
 import {
   addRollToRoller,
   commitRollerActiveFormula,
@@ -72,541 +56,9 @@ import {
   RollerEntryWithFormula,
   removeRollerActiveFormulaRoll,
 } from "~/features/store";
+import { useIsMounted } from "~/hooks";
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
-
-function useIsMounted() {
-  const isMountedRef = React.useRef(false);
-  React.useEffect(() => {
-    isMountedRef.current = true;
-  }, []);
-  return isMountedRef.current;
-}
-
-function useNewArrayItems<Type>(
-  items: readonly Readonly<Type>[] | undefined
-): Type[] {
-  const lastItems = React.useRef(items ?? []);
-  const newItems = React.useMemo(
-    () =>
-      !items || lastItems.current === items
-        ? []
-        : items.filter((r) => !lastItems.current.includes(r)),
-    [items]
-  );
-  lastItems.current = items ?? [];
-  return newItems;
-}
-
-function CustomText({
-  lineHeight,
-  style,
-  ...props
-}: { lineHeight: number } & TextProps) {
-  const { colors } = useTheme();
-  return (
-    <RNText
-      style={[
-        {
-          fontFamily: "LTInternet-Bold",
-          textAlign: "center",
-          fontSize: lineHeight * 0.85,
-          lineHeight,
-          color: colors.onSurface,
-        },
-        style,
-      ]}
-      {...props}
-    />
-  );
-}
-
-function AnimatedCustomText({
-  lineHeight,
-  style,
-  ...props
-}: AnimatedProps<{ lineHeight: number } & TextProps>) {
-  const fontSize = useDerivedValue(
-    () =>
-      (typeof lineHeight === "number" ? lineHeight : lineHeight.value) * 0.85
-  );
-  const { colors } = useTheme();
-  return (
-    <Animated.Text
-      style={[
-        {
-          fontFamily: "LTInternet-Bold",
-          textAlign: "center",
-          fontSize,
-          lineHeight,
-          color: colors.onSurface,
-        },
-        style,
-      ]}
-      {...props}
-    />
-  );
-}
-
-function AnimatedRolledDie({
-  dieType,
-  value,
-  size,
-  textStyle,
-  ...props
-}: {
-  dieType: PixelDieType;
-  value?: number;
-} & AnimatedProps<
-  {
-    size: number;
-    textStyle?: TextProps["style"];
-  } & ViewProps
->) {
-  const lineHeight = useDerivedValue(
-    () => (typeof size === "number" ? size : size.value) * 0.8
-  );
-  const { colors } = useTheme();
-  return (
-    <Animated.View {...props}>
-      <AnimatedDieWireframe
-        dieType={dieType}
-        size={size}
-        mode={value === undefined ? "normal" : "empty"}
-        entering={FadeIn}
-      />
-      {value !== undefined && (
-        <Animated.View
-          style={{
-            ...StyleSheet.absoluteFillObject,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <AnimatedCustomText
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            lineHeight={lineHeight}
-            style={[
-              {
-                width: lineHeight,
-                color: colors.onSurface,
-                borderRadius: size,
-              },
-              textStyle,
-            ]}
-          >
-            {value}
-          </AnimatedCustomText>
-        </Animated.View>
-      )}
-    </Animated.View>
-  );
-}
-
-type RollCardCommonProps = CardProps & {
-  sizeFactor: number;
-  cardWidth: number;
-  leftPos: number;
-  animateDice?: boolean;
-  onPress?: () => void;
-  onDismiss?: () => void;
-  onRemoveRoll?: (
-    roll: Readonly<{
-      dieType: PixelDieType;
-      value: number;
-    }>
-  ) => void;
-  onWidthAnimationEnd?: (w: number) => void;
-  onHeightAnimationEnd?: (h: number) => void;
-  onFinalSize?: (layout: { width: number; height: number }) => void;
-};
-
-function RollTouchableCard({
-  children,
-  title,
-  expectedRolls,
-  rolls,
-  endText,
-  result = "?",
-  sizeFactor,
-  cardWidth,
-  leftPos,
-  animateDice,
-  style,
-  onPress,
-  onDismiss,
-  onRemoveRoll,
-  onWidthAnimationEnd,
-  onHeightAnimationEnd,
-  onFinalSize,
-  ...props
-}: {
-  title?: string;
-  expectedRolls: readonly Readonly<{
-    dieType: PixelDieType;
-    count: number;
-    twice?: "same" | "high" | "low";
-  }>[];
-  rolls?: readonly Readonly<{
-    dieType: PixelDieType;
-    value: number;
-  }>[];
-  endText?: string;
-  result?: number | string;
-} & RollCardCommonProps) {
-  const animWidth = useSharedValue(cardWidth);
-  React.useEffect(() => {
-    animWidth.value = withTiming(cardWidth, undefined, () => {
-      onWidthAnimationEnd && runOnJS(onWidthAnimationEnd)(cardWidth);
-    });
-  }, [animWidth, cardWidth, onWidthAnimationEnd]);
-  const animLeftPos = useSharedValue(leftPos);
-  React.useEffect(() => {
-    animLeftPos.value = withTiming(leftPos);
-  }, [animLeftPos, leftPos]);
-  const animStyle = useAnimatedStyle(() => ({
-    width: animWidth.value,
-    left: animLeftPos.value,
-  }));
-
-  const borderSize = sizeFactor * 0.02;
-  const titleSize = 0.1 * sizeFactor;
-  const diceHeight = 1.5 * sizeFactor * 0.3;
-  const touchHeight = diceHeight + titleSize;
-  const animHeight = useSharedValue(touchHeight);
-  const animContentStyle = useAnimatedStyle(() => ({
-    height: animHeight.value,
-  }));
-  React.useEffect(() => {
-    animHeight.value = withTiming(touchHeight, undefined, () => {
-      onHeightAnimationEnd && runOnJS(onHeightAnimationEnd)(touchHeight);
-    });
-  }, [animHeight, onHeightAnimationEnd, touchHeight]);
-  const maxHeightRef = React.useRef(0);
-
-  const remainingRolls = rolls ? [...rolls] : [];
-  const newRolls = useNewArrayItems(rolls);
-  const isMounted = useIsMounted();
-
-  const itemsCount =
-    expectedRolls.reduce((acc, r) => acc + r.count, 0) + (endText ? 1 : 0);
-  const dieMarginLeft = Math.min(
-    0,
-    (cardWidth - 2 * borderSize - ((itemsCount + 1) * 0.3 + 0.4) * sizeFactor) /
-      itemsCount
-  );
-
-  const { colors } = useTheme();
-  return (
-    <AnimatedCard
-      frameless
-      noBorder
-      vivid
-      style={[animStyle, style]}
-      contentStyle={[
-        {
-          margin: borderSize,
-          padding: 0,
-          backgroundColor: colors.background,
-        },
-        animContentStyle,
-      ]}
-      {...props}
-    >
-      <TouchableRipple
-        onPress={onPress}
-        style={{
-          flexDirection: "row",
-          width: "100%",
-          height: touchHeight,
-          alignItems: "center",
-        }}
-      >
-        <LayoutAnimationConfig
-          skipEntering={!animateDice || !isMounted}
-          skipExiting={!animateDice}
-        >
-          <View style={{ flexGrow: 1, flexShrink: 1 }}>
-            {title && <CustomText lineHeight={titleSize}>{title}</CustomText>}
-            <View
-              style={{
-                flexDirection: "row",
-                height: diceHeight,
-                alignItems: "center",
-                justifyContent: "space-evenly",
-              }}
-            >
-              {expectedRolls.map((dice, i) => (
-                <View style={{ flexDirection: "row" }} key={i}>
-                  {range(dice.count).map((j) => (
-                    <View key={j}>
-                      {range(dice.twice ? 2 : 1).map((k) => {
-                        const index = remainingRolls.findIndex(
-                          (r) => r.dieType === dice.dieType
-                        );
-                        const roll = remainingRolls[index] as
-                          | (typeof remainingRolls)[number]
-                          | undefined; // For type checking
-                        const value = roll?.value;
-                        const newRoll = roll && newRolls?.includes(roll);
-                        if (index >= 0) {
-                          remainingRolls.splice(index, 1);
-                        }
-                        const highOrLow =
-                          roll &&
-                          (dice.twice === "high" || dice.twice === "low") &&
-                          dice.twice;
-                        const scale =
-                          (highOrLow === "high" && k === 1) ||
-                          (highOrLow === "low" && k === 0)
-                            ? 0.8
-                            : 1;
-                        const onRemove =
-                          roll && onRemoveRoll
-                            ? () => onRemoveRoll?.(roll)
-                            : undefined;
-                        return (
-                          <View
-                            key={`${i}-${j}-${k}-${dice.dieType}-${value}`}
-                            style={{
-                              zIndex:
-                                scale >= 1
-                                  ? roll && dice.twice === "same"
-                                    ? 2
-                                    : 1
-                                  : 0,
-                            }}
-                          >
-                            <SlidableDie onRemove={onRemove}>
-                              <AnimatedRolledDie
-                                entering={
-                                  newRoll
-                                    ? SlideInDown.duration(300)
-                                    : undefined
-                                }
-                                exiting={FadeOut.duration(100)}
-                                dieType={dice.dieType}
-                                value={value}
-                                size={sizeFactor * 0.3}
-                                style={{
-                                  marginLeft: !(i + j) ? 0 : dieMarginLeft,
-                                  marginTop: !k ? 0 : -sizeFactor * 0.15,
-                                  transform: [{ scale }],
-                                }}
-                              />
-                            </SlidableDie>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  ))}
-                </View>
-              ))}
-              {endText && (
-                <AnimatedCustomText
-                  entering={FadeIn.duration(300)}
-                  exiting={FadeOut.duration(100)}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  lineHeight={0.3 * sizeFactor}
-                >
-                  {endText}
-                </AnimatedCustomText>
-              )}
-            </View>
-          </View>
-          <Divider
-            style={{
-              height: "90%",
-              width: 1,
-              backgroundColor: colors.onPrimary,
-            }}
-          />
-          <AnimatedCustomText
-            key={result ?? "result"} // Force re-render on result change
-            entering={ZoomIn.duration(300)}
-            exiting={FadeOut.duration(100)}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            lineHeight={sizeFactor * 0.3}
-            style={{
-              width: 0.4 * sizeFactor,
-              marginTop: title ? titleSize : 0,
-            }}
-          >
-            {result}
-          </AnimatedCustomText>
-        </LayoutAnimationConfig>
-      </TouchableRipple>
-      {children && (
-        <View
-          style={{
-            flexGrow: 1,
-            width: "100%",
-            overflow: "hidden",
-          }}
-        >
-          <View
-            style={{
-              position: "absolute",
-              width: cardWidth - borderSize * 2,
-              left: 0,
-              top: 0,
-            }}
-            onLayout={(e) => {
-              // For some reason the animation of the card width creates some vibration in the layout
-              const h = touchHeight + e.nativeEvent.layout.height;
-              if (h > maxHeightRef.current) {
-                maxHeightRef.current = h + 1;
-                animHeight.value = withTiming(h);
-                onFinalSize?.({
-                  width: cardWidth,
-                  height: h + borderSize * 2,
-                });
-              }
-            }}
-          >
-            {children}
-          </View>
-        </View>
-      )}
-      {onDismiss && (
-        <BottomSheetModalCloseButton
-          onPress={onDismiss}
-          style={{ top: -10, right: -10 }}
-        />
-      )}
-    </AnimatedCard>
-  );
-}
-
-function compareRolls(
-  rolls: readonly Readonly<{ dieType: PixelDieType; value: number }>[]
-): number | undefined {
-  if (rolls.length >= 2) {
-    return rolls[0].value - rolls[1].value;
-  }
-}
-
-function FormulaTouchableCard({
-  formulaEntry,
-  onRollFormulaChange,
-  ...props
-}: {
-  formulaEntry: Readonly<
-    Pick<RollerEntryWithFormula, "formula" | "rolls" | "result">
-  >;
-  onRollFormulaChange?: (formula: string) => void;
-} & RollCardCommonProps) {
-  const { formula, rolls, result } = formulaEntry;
-
-  const rollFormula = React.useMemo(() => parseRollFormula(formula), [formula]);
-
-  const simpleFormula = React.useMemo(
-    () => getSimplifiedRollFormula(rollFormula),
-    [rollFormula]
-  ) ?? { dieType: "d20", dieCount: 1, constant: 0 };
-
-  const { dieType, dieCount, constant } = simpleFormula;
-  const endText = constant
-    ? `${simpleFormula.constant >= 0 ? "+" : ""}${constant}`
-    : undefined;
-
-  const newRolls = useNewArrayItems(rolls);
-  const unusedRolls = React.useMemo(() => {
-    const unusedRolls = [...rolls];
-    computeRollFormulaResult(rollFormula, unusedRolls);
-    unusedRolls.reverse();
-    return unusedRolls;
-  }, [rollFormula, rolls]);
-
-  const mod = simpleFormula?.modifier;
-  const diff = compareRolls(
-    rolls.filter((r) => r.dieType === simpleFormula.dieType)
-  );
-  const twice =
-    mod && diff !== undefined
-      ? (diff >= 0 && mod === "advantage") ||
-        (diff <= 0 && mod === "disadvantage")
-        ? "high"
-        : "low"
-      : mod
-        ? "same"
-        : undefined;
-  const expectedRolls: Mutable<
-    React.ComponentProps<typeof RollTouchableCard>["expectedRolls"]
-  > = [{ dieType, count: dieCount, twice }];
-  if (simpleFormula?.bonus === "guidance") {
-    expectedRolls.push({ dieType: "d4", count: 1 });
-  }
-
-  const { colors } = useTheme();
-  return (
-    <RollTouchableCard
-      title={formula}
-      expectedRolls={expectedRolls}
-      rolls={rolls}
-      endText={endText}
-      result={result?.value}
-      {...props}
-    >
-      {onRollFormulaChange && (
-        <>
-          {unusedRolls.length > 0 && (
-            <ScrollView
-              horizontal
-              style={{
-                flexDirection: "row",
-                width: "100%",
-                marginTop: 10,
-              }}
-              contentContainerStyle={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingLeft: 10,
-                gap: 5,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={30}
-                color={colors.onSurfaceDisabled}
-              />
-              {unusedRolls.map((roll, i) => (
-                <AnimatedRolledDie
-                  key={`${roll.pixelId}-${roll.timestamp}`}
-                  dieType={roll.dieType}
-                  value={roll.value}
-                  entering={
-                    !newRolls.includes(roll)
-                      ? undefined
-                      : SlideInRight.springify()
-                          .mass(1)
-                          .damping(20)
-                          .stiffness(200)
-                  }
-                  layout={LinearTransition.easing(Easing.ease)}
-                  size={30}
-                  style={{ zIndex: i ? undefined : 1 }} // First on top so it's visible when sliding in
-                />
-              ))}
-            </ScrollView>
-          )}
-          <Divider
-            style={{ width: "90%", marginVertical: 10, alignSelf: "center" }}
-          />
-          <RollFormulaEditor
-            rollFormula={rollFormula}
-            onRollFormulaChange={(f) =>
-              onRollFormulaChange(rollFormulaToString(f))
-            }
-          />
-        </>
-      )}
-    </RollTouchableCard>
-  );
-}
 
 interface AnimatedRollCardHandle {
   overrideSizeRatio: (sizeRatio: number) => void;
@@ -615,8 +67,7 @@ interface AnimatedRollCardHandle {
 const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
   {
     sizeRatio,
-    numberOfItems,
-    fullWidth,
+    cardWidth,
     parentViewWidth,
     alignment,
     onRemove,
@@ -624,8 +75,7 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
     ...props
   }: {
     sizeRatio: number;
-    numberOfItems: number;
-    fullWidth?: boolean;
+    cardWidth: number;
     parentViewWidth: number;
     alignment?: "left" | "right" | "center" | "center-left" | "center-right";
     onRemove?: () => void;
@@ -650,16 +100,6 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
         setSizeFactor(sizeRatio * parentViewWidth),
     };
   }, [parentViewWidth]);
-
-  const cardWidth = fullWidth
-    ? parentViewWidth
-    : Math.min(
-        parentViewWidth,
-        Math.max(
-          sizeFactor,
-          sizeFactor * 0.35 * numberOfItems + sizeFactor * 0.5
-        )
-      );
 
   const leftPos = (() => {
     switch (alignment) {
@@ -778,81 +218,6 @@ const AnimatedTouchableCard = React.forwardRef(function AnimatedTouchableCard(
   );
 });
 
-function SlidableDie({
-  onRemove,
-  ...props
-}: React.PropsWithChildren<{
-  onRemove?: () => void;
-}> &
-  ViewProps) {
-  const pressed = useSharedValue(false);
-  const offset = useSharedValue(0);
-  const initialTouchLocation = useSharedValue<{ x: number; y: number } | null>(
-    null
-  );
-  const panActive = useSharedValue(false);
-  panActive.value = !!onRemove;
-
-  const cutoffDist = 200;
-
-  // https://github.com/software-mansion/react-native-gesture-handler/issues/1933#issuecomment-1566953466
-  const pan = Gesture.Pan()
-    .manualActivation(true)
-    .onBegin((ev) => {
-      initialTouchLocation.value = { x: ev.x, y: ev.y };
-    })
-    .onTouchesMove((ev, state) => {
-      // Sanity checks
-      if (!initialTouchLocation.value || !ev.changedTouches.length) {
-        state.fail();
-      } else {
-        const touch = ev.changedTouches[0];
-        const xDiff = Math.abs(touch.x - initialTouchLocation.value.x);
-        const yDiff = Math.abs(touch.y - initialTouchLocation.value.y);
-        // Check if the gesture is vertical or if it's already activated
-        // as we don't want to interrupt an ongoing swipe
-        if (pressed.value || yDiff > xDiff) {
-          // Vertical panning
-          state.activate();
-        } else {
-          state.fail();
-        }
-      }
-    })
-    .onStart(() => (pressed.value = true))
-    .onChange((ev) => panActive.value && (offset.value = ev.translationY))
-    .onEnd(() => {
-      pressed.value = false;
-      if (panActive.value) {
-        if (Math.abs(offset.value) < 0.5 * cutoffDist) {
-          // Cancel gesture
-          offset.value = withSpring(0);
-        } else {
-          // Move away and return it after a small delay
-          offset.value = withSequence(
-            withTiming(10000, { duration: 0 }),
-            withDelay(1000, withTiming(0, { duration: 0 }))
-          );
-          // Remove item
-          onRemove && runOnJS(onRemove)();
-        }
-      } else {
-        offset.value = 0;
-      }
-    });
-
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: offset.value }],
-    opacity: 1 - Math.abs(offset.value) / cutoffDist,
-  }));
-
-  return (
-    <GestureDetector gesture={pan}>
-      <Animated.View style={animStyle} {...props} />
-    </GestureDetector>
-  );
-}
-
 const GenericRollerEntryCard = React.forwardRef(function GenericRollerEntryCard(
   {
     rollerEntry,
@@ -883,17 +248,31 @@ const GenericRollerEntryCard = React.forwardRef(function GenericRollerEntryCard(
         }
       : undefined;
 
-  // TODO improve perf of counting items, make it general
-  const simpleFormula = React.useMemo(
-    () =>
-      formulaEntry &&
-      getSimplifiedRollFormula(parseRollFormula(formulaEntry.formula)),
-    [formulaEntry]
+  const formulaTree = React.useMemo(() => {
+    try {
+      return rollerEntry.formula?.length
+        ? parseRollFormula(rollerEntry.formula)
+        : undefined;
+    } catch (e) {}
+  }, [rollerEntry.formula]);
+
+  const formulaViewWidth = computeFormulaViewWidth(
+    formulaTree ?? {
+      kind: "dice",
+      dieType: "d20",
+      count: 1,
+    }
   );
-  const numberOfItems =
-    (simpleFormula?.dieCount ?? 1) +
-    (simpleFormula?.constant ? 1 : 0) +
-    (simpleFormula?.bonus ? 1 : 0);
+  const borderSize = 0.02;
+  const dividerSize = 0.005;
+  const valueSize = 0.4;
+  const cardRefWidth =
+    Math.max(
+      2.2 * valueSize,
+      formulaViewWidth + 2 * borderSize + dividerSize + valueSize
+    ) *
+    parentViewWidth *
+    sizeRatio;
 
   // Card position in parent view
   const topPosRef = React.useRef<number>();
@@ -910,17 +289,18 @@ const GenericRollerEntryCard = React.forwardRef(function GenericRollerEntryCard(
     <AnimatedTouchableCard
       ref={ref}
       sizeRatio={sizeRatio}
-      numberOfItems={numberOfItems}
+      cardWidth={Math.min(parentViewWidth, cardRefWidth)}
       parentViewWidth={parentViewWidth}
       alignment={alignment}
       onRemove={onRemove}
       card={({ sizeFactor, cardWidth, leftPos }) =>
         rollEntry ? (
           <RollTouchableCard
-            result={rollEntry.value.toString()}
-            expectedRolls={[{ dieType: rollEntry.dieType, count: 1 }]}
+            value={rollEntry.value}
+            rolls={[rollEntry]}
             sizeFactor={sizeFactor}
             cardWidth={cardWidth}
+            cardRefWidth={cardRefWidth}
             leftPos={leftPos}
           />
         ) : formulaEntry ? (
@@ -928,6 +308,7 @@ const GenericRollerEntryCard = React.forwardRef(function GenericRollerEntryCard(
             formulaEntry={formulaEntry}
             sizeFactor={sizeFactor}
             cardWidth={cardWidth}
+            cardRefWidth={cardRefWidth}
             leftPos={leftPos}
             onPress={onPress}
             onLayout={(e) =>
@@ -1012,7 +393,7 @@ function OpenFormulaCardButton({
 function OpenedFormulaCard({
   formulaEntry,
   sizeRatio,
-  parentViewSize,
+  // parentViewSize,
   startRect,
   onClose,
   ...props
@@ -1027,23 +408,28 @@ function OpenedFormulaCard({
   const [leftPos, setLeftPos] = React.useState(startRect.x);
   const [cardWidth, setCardWidth] = React.useState(startRect.width);
 
+  const finalHeightRef = React.useRef<number>();
+  const [parentViewSize, setParentViewSize] = React.useState({
+    width: 0,
+    height: 0,
+  });
   React.useEffect(() => {
     setLeftPos(0);
     setCardWidth(parentViewSize.width);
   }, [parentViewSize.width]);
 
   const newRolls = useNewArrayItems(formulaEntry.rolls);
-  const startResult = React.useRef(formulaEntry?.result);
+  const hadResult = React.useRef(formulaEntry.value !== undefined);
   React.useEffect(() => {
     // Automatically close the card if the result is set on a new roll
     if (
-      formulaEntry?.result &&
-      startResult.current !== formulaEntry.result &&
+      !hadResult.current &&
+      formulaEntry.value !== undefined &&
       newRolls.length
     ) {
       setTimeout(onClose, 1500);
     }
-  }, [formulaEntry, newRolls.length, onClose]);
+  }, [formulaEntry.value, newRolls.length, onClose]);
 
   const { bottom: paddingBottom } = useSafeAreaInsets();
   const animTop = useSharedValue(startRect.y);
@@ -1067,43 +453,60 @@ function OpenedFormulaCard({
       }}
       {...props}
     >
-      {/* Hide original card */}
-      <View
-        style={{
-          position: "absolute",
-          top: startRect.y,
-          left: startRect.x,
-          width: startRect.width,
-          height: startRect.height,
-          backgroundColor: colors.background,
-          borderRadius,
-        }}
-      />
-      {/* Close by tapping outside card */}
-      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-      {/* Formula card */}
-      <FormulaTouchableCard
-        formulaEntry={formulaEntry}
-        sizeFactor={sizeRatio * parentViewSize.width}
-        cardWidth={cardWidth}
-        leftPos={leftPos}
-        animateDice
-        style={animStyle}
-        onRollFormulaChange={showEditor ? onChange : undefined}
-        onDismiss={onClose}
-        onRemoveRoll={(roll) => {
-          if ("timestamp" in roll && typeof roll.timestamp === "number") {
-            appDispatch(removeRollerActiveFormulaRoll(roll.timestamp));
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          }
-        }}
-        onWidthAnimationEnd={(w) => {
-          w === cardWidth && setShowEditor(true);
-        }}
-        onFinalSize={({ height }) => {
-          animTop.value = withTiming(parentViewSize.height - height);
-        }}
-      />
+      <KeyboardAvoidingView behavior="padding" style={AppStyles.flex}>
+        <View
+          style={AppStyles.flex}
+          onLayout={(e) => {
+            const { width, height } = e.nativeEvent.layout;
+            setParentViewSize({ width, height });
+            if (finalHeightRef.current) {
+              animTop.value = height - finalHeightRef.current;
+            }
+          }}
+        />
+        {/* Hide original card */}
+        <View
+          style={{
+            position: "absolute",
+            top: startRect.y,
+            left: startRect.x,
+            width: startRect.width,
+            height: startRect.height,
+            backgroundColor: colors.background,
+            borderRadius,
+          }}
+        />
+        {/* Close by tapping outside card */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        {/* Formula card */}
+        <FormulaTouchableCard
+          formulaEntry={formulaEntry}
+          sizeFactor={sizeRatio * parentViewSize.width}
+          cardWidth={cardWidth}
+          cardRefWidth={parentViewSize.width}
+          canScroll
+          leftPos={leftPos}
+          animateDice
+          style={animStyle}
+          onRollFormulaChange={showEditor ? onChange : undefined}
+          onDismiss={onClose}
+          onRemoveRoll={(roll) => {
+            if ("timestamp" in roll && typeof roll.timestamp === "number") {
+              appDispatch(removeRollerActiveFormulaRoll(roll.timestamp));
+              Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success
+              );
+            }
+          }}
+          onWidthAnimationEnd={(w) => {
+            w === cardWidth && setShowEditor(true);
+          }}
+          onFinalSize={({ height }) => {
+            finalHeightRef.current = height;
+            animTop.value = withTiming(parentViewSize.height - height);
+          }}
+        />
+      </KeyboardAvoidingView>
     </View>
   );
 }

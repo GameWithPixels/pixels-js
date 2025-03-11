@@ -8,27 +8,23 @@ import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 
 import { logWrite } from "./logWrite";
 
-import {
-  computeRollFormulaResult,
-  parseRollFormula,
-} from "~/features/rollFormula";
+import { computeRollFormula, parseRollFormula } from "~/features/rollFormula";
 import { generateUuid, logError } from "~/features/utils";
 
 export type DieRoll = {
   timestamp: number;
   pixelId: number;
-  dieType: PixelDieType;
+  dieType: Exclude<PixelDieType, "unknown">;
   value: number;
 };
 
 export type RollerEntry = {
   uuid: string;
   rolls: DieRoll[];
+  value?: number;
   formula?: string; // Optional formula, if none it's a single roll
-  result?: {
-    value: number;
-    rollsIndices: number[];
-  };
+  droppedRolls?: number[]; // Indices of dropped rolls in the rolls array
+  unusedRolls?: number[]; // Indices of unused rolls in the rolls array
 };
 
 export type RollerEntryWithFormula = Omit<RollerEntry, "formula"> &
@@ -106,27 +102,18 @@ function getFormulaResult(
     dieType: PixelDieType;
     value: number;
   }>[]
-): { value: number; rollsIndices: number[] } | undefined {
+): { value?: number; droppedRolls?: number[]; unusedRolls?: number[] } {
   try {
-    const leftRolls = [...rolls];
-    const value = computeRollFormulaResult(
-      parseRollFormula(formula),
-      leftRolls
-    );
-    if (value !== undefined) {
-      const rollsIndices = [];
-      for (let i = 0; i < rolls.length; ++i) {
-        const j = leftRolls.findIndex((r) => r.pixelId === rolls[i].pixelId);
-        if (j < 0) {
-          rollsIndices.push(i);
-        } else {
-          leftRolls.splice(j, 1);
-        }
-      }
-      return { value, rollsIndices };
-    }
+    const unusedRolls = [...rolls];
+    const result = computeRollFormula(parseRollFormula(formula), unusedRolls);
+    return {
+      value: result?.value,
+      droppedRolls: result?.dropped?.map((r) => rolls.indexOf(r)),
+      unusedRolls: unusedRolls.map((r) => rolls.indexOf(r)),
+    };
   } catch (e) {
     logError(`Error while computing roll formula result: ${e}`);
+    return {};
   }
 }
 
@@ -141,7 +128,7 @@ const DiceRollerSlice = createSlice({
     },
 
     addRollToRoller(state, action: PayloadAction<Omit<DieRoll, "timestamp">>) {
-      const { paused, activeRollFormula } = state;
+      const { paused, activeRollFormula: formula } = state;
       if (!paused) {
         keepAtMost128Entries(state);
         const { pixelId, dieType, value } = action.payload;
@@ -151,24 +138,30 @@ const DiceRollerSlice = createSlice({
           dieType,
           value,
         } as const;
-        if (activeRollFormula) {
+        if (formula) {
           // Add roll to active formula
           log("addRollToRoller", { entry: "formula", roll });
-          activeRollFormula.rolls.push(roll);
-          activeRollFormula.result ??= getFormulaResult(
-            activeRollFormula.formula,
-            activeRollFormula.rolls
-          );
+          formula.rolls.push(roll);
+          if (formula.value === undefined) {
+            const { value, droppedRolls, unusedRolls } = getFormulaResult(
+              formula.formula,
+              formula.rolls
+            );
+            formula.value = value;
+            formula.droppedRolls = droppedRolls;
+            formula.unusedRolls = unusedRolls;
+          } else {
+            // Formula already computed, this new roll is unused
+            formula.unusedRolls ??= [];
+            formula.unusedRolls.push(formula.rolls.length - 1);
+          }
         } else {
           // Add single roll
           log("addRollToRoller", { entry: "single", roll });
           rollerEntriesAdapter.addOne(state.entries, {
             uuid: generateRollEntryUuid(state),
             rolls: [roll],
-            result: {
-              value,
-              rollsIndices: [0],
-            },
+            value,
           });
         }
       }
@@ -178,12 +171,15 @@ const DiceRollerSlice = createSlice({
       log("activateRollerFormula");
       const entry = state.entries.entities[action.payload ?? ""];
       if (entry) {
-        const { uuid, formula, rolls, result } = entry;
+        const { uuid, formula, rolls, droppedRolls, unusedRolls, value } =
+          entry;
         state.activeRollFormula = {
           uuid,
+          value,
           formula: formula ?? state.lastRollFormula,
           rolls,
-          result,
+          droppedRolls,
+          unusedRolls,
         };
       } else {
         state.activeRollFormula = {
@@ -196,50 +192,55 @@ const DiceRollerSlice = createSlice({
 
     updateRollerActiveFormula(state, action: PayloadAction<string>) {
       log("updateRollerActiveFormula");
-      const { activeRollFormula } = state;
-      if (activeRollFormula) {
-        activeRollFormula.formula = action.payload;
-        activeRollFormula.result = getFormulaResult(
-          activeRollFormula.formula,
-          activeRollFormula.rolls
+      const { activeRollFormula: formula } = state;
+      if (formula && formula.formula !== action.payload) {
+        formula.formula = action.payload;
+        const { value, droppedRolls, unusedRolls } = getFormulaResult(
+          formula.formula,
+          formula.rolls
         );
+        formula.value = value;
+        formula.droppedRolls = droppedRolls;
+        formula.unusedRolls = unusedRolls;
       }
     },
 
     removeRollerActiveFormulaRoll(state, action: PayloadAction<number>) {
       log("removeRollerActiveFormulaRoll");
       const timestamp = action.payload;
-      const { activeRollFormula } = state;
-      if (activeRollFormula) {
-        const i = activeRollFormula.rolls.findIndex(
-          (r) => r.timestamp === timestamp,
-          1
-        );
+      const { activeRollFormula: formula } = state;
+      if (formula) {
+        const i = formula.rolls.findIndex((r) => r.timestamp === timestamp);
         if (i >= 0) {
-          activeRollFormula.rolls.splice(i, 1);
-          activeRollFormula.result = getFormulaResult(
-            activeRollFormula.formula,
-            activeRollFormula.rolls
-          );
+          formula.rolls.splice(i, 1);
+          // Check if we need to update the result
+          if (formula.value !== undefined || formula.unusedRolls) {
+            const { value, droppedRolls, unusedRolls } = getFormulaResult(
+              formula.formula,
+              formula.rolls
+            );
+            formula.value = value;
+            formula.droppedRolls = droppedRolls;
+            formula.unusedRolls = unusedRolls;
+          }
         }
       }
     },
 
     commitRollerActiveFormula(state) {
-      const { activeRollFormula } = state;
-      if (activeRollFormula) {
+      const { activeRollFormula: formula } = state;
+      if (formula) {
         // Add or update entry only if there are rolls or entry already exists
         const commit =
-          activeRollFormula.rolls.length > 0 ||
-          !!state.entries.entities[activeRollFormula.uuid];
+          formula.rolls.length > 0 || !!state.entries.entities[formula.uuid];
         log("commitRollerActiveFormula", { commit });
         if (commit) {
           keepAtMost128Entries(state);
-          rollerEntriesAdapter.upsertOne(state.entries, activeRollFormula);
-          state.lastRollFormula = activeRollFormula.formula;
+          rollerEntriesAdapter.upsertOne(state.entries, formula);
+          state.lastRollFormula = formula.formula;
           state.activeRollFormula = undefined;
         }
-        state.lastRollFormula = activeRollFormula.formula;
+        state.lastRollFormula = formula.formula;
         state.activeRollFormula = undefined;
       }
     },

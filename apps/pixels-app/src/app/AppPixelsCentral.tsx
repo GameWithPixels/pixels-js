@@ -253,13 +253,14 @@ function hookToPixel(
     );
     if (pairedDie) {
       store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
-      store.dispatch(
-        addRollToRoller({
-          pixelId: pixel.pixelId,
-          dieType: pixel.dieType,
-          value: roll,
-        })
-      );
+      pixel.dieType !== "unknown" &&
+        store.dispatch(
+          addRollToRoller({
+            pixelId: pixel.pixelId,
+            dieType: pixel.dieType,
+            value: roll,
+          })
+        );
     }
   };
   pixel.addEventListener("roll", onRoll);

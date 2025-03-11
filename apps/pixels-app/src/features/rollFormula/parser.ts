@@ -73,7 +73,6 @@ export class Parser {
   private _modifierExpression(): RollFormulaTree {
     let expr = this._primaryExpressionOrList();
     const tok = this._peekNext();
-    console.log(tok);
     if (tok?.type === "modifier") {
       this._skipNext();
       if (Array.isArray(expr) || expr.kind === "dice") {
@@ -129,5 +128,5 @@ export class Parser {
 }
 
 export function parseRollFormula(formula: string): RollFormulaTree {
-  return new Parser(formulaTokenizer(formula)).expression();
+  return new Parser(formulaTokenizer(formula.toLowerCase())).expression();
 }
