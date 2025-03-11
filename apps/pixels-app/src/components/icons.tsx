@@ -190,7 +190,7 @@ export function DieWireframe({
 }: {
   size?: number;
 } & DieImageProps &
-  ViewProps) {
+  Omit<ViewProps, "children">) {
   return (
     <View style={[{ width: size, aspectRatio: 1 }, style]} {...props}>
       <DieImage dieType={dieType} disabled={disabled} mode={mode} />
@@ -209,7 +209,7 @@ export function AnimatedDieWireframe({
   AnimatedProps<
     {
       size?: number;
-    } & ViewProps
+    } & Omit<ViewProps, "children">
   >) {
   const animStyle = useAnimatedStyle(() => ({
     width: typeof size === "object" ? size.value : size,

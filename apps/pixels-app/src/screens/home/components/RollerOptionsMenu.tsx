@@ -210,13 +210,14 @@ export function OptionsMenu({
             Math.ceil(((i + 1) * AvailableDieTypeValues.length) / 2)
           )}
           addRoll={(dieType, value) => {
-            store.dispatch(
-              addRollToRoller({
-                pixelId: 0,
-                dieType,
-                value,
-              })
-            );
+            dieType !== "unknown" &&
+              store.dispatch(
+                addRollToRoller({
+                  pixelId: 0,
+                  dieType,
+                  value,
+                })
+              );
             delayedDismiss();
           }}
         />

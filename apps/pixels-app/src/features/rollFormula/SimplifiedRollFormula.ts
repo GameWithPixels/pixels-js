@@ -1,7 +1,5 @@
-import { assertNever } from "@systemic-games/pixels-core-utils";
-
-import { RollFormulaTree } from "./rollFormula";
-import { RollDieType } from "./tokenizer";
+import { convertDieTypeForFormula, RollFormulaTree } from "./rollFormula";
+import { RollDieType } from "./types";
 
 export type SimplifiedRollFormula = {
   dieType: RollDieType;
@@ -11,145 +9,84 @@ export type SimplifiedRollFormula = {
   bonus?: "guidance";
 };
 
-export function convertSimplifiedFormula({
+export function simplifiedFormulaToString({
   dieType,
   dieCount,
   constant,
   modifier,
   bonus,
-}: Readonly<SimplifiedRollFormula>): RollFormulaTree {
-  // Check for bonus first
-  if (bonus === "guidance") {
-    const left = convertSimplifiedFormula({
-      dieType,
-      dieCount,
-      constant,
-      modifier,
-    });
-    return {
-      kind: "operation",
-      operator: "+",
-      left,
-      right: {
-        kind: "dice",
-        dieType: "d4",
-        count: 1,
-      },
-    };
+}: Readonly<SimplifiedRollFormula>): string {
+  const dice = `${dieCount}${convertDieTypeForFormula(dieType)}`;
+  let str = modifier
+    ? `${dice}${modifier === "advantage" ? "kh" : "kl"}1`
+    : dice;
+  if (bonus) {
+    str += "+1d4";
   }
-  const dice = {
-    kind: "dice",
-    dieType,
-    count: dieCount,
-  } as const;
-  switch (modifier) {
-    case undefined:
-      return constant
-        ? {
-            kind: "operation",
-            operator: "+",
-            left: dice,
-            right: {
-              kind: "constant",
-              value: constant,
-            },
-          }
-        : dice;
-    case "advantage":
-    case "disadvantage": {
-      const formula: RollFormulaTree = {
-        kind: "modifier",
-        modifier: modifier === "advantage" ? "kh" : "kl",
-        count: 1,
-        groups: [
-          {
-            kind: "dice",
-            dieType,
-            count: 2,
-          },
-        ],
-      };
-      return constant
-        ? {
-            kind: "operation",
-            operator: "+",
-            left: formula,
-            right: {
-              kind: "constant",
-              value: constant,
-            },
-          }
-        : formula;
-    }
-    default:
-      assertNever(modifier, `Unknown modifier ${modifier}`);
+  if (constant) {
+    str += constant > 0 ? `+${constant}` : constant.toString();
   }
+  return str;
 }
 
 export function getSimplifiedRollFormula(
   formula: Readonly<RollFormulaTree>
 ): SimplifiedRollFormula | undefined {
-  // Constant
-  if (formula.kind === "constant") {
-    return;
-  }
-  // Dice count
-  if (formula.kind === "dice") {
-    return {
-      dieType: formula.dieType,
-      dieCount: formula.count,
-      constant: 0,
-    };
-  }
-  // "Simple" modifiers
-  if (
-    formula.kind === "modifier" &&
-    (formula.modifier === "kh" || formula.modifier === "kl") &&
-    formula.groups.length === 1 &&
-    formula.groups[0].kind === "dice" &&
-    formula.groups[0].count === 2
-  ) {
-    // Simple advantage/disadvantage
-    return {
-      dieType: formula.groups[0].dieType,
-      dieCount: 1,
-      constant: 0,
-      modifier: formula.modifier === "kh" ? "advantage" : "disadvantage",
-    };
-  }
-  // Operation
-  if (formula.kind === "operation") {
-    // Assume operation between dice or modifier, and a constant, dice or an operation
-    const [diceOrModifier, constOrDiceOrOp] =
-      formula.left.kind === "dice" || formula.left.kind === "modifier"
-        ? [formula.left, formula.right]
-        : [formula.right, formula.left];
-    const [constant, bonus] =
-      constOrDiceOrOp.kind === "constant"
-        ? [constOrDiceOrOp, undefined]
-        : constOrDiceOrOp.kind === "dice"
-          ? [undefined, constOrDiceOrOp]
-          : constOrDiceOrOp.kind !== "operation"
-            ? [undefined, undefined]
-            : constOrDiceOrOp.left.kind === "constant"
-              ? [constOrDiceOrOp.left, constOrDiceOrOp.right]
-              : [constOrDiceOrOp.right, constOrDiceOrOp.left];
-    if (
-      (diceOrModifier.kind === "dice" || diceOrModifier.kind === "modifier") &&
-      (!constant || constant.kind === "constant") &&
-      (!bonus ||
-        (bonus.kind === "dice" && bonus.dieType === "d4" && bonus.count === 1))
-    ) {
-      const parts = getSimplifiedRollFormula(diceOrModifier);
-      if (parts) {
+  switch (formula.kind) {
+    case "dice":
+      return {
+        dieType: formula.dieType,
+        dieCount: formula.count,
+        constant: 0,
+      };
+    case "modifier": {
+      // Advantage/disadvantage
+      if (
+        (formula.modifier === "kh" || formula.modifier === "kl") &&
+        formula.groups.length === 1 &&
+        formula.groups[0].kind === "dice" &&
+        formula.groups[0].count === 2
+      ) {
         return {
-          ...parts,
-          constant: constant
-            ? constant.value * (formula.operator === "-" ? -1 : 1)
-            : 0,
-          bonus: bonus ? "guidance" : undefined,
+          dieType: formula.groups[0].dieType,
+          dieCount: 2,
+          constant: 0,
+          modifier: formula.modifier === "kh" ? "advantage" : "disadvantage",
         };
       }
+      break;
+    }
+    case "operation": {
+      const left = getSimplifiedRollFormula(formula.left);
+      if (!left) {
+        break;
+      }
+      if (formula.right.kind === "constant") {
+        if (!left.constant) {
+          return {
+            ...left,
+            constant: formula.right.value,
+          };
+        }
+      } else {
+        const right = getSimplifiedRollFormula(formula.right);
+        if (
+          right &&
+          right.dieType === "d4" &&
+          right.dieCount === 1 &&
+          (!left.constant || !right.constant) &&
+          !right.modifier &&
+          !right.bonus &&
+          !left.bonus
+        ) {
+          return {
+            ...left,
+            constant: left.constant + right.constant,
+            bonus: "guidance",
+          };
+        }
+      }
+      break;
     }
   }
 }

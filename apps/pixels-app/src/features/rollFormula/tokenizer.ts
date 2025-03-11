@@ -1,44 +1,14 @@
-import {
-  PixelDieType,
-  PixelDieTypeValues,
-} from "@systemic-games/pixels-core-animation";
-import {
-  assert,
-  assertNever,
-  enumValue,
-} from "@systemic-games/pixels-core-utils";
+import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import moo from "moo";
 
-export type RollDieType = Exclude<PixelDieType, "unknown" | "d6pipped">;
-
-export const OperatorValues = {
-  "+": enumValue(),
-  "-": enumValue(),
-  "*": enumValue(),
-  "/": enumValue(),
-  ",": enumValue(),
-} as const;
-
-export type Operator = keyof typeof OperatorValues;
-
-export const GroupingOperatorValues = {
-  "(": enumValue(),
-  ")": enumValue(),
-  "{": enumValue(),
-  "}": enumValue(),
-} as const;
-
-export type GroupingOperator = keyof typeof GroupingOperatorValues;
-
-// https://wiki.roll20.net/Dice_Reference#Roll_Modifiers
-export const RollModifierValues = {
-  kh: enumValue(),
-  kl: enumValue(),
-  dh: enumValue(),
-  dl: enumValue(),
-} as const;
-
-export type RollModifier = keyof typeof RollModifierValues;
+import {
+  RollGroupingOperator,
+  RollOperator,
+  RollDieType,
+  RollDieTypeValues,
+  RollModifier,
+  RollModifierValues,
+} from "./types";
 
 const LexerRules = {
   whiteSpace: /[ \t]+/,
@@ -46,7 +16,7 @@ const LexerRules = {
   grouping: /\(|\)|\{|\}/,
   // Order is important
   modifier: /[kd][hl]\d*/,
-  dice: /\d+d(?:\d+|F)/,
+  dice: /\d*d(?:\d+|F)/,
   constant: /\d+/,
 } as const;
 
@@ -60,12 +30,12 @@ export interface BaseToken {
 
 export interface OperatorToken extends BaseToken {
   type: "operator";
-  operator: Operator;
+  operator: RollOperator;
 }
 
 export interface GroupingOperatorToken extends BaseToken {
   type: "grouping";
-  operator: GroupingOperator;
+  operator: RollGroupingOperator;
 }
 
 export interface ConstantToken extends BaseToken {
@@ -109,7 +79,13 @@ export type FaultTolerantTokenizer = (notation: string) => {
   error: ErrorToken | null;
 };
 
-function parseNumber(str: string): number {
+function parseNumber(str: string, defaultValue = 0): number {
+  if (!str) {
+    if (defaultValue !== undefined) {
+      return defaultValue;
+    }
+    throw new Error("Empty number string");
+  }
   const i = parseInt(str, 10);
   assert(!isNaN(i), `Failed to parse number: ${str}`);
   return i;
@@ -119,12 +95,9 @@ function parseDieType(str: string): RollDieType {
   if (str === "dF") {
     return "d6fudge";
   } else {
-    const dt = str as PixelDieType;
+    const dt = str as RollDieType;
     assert(
-      dt !== "unknown" &&
-        dt !== "d6pipped" &&
-        dt !== "d6fudge" &&
-        PixelDieTypeValues[dt],
+      dt !== "d6fudge" && RollDieTypeValues[dt],
       `Failed to parse die type: ${str}`
     );
     return dt;
@@ -147,7 +120,7 @@ function processToken(token: moo.Token): Token {
         type,
         position,
         content,
-        operator: token.value as Operator,
+        operator: content as RollOperator,
       };
 
     case "grouping":
@@ -155,37 +128,44 @@ function processToken(token: moo.Token): Token {
         type,
         position,
         content,
-        operator: token.value as GroupingOperator,
+        operator: content as RollGroupingOperator,
       };
 
     case "constant":
+      if (!content) {
+        throw new Error("Invalid modifier token");
+      }
       return {
         type,
         position,
         content,
-        value: parseNumber(token.value),
+        value: parseNumber(content),
       };
 
     case "dice": {
-      const [count, numSides] = token.value.split("d");
+      const parts = content.split("d");
+      if (parts.length !== 2) {
+        throw new Error("Invalid dice token");
+      }
       return {
         type,
         position,
         content,
-        dieType: parseDieType("d" + numSides),
-        count: parseNumber(count),
+        dieType: parseDieType("d" + parts[1]),
+        count: parseNumber(parts[0], 1),
       };
     }
 
     case "modifier": {
-      const modifier = parseModifier(token.value.slice(0, 2));
-      const count = parseNumber(token.value.slice(2));
+      if (content.length < 2) {
+        throw new Error("Invalid modifier token");
+      }
       return {
         type,
         position,
         content,
-        modifier,
-        count,
+        modifier: parseModifier(content.slice(0, 2)),
+        count: parseNumber(content.slice(2), 1),
       };
     }
 
@@ -197,6 +177,7 @@ function processToken(token: moo.Token): Token {
   }
 }
 
+// Cache the lexer to avoid recompiling it on every call
 let lexer: moo.Lexer;
 let faultTolerantLexer: moo.Lexer;
 
