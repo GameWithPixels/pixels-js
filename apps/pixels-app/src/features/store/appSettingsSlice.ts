@@ -37,6 +37,7 @@ export type AppSettingsState = {
   appFirmwareTimestampOverride: number;
   backgroundAudio: boolean;
   playAudioInSilentModeIOS: boolean;
+  showAnnouncement?: string;
 };
 
 const initialState: AppSettingsState = {
@@ -69,6 +70,7 @@ const initialState: AppSettingsState = {
   appFirmwareTimestampOverride: 0,
   backgroundAudio: true,
   playAudioInSilentModeIOS: true,
+  showAnnouncement: "survey#1",
 };
 
 // Redux slice that stores app settings
@@ -184,6 +186,10 @@ const appSettingsSlice = createSlice({
     setPlayAudioInSilentModeIOS(state, action: PayloadAction<boolean>) {
       state.playAudioInSilentModeIOS = action.payload;
     },
+
+    hideAnnouncement(state) {
+      state.showAnnouncement = "";
+    },
   },
 });
 
@@ -212,5 +218,6 @@ export const {
   setAppFirmwareTimestampOverride,
   setBackgroundAudio,
   setPlayAudioInSilentModeIOS,
+  hideAnnouncement,
 } = appSettingsSlice.actions;
 export default appSettingsSlice.reducer;

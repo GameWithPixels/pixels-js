@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import { openURL } from "expo-linking";
 import React from "react";
 import { Alert, ScrollView, StyleProp, View, ViewStyle } from "react-native";
 import { Icon, Text, TouchableRipple, useTheme } from "react-native-paper";
@@ -37,6 +38,7 @@ import {
   SortModeList,
 } from "~/features/profiles";
 import {
+  hideAnnouncement,
   setDiceGrouping,
   setDiceSortMode,
   setDiceViewMode,
@@ -222,6 +224,33 @@ function FirmwareUpdateBanner({
   );
 }
 
+function AnnouncementBanner({ style }: { style?: StyleProp<ViewStyle> }) {
+  const appDispatch = useAppDispatch();
+  const visible = useAppSelector(
+    (state) => state.appSettings.showAnnouncement === "survey#1"
+  );
+  const dismiss = () => appDispatch(hideAnnouncement());
+  return (
+    <Banner
+      visible={visible}
+      title="Before You Roll..."
+      actionText="Take Survey"
+      altActionText="Dismiss"
+      style={style}
+      onAction={() => {
+        openURL("https://form.typeform.com/to/A4Hd8Wfi");
+        setTimeout(dismiss, 500);
+      }}
+      onAltAction={dismiss}
+      onDismiss={dismiss}
+    >
+      We're still wrapping up rewards, building new features, and expanding
+      integrations!{"\n\n"}Answer 3 quick questions about why you backed Pixels
+      and get $5 credit to use or share.
+    </Banner>
+  );
+}
+
 function useCheckForDiceInBootloader(
   enabled: boolean,
   onRestoreDice: () => void
@@ -310,6 +339,7 @@ function DiceListPage({
             paddingBottom: 20,
           }}
         >
+          <AnnouncementBanner />
           {pairedDice.length ? (
             <BluetoothStateWarning style={{ marginVertical: 10 }}>
               <GridListSelector
