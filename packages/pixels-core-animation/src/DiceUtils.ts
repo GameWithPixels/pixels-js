@@ -32,6 +32,32 @@ export const DiceUtils = {
     }
   },
 
+  getLEDCountEx(dieType: PixelDieType): number[] {
+    switch (dieType) {
+      case "unknown":
+        return [0];
+      case "d4":
+      case "d6fudge":
+        return [6];
+      case "d6":
+        return [6, 21];
+      case "d6pipped":
+        return [21];
+      case "d8":
+        return [8];
+      case "d10":
+        return [10];
+      case "d00":
+        return [10, 19];
+      case "d12":
+        return [12];
+      case "d20":
+        return [20];
+      default:
+        assertNever(dieType);
+    }
+  },
+
   getFaceCount(dieType: PixelDieType): number {
     switch (dieType) {
       case "unknown":
