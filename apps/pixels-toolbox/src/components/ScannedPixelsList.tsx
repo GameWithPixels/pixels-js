@@ -28,7 +28,7 @@ export function ScannedPixelsList({
   onSelectCharger?: (scannedCharger: ScannedChargerNotifier) => void;
   onClose?: () => void;
   dieType?: PixelDieType;
-  ledCount?: number; // Ignored if dieType is set
+  ledCount?: number[]; // Ignored if dieType is set
   minUpdateInterval?: number;
 }) {
   const [scannedDevices, scannerDispatch, scanStatus] =
@@ -49,7 +49,7 @@ export function ScannedPixelsList({
   const matchingPixels = scannedPixels.filter((pixel) =>
     dieType
       ? pixel.dieType === dieType
-      : !ledCount || pixel.ledCount === ledCount
+      : !ledCount || ledCount.includes(pixel.ledCount)
   );
 
   // FlatList item rendering

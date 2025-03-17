@@ -614,8 +614,8 @@ function DecodePixelIdPage({
       <ScannedPixelsList
         ledCount={
           settings.deviceSelection.kind === "charger"
-            ? 3
-            : DiceUtils.getLEDCount(settings.deviceSelection.dieType)
+            ? [3]
+            : DiceUtils.getLEDCountEx(settings.deviceSelection.dieType)
         }
         onSelect={onSelect}
         onSelectCharger={onSelect}

@@ -672,10 +672,9 @@ export function ConnectPixel({
           }
           // Check LED count
           if (
-            ledCount !==
-            (settingsDeviceType === "lcc"
-              ? 3
-              : DiceUtils.getLEDCount(settingsDeviceType))
+            settingsDeviceType === "lcc"
+              ? ledCount !== 3
+              : !DiceUtils.getLEDCountEx(settingsDeviceType).includes(ledCount)
           ) {
             throw new LedCountMismatchError(settingsDeviceType, ledCount);
           }
