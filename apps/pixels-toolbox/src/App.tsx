@@ -140,10 +140,16 @@ function AppContent() {
               store.getState().appSettings.openPageOnStart as AppRootPageName
             }
             screenOptions={{
-              headerTitleStyle: {
-                fontWeight: "bold",
-                fontSize: 26,
-              },
+              headerTitle: ({ style: _, ...props }) => (
+                // Ignore style prop
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  variant="headlineMedium"
+                  style={{ fontWeight: "bold" }}
+                  {...props}
+                />
+              ),
               headerTitleAlign: "center",
             }}
           >
