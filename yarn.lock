@@ -2472,6 +2472,11 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
+"@react-native-community/netinfo@11.3.1":
+  version "11.3.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-11.3.1.tgz#4539371a2f4bd402d932031be82c2449ed63a1a5"
+  integrity sha512-UBnJxyV0b7i9Moa97Av+HKho1ByzX0DtbJXzUQS5E3xhQs6P2D/Os0iw3ouy7joY1TVd6uIhplPbr7l1SJNaNQ==
+
 "@react-native-community/slider@4.5.3":
   version "4.5.3"
   resolved "https://registry.yarnpkg.com/@react-native-community/slider/-/slider-4.5.3.tgz#84821ae17e746d90f73553bb58386e9db4db124c"
@@ -3371,7 +3376,7 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.3.tgz#6209321eb2c1712a7e7466422b8cb1fc0d9dd5d8"
   integrity sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==
 
-"@types/three@0.146.0", "@types/three@^0.146.0":
+"@types/three@0.143.2", "@types/three@0.146.0":
   version "0.146.0"
   resolved "https://registry.yarnpkg.com/@types/three/-/three-0.146.0.tgz#83813ba0d2fff6bdc6d7fda3a77993a932bba45f"
   integrity sha512-75AgysUrIvTCB054eQa2pDVFurfeFW8CrMQjpzjt3yHBfuuknoSvvsESd/3EhQxPrz9si3+P0wiDUVsWUlljfA==
@@ -5216,6 +5221,13 @@ dayjs@^1.8.15:
   version "1.11.13"
   resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.13.tgz#92430b0139055c3ebb60150aa13e860a4b5a366c"
   integrity sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==
+
+dddice-js@0.19.27:
+  version "0.19.27"
+  resolved "https://registry.yarnpkg.com/dddice-js/-/dddice-js-0.19.27.tgz#b82f3f1a140778cc7428da0632af15dd46aeefb0"
+  integrity sha512-wL0bq4EkZsuG0if+eZQIt7zhGkuQTbTd2q9FAM0hrcN43TOq+pYi6Jd9tXzIl1Bk+n+kO5KwU5DEmPT+VQo2HA==
+  dependencies:
+    "@types/three" "0.143.2"
 
 debug@2.6.9, debug@^2.2.0, debug@^2.6.9:
   version "2.6.9"
@@ -12004,7 +12016,7 @@ thenify-all@^1.0.0:
   dependencies:
     any-promise "^1.0.0"
 
-three@^0.166.0:
+three@0.166.1:
   version "0.166.1"
   resolved "https://registry.yarnpkg.com/three/-/three-0.166.1.tgz#322cfc48fff4e751cd47d61fd1558c387d098d7c"
   integrity sha512-LtuafkKHHzm61AQA1be2MAYIw1IjmhOUxhBa0prrLpEMWbV7ijvxCRHjSgHPGp2493wLBzwKV46tA9nivLEgKg==

@@ -73,6 +73,7 @@
   },
   "resolutions": {
     "@types/react": "18.2.79",
+    "@types/three": "0.146.0",
     "fbemitter": "^3.0.0",
     "promise": "^8.3.0"
   },

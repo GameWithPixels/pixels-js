@@ -34,12 +34,13 @@
     "@expo/vector-icons": "^14.0.3",
     "@gorhom/bottom-sheet": "~4.6.4",
     "@react-native-async-storage/async-storage": "1.24.0",
+    "@react-native-community/netinfo": "11.3.1",
     "@react-native-community/slider": "4.5.3",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.11.0",
     "@reduxjs/toolkit": "~1.9.7",
     "@sentry/react-native": "~5.33.1",
-    "@react-navigation/native-stack": "^6.11.0",
     "@systemic-games/pixels-three": "*",
     "@systemic-games/react-native-bluetooth-le": "*",
     "@systemic-games/react-native-nordic-nrf5-dfu": "*",
@@ -47,6 +48,7 @@
     "@systemic-games/react-native-pusher-server": "*",
     "base64-js": "^1.5.1",
     "color": "^4.2.3",
+    "dddice-js": "0.19.27",
     "events": "^3.3.0",
     "expo": "~51.0.38",
     "expo-application": "~5.9.1",
@@ -95,7 +97,7 @@
     "react-redux": "^8.1.2",
     "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
-    "three": "^0.166.0"
+    "three": "0.166.1"
   },
   "devDependencies": {
     "@babel/core": "7.25.8",
@@ -104,7 +106,7 @@
     "@types/events": "^3.0.3",
     "@types/moo": "^0.5.9",
     "@types/react": "18.2.79",
-    "@types/three": "^0.146.0"
+    "@types/three": "0.146.0"
   },
   "private": true
 }
