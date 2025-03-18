@@ -15,7 +15,8 @@ import {
 import { AnimatedRolledDie } from "./AnimatedRolledDie";
 import { AnimatedRollCardText, RollCardText } from "./RollCardText";
 import {
-  formulaDieSize,
+  computeFormulaViewWidth,
+  getFormulaDieSize,
   getFormulaViewMaxHeight,
   RollFormulaView,
 } from "./RollFormulaView";
@@ -30,27 +31,28 @@ import {
 import { DieRoll } from "~/features/store";
 import { useIsMounted } from "~/hooks";
 
-export function useNewArrayItems<Type>(
-  items: readonly Readonly<Type>[] | undefined
-): Type[] {
-  const lastItems = React.useRef(items ?? []);
-  const newItems = React.useMemo(
-    () =>
-      !items || lastItems.current === items
-        ? []
-        : items.filter((r) => !lastItems.current.includes(r)),
-    [items]
+const borderSize = 0.02;
+const dividerSize = 0.005;
+const valueSize = 0.4;
+const titleSize = 0.1;
+const overlaySize = 0.3;
+
+export function computeRollCardRefWidth(formulaTree?: RollFormulaTree): number {
+  const formulaViewWidth = formulaTree
+    ? computeFormulaViewWidth(formulaTree)
+    : 0;
+  return Math.max(
+    2.2 * valueSize, // Minimum width
+    formulaViewWidth + 2 * borderSize + dividerSize + valueSize
   );
-  lastItems.current = items ?? [];
-  return newItems;
 }
 
 export type RollCardCommonProps = CardProps & {
-  sizeFactor: number;
+  scale: number;
   cardWidth: number;
   cardRefWidth: number;
-  canScroll?: boolean;
   leftPos: number;
+  canScroll?: boolean;
   animateDice?: boolean;
   onPress?: () => void;
   onDismiss?: () => void;
@@ -60,18 +62,18 @@ export type RollCardCommonProps = CardProps & {
   onFinalSize?: (layout: { width: number; height: number }) => void;
 };
 
-export function RollTouchableCard({
+export function RollsTouchableCard({
   children,
   title,
   rolls,
   droppedRolls,
   formulaTree,
-  value,
-  sizeFactor,
+  result,
+  scale,
   cardWidth,
   cardRefWidth,
-  canScroll,
   leftPos,
+  canScroll,
   animateDice,
   style,
   onPress,
@@ -83,11 +85,10 @@ export function RollTouchableCard({
   ...props
 }: {
   title?: string;
-  formulaTree?: RollFormulaTree;
-  singleRoll?: boolean;
+  formulaTree?: Readonly<RollFormulaTree> | "invalid";
   rolls: readonly DieRoll[];
   droppedRolls?: readonly DieRoll[]; // Should be included in "rolls" property too
-  value?: number;
+  result?: number;
 } & RollCardCommonProps) {
   const animWidth = useSharedValue(cardWidth);
   React.useEffect(() => {
@@ -104,9 +105,7 @@ export function RollTouchableCard({
     left: animLeftPos.value,
   }));
 
-  const borderSize = 0.02 * sizeFactor;
-  const titleSize = 0.1 * sizeFactor;
-  const touchHeight = sizeFactor * getFormulaViewMaxHeight() + titleSize;
+  const touchHeight = (getFormulaViewMaxHeight() + titleSize) * scale;
   const animHeight = useSharedValue(touchHeight);
   const animContentStyle = useAnimatedStyle(() => ({
     height: animHeight.value,
@@ -119,13 +118,14 @@ export function RollTouchableCard({
   const maxHeightRef = React.useRef(0);
 
   const rollsMapping = React.useMemo(
-    () => formulaTree && getFormulaRollsMapping(formulaTree, [...rolls]),
+    () =>
+      formulaTree &&
+      formulaTree !== "invalid" &&
+      getFormulaRollsMapping(formulaTree, [...rolls]),
     [rolls, formulaTree]
   );
 
-  const newRolls = useNewArrayItems(rolls);
   const isMounted = useIsMounted();
-
   const { colors } = useTheme();
   return (
     <AnimatedCard
@@ -135,7 +135,7 @@ export function RollTouchableCard({
       style={[animStyle, style]}
       contentStyle={[
         {
-          margin: borderSize,
+          margin: borderSize * scale,
           padding: 0,
           backgroundColor: colors.background,
         },
@@ -165,7 +165,9 @@ export function RollTouchableCard({
             }}
           >
             {title && (
-              <RollCardText lineHeight={titleSize}>{title}</RollCardText>
+              <RollCardText lineHeight={titleSize * scale}>
+                {title}
+              </RollCardText>
             )}
             <View
               style={{
@@ -176,13 +178,18 @@ export function RollTouchableCard({
             >
               <ScrollView
                 horizontal
-                scrollEnabled={canScroll}
+                scrollEnabled={canScroll ?? false}
+                bounces={false}
                 contentContainerStyle={{ alignItems: "center" }}
               >
-                {formulaTree && rollsMapping ? (
+                {formulaTree === "invalid" ? (
+                  <RollCardText lineHeight={(valueSize / 3) * scale}>
+                    Invalid formula
+                  </RollCardText>
+                ) : formulaTree && rollsMapping ? (
                   <RollFormulaView
                     formulaTree={formulaTree}
-                    sizeFactor={sizeFactor}
+                    scale={scale}
                     rollsMapping={rollsMapping}
                     droppedRolls={droppedRolls}
                     onRemoveRoll={onRemoveRoll}
@@ -191,8 +198,7 @@ export function RollTouchableCard({
                   rolls.length > 0 && (
                     <AnimatedRolledDie
                       dieType={rolls[0].dieType}
-                      value={rolls[0].value}
-                      size={sizeFactor * formulaDieSize}
+                      size={getFormulaDieSize() * scale}
                     />
                   )
                 )}
@@ -210,11 +216,11 @@ export function RollTouchableCard({
                   ]}
                   style={{
                     position: "absolute",
-                    width: sizeFactor * 0.3,
+                    width: overlaySize * scale,
                     right: 0,
                     height: "100%",
                     zIndex: 10,
-                    paddingHorizontal: sizeFactor * 0.03,
+                    paddingHorizontal: overlaySize * 0.1 * scale,
                   }}
                 />
               )}
@@ -223,21 +229,21 @@ export function RollTouchableCard({
           <Divider
             style={{
               height: "90%",
-              width: 0.005 * sizeFactor,
+              width: dividerSize * scale,
               backgroundColor: colors.onPrimary,
             }}
           />
           <AnimatedRollCardText
-            key={value ?? "value"} // Force re-render on value change
+            key={result ?? "result"} // Force re-render on value change
             entering={ZoomIn.duration(300)}
             exiting={FadeOut.duration(100)}
-            lineHeight={sizeFactor * 0.3}
+            lineHeight={valueSize * scale * 0.75}
             style={{
-              width: 0.4 * sizeFactor,
-              marginTop: title ? titleSize : 0,
+              width: valueSize * scale,
+              marginTop: title ? titleSize * scale : 0,
             }}
           >
-            {value ?? "?"}
+            {result ?? "?"}
           </AnimatedRollCardText>
         </LayoutAnimationConfig>
       </TouchableRipple>

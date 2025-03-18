@@ -8,7 +8,11 @@ import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 
 import { logWrite } from "./logWrite";
 
-import { computeRollFormula, parseRollFormula } from "~/features/rollFormula";
+import {
+  computeRollFormula,
+  parseRollFormula,
+  RollFormulaTree,
+} from "~/features/rollFormula";
 import { generateUuid, logError } from "~/features/utils";
 
 export type DieRoll = {
@@ -53,7 +57,7 @@ function getInitialState(): DiceRollerState {
     paused: false,
     lastRollFormula: "1d20",
     settings: {
-      cardsAlignment: "right",
+      cardsAlignment: "center",
       cardsSizeRatio: 0.5,
     },
   };
@@ -103,9 +107,17 @@ function getFormulaResult(
     value: number;
   }>[]
 ): { value?: number; droppedRolls?: number[]; unusedRolls?: number[] } {
+  let formulaTree: RollFormulaTree | undefined;
+  try {
+    formulaTree = parseRollFormula(formula);
+  } catch {
+    // Ignore parsing errors as the formula might be incomplete or incorrect
+  }
   try {
     const unusedRolls = [...rolls];
-    const result = computeRollFormula(parseRollFormula(formula), unusedRolls);
+    const result = formulaTree
+      ? computeRollFormula(formulaTree, unusedRolls)
+      : undefined;
     return {
       value: result?.value,
       droppedRolls: result?.dropped?.map((r) => rolls.indexOf(r)),

@@ -1,11 +1,12 @@
 import { assertNever, range } from "@systemic-games/pixels-core-utils";
 import React from "react";
 import { StyleSheet, View, ViewProps } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { GestureDetector } from "react-native-gesture-handler";
 import { Divider, useTheme } from "react-native-paper";
 import Animated, {
   FadeOut,
   runOnJS,
+  SlideInDown,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -20,11 +21,15 @@ import { RollCardText } from "./RollCardText";
 import { makeTransparent } from "~/components/colors";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
-  RollFormulaElement,
-  RollFormulaTree,
+  RollFormulaElement as _RollFormulaElement,
+  RollFormulaTree as _RollFormulaTree,
   getFormulaRollsMapping,
 } from "~/features/rollFormula";
 import { DieRoll } from "~/features/store";
+import { usePanGesture } from "~/hooks";
+
+type RollFormulaTree = Readonly<_RollFormulaTree>;
+type RollFormulaElement = Readonly<_RollFormulaElement>;
 
 function SlidableDie({
   onRemove,
@@ -34,44 +39,20 @@ function SlidableDie({
   onRemove?: () => void;
 }> &
   ViewProps) {
-  const pressed = useSharedValue(false);
   const offset = useSharedValue(0);
-  const initialTouchLocation = useSharedValue<{ x: number; y: number } | null>(
-    null
-  );
-  const panActive = useSharedValue(false);
-  panActive.value = !!onRemove;
-
+  const panActive = useSharedValue(!!onRemove);
+  React.useEffect(() => {
+    panActive.value = !!onRemove;
+  }, [onRemove, panActive]);
   const cutoffDist = 200;
-
-  // https://github.com/software-mansion/react-native-gesture-handler/issues/1933#issuecomment-1566953466
-  const pan = Gesture.Pan()
-    .manualActivation(true)
-    .onBegin((ev) => {
-      initialTouchLocation.value = { x: ev.x, y: ev.y };
-    })
-    .onTouchesMove((ev, state) => {
-      // Sanity checks
-      if (!initialTouchLocation.value || !ev.changedTouches.length) {
-        state.fail();
-      } else {
-        const touch = ev.changedTouches[0];
-        const xDiff = Math.abs(touch.x - initialTouchLocation.value.x);
-        const yDiff = Math.abs(touch.y - initialTouchLocation.value.y);
-        // Check if the gesture is vertical or if it's already activated
-        // as we don't want to interrupt an ongoing swipe
-        if (pressed.value || yDiff > xDiff) {
-          // Vertical panning
-          state.activate();
-        } else {
-          state.fail();
-        }
-      }
-    })
-    .onStart(() => (pressed.value = true))
-    .onChange((ev) => panActive.value && (offset.value = ev.translationY))
-    .onEnd(() => {
-      pressed.value = false;
+  const pan = usePanGesture({
+    direction: "vertical",
+    onChange: (y) => {
+      "worklet";
+      offset.value = panActive.value ? y : 0;
+    },
+    onEnd: () => {
+      "worklet";
       if (panActive.value) {
         if (Math.abs(offset.value) < 0.5 * cutoffDist) {
           // Cancel gesture
@@ -88,7 +69,8 @@ function SlidableDie({
       } else {
         offset.value = 0;
       }
-    });
+    },
+  });
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: offset.value }],
@@ -103,7 +85,8 @@ function SlidableDie({
 }
 
 type CommonFormulaTreeProps = {
-  sizeFactor: number;
+  scale: number;
+  depth: number;
   rollsMapping: ReturnType<typeof getFormulaRollsMapping<DieRoll>>;
   droppedRolls?: readonly Readonly<DieRoll>[];
   onRemoveRoll?: (roll: Readonly<DieRoll>) => void;
@@ -114,15 +97,15 @@ const textWidthPerChar = 0.15;
 
 function ConstantView({
   constant,
-  sizeFactor,
+  scale,
 }: {
   constant: Extract<RollFormulaElement, { kind: "constant" }>;
-} & Pick<CommonFormulaTreeProps, "sizeFactor">) {
+} & Pick<CommonFormulaTreeProps, "scale">) {
   const str = constant.value.toString();
   return (
     <RollCardText
-      lineHeight={sizeFactor * textHeight}
-      style={{ width: sizeFactor * textWidthPerChar * str.length }}
+      lineHeight={scale * textHeight}
+      style={{ width: scale * textWidthPerChar * str.length }}
     >
       {str}
     </RollCardText>
@@ -136,13 +119,16 @@ function computeConstantViewWidth(
   return constant.value.toString().length * textWidthPerChar * scale;
 }
 
-export const formulaDieSize = 0.3;
-const dieOverlapHorizontalFactor = 2 / 3;
+const dieSize = 0.3;
 const dieOverlapVerticalFactor = 0.5;
+const dieOverlapHorizontalFactor = 0.5;
+const d100OverlapHorizontalFactor = 0.3;
+const nestedDiceScale = 0.8;
+const droppedDiceScale = 0.8;
 
-function SlidableDieRollView({
+function MayBeSlidableDieRollView({
   roll,
-  sizeFactor,
+  scale,
   overlap,
   droppedRolls,
   onRemoveRoll: onRemove,
@@ -152,31 +138,40 @@ function SlidableDieRollView({
 } & Omit<CommonFormulaTreeProps, "rollsMapping">) {
   const isRoll = typeof roll === "object";
   const dropped = isRoll && droppedRolls?.includes(roll);
-  const scale = dropped ? 0.8 : 1;
-  return (
+  const size = scale * dieSize * (dropped ? droppedDiceScale : 1);
+  const style: ViewProps["style"] = [
+    overlap === "left" && {
+      marginLeft: -size * dieOverlapHorizontalFactor,
+    },
+    overlap === "top" && {
+      marginTop: -size * dieOverlapVerticalFactor,
+    },
+  ] as const;
+  return isRoll && onRemove ? (
     <SlidableDie
-      onRemove={onRemove && isRoll ? () => onRemove(roll) : undefined}
+      onRemove={() => onRemove(roll)}
       style={{ zIndex: dropped ? 0 : 1 }}
     >
       <AnimatedRolledDie
-        // entering={newRoll ? SlideInDown.duration(300) : undefined}
+        entering={SlideInDown.duration(300)}
         exiting={FadeOut.duration(100)}
-        dieType={isRoll ? roll.dieType : roll}
-        value={isRoll ? roll.value : undefined}
+        dieType={roll.dieType}
+        value={roll.value}
         faded={dropped}
-        size={sizeFactor * formulaDieSize * scale}
-        style={[
-          overlap === "left" && {
-            marginLeft:
-              -sizeFactor * formulaDieSize * dieOverlapHorizontalFactor * scale,
-          },
-          overlap === "top" && {
-            marginTop:
-              -sizeFactor * formulaDieSize * dieOverlapVerticalFactor * scale,
-          },
-        ]}
+        size={size}
+        style={style}
       />
     </SlidableDie>
+  ) : (
+    <AnimatedRolledDie
+      entering={SlideInDown.duration(300)}
+      exiting={FadeOut.duration(100)}
+      dieType={isRoll ? roll.dieType : roll}
+      value={isRoll ? roll.value : undefined}
+      faded={dropped}
+      size={size}
+      style={[style, { zIndex: dropped ? 0 : 1 }]}
+    />
   );
 }
 
@@ -188,41 +183,77 @@ type DicePairElement = DiceElement & {
 
 function DiceView({
   dice,
+  scale,
   rollsMapping,
   ...props
 }: {
   dice: DiceElement;
 } & CommonFormulaTreeProps) {
   const rolls = rollsMapping.get(dice);
+  const isD100 = dice.dieType === "d100";
+  const units = isD100 ? rolls?.filter((r) => r.dieType === "d10") : undefined;
+  const tens = isD100 ? rolls?.filter((r) => r.dieType === "d00") : undefined;
+  if (isD100 && props.depth) {
+    scale *= nestedDiceScale;
+  }
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       {range(dice.count).map((i) => {
-        const roll = rolls?.[dice.count - 1 - i];
-        const key = `${i}-${roll?.value}`;
-        return dice.dieType === "d100" ? (
-          <View key={key}>
-            <SlidableDieRollView roll="d00" {...props} />
-            <SlidableDieRollView roll="d10" overlap="top" {...props} />
-          </View>
-        ) : (
-          <SlidableDieRollView
-            key={key}
-            roll={roll ?? dice.dieType}
-            overlap={i > 0 ? "left" : undefined}
-            {...props}
-          />
-        );
+        if (isD100) {
+          const u = units?.[dice.count - 1 - i];
+          const t = tens?.[dice.count - 1 - i];
+          return (
+            <View
+              key={i}
+              style={{
+                marginLeft: i
+                  ? -scale * dieSize * d100OverlapHorizontalFactor
+                  : 0,
+              }}
+            >
+              <MayBeSlidableDieRollView
+                key={`d10-${u?.value}`}
+                roll={u ?? "d10"}
+                scale={scale}
+                {...props}
+              />
+              <MayBeSlidableDieRollView
+                key={`d00-${t?.value}`}
+                roll={t ?? "d00"}
+                overlap="top"
+                scale={scale}
+                {...props}
+              />
+            </View>
+          );
+        } else {
+          const roll = rolls?.[dice.count - 1 - i];
+          return (
+            <MayBeSlidableDieRollView
+              key={`${i}-${roll?.value}`}
+              roll={roll ?? dice.dieType}
+              overlap={i > 0 ? "left" : undefined}
+              scale={scale}
+              {...props}
+            />
+          );
+        }
       })}
     </View>
   );
 }
 
-function computeDiceViewWidth(dice: DiceElement, scale: number): number {
-  return dice.count
-    ? (1 + (dice.count - 1) * (1 - dieOverlapHorizontalFactor)) *
-        formulaDieSize *
-        scale
-    : 0;
+function computeDiceViewWidth(
+  dice: DiceElement,
+  scale: number,
+  depth: number
+): number {
+  const isD100 = dice.dieType === "d100";
+  if (isD100 && depth) {
+    scale *= nestedDiceScale;
+  }
+  const f = isD100 ? d100OverlapHorizontalFactor : dieOverlapHorizontalFactor;
+  return !dice.count ? 0 : (1 + (dice.count - 1) * (1 - f)) * scale * dieSize;
 }
 
 function DiceRollStackView({
@@ -238,7 +269,7 @@ function DiceRollStackView({
       {range(dice.count).map((i) => {
         const roll = rolls?.[i];
         return (
-          <SlidableDieRollView
+          <MayBeSlidableDieRollView
             key={`${i}-${roll?.value}`}
             roll={roll ?? dice.dieType}
             overlap={i > 0 ? "top" : undefined}
@@ -267,32 +298,36 @@ function extractSingleDicePair(
   }
 }
 
-const modifierHeight = formulaDieSize * (1 + dieOverlapVerticalFactor);
+const modifierHeight = (2 - dieOverlapVerticalFactor) * dieSize;
 const modifierTextSize = 0.1;
 const nestedModifierScale = 1 - modifierTextSize / modifierHeight;
 
 function ModifierView({
   modifier,
   depth,
-  sizeFactor,
+  scale,
   ...props
 }: {
   modifier: Extract<RollFormulaElement, { kind: "modifier" }>;
-  depth: number;
 } & CommonFormulaTreeProps) {
-  sizeFactor *= depth > 0 ? nestedModifierScale : 1;
+  // Adjust scale for nested modifiers
+  scale *= depth ? nestedModifierScale : 1;
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dicePair = extractSingleDicePair(modifier);
   return (
     modifier.groups.length > 0 &&
     (dicePair && !depth ? (
-      <DiceRollStackView dice={dicePair} sizeFactor={sizeFactor} {...props} />
+      <DiceRollStackView
+        dice={dicePair}
+        scale={scale}
+        depth={depth}
+        {...props}
+      />
     ) : (
       <View
         style={{
-          height: sizeFactor * modifierHeight,
-          marginVertical: sizeFactor * 0.01,
+          height: scale * modifierHeight,
           alignItems: "center",
           borderRadius,
           backgroundColor: makeTransparent(colors.surfaceDisabled, 0.1),
@@ -308,8 +343,8 @@ function ModifierView({
         >
           <RollFormulaInnerView
             formulaTree={modifier.groups[0]}
+            scale={scale}
             depth={depth + 1}
-            sizeFactor={sizeFactor}
             {...props}
           />
           {modifier.groups.slice(1).map((group, i) => (
@@ -323,7 +358,7 @@ function ModifierView({
               <View
                 style={{
                   height: "90%",
-                  width: sizeFactor * separatorWidth,
+                  width: scale * separatorWidth,
                   alignItems: "center",
                 }}
               >
@@ -337,14 +372,14 @@ function ModifierView({
               </View>
               <RollFormulaInnerView
                 formulaTree={group}
+                scale={scale}
                 depth={depth + 1}
-                sizeFactor={sizeFactor}
                 {...props}
               />
             </View>
           ))}
         </View>
-        <RollCardText lineHeight={sizeFactor * modifierTextSize}>
+        <RollCardText lineHeight={scale * modifierTextSize}>
           {modifier.modifier}
           {modifier.count}
         </RollCardText>
@@ -358,18 +393,18 @@ function computeModifierViewWidth(
   scale: number,
   depth: number
 ): number {
-  scale *= depth > 0 ? nestedModifierScale : 1;
-  return (
-    (extractSingleDicePair(modifier) && !depth
-      ? formulaDieSize
+  const childScale = scale * (depth ? nestedModifierScale : 1);
+  const childWidth =
+    extractSingleDicePair(modifier) && !depth
+      ? dieSize
       : modifier.groups.reduce(
           (sum, group, i) =>
             sum +
-            computeFormulaInnerViewWidth(group, scale, depth + 1) +
+            computeFormulaInnerViewWidth(group, childScale, depth + 1) +
             (i ? separatorWidth : 0),
           0
-        )) * scale
-  );
+        );
+  return scale * childWidth;
 }
 
 const operatorHeight = 0.1;
@@ -377,30 +412,20 @@ const operatorWidth = 0.05;
 
 function OperationView({
   operation,
-  depth,
   ...props
 }: {
   operation: Extract<RollFormulaTree, { kind: "operation" }>;
-  depth: number;
 } & CommonFormulaTreeProps) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <RollFormulaInnerView
-        formulaTree={operation.left}
-        depth={depth}
-        {...props}
-      />
+      <RollFormulaInnerView formulaTree={operation.left} {...props} />
       <RollCardText
-        lineHeight={props.sizeFactor * operatorHeight}
-        style={{ width: props.sizeFactor * operatorWidth }}
+        lineHeight={props.scale * operatorHeight}
+        style={{ width: props.scale * operatorWidth }}
       >
         {operation.operator}
       </RollCardText>
-      <RollFormulaInnerView
-        formulaTree={operation.right}
-        depth={depth}
-        {...props}
-      />
+      <RollFormulaInnerView formulaTree={operation.right} {...props} />
     </View>
   );
 }
@@ -419,11 +444,9 @@ function computeOperationViewWidth(
 
 function RollFormulaInnerView({
   formulaTree,
-  depth,
   ...props
 }: {
   formulaTree: RollFormulaTree;
-  depth: number;
 } & CommonFormulaTreeProps) {
   const { kind } = formulaTree;
   switch (kind) {
@@ -432,9 +455,9 @@ function RollFormulaInnerView({
     case "dice":
       return <DiceView dice={formulaTree} {...props} />;
     case "modifier":
-      return <ModifierView modifier={formulaTree} depth={depth} {...props} />;
+      return <ModifierView modifier={formulaTree} {...props} />;
     case "operation":
-      return <OperationView operation={formulaTree} depth={depth} {...props} />;
+      return <OperationView operation={formulaTree} {...props} />;
     default:
       assertNever(kind, `Unknown element kind: ${kind}`);
   }
@@ -445,7 +468,7 @@ export function RollFormulaView({
   ...props
 }: {
   formulaTree: RollFormulaTree;
-} & CommonFormulaTreeProps) {
+} & Omit<CommonFormulaTreeProps, "depth">) {
   return (
     <RollFormulaInnerView formulaTree={formulaTree} depth={0} {...props} />
   );
@@ -461,7 +484,7 @@ export function computeFormulaInnerViewWidth(
     case "constant":
       return computeConstantViewWidth(formulaTree, scale);
     case "dice":
-      return computeDiceViewWidth(formulaTree, scale);
+      return computeDiceViewWidth(formulaTree, scale, depth);
     case "modifier":
       return computeModifierViewWidth(formulaTree, scale, depth);
     case "operation":
@@ -477,4 +500,8 @@ export function computeFormulaViewWidth(formulaTree: RollFormulaTree): number {
 
 export function getFormulaViewMaxHeight(): number {
   return modifierHeight;
+}
+
+export function getFormulaDieSize(): number {
+  return dieSize;
 }

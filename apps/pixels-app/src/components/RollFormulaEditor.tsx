@@ -25,14 +25,13 @@ export function RollFormulaEditor({
   formula,
   formulaTree,
   onRollFormulaChange,
+  onKeyboardOffset,
 }: {
   formula: string;
-  formulaTree?: RollFormulaTree;
-  onRollFormulaChange: (formula: string) => void;
+  formulaTree?: Readonly<RollFormulaTree>;
+  onRollFormulaChange?: (formula: string) => void;
+  onKeyboardOffset?: (offset: number) => void;
 }) {
-  console.log("formula: " + formula);
-  console.log("formulaTree: " + JSON.stringify(formulaTree));
-
   const simpleFormulaOpt = React.useMemo(
     () => formulaTree && getSimplifiedRollFormula(formulaTree),
     [formulaTree]
@@ -43,35 +42,27 @@ export function RollFormulaEditor({
     constant: 0,
   };
 
-  console.log("simpleFormula: " + JSON.stringify(simpleFormula));
-
   const { dieType, dieCount, constant, modifier, bonus } = simpleFormula;
+  const update = (f: Readonly<SimplifiedRollFormula>) =>
+    onRollFormulaChange?.(simplifiedFormulaToString(f));
   const setDieType = (dieType: RollDieType) =>
-    onRollFormulaChange(
-      simplifiedFormulaToString({ ...simpleFormula, dieType })
-    );
+    update({ ...simpleFormula, dieType });
   const setDieCount = (dieCount: number) =>
-    onRollFormulaChange(
-      simplifiedFormulaToString({
-        ...simpleFormula,
-        dieCount,
-        modifier: undefined,
-      })
-    );
+    update({
+      ...simpleFormula,
+      dieCount,
+      modifier: undefined,
+    });
   const setConstant = (constant: number) =>
-    onRollFormulaChange(
-      simplifiedFormulaToString({ ...simpleFormula, constant })
-    );
+    update({ ...simpleFormula, constant });
   const setModifier = (modifier: SimplifiedRollFormula["modifier"]) =>
-    onRollFormulaChange(
-      simplifiedFormulaToString({
-        ...simpleFormula,
-        dieCount: modifier ? 2 : 1,
-        modifier,
-      })
-    );
+    update({
+      ...simpleFormula,
+      dieCount: modifier ? 2 : 1,
+      modifier,
+    });
   const setBonus = (bonus: SimplifiedRollFormula["bonus"]) =>
-    onRollFormulaChange(simplifiedFormulaToString({ ...simpleFormula, bonus }));
+    update({ ...simpleFormula, bonus });
 
   const [editMode, setEditMode] = React.useState(
     formulaEditModes[simpleFormulaOpt ? 0 : 1]
@@ -85,7 +76,6 @@ export function RollFormulaEditor({
         keys={formulaEditModes}
         selected={editMode}
         onSelect={setEditMode}
-        style={{ marginBottom: 10 }}
       />
       {editMode === "Simplified" ? (
         <>
@@ -205,9 +195,26 @@ export function RollFormulaEditor({
           </ScrollView>
         </>
       ) : (
-        <View style={{ marginHorizontal: 10 }}>
-          <Text variant="titleMedium">Die Type</Text>
+        <View style={{ marginHorizontal: 10, gap: 5 }}>
+          <Text variant="titleMedium">Roll Formula</Text>
           <TextInput value={formula} onChangeText={onRollFormulaChange} />
+          <View
+            onLayout={({ nativeEvent: { layout } }) => {
+              // Crude way to estimate by how much to shift the view when showing the keyboard
+              onKeyboardOffset?.(layout.height);
+            }}
+          >
+            <Text variant="titleMedium" style={{ marginTop: 20 }}>
+              Cheat Sheet
+            </Text>
+            <View style={{ padding: 10, gap: 5 }}>
+              <Text>kh: Keep highest</Text>
+              <Text>kl: Keep lowest</Text>
+              <Text>dh: Drop highest</Text>
+              <Text>dl: Drop lowest</Text>
+              <Text>{"{}"}: Modifier group</Text>
+            </View>
+          </View>
         </View>
       )}
     </View>

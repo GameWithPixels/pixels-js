@@ -4,28 +4,30 @@ import { ScrollView } from "react-native";
 import { Divider, useTheme } from "react-native-paper";
 import {
   Easing,
+  LayoutAnimationConfig,
   LinearTransition,
   SlideInRight,
 } from "react-native-reanimated";
 
 import { AnimatedRolledDie } from "./AnimatedRolledDie";
-import {
-  RollCardCommonProps,
-  RollTouchableCard,
-  useNewArrayItems,
-} from "./RollTouchableCard";
+import { RollCardCommonProps, RollsTouchableCard } from "./RollsTouchableCard";
 
 import { RollFormulaEditor } from "~/components/RollFormulaEditor";
-import { parseRollFormula } from "~/features/rollFormula";
+import { RollFormulaTree } from "~/features/rollFormula";
 import { RollerEntryWithFormula } from "~/features/store";
+import { useIsMounted } from "~/hooks";
 
 export function FormulaTouchableCard({
   formulaEntry,
+  formulaTree,
   onRollFormulaChange,
+  onKeyboardOffset,
   ...props
 }: {
   formulaEntry: Readonly<RollerEntryWithFormula>;
+  formulaTree?: Readonly<RollFormulaTree>;
   onRollFormulaChange?: (formula: string) => void;
+  onKeyboardOffset?: (offset: number) => void;
 } & RollCardCommonProps) {
   const {
     formula,
@@ -35,15 +37,6 @@ export function FormulaTouchableCard({
     unusedRolls: unusedIndices,
   } = formulaEntry;
 
-  const formulaTree = React.useMemo(() => {
-    try {
-      return parseRollFormula(formula);
-    } catch (e) {
-      console.log("Error parsing formula:" + e);
-    }
-  }, [formula]);
-
-  const newRolls = useNewArrayItems(allRolls);
   const { rolls, droppedRolls, unusedRolls } = React.useMemo(() => {
     const droppedRolls =
       droppedIndices && allRolls.filter((_, i) => droppedIndices.includes(i));
@@ -56,14 +49,15 @@ export function FormulaTouchableCard({
       : { rolls: [...allRolls], droppedRolls };
   }, [allRolls, droppedIndices, unusedIndices]);
 
+  const isMounted = useIsMounted();
   const { colors } = useTheme();
   return (
-    <RollTouchableCard
+    <RollsTouchableCard
       title={formula}
-      formulaTree={formulaTree}
+      formulaTree={formulaTree ?? "invalid"}
       rolls={rolls}
       droppedRolls={droppedRolls}
-      value={value}
+      result={value}
       {...props}
     >
       {onRollFormulaChange && (
@@ -84,24 +78,22 @@ export function FormulaTouchableCard({
                 size={30}
                 color={colors.onSurfaceDisabled}
               />
-              {unusedRolls.map((roll, i) => (
-                <AnimatedRolledDie
-                  key={`${roll.pixelId}-${roll.timestamp}`}
-                  dieType={roll.dieType}
-                  value={roll.value}
-                  entering={
-                    !newRolls.includes(roll)
-                      ? undefined
-                      : SlideInRight.springify()
-                          .mass(1)
-                          .damping(20)
-                          .stiffness(200)
-                  }
-                  layout={LinearTransition.easing(Easing.ease)}
-                  size={30}
-                  style={{ zIndex: i ? undefined : 1 }} // First on top so it's visible when sliding in
-                />
-              ))}
+              <LayoutAnimationConfig skipEntering={!isMounted}>
+                {unusedRolls.map((roll, i) => (
+                  <AnimatedRolledDie
+                    key={`${roll.pixelId}-${roll.timestamp}`}
+                    dieType={roll.dieType}
+                    value={roll.value}
+                    entering={SlideInRight.springify()
+                      .mass(1)
+                      .damping(20)
+                      .stiffness(200)}
+                    layout={LinearTransition.easing(Easing.ease)}
+                    size={30}
+                    style={{ zIndex: i ? undefined : 1 }} // First on top so it's visible when sliding in
+                  />
+                ))}
+              </LayoutAnimationConfig>
             </ScrollView>
           )}
           <Divider
@@ -111,9 +103,10 @@ export function FormulaTouchableCard({
             formula={formula}
             formulaTree={formulaTree}
             onRollFormulaChange={onRollFormulaChange}
+            onKeyboardOffset={onKeyboardOffset}
           />
         </>
       )}
-    </RollTouchableCard>
+    </RollsTouchableCard>
   );
 }
