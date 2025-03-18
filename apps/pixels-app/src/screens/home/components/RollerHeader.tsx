@@ -14,11 +14,13 @@ import {
 } from "react-native-paper";
 
 import { useAppSelector, useAppStore } from "~/app/hooks";
+import { DiceRollerScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
 import {
   HeaderMenuButton,
   HeaderMenuButtonProps,
 } from "~/components/HeaderMenuButton";
+import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { DieWireframe } from "~/components/icons";
 import { AvailableDieTypeValues } from "~/features/dice";
@@ -64,7 +66,7 @@ function VirtualDiceLine({
   );
 }
 
-export function OptionsMenu({
+function OptionsMenu({
   onLiveChangeSizeRatio,
   ...props
 }: {
@@ -211,17 +213,37 @@ export function OptionsMenu({
           )}
           addRoll={(dieType, value) => {
             dieType !== "unknown" &&
-              store.dispatch(
-                addRollToRoller({
-                  pixelId: 0,
-                  dieType,
-                  value,
-                })
-              );
+              store.dispatch(addRollToRoller({ pixelId: 0, dieType, value }));
             delayedDismiss();
           }}
         />
       ))}
     </HeaderMenuButton>
+  );
+}
+
+export function RollerHeader({
+  navigation,
+  onLiveChangeSizeRatio,
+}: {
+  navigation: DiceRollerScreenProps["navigation"];
+  onLiveChangeSizeRatio: (r: number) => void;
+}) {
+  const [menuVisible, setMenuVisible] = React.useState(false);
+  return (
+    <PageHeader
+      onGoBack={() => navigation.goBack()}
+      rightElement={() => (
+        <OptionsMenu
+          visible={menuVisible}
+          onLiveChangeSizeRatio={onLiveChangeSizeRatio}
+          contentStyle={{ width: 220 }}
+          onShowMenu={() => setMenuVisible(true)}
+          onDismiss={() => setMenuVisible(false)}
+        />
+      )}
+    >
+      Roller
+    </PageHeader>
   );
 }
