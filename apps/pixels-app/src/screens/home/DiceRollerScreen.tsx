@@ -43,6 +43,8 @@ import {
 } from "~/features/store";
 import { useIsMounted } from "~/hooks";
 
+const MemoizedRollerEntryCard = React.memo(RollerEntryCard);
+
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 function ExplanatoryCard() {
@@ -334,7 +336,7 @@ function RollerPage({
                       : "center-left"
                     : alignment;
                 return (
-                  <RollerEntryCard
+                  <MemoizedRollerEntryCard
                     key={id}
                     ref={ref}
                     rollerEntry={rollEntries[id]}
