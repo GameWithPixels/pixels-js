@@ -205,6 +205,8 @@ export type SettingsStackParamList = {
   checkForUpdate: undefined;
   appSettings: undefined;
   themes: undefined;
+  presets: undefined;
+  editPreset: { presetUuid: string };
 };
 
 export type SettingsMenuScreenProps = CompositeScreenProps<
@@ -245,6 +247,16 @@ export type AppSettingsScreenProps = NativeStackScreenProps<
 export type ThemesScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "themes"
+>;
+
+export type PresetsScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "presets"
+>;
+
+export type EditPresetScreenProps = NativeStackScreenProps<
+  SettingsStackParamList,
+  "editPreset"
 >;
 
 export function getStackNavigationOptions(

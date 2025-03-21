@@ -21,20 +21,18 @@ const gradientsSlice = createSlice({
   name: "gradients",
   initialState: gradientsAdapter.getInitialState,
   reducers: {
-    reset(_, action: PayloadAction<LibraryData>) {
+    reset(_, { payload: { gradients } }: PayloadAction<LibraryData>) {
       const state = gradientsAdapter.getInitialState();
-      logWrite("reset", "gradient", "count=" + action.payload.gradients.length);
-      return gradientsAdapter.addMany(state, action.payload.gradients);
+      logWrite("reset", "gradient", "count=" + gradients.length);
+      return gradientsAdapter.addMany(state, gradients);
     },
 
-    add(state, action: PayloadAction<GradientData>) {
-      const gradient = action.payload;
+    add(state, { payload: gradient }: PayloadAction<GradientData>) {
       gradientsAdapter.addOne(state, gradient);
       logWrite("add", "gradient", gradient.uuid);
     },
 
-    update(state, action: PayloadAction<GradientData>) {
-      const gradient = action.payload;
+    update(state, { payload: gradient }: PayloadAction<GradientData>) {
       gradientsAdapter.setOne(state, gradient);
       logWrite("update", "gradient", gradient.uuid);
       // const index = state.patterns.findIndex((p) => p.uuid === gradient.uuid);
@@ -46,8 +44,7 @@ const gradientsSlice = createSlice({
       // }
     },
 
-    remove(state, action: PayloadAction<string>) {
-      const uuid = action.payload;
+    remove(state, { payload: uuid }: PayloadAction<string>) {
       gradientsAdapter.removeOne(state, uuid);
       logWrite("remove", "gradient", uuid);
       // const index = state.patterns.findIndex((p) => p.uuid === uuid);

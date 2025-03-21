@@ -21,20 +21,18 @@ const patternsSlice = createSlice({
   name: "patterns",
   initialState: patternsAdapter.getInitialState,
   reducers: {
-    reset(_, action: PayloadAction<LibraryData>) {
+    reset(_, { payload: { patterns } }: PayloadAction<LibraryData>) {
       const state = patternsAdapter.getInitialState();
-      logWrite("reset", "pattern", "count=" + action.payload.patterns.length);
-      return patternsAdapter.addMany(state, action.payload.patterns);
+      logWrite("reset", "pattern", "count=" + patterns.length);
+      return patternsAdapter.addMany(state, patterns);
     },
 
-    add(state, action: PayloadAction<PatternData>) {
-      const pattern = action.payload;
+    add(state, { payload: pattern }: PayloadAction<PatternData>) {
       patternsAdapter.addOne(state, pattern);
       logWrite("add", "pattern", pattern.uuid, pattern.name);
     },
 
-    update(state, action: PayloadAction<PatternData>) {
-      const pattern = action.payload;
+    update(state, { payload: pattern }: PayloadAction<PatternData>) {
       patternsAdapter.setOne(state, pattern);
       logWrite("update", "pattern", pattern.uuid, pattern.name);
       // const index = state.patterns.findIndex((p) => p.uuid === pattern.uuid);
@@ -46,8 +44,7 @@ const patternsSlice = createSlice({
       // }
     },
 
-    remove(state, action: PayloadAction<string>) {
-      const uuid = action.payload;
+    remove(state, { payload: uuid }: PayloadAction<string>) {
       patternsAdapter.removeOne(state, uuid);
       logWrite("remove", "pattern", uuid);
       // const index = state.patterns.findIndex((p) => p.uuid === uuid);

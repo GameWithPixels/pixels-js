@@ -19,15 +19,14 @@ const profilesSlice = createSlice({
   name: "profiles",
   initialState: profilesAdapter.getInitialState,
   reducers: {
-    reset(_, action: PayloadAction<LibraryData>) {
+    reset(_, { payload: { profiles } }: PayloadAction<LibraryData>) {
       const state = profilesAdapter.getInitialState();
-      logWrite("reset", "profile", "count=" + action.payload.profiles.length);
-      return profilesAdapter.addMany(state, action.payload.profiles);
+      logWrite("reset", "profile", "count=" + profiles.length);
+      return profilesAdapter.addMany(state, profiles);
     },
 
     // Add only if new profile
-    add(state, action: PayloadAction<AppProfileData>) {
-      const profile = action.payload;
+    add(state, { payload: profile }: PayloadAction<AppProfileData>) {
       assert(profile.uuid?.length, "Profile must have a uuid");
       profilesAdapter.addOne(state, profile);
       logWrite(
@@ -39,8 +38,7 @@ const profilesSlice = createSlice({
     },
 
     // Add or update profile
-    update(state, action: PayloadAction<AppProfileData>) {
-      const profile = action.payload;
+    update(state, { payload: profile }: PayloadAction<AppProfileData>) {
       assert(profile.uuid?.length, "Profile must have a uuid");
       profilesAdapter.setOne(state, profile);
       logWrite(
@@ -52,8 +50,7 @@ const profilesSlice = createSlice({
     },
 
     // Remove existing profile
-    remove(state, action: PayloadAction<string>) {
-      const uuid = action.payload;
+    remove(state, { payload: uuid }: PayloadAction<string>) {
       profilesAdapter.removeOne(state, uuid);
       logWrite("remove", "profile", uuid);
     },

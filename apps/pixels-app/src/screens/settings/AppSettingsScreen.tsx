@@ -29,6 +29,8 @@ import {
   setPlayAudioInSilentModeIOS,
   setShowAdvancedSettings,
 } from "~/features/store";
+import { AudioClips, Images } from "~/features/store/libraryAssets";
+import { resetPresets } from "~/features/store/profilesPresetsSlice";
 import { useConfirmActionSheet } from "~/hooks";
 
 function AppSettingsPage({
@@ -59,6 +61,11 @@ function AppSettingsPage({
       appDispatch(resetDiceRoller());
       appDispatch(resetAppTransientState());
       Library.dispatchReset(appDispatch, { keepProfiles });
+      if (!keepProfiles) {
+        appDispatch(AudioClips.reset());
+        appDispatch(Images.reset());
+        appDispatch(resetPresets());
+      }
       navigation.navigate("onboarding");
     }
   );

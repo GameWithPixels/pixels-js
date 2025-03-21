@@ -1,3 +1,4 @@
+import { AudioClips, Images } from "../libraryAssets";
 import { createDefault } from "./createDefault";
 import * as Library from "./library";
 

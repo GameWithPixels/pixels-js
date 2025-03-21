@@ -19,6 +19,7 @@ const pages = [
   "Check for App Patch",
   "Themes",
   "Settings",
+  "Presets",
   "App & System Information",
   "Dice Firmware Information",
   "How To Turn On Your Dice",
@@ -96,6 +97,9 @@ function SettingsMenuPage({
       case "Settings":
         navigation.navigate("appSettings");
         break;
+      case "Presets":
+        navigation.navigate("presets");
+        break;
     }
   };
   return (
@@ -115,21 +119,21 @@ function SettingsMenuPage({
       <MenuSection
         title="App Configuration"
         start={0}
-        end={3}
-        supPagesCount={3}
+        end={4}
+        supPagesCount={4}
         openPage={openPage}
       />
       <MenuSection
         title="Information"
-        start={3}
-        end={5}
+        start={4}
+        end={6}
         supPagesCount={2}
         openPage={openPage}
       />
       <MenuSection
         title="Help"
-        start={5}
-        end={8}
+        start={6}
+        end={9}
         supPagesCount={2}
         openPage={openPage}
       />

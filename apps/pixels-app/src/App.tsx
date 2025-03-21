@@ -40,6 +40,7 @@ import {
   BottomTabParamList,
   HomeStackParamList,
   ProfilesStackParamList,
+  SettingsStackParamList,
 } from "./app/navigation";
 import { persistor, store } from "./app/store";
 import { AppDarkTheme, AppThemes } from "./app/themes";
@@ -193,7 +194,14 @@ function AppPage() {
         <Tab.Screen
           name="settings"
           component={SettingsStack}
-          options={{ title: "More", tabBarIcon: MoreIcon }}
+          options={({ route }) => ({
+            title: "More",
+            tabBarIcon: MoreIcon,
+            tabBarStyle: getTabBarStyle<SettingsStackParamList>(
+              route,
+              "settingsMenu"
+            ),
+          })}
         />
         <Tab.Screen
           name="onboarding"

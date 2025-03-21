@@ -1,3 +1,5 @@
+import { assertNever } from "@systemic-games/pixels-core-utils";
+import { ActionWebRequestFormat } from "@systemic-games/pixels-edit-animation";
 import {
   PixelDieType,
   Profiles,
@@ -6,21 +8,17 @@ import * as Speech from "expo-speech";
 import { AppState } from "react-native";
 import Toast, { ToastOptions } from "react-native-root-toast";
 
-import type {
-  DiscordWebhookEmbed,
-  EmbedsDiscordWebhookPayload,
-} from "./discordWebhook";
-import {
-  ActionMakeWebRequestPayload,
-  getWebRequestURL,
-} from "./getWebRequestURL";
+import { ThreeDDiceConnectorParams } from "./ThreeDDiceConnector";
+import { WebRequestParams } from "./buildWebRequestParams";
+import { buildWebRequestURL } from "./buildWebRequestURL";
+import type { EmbedsDiscordWebhookPayload } from "./discordWebhook";
 
 import { RootState } from "~/app/store";
 import { ToastSettings } from "~/app/themes";
 import { getAssetPathname, playAudioClipAsync } from "~/features/audio";
 import { logError } from "~/features/utils";
 
-const baseDiceIconUrl =
+const defaultDiceIconsBaseUrl =
   "https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes";
 
 function showToast(
@@ -36,18 +34,26 @@ function showLongToast(message: string): void {
   showToast(message, { ...ToastSettings, duration: Toast.durations.LONG });
 }
 
-export function getDiscordWebhookPayload(
-  dieType: PixelDieType,
-  payload: ActionMakeWebRequestPayload
+function buildDiscordWebhookPayload(
+  {
+    pixelName,
+    profileName,
+    actionValue,
+    faceValue,
+    dieType,
+  }: Pick<
+    WebRequestParams,
+    "pixelName" | "profileName" | "actionValue" | "faceValue" | "dieType"
+  >,
+  diceIconsBaseUrl?: string
 ): EmbedsDiscordWebhookPayload {
-  const { pixelName, profileName, actionValue, faceValue } = payload;
   return {
     embeds: [
       {
         title: `${pixelName} rolled a ${faceValue}`,
         type: "rich",
         thumbnail: {
-          url: `${baseDiceIconUrl}/${dieType}.png`,
+          url: `${diceIconsBaseUrl ?? defaultDiceIconsBaseUrl}/${dieType}.png`,
         },
         description: actionValue,
         footer: { text: `profile: ${profileName}` },
@@ -57,39 +63,75 @@ export function getDiscordWebhookPayload(
   };
 }
 
-export function getSimplifyDiscordWebhookPayload(
-  dieType: PixelDieType,
-  payload: ActionMakeWebRequestPayload
-): DiscordWebhookEmbed {
-  const obj = getDiscordWebhookPayload(dieType, payload).embeds[0];
-  if (obj.thumbnail?.url) {
-    obj.thumbnail.url = obj.thumbnail.url.replace(
-      baseDiceIconUrl,
-      "https://[...]"
-    );
+function buildThreeDDiceConnectorParams(
+  { dieType, faceValue }: Pick<WebRequestParams, "dieType" | "faceValue">,
+  options: Exclude<WebRequestOptions["dddice"], undefined>
+): ThreeDDiceConnectorParams & {
+  dieType: PixelDieType;
+  faceValue: number;
+} {
+  return {
+    dieType,
+    faceValue,
+    ...options,
+  };
+}
+
+export type WebRequestOptions = Readonly<{
+  // Discord
+  diceIconsBaseUrl?: string; // May be used by other web request formats later on
+  // Twitch
+
+  // dddice
+  dddice?: {
+    apiKey: string;
+    roomSlug: string;
+    roomPasscode?: string;
+    userUuid?: string;
+  };
+}>;
+
+export function buildWebRequestPayload(
+  format: ActionWebRequestFormat,
+  params: WebRequestParams,
+  options?: WebRequestOptions
+): object | undefined {
+  switch (format) {
+    case "parameters":
+      return undefined;
+    case "json":
+      return params;
+    case "discord":
+      return buildDiscordWebhookPayload(params, options?.diceIconsBaseUrl);
+    case "twitch":
+    case "dddice":
+      return buildThreeDDiceConnectorParams(
+        params,
+        options?.dddice ?? {
+          apiKey: "<missing>",
+          roomSlug: "<missing>",
+        }
+      );
+    default:
+      assertNever(format, `Unknown web request format: ${format}`);
   }
-  return obj;
 }
 
 export function playActionMakeWebRequest(
   action: Profiles.ActionMakeWebRequest,
-  dieType: PixelDieType,
-  payload: ActionMakeWebRequestPayload
+  params: WebRequestParams,
+  options?: WebRequestOptions
 ): void {
-  const body =
-    action.format === "json"
-      ? JSON.stringify(payload)
-      : action.format === "discord"
-        ? JSON.stringify(getDiscordWebhookPayload(dieType, payload))
-        : undefined;
-  const url = body ? action.url.trim() : getWebRequestURL(action.url, payload);
+  const bodyObj = buildWebRequestPayload(action.format, params, options);
+  const body = bodyObj ? JSON.stringify(bodyObj) : undefined;
+  const url = body ? action.url.trim() : buildWebRequestURL(action.url, params);
   console.log(
-    `Playing Web Request: ${url} with payload ${JSON.stringify(payload)}`
+    `Playing Web Request: ${url} with payload ${JSON.stringify(params)}`
   );
   const toastMsg = `\n\nURL: ${url}${
     action.format === "json" ? `\nbody: ${body}` : ""
   }\n\n`;
-  const forPixelMsg = payload.pixelName ? ` for "${payload.pixelName}"` : "";
+  const forPixelMsg = params.pixelName ? ` for "${params.pixelName}"` : "";
   fetch(url, {
     method: "POST",
     ...(body

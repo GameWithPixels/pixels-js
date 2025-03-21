@@ -9,5 +9,5 @@ export function logWrite(
   uuid: string,
   message?: unknown
 ) {
-  logWriteUntyped(`${action} ${type}: ${uuid} ${message ?? ""}`);
+  logWriteUntyped(`${type}/${action}: ${uuid} ${message ?? ""}`);
 }
