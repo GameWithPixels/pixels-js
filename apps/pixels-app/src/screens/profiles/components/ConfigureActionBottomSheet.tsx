@@ -52,12 +52,12 @@ import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   getColorOverrideLabel,
   getDieTypeLabel,
-  getSimplifyDiscordWebhookPayload,
-  getWebRequestPayload,
-  getWebRequestURL,
+  buildWebRequestParams,
+  buildWebRequestURL,
   playActionAudioClip,
   playActionMakeWebRequest,
   playActionSpeakText,
+  buildWebRequestPayload,
 } from "~/features/profiles";
 import { AnimationUtils } from "~/features/store/library";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
@@ -741,7 +741,14 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
   );
 });
 
-const NamedFormatsValues = ["Parameters", "JSON", "Discord"] as const;
+const NamedFormatsValues = [
+  "Parameters",
+  "JSON",
+  "Discord",
+  "Twitch",
+  "dddice",
+] as const;
+
 type NamedFormat = (typeof NamedFormatsValues)[number];
 
 function toNamedFormat(format: Profiles.ActionWebRequestFormat): NamedFormat {
@@ -752,6 +759,10 @@ function toNamedFormat(format: Profiles.ActionWebRequestFormat): NamedFormat {
       return "JSON";
     case "discord":
       return "Discord";
+    case "twitch":
+      return "Twitch";
+    case "dddice":
+      return "dddice";
     default:
       assertNever(format, `Unsupported WebRequest format: ${format}`);
   }
@@ -765,6 +776,10 @@ function fromNamedFormat(format: NamedFormat): Profiles.ActionWebRequestFormat {
       return "json";
     case "Discord":
       return "discord";
+    case "Twitch":
+      return "twitch";
+    case "dddice":
+      return "dddice";
     default:
       assertNever(format, `Unsupported WebRequest named format: ${format}`);
   }
@@ -799,8 +814,8 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
 
   const fwTimestamp =
     typeof dfuFilesStatus === "object" ? dfuFilesStatus.timestamp : 0;
-  const payload = getWebRequestPayload(
-    // Fake PixelInfo for the payload
+  const params = buildWebRequestParams(
+    // Fake PixelInfo for the web request params
     {
       name: "Pixels " + getDieTypeLabel(dieType),
       currentFace,
@@ -818,6 +833,16 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
     profileName,
     action.value
   );
+  const options = {
+    diceIconsBaseUrl: "https://[...]",
+    dddice: {
+      apiKey: "Some API key",
+      roomSlug: "Some Room Slug",
+      roomPasscode: "Some Passcode",
+      userUuid: "Some User UUID",
+    },
+  } as const;
+
   const isParams = !action.format || action.format === "parameters"; // Format is undefined in actions from v2.1
   const { colors } = useTheme();
   return (
@@ -843,12 +868,10 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
       <Text style={{ color: colors.onSurfaceDisabled, marginTop: 5 }}>
         The request {isParams ? "parameters" : "payload"} will look like this:
         {isParams
-          ? "\n" + getWebRequestURL("", payload)
+          ? "\n" + buildWebRequestURL("", params)
           : " " +
             JSON.stringify(
-              action.format === "json"
-                ? payload
-                : getSimplifyDiscordWebhookPayload(dieType, payload),
+              buildWebRequestPayload(action.format, params, options),
               null,
               4
             )}
@@ -863,7 +886,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
         </Text>
       )}
       <OutlineButton
-        onPress={() => playActionMakeWebRequest(action, dieType, payload)}
+        onPress={() => playActionMakeWebRequest(action, params)}
         style={{ marginTop: 5 }}
       >
         Test Web Request

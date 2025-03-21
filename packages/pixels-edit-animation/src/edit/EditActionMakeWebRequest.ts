@@ -11,7 +11,12 @@ import EditActionRunOnDevice from "./EditActionRunOnDevice";
 import EditDataSet from "./EditDataSet";
 import { name, observable, widget } from "./decorators";
 
-export type ActionWebRequestFormat = "parameters" | "json" | "discord";
+export type MakeWebRequestFormat =
+  | "parameters"
+  | "json"
+  | "discord"
+  | "twitch"
+  | "dddice";
 
 export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
   readonly type = "makeWebRequest";
@@ -28,12 +33,12 @@ export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
 
   @name("Format")
   @observable
-  format: ActionWebRequestFormat;
+  format: MakeWebRequestFormat;
 
   constructor(opt?: {
     url?: string;
     value?: string;
-    format: ActionWebRequestFormat;
+    format: MakeWebRequestFormat;
   }) {
     super();
     this.url = opt?.url ?? "";

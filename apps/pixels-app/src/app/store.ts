@@ -50,6 +50,7 @@ import profilesReducer, {
 import audioClipsReducer from "~/features/store/libraryAssets/audioClipsSlice";
 import imagesReducer from "~/features/store/libraryAssets/imagesSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
+import profilesPresetsReducer from "~/features/store/profilesPresetsSlice";
 
 const MyStorage = !__DEV__
   ? AsyncStorage
@@ -132,6 +133,8 @@ const rootReducer = combineReducers({
     audioClips: persistAnim("libraryAssets/audioClips", audioClipsReducer),
     images: persistAnim("libraryAssets/images", imagesReducer),
   }),
+  // Library presets
+  profilePresets: persist("profilePresets", profilesPresetsReducer),
   // Dice roller
   diceRoller: persist("diceRoller", diceRollerReducer),
   // Transient data

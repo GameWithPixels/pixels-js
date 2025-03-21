@@ -1,7 +1,7 @@
 import { PixelInfo } from "@systemic-games/react-native-pixels-connect";
 import * as Application from "expo-application";
 
-export type ActionMakeWebRequestPayload = Readonly<{
+export type WebRequestParams = Readonly<{
   timestamp: string;
   appVersion: string;
   appBuild: string;
@@ -24,11 +24,11 @@ export type ActionMakeWebRequestPayload = Readonly<{
     | "rollState"
   >;
 
-export function getWebRequestPayload(
+export function buildWebRequestParams(
   pixel: Omit<PixelInfo, "systemId">,
   profileName: string,
   actionValue: string
-): ActionMakeWebRequestPayload {
+): WebRequestParams {
   return {
     timestamp: new Date().toISOString(),
     appVersion: Application.nativeApplicationVersion ?? "0",
@@ -48,30 +48,4 @@ export function getWebRequestPayload(
     isCharging: pixel.isCharging,
     rollState: pixel.rollState,
   };
-}
-
-export function getWebRequestURL(
-  url: string,
-  payload: ActionMakeWebRequestPayload
-): string {
-  function build(
-    url: string,
-    value1: string,
-    value2: string,
-    value3: string,
-    value4: string
-  ) {
-    url = url.trim();
-    const params = `value1=${encodeURIComponent(value1)}&value2=${encodeURIComponent(value2)}&value3=${encodeURIComponent(value3)}&value4=${encodeURIComponent(value4)}`;
-    return `${url}${
-      !url.includes("?") ? "?" : !url.endsWith("&") ? "&" : ""
-    }${params}`;
-  }
-  return build(
-    url,
-    payload.pixelName,
-    payload.actionValue,
-    payload.faceValue.toString(),
-    payload.profileName
-  );
 }

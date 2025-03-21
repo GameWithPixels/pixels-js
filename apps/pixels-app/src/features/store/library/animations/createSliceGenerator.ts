@@ -24,9 +24,9 @@ export function createSliceGenerator<T extends AnimationData>(
     name,
     initialState: animationsAdapter.getInitialState as () => AnimationsState<T>,
     reducers: {
-      reset(_, action: PayloadAction<LibraryData>) {
+      reset(_, { payload }: PayloadAction<LibraryData>) {
         const state = animationsAdapter.getInitialState();
-        const animations = action.payload.animations[name];
+        const animations = payload.animations[name];
         logWrite(
           "reset",
           "animation",
@@ -39,15 +39,14 @@ export function createSliceGenerator<T extends AnimationData>(
       },
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      add(state, action: PayloadAction<T>) {
-        const data = action.payload;
+      add(state, { payload: data }: PayloadAction<T>) {
         animationsAdapter.addOne(state, data);
         logWrite("add", "animation", data.uuid, `type=${name}`);
       },
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      update(state, action: PayloadAction<T>) {
-        // const { type, data } = action.payload;
+      update(state, { payload }: PayloadAction<T>) {
+        // const { type, data } = payload;
         // const anims = state.animations[type];
         // assert(anims);
         // // Find the animation in our data
@@ -70,8 +69,8 @@ export function createSliceGenerator<T extends AnimationData>(
       },
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      remove(state, action: PayloadAction<string>) {
-        // const uuid = action.payload;
+      remove(state, { payload: uuid }: PayloadAction<string>) {
+        // const uuid = payload;
         // Find the animation in our data
         // const animEntry = findAnimation(uuid, state.animations);
         // if (animEntry) {

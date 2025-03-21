@@ -1,4 +1,6 @@
 export * from "./applyOverrides";
+export * from "./buildWebRequestParams";
+export * from "./buildWebRequestURL";
 export * from "./createProfileDataSetWithOverrides";
 export * from "./createProfileTemplates";
 export * from "./descriptions";
@@ -6,7 +8,6 @@ export * from "./EditorActionTypes";
 export * from "./EditorAnimationFlags";
 export * from "./EditorRollRulesTypes";
 export * from "./generateProfileUuid";
-export * from "./getWebRequestURL";
 export * from "./logProfileRules";
 export * from "./playRemoteAction";
 export * from "./ProfileDieTypes";
