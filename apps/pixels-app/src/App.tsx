@@ -37,6 +37,7 @@ import { AppInit } from "./app/AppInit";
 import { AppPixelsCentral } from "./app/AppPixelsCentral";
 import { useAppSelector } from "./app/hooks";
 import {
+  AppActionsStackParamList,
   BottomTabParamList,
   HomeStackParamList,
   ProfilesStackParamList,
@@ -48,11 +49,13 @@ import { DebugPerfMetrics } from "./components/DebugPerfMetrics";
 import { ErrorFallback } from "./components/ErrorFallback";
 import { TabBar } from "./components/TabBar";
 import { UpdateProfileProvider } from "./components/UpdateProfileProvider";
+import { AppActionsStack } from "./screens/appActions";
 import { HomeStack } from "./screens/home";
 import { OnboardingScreen } from "./screens/onboarding";
 import { ProfilesStack } from "./screens/profiles";
 import { SettingsStack } from "./screens/settings";
 
+import AnimationsIcon from "#/icons/navigation/animations";
 import DiceBagIcon from "#/icons/navigation/dice-bag";
 import MoreIcon from "#/icons/navigation/more";
 import ProfilesIcon from "#/icons/navigation/profiles";
@@ -191,6 +194,18 @@ function AppPage() {
             ),
           })}
         /> */}
+        <Tab.Screen
+          name="appActions"
+          component={AppActionsStack}
+          options={({ route }) => ({
+            title: "App Actions",
+            tabBarIcon: AnimationsIcon,
+            tabBarStyle: getTabBarStyle<AppActionsStackParamList>(
+              route,
+              "appActionsList"
+            ),
+          })}
+        />
         <Tab.Screen
           name="settings"
           component={SettingsStack}

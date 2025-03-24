@@ -1,3 +1,8 @@
+import {
+  FontAwesome5,
+  FontAwesome6,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
@@ -26,18 +31,21 @@ import BatteryQuarterIcon from "#/icons/dice/battery-quarter";
 import BatteryQuarterChargingIcon from "#/icons/dice/battery-quarter-charging";
 import BatteryThreeQuartersIcon from "#/icons/dice/battery-three-quarters";
 import BatteryThreeQuartersChargingIcon from "#/icons/dice/battery-three-quarters-charging";
+import SpeakIcon from "#/icons/profiles/speak";
+import { AppActionKind } from "~/features/store";
 
 export interface IconProps {
   size: number;
   disabled?: boolean;
   color?: ColorValue;
+  style?: ViewProps["style"];
 }
 
 export function RssiIcon({
   value,
-  size,
   disabled,
   color,
+  ...props
 }: IconProps & { value?: number }) {
   const { colors } = useTheme();
   const Icon =
@@ -50,12 +58,12 @@ export function RssiIcon({
           : BarsFullIcon;
   return (
     <Icon
-      size={size}
       color={
         color ??
         (!value || value < -70 ? "red" : getIconColor(colors, disabled))
       }
       shadedColor={colors.onSurfaceDisabled}
+      {...props}
     />
   );
 }
@@ -91,15 +99,14 @@ function getChargingBatteryIcon(value?: number) {
 export function BatteryIcon({
   value,
   charging,
-  size,
   disabled,
   color,
+  ...props
 }: IconProps & { value?: number; charging?: boolean }) {
   const { colors } = useTheme();
   const Icon = charging ? getChargingBatteryIcon(value) : getBatteryIcon(value);
   return (
     <Icon
-      size={size}
       color={
         color ??
         (disabled
@@ -109,6 +116,7 @@ export function BatteryIcon({
             : getIconColor(colors))
       }
       lightningColor="gold"
+      {...props}
     />
   );
 }
@@ -220,4 +228,28 @@ export function AnimatedDieWireframe({
       <DieImage dieType={dieType} disabled={disabled} mode={mode} />
     </Animated.View>
   );
+}
+
+export function AppActionKindIcon({
+  actionKind,
+  ...props
+}: {
+  actionKind: AppActionKind;
+} & IconProps) {
+  switch (actionKind) {
+    case "speak":
+      return <SpeakIcon {...props} />;
+    case "url":
+      return <FontAwesome6 name="link" {...props} />;
+    case "json":
+      return <MaterialCommunityIcons name="code-json" {...props} />;
+    case "discord":
+      return <MaterialCommunityIcons name="discord" {...props} />;
+    case "twitch":
+      return <MaterialCommunityIcons name="twitch" {...props} />;
+    case "dddice":
+      return <FontAwesome5 name="dice-d20" {...props} />;
+    default:
+      return assertNever(actionKind, `Unknown actionKind: ${actionKind}`);
+  }
 }

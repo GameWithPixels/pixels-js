@@ -18,6 +18,7 @@ export type BottomTabParamList = {
   home: undefined;
   profiles: undefined;
   animations: undefined;
+  appActions: undefined;
   settings: undefined;
 };
 
@@ -38,6 +39,11 @@ export type ProfilesStackProps = NativeStackScreenProps<
 export type AnimationsStackProps = NativeStackScreenProps<
   BottomTabParamList,
   "animations"
+>;
+
+export type AppActionsStackProps = NativeStackScreenProps<
+  BottomTabParamList,
+  "appActions"
 >;
 
 export type SettingsStackProps = NativeStackScreenProps<
@@ -153,10 +159,7 @@ export type EditProfileStackProps = NativeStackScreenProps<
 
 // Edit Profile screens
 export type EditProfileStackParamList = {
-  editProfile: {
-    profileUuid: string;
-    noDiscard?: boolean;
-  };
+  editProfile: { profileUuid: string; noDiscard?: boolean };
 } & EditProfileSubStackParamList;
 
 export type EditProfileScreenProps = NativeStackScreenProps<
@@ -195,6 +198,22 @@ export type PickColorDesignScreenProps = NativeStackScreenProps<
   "pickColorDesign"
 >;
 
+// App Actions screens
+export type AppActionsStackParamList = {
+  appActionsList: undefined;
+  editAppAction: { appActionUuid: string };
+};
+
+export type AppActionsListScreenProps = CompositeScreenProps<
+  NativeStackScreenProps<AppActionsStackParamList, "appActionsList">,
+  BottomTabScreenProps<BottomTabParamList, "appActions">
+>;
+
+export type EditAppActionScreenProps = NativeStackScreenProps<
+  AppActionsStackParamList,
+  "editAppAction"
+>;
+
 // Settings screens
 export type SettingsStackParamList = {
   settingsMenu: undefined;
@@ -205,8 +224,6 @@ export type SettingsStackParamList = {
   checkForUpdate: undefined;
   appSettings: undefined;
   themes: undefined;
-  presets: undefined;
-  editPreset: { presetUuid: string };
 };
 
 export type SettingsMenuScreenProps = CompositeScreenProps<
@@ -247,16 +264,6 @@ export type AppSettingsScreenProps = NativeStackScreenProps<
 export type ThemesScreenProps = NativeStackScreenProps<
   SettingsStackParamList,
   "themes"
->;
-
-export type PresetsScreenProps = NativeStackScreenProps<
-  SettingsStackParamList,
-  "presets"
->;
-
-export type EditPresetScreenProps = NativeStackScreenProps<
-  SettingsStackParamList,
-  "editPreset"
 >;
 
 export function getStackNavigationOptions(

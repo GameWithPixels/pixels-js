@@ -26,8 +26,8 @@ export function PickAudioClipBottomSheet({
 }: {
   audioClipUuid?: string;
   onSelectAudioClip?: (audioClipUuid: string) => void;
-  onDismiss: () => void;
   visible: boolean;
+  onDismiss: () => void;
 }) {
   const store = useAppStore();
   const allClips = useAudioClipsList();

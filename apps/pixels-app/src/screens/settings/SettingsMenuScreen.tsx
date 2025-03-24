@@ -19,7 +19,6 @@ const pages = [
   "Check for App Patch",
   "Themes",
   "Settings",
-  "Presets",
   "App & System Information",
   "Dice Firmware Information",
   "How To Turn On Your Dice",
@@ -96,9 +95,6 @@ function SettingsMenuPage({
         break;
       case "Settings":
         navigation.navigate("appSettings");
-        break;
-      case "Presets":
-        navigation.navigate("presets");
         break;
     }
   };

@@ -35,6 +35,7 @@ import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
 import { KeyframeGradient } from "~/components/KeyframeGradient";
 import { PickAnimationBottomSheet } from "~/components/PickAnimationBottomSheet";
+import { PickAppActionBottomSheet } from "~/components/PickAppActionBottomSheet";
 import { PickAudioClipBottomSheet } from "~/components/PickAudioClipBottomSheet";
 import { PickColorBottomSheet } from "~/components/PickColorBottomSheet";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
@@ -59,6 +60,7 @@ import {
   playActionSpeakText,
   buildWebRequestPayload,
 } from "~/features/profiles";
+import { AppActionKind } from "~/features/store";
 import { AnimationUtils } from "~/features/store/library";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
@@ -788,16 +790,17 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   profileName,
   dieType,
   currentFace,
+  onCreateAppAction,
 }: {
   action: Profiles.ActionMakeWebRequest;
   profileName: string;
   dieType: PixelDieType;
   currentFace: number;
+  onCreateAppAction?: (kind: AppActionKind) => void;
 }) {
   const dfuFilesStatus = useAppSelector(
     (state) => state.appTransient.dfuFilesStatus
   );
-
   const fwTimestamp =
     typeof dfuFilesStatus === "object" ? dfuFilesStatus.timestamp : 0;
   const params = buildWebRequestParams(
@@ -828,22 +831,29 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
       userUuid: "Some User UUID",
     },
   } as const;
-
   const isParams = !action.format || action.format === "parameters"; // Format is undefined in actions from v2.1
+
+  const [presetPickerVisible, setPresetPickerVisible] = React.useState(false);
+
   const { colors } = useTheme();
   return (
     <>
-      <Text variant="titleMedium">Send request to URL</Text>
-      <TextInput
-        value={action.url}
-        onChangeText={(t) => runInAction(() => (action.url = t))}
-      />
+      <View>
+        <Text variant="titleMedium">Preset</Text>
+        <GradientButton
+          sentry-label="select-preset"
+          style={{ marginHorizontal: 10 }}
+          onPress={() => setPresetPickerVisible(true)}
+        >
+          {action.format ?? "Select Animation"}
+        </GradientButton>
+      </View>
       <Text variant="titleMedium">Value</Text>
       <TextInput
         value={action.value}
         onChangeText={(t) => runInAction(() => (action.value = t))}
       />
-      <Text variant="titleMedium">Format</Text>
+      {/* <Text variant="titleMedium">Format</Text>
       <TabsHeaders
         keys={NamedFormatsValues}
         selected={toNamedFormat(action.format ?? "parameters")} // Format is undefined in actions from v2.1
@@ -870,13 +880,23 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
           {"\n"}• value3: value of the die's face up
           {"\n"}• value4: name of the profile
         </Text>
-      )}
+      )} */}
       <OutlineButton
         onPress={() => playActionMakeWebRequest(action, params)}
         style={{ marginTop: 5 }}
       >
         Test Web Request
       </OutlineButton>
+      <PickAppActionBottomSheet
+        appActionUuid={action.url}
+        visible={presetPickerVisible}
+        onSelectAppActionUuid={(uuid) => {
+          runInAction(() => (action.url = uuid));
+          setPresetPickerVisible(false);
+        }}
+        onCreateAppAction={onCreateAppAction}
+        onDismiss={() => setPresetPickerVisible(false)}
+      />
     </>
   );
 });

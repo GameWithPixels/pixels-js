@@ -1,69 +1,69 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { FlatList, ScrollView, View } from "react-native";
-import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
+import { FlatList, View } from "react-native";
+import { Switch, Text } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { PresetsScreenProps } from "~/app/navigation";
+import { AppActionsListScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
-import {
-  GradientBorderCard,
-  RotatingGradientBorderCard,
-} from "~/components/GradientBorderCard";
+import { RotatingGradientBorderCard } from "~/components/GradientBorderCard";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientIconButton } from "~/components/buttons";
 
-function MyTextInput() {
-  return <TextInput />;
-}
-
-const PresetItem = React.memo(function PresetItem({ uuid }: { uuid: string }) {
-  const data = useAppSelector(
-    (state) => state.profilePresets.webRequests.entities[uuid]
+const AppActionItem = React.memo(function PresetItem({
+  uuid,
+}: {
+  uuid: string;
+}) {
+  const entry = useAppSelector(
+    (state) => state.appActions.entries.entities[uuid]
   );
   return (
-    <View>
-      <Text>UUID {uuid}</Text>
-      <Text>Name: {data?.name}</Text>
-    </View>
+    entry && (
+      <View>
+        <Text>UUID {uuid}</Text>
+        <Text>Kind: {entry.kind}</Text>
+        <Text>Enabled: {entry.enabled}</Text>
+      </View>
+    )
   );
 });
 
-function ThemesPage({
+function AppActionsListPage({
   navigation,
 }: {
-  navigation: PresetsScreenProps["navigation"];
+  navigation: AppActionsListScreenProps["navigation"];
 }) {
-  const appDispatch = useAppDispatch();
-  // const { discord, twitch, dddice } = useAppSelector(
-  //   (state) => state.appSettings.profiles
-  // );
-  const presetsUuids = useAppSelector(
-    (state) => state.profilePresets.webRequests.ids
-  );
+  const actionsUuids = useAppSelector((state) => state.appActions.entries.ids);
   return (
     <View style={{ height: "100%" }}>
       <PageHeader
         rightElement={() => (
           <GradientIconButton
-            icon={({ color, size }) => (
-              <MaterialCommunityIcons name="plus" size={size} color={color} />
-            )}
-            onPress={() =>
-              navigation.navigate("editPreset", {
-                presetUuid: "",
-              })
+            icon={(props) => <MaterialCommunityIcons name="plus" {...props} />}
+            onPress={
+              () => {}
+              // navigation.navigate("editAppAction", { presetUuid: "" })
             }
           />
         )}
         onGoBack={() => navigation.goBack()}
       >
-        Presets
+        App Actions
       </PageHeader>
-      {presetsUuids.length ? (
+      <Text>Global Speak Text settings</Text>
+      <Switch
+        value={false}
+        onValueChange={(value) => {
+          console.log("Switch value", value);
+        }}
+      />
+      {actionsUuids.length ? (
         <FlatList
-          data={presetsUuids}
-          renderItem={({ item: uuid }) => <PresetItem uuid={uuid} />}
+          data={actionsUuids}
+          renderItem={({ item: uuid }) => (
+            <AppActionItem uuid={uuid as string} />
+          )}
           // keyExtractor={(item, index) => index.toString()}
           // alwaysBounceVertical={false}
           contentContainerStyle={{
@@ -85,9 +85,12 @@ function ThemesPage({
             gap: 40,
           }}
         >
-          <Text variant="titleLarge">No Preset</Text>
+          <Text variant="titleLarge">App Actions</Text>
           <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
-            Click the + button to add a new preset
+            Customize how the app responds to rolls.
+          </Text>
+          <Text variant="bodyMedium" style={{ alignSelf: "stretch" }}>
+            Tap the + button to add a new add action.
           </Text>
         </RotatingGradientBorderCard>
       )}
@@ -176,10 +179,12 @@ function ThemesPage({
   );
 }
 
-export function PresetsScreen({ navigation }: PresetsScreenProps) {
+export function AppActionsListScreen({
+  navigation,
+}: AppActionsListScreenProps) {
   return (
     <AppBackground>
-      <ThemesPage navigation={navigation} />
+      <AppActionsListPage navigation={navigation} />
     </AppBackground>
   );
 }
