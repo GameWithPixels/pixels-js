@@ -741,17 +741,11 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
   );
 });
 
-const NamedFormatsValues = [
-  "Parameters",
-  "JSON",
-  "Discord",
-  "Twitch",
-  "dddice",
-] as const;
+const NamedFormatsValues = ["Parameters", "JSON", "Discord"] as const;
 
 type NamedFormat = (typeof NamedFormatsValues)[number];
 
-function toNamedFormat(format: Profiles.ActionWebRequestFormat): NamedFormat {
+function toNamedFormat(format: Profiles.WebRequestFormat): NamedFormat {
   switch (format) {
     case "parameters":
       return "Parameters";
@@ -759,16 +753,12 @@ function toNamedFormat(format: Profiles.ActionWebRequestFormat): NamedFormat {
       return "JSON";
     case "discord":
       return "Discord";
-    case "twitch":
-      return "Twitch";
-    case "dddice":
-      return "dddice";
     default:
       assertNever(format, `Unsupported WebRequest format: ${format}`);
   }
 }
 
-function fromNamedFormat(format: NamedFormat): Profiles.ActionWebRequestFormat {
+function fromNamedFormat(format: NamedFormat): Profiles.WebRequestFormat {
   switch (format) {
     case "Parameters":
       return "parameters";
@@ -776,10 +766,6 @@ function fromNamedFormat(format: NamedFormat): Profiles.ActionWebRequestFormat {
       return "json";
     case "Discord":
       return "discord";
-    case "Twitch":
-      return "twitch";
-    case "dddice":
-      return "dddice";
     default:
       assertNever(format, `Unsupported WebRequest named format: ${format}`);
   }

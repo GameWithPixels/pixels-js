@@ -9,14 +9,8 @@ import { safeAssign } from "@systemic-games/pixels-core-utils";
 import EditAction from "./EditAction";
 import EditActionRunOnDevice from "./EditActionRunOnDevice";
 import EditDataSet from "./EditDataSet";
+import { WebRequestFormat } from "./WebRequestFormat";
 import { name, observable, widget } from "./decorators";
-
-export type MakeWebRequestFormat =
-  | "parameters"
-  | "json"
-  | "discord"
-  | "twitch"
-  | "dddice";
 
 export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
   readonly type = "makeWebRequest";
@@ -33,12 +27,12 @@ export default class EditActionMakeWebRequest extends EditActionRunOnDevice {
 
   @name("Format")
   @observable
-  format: MakeWebRequestFormat;
+  format: WebRequestFormat;
 
   constructor(opt?: {
     url?: string;
     value?: string;
-    format: MakeWebRequestFormat;
+    format: WebRequestFormat;
   }) {
     super();
     this.url = opt?.url ?? "";

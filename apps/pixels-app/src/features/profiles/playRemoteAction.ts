@@ -1,5 +1,5 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import { ActionWebRequestFormat } from "@systemic-games/pixels-edit-animation";
+import { WebRequestFormat } from "@systemic-games/pixels-edit-animation";
 import {
   PixelDieType,
   Profiles,
@@ -92,7 +92,7 @@ export type WebRequestOptions = Readonly<{
 }>;
 
 export function buildWebRequestPayload(
-  format: ActionWebRequestFormat,
+  format: WebRequestFormat,
   params: WebRequestParams,
   options?: WebRequestOptions
 ): object | undefined {
