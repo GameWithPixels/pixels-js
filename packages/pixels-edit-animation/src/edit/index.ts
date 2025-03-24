@@ -1,9 +1,9 @@
 import * as decorators from "./decorators";
 export * from "./ColorMode";
+export * from "./WebRequestFormat";
 export { default as Editable } from "./Editable";
 export { default as EditAction } from "./EditAction";
 export { default as EditActionMakeWebRequest } from "./EditActionMakeWebRequest";
-export { type MakeWebRequestFormat as ActionWebRequestFormat } from "./EditActionMakeWebRequest";
 export { default as EditActionPlayAnimation } from "./EditActionPlayAnimation";
 export { default as EditActionPlayAudioClip } from "./EditActionPlayAudioClip";
 export { default as EditActionRunOnDevice } from "./EditActionRunOnDevice";
