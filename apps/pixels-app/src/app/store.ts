@@ -25,6 +25,7 @@ import {
 import { PairedDie } from "./PairedDie";
 import migrations from "./migrations";
 
+import appActionsReducer from "~/features/store/appActionsSlice";
 import appSettingsReducer from "~/features/store/appSettingsSlice";
 import appTransientReducer from "~/features/store/appTransientSlice";
 import diceRollerReducer from "~/features/store/diceRollerSlice";
@@ -50,7 +51,6 @@ import profilesReducer, {
 import audioClipsReducer from "~/features/store/libraryAssets/audioClipsSlice";
 import imagesReducer from "~/features/store/libraryAssets/imagesSlice";
 import pairedDiceReducer from "~/features/store/pairedDiceSlice";
-import profilesPresetsReducer from "~/features/store/profilesPresetsSlice";
 
 const MyStorage = !__DEV__
   ? AsyncStorage
@@ -133,8 +133,8 @@ const rootReducer = combineReducers({
     audioClips: persistAnim("libraryAssets/audioClips", audioClipsReducer),
     images: persistAnim("libraryAssets/images", imagesReducer),
   }),
-  // Library presets
-  profilePresets: persist("profilePresets", profilesPresetsReducer),
+  // App actions
+  appActions: persist("appActions", appActionsReducer),
   // Dice roller
   diceRoller: persist("diceRoller", diceRollerReducer),
   // Transient data

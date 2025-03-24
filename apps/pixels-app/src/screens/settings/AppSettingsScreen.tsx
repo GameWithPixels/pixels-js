@@ -30,7 +30,7 @@ import {
   setShowAdvancedSettings,
 } from "~/features/store";
 import { AudioClips, Images } from "~/features/store/libraryAssets";
-import { resetPresets } from "~/features/store/profilesPresetsSlice";
+import { resetAppActions } from "~/features/store/appActionsSlice";
 import { useConfirmActionSheet } from "~/hooks";
 
 function AppSettingsPage({
@@ -64,7 +64,7 @@ function AppSettingsPage({
       if (!keepProfiles) {
         appDispatch(AudioClips.reset());
         appDispatch(Images.reset());
-        appDispatch(resetPresets());
+        appDispatch(resetAppActions());
       }
       navigation.navigate("onboarding");
     }

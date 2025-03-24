@@ -131,6 +131,8 @@ function ThemesPage({
         <Divider style={{ marginVertical: 10 }} />
         <ThemePicker screen="profiles" />
         <Divider style={{ marginVertical: 10 }} />
+        <ThemePicker screen="appActions" />
+        <Divider style={{ marginVertical: 10 }} />
         <ThemePicker screen="settings" />
       </ScrollView>
     </View>

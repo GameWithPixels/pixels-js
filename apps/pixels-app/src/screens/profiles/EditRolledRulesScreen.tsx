@@ -337,10 +337,10 @@ const defaultAction = new Profiles.ActionPlayAnimation();
 
 const EditRolledRulesPage = observer(function EditRolledRulesPage({
   profileUuid,
-  onGoBack,
+  navigation,
 }: {
   profileUuid: string;
-  onGoBack: () => void;
+  navigation: EditRollRulesScreenProps["navigation"];
 }) {
   const profile = useEditableProfile(profileUuid);
   const rolledRules = React.useMemo(
@@ -413,7 +413,7 @@ const EditRolledRulesPage = observer(function EditRolledRulesPage({
   return (
     <>
       <View style={{ height: "100%", gap: 10 }}>
-        <PageHeader mode="arrow-left" onGoBack={onGoBack}>
+        <PageHeader mode="arrow-left" onGoBack={navigation.goBack}>
           {getConditionTypeLabel("rolled")}
         </PageHeader>
         <View
@@ -574,10 +574,7 @@ export function EditRollRuleScreen({
 }: EditRollRulesScreenProps) {
   return (
     <AppBackground>
-      <EditRolledRulesPage
-        profileUuid={profileUuid}
-        onGoBack={() => navigation.goBack()}
-      />
+      <EditRolledRulesPage profileUuid={profileUuid} navigation={navigation} />
       <SelectedPixelTransferProgressBar />
     </AppBackground>
   );

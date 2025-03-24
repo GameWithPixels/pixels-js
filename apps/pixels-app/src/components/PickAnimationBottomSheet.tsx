@@ -39,8 +39,8 @@ export function PickAnimationBottomSheet({
   animation?: Readonly<Profiles.Animation>;
   dieType?: PixelDieType;
   onSelectAnimation?: (animation: Readonly<Profiles.Animation>) => void;
-  onDismiss: () => void;
   visible: boolean;
+  onDismiss: () => void;
 }) {
   const allAnimations = useAnimationsList();
   const profileDieType = dieType ? toProfileDieType(dieType) : undefined;

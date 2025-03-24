@@ -62,6 +62,7 @@ const initialState: AppSettingsState = {
     home: "blue",
     profiles: "purple",
     animations: "yellow",
+    appActions: "yellow",
     settings: "orange",
   },
   showAdvancedSettings: false,
