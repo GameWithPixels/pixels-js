@@ -1,14 +1,10 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { WebRequestFormat } from "@systemic-games/pixels-edit-animation";
-import {
-  PixelDieType,
-  Profiles,
-} from "@systemic-games/react-native-pixels-connect";
+import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import * as Speech from "expo-speech";
 import { AppState } from "react-native";
 import Toast, { ToastOptions } from "react-native-root-toast";
 
-import { ThreeDDiceConnectorParams } from "./ThreeDDiceConnector";
 import { WebRequestParams } from "./buildWebRequestParams";
 import { buildWebRequestURL } from "./buildWebRequestURL";
 import type { EmbedsDiscordWebhookPayload } from "./discordWebhook";
@@ -63,38 +59,9 @@ function buildDiscordWebhookPayload(
   };
 }
 
-function buildThreeDDiceConnectorParams(
-  { dieType, faceValue }: Pick<WebRequestParams, "dieType" | "faceValue">,
-  options: Exclude<WebRequestOptions["dddice"], undefined>
-): ThreeDDiceConnectorParams & {
-  dieType: PixelDieType;
-  faceValue: number;
-} {
-  return {
-    dieType,
-    faceValue,
-    ...options,
-  };
-}
-
-export type WebRequestOptions = Readonly<{
-  // Discord
-  diceIconsBaseUrl?: string; // May be used by other web request formats later on
-  // Twitch
-
-  // dddice
-  dddice?: {
-    apiKey: string;
-    roomSlug: string;
-    roomPasscode?: string;
-    userUuid?: string;
-  };
-}>;
-
 export function buildWebRequestPayload(
   format: WebRequestFormat,
-  params: WebRequestParams,
-  options?: WebRequestOptions
+  params: WebRequestParams
 ): object | undefined {
   switch (format) {
     case "parameters":
@@ -102,16 +69,7 @@ export function buildWebRequestPayload(
     case "json":
       return params;
     case "discord":
-      return buildDiscordWebhookPayload(params, options?.diceIconsBaseUrl);
-    case "twitch":
-    case "dddice":
-      return buildThreeDDiceConnectorParams(
-        params,
-        options?.dddice ?? {
-          apiKey: "<missing>",
-          roomSlug: "<missing>",
-        }
-      );
+      return buildDiscordWebhookPayload(params);
     default:
       assertNever(format, `Unknown web request format: ${format}`);
   }
@@ -119,10 +77,9 @@ export function buildWebRequestPayload(
 
 export function playActionMakeWebRequest(
   action: Profiles.ActionMakeWebRequest,
-  params: WebRequestParams,
-  options?: WebRequestOptions
+  params: WebRequestParams
 ): void {
-  const bodyObj = buildWebRequestPayload(action.format, params, options);
+  const bodyObj = buildWebRequestPayload(action.format, params);
   const body = bodyObj ? JSON.stringify(bodyObj) : undefined;
   const url = body ? action.url.trim() : buildWebRequestURL(action.url, params);
   console.log(
@@ -164,7 +121,7 @@ export function playActionSpeakText({
   volume,
   pitch,
   rate,
-}: Profiles.ActionSpeakText): void {
+}: Pick<Profiles.ActionSpeakText, "text" | "volume" | "pitch" | "rate">): void {
   console.log(`Play Speak Text: ${text}`);
   if (text?.trim()?.length) {
     showToast(`Playing Speak Text action.\nText: ${text}`);
@@ -187,10 +144,13 @@ export function playActionSpeakText({
 }
 
 export function playActionAudioClip(
-  action: Profiles.ActionPlayAudioClip,
+  {
+    clipUuid,
+    volume,
+    loopCount,
+  }: Pick<Profiles.ActionPlayAudioClip, "clipUuid" | "volume" | "loopCount">,
   assets: RootState["libraryAssets"]["audioClips"]["entities"]
 ): void {
-  const { clipUuid, volume, loopCount } = action;
   const clip = clipUuid && assets[clipUuid];
   if (clip) {
     showToast(`Playing Audio Clip action.\nClip: ${clip.name}`);

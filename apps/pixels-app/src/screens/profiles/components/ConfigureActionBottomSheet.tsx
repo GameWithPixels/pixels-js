@@ -1,10 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  BottomSheetModal,
-  BottomSheetScrollView,
-  BottomSheetTextInput,
-} from "@gorhom/bottom-sheet";
-import { assert, assertNever } from "@systemic-games/pixels-core-utils";
+import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { assert } from "@systemic-games/pixels-core-utils";
 import {
   Color,
   DiceUtils,
@@ -12,7 +8,6 @@ import {
   PixelDieType,
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
-import * as Clipboard from "expo-clipboard";
 import { computed, runInAction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -35,7 +30,6 @@ import { EditGradientBottomSheet } from "~/components/EditGradientBottomSheet";
 import { FacesGrid } from "~/components/FacesGrid";
 import { KeyframeGradient } from "~/components/KeyframeGradient";
 import { PickAnimationBottomSheet } from "~/components/PickAnimationBottomSheet";
-import { PickAppActionBottomSheet } from "~/components/PickAppActionBottomSheet";
 import { PickAudioClipBottomSheet } from "~/components/PickAudioClipBottomSheet";
 import { PickColorBottomSheet } from "~/components/PickColorBottomSheet";
 import { SelectedPixelTransferProgressBar } from "~/components/PixelTransferProgressBar";
@@ -44,6 +38,7 @@ import {
   SliderWithValueProps,
 } from "~/components/SliderWithValue";
 import { TabsHeaders } from "~/components/TabsHeaders";
+import { TextInputWithCopyButton } from "~/components/TextInputWithCopyButton";
 import {
   BottomSheetModalCloseButton,
   GradientButton,
@@ -54,69 +49,35 @@ import {
   getColorOverrideLabel,
   getDieTypeLabel,
   buildWebRequestParams,
-  buildWebRequestURL,
   playActionAudioClip,
   playActionMakeWebRequest,
   playActionSpeakText,
+  getWebRequestFormatLabel,
+  buildWebRequestURL,
   buildWebRequestPayload,
 } from "~/features/profiles";
-import { AppActionKind } from "~/features/store";
 import { AnimationUtils } from "~/features/store/library";
 import { androidBottomSheetSliderFix, TrailingSpaceFix } from "~/fixes";
 import { useBottomSheetBackHandler, useBottomSheetPadding } from "~/hooks";
 
-function TextInput({
-  value,
-  onChangeText,
-}: {
-  value: string;
-  onChangeText?: (text: string) => void;
-}) {
-  const { colors, fonts, roundness } = useTheme();
-  const borderRadius = getBorderRadius(roundness, { tight: true });
+function TextInputWithTitle({
+  children,
+  ...props
+}: React.PropsWithChildren<
+  Omit<React.ComponentProps<typeof TextInputWithCopyButton>, "mode">
+>) {
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        paddingLeft: 10,
-        gap: 10,
-      }}
-    >
-      <BottomSheetTextInput
-        maxLength={500}
-        value={value}
-        onChangeText={onChangeText}
-        style={{
-          flex: 1,
-          flexGrow: 1,
-          paddingVertical: 16, // MD3_MIN_HEIGHT = 56,
-          paddingHorizontal: 16, // MD3_INPUT_PADDING_HORIZONTAL
-          color: colors.onSurfaceVariant,
-          backgroundColor: colors.elevation.level0,
-          borderWidth: 1,
-          borderRadius,
-          borderColor: colors.outline,
-          ...fonts.bodyLarge,
-        }}
-      />
-      <MaterialCommunityIcons
-        name="content-copy"
-        size={20}
-        color={colors.onSurface}
-        onPress={() => {
-          if (value?.length) {
-            Clipboard.setStringAsync(value).catch((e: Error) =>
-              console.log(`Clipboard error: ${e}`)
-            );
-          }
-        }}
-      />
-    </View>
+    <>
+      <Text variant="titleMedium">{children}</Text>
+      <TextInputWithCopyButton mode="bottomSheet" {...props} />
+    </>
   );
 }
 
-function SliderWithValueAndTitle({ children, ...props }: SliderWithValueProps) {
+function SliderWithValueAndTitle({
+  children,
+  ...props
+}: React.ComponentProps<typeof SliderWithValue>) {
   return (
     <>
       <Text variant="titleMedium">{children}</Text>
@@ -693,11 +654,12 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
   const { colors } = useTheme();
   return (
     <>
-      <Text variant="titleMedium">Text to Speak</Text>
-      <TextInput
+      <TextInputWithTitle
         value={action.text}
         onChangeText={(t) => runInAction(() => (action.text = t))}
-      />
+      >
+        Text to Speak
+      </TextInputWithTitle>
       {/* Volume control not yet available in expo-speech 12.0.2
       <SliderWithValueAndTitle
         minimumValue={0}
@@ -743,36 +705,6 @@ const ConfigureSpeakText = observer(function ConfigureSpeakText({
   );
 });
 
-const NamedFormatsValues = ["Parameters", "JSON", "Discord"] as const;
-
-type NamedFormat = (typeof NamedFormatsValues)[number];
-
-function toNamedFormat(format: Profiles.WebRequestFormat): NamedFormat {
-  switch (format) {
-    case "parameters":
-      return "Parameters";
-    case "json":
-      return "JSON";
-    case "discord":
-      return "Discord";
-    default:
-      assertNever(format, `Unsupported WebRequest format: ${format}`);
-  }
-}
-
-function fromNamedFormat(format: NamedFormat): Profiles.WebRequestFormat {
-  switch (format) {
-    case "Parameters":
-      return "parameters";
-    case "JSON":
-      return "json";
-    case "Discord":
-      return "discord";
-    default:
-      assertNever(format, `Unsupported WebRequest named format: ${format}`);
-  }
-}
-
 function getHighestFace(
   faces: readonly number[] | false,
   dieType: PixelDieType
@@ -790,13 +722,11 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
   profileName,
   dieType,
   currentFace,
-  onCreateAppAction,
 }: {
   action: Profiles.ActionMakeWebRequest;
   profileName: string;
   dieType: PixelDieType;
   currentFace: number;
-  onCreateAppAction?: (kind: AppActionKind) => void;
 }) {
   const dfuFilesStatus = useAppSelector(
     (state) => state.appTransient.dfuFilesStatus
@@ -822,44 +752,33 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
     profileName,
     action.value
   );
-  const options = {
-    diceIconsBaseUrl: "https://[...]",
-    dddice: {
-      apiKey: "Some API key",
-      roomSlug: "Some Room Slug",
-      roomPasscode: "Some Passcode",
-      userUuid: "Some User UUID",
-    },
-  } as const;
   const isParams = !action.format || action.format === "parameters"; // Format is undefined in actions from v2.1
 
-  const [presetPickerVisible, setPresetPickerVisible] = React.useState(false);
+  const { formats, formatLabels } = React.useMemo(() => {
+    const formats = Object.keys(
+      Profiles.WebRequestFormatValues
+    ) as Profiles.WebRequestFormat[];
+    return {
+      formats,
+      formatLabels: formats.map(getWebRequestFormatLabel),
+    };
+  }, []);
 
   const { colors } = useTheme();
   return (
     <>
-      <View>
-        <Text variant="titleMedium">Preset</Text>
-        <GradientButton
-          sentry-label="select-preset"
-          style={{ marginHorizontal: 10 }}
-          onPress={() => setPresetPickerVisible(true)}
-        >
-          {action.format ?? "Select Animation"}
-        </GradientButton>
-      </View>
-      <Text variant="titleMedium">Value</Text>
-      <TextInput
+      <TextInputWithTitle
         value={action.value}
         onChangeText={(t) => runInAction(() => (action.value = t))}
-      />
-      {/* <Text variant="titleMedium">Format</Text>
+      >
+        Value
+      </TextInputWithTitle>
+      <Text variant="titleMedium">Format</Text>
       <TabsHeaders
-        keys={NamedFormatsValues}
-        selected={toNamedFormat(action.format ?? "parameters")} // Format is undefined in actions from v2.1
-        onSelect={(f) =>
-          runInAction(() => (action.format = fromNamedFormat(f as NamedFormat)))
-        }
+        keys={formats}
+        names={formatLabels}
+        selected={action.format ?? "parameters"} // Format is undefined in actions from v2.1
+        onSelect={(f) => runInAction(() => (action.format = f))}
       />
       <Text style={{ color: colors.onSurfaceDisabled, marginTop: 5 }}>
         The request {isParams ? "parameters" : "payload"} will look like this:
@@ -867,7 +786,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
           ? "\n" + buildWebRequestURL("", params)
           : " " +
             JSON.stringify(
-              buildWebRequestPayload(action.format, params, options),
+              buildWebRequestPayload(action.format, params),
               null,
               4
             )}
@@ -880,23 +799,13 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
           {"\n"}• value3: value of the die's face up
           {"\n"}• value4: name of the profile
         </Text>
-      )} */}
+      )}
       <OutlineButton
         onPress={() => playActionMakeWebRequest(action, params)}
         style={{ marginTop: 5 }}
       >
         Test Web Request
       </OutlineButton>
-      <PickAppActionBottomSheet
-        appActionUuid={action.url}
-        visible={presetPickerVisible}
-        onSelectAppActionUuid={(uuid) => {
-          runInAction(() => (action.url = uuid));
-          setPresetPickerVisible(false);
-        }}
-        onCreateAppAction={onCreateAppAction}
-        onDismiss={() => setPresetPickerVisible(false)}
-      />
     </>
   );
 });

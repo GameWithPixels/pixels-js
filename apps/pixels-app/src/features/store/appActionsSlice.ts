@@ -10,38 +10,44 @@ import { logWrite } from "./logWrite";
 
 import { generateUuid } from "~/features/utils";
 
-export type AppAction =
-  | { kind: "speak"; volume: number }
-  | {
-      kind: "url";
-      url: string;
-    }
-  | {
-      kind: "json";
-      url: string;
-    }
-  | {
-      kind: "discord";
-      webhookUrl: string;
-      diceImagesUrl?: string;
-    }
-  | {
-      kind: "twitch";
-      url: string;
-    }
-  | {
-      kind: "dddice";
-      apiKey: string;
-      roomSlug: string;
-      password?: string;
-      userUuid?: string;
-    };
+export type AppActionsData = {
+  speak: {
+    volume: number;
+    pitch: number;
+    rate: number;
+  };
+  url: {
+    url: string;
+  };
+  json: {
+    url: string;
+  };
+  discord: {
+    url: string;
+    diceImagesUrl: string;
+  };
+  twitch: {
+    url: string;
+  };
+  dddice: {
+    apiKey: string;
+    roomSlug: string;
+    password: string;
+    userUuid: string;
+  };
+  proxy: {
+    provider: "pusher";
+    apiKey: string;
+    secret: string;
+    channel: string;
+  };
+};
 
-export type AppActionKind = AppAction["kind"];
+export type AppActionType = keyof AppActionsData;
 
 export type AppActionEntry = {
   uuid: string;
-  kind: AppActionKind;
+  type: AppActionType;
   enabled: boolean;
 };
 
@@ -51,15 +57,10 @@ export const appActionEntriesAdapter = createEntityAdapter<AppActionEntry>({
   selectId: (action: Readonly<AppActionEntry>) => action.uuid,
 });
 
-export type AppActionData<K extends AppActionKind> = Omit<
-  Extract<AppAction, { kind: K }>,
-  "kind"
->;
-
 export type AppActionsState = {
   entries: AppActionEntriesState;
   data: {
-    [K in AppActionKind]: Record<string, AppActionData<K>>;
+    [T in AppActionType]: Record<string, AppActionsData[T]>;
   };
 };
 
@@ -73,6 +74,7 @@ function getInitialState(): AppActionsState {
       discord: {},
       twitch: {},
       dddice: {},
+      proxy: {},
     },
   };
 }
@@ -97,56 +99,52 @@ function generateAppActionUuid({ entries }: AppActionsState): string {
   return uuid;
 }
 
-// https://stackoverflow.com/a/75543542
-type ReplaceUndefinedWithNull<T> = T extends undefined ? null : T;
-type ToNullProps<T> = {
-  [P in keyof T]-?: ReplaceUndefinedWithNull<T[P]>;
-};
-
-function createEmptyData(
-  kind: AppActionKind
-):
-  | ToNullProps<AppActionData<"speak">>
-  | ToNullProps<AppActionData<"url">>
-  | ToNullProps<AppActionData<"json">>
-  | ToNullProps<AppActionData<"discord">>
-  | ToNullProps<AppActionData<"twitch">>
-  | ToNullProps<AppActionData<"dddice">> {
-  switch (kind) {
+function createEmptyData<T extends AppActionType>(type: T): AppActionsData[T] {
+  type U = AppActionsData[T];
+  // Note: the "as AppActions[T]" cast won't be needed in TypeScript >= 5.8
+  switch (type) {
     case "speak":
-      return { volume: 0 };
+      return { volume: 1, pitch: 1, rate: 1 } as U;
     case "url":
-      return { url: "" };
+      return { url: "" } as U;
     case "json":
-      return { url: "" };
+      return { url: "" } as U;
     case "discord":
-      return { webhookUrl: "", diceImagesUrl: null };
+      return { url: "", diceImagesUrl: "" } as U;
     case "twitch":
-      return { url: "" };
+      return { url: "" } as U;
     case "dddice":
-      return { apiKey: "", roomSlug: "", password: null, userUuid: null };
+      return {
+        apiKey: "",
+        roomSlug: "",
+        password: "",
+        userUuid: "",
+      } as U;
+    case "proxy":
+      return {
+        provider: "pusher",
+        apiKey: "",
+        secret: "",
+        channel: "",
+      } as U;
     default:
-      assertNever(kind, `Unknown app action kind: ${kind}`);
+      assertNever(type, `Unknown app action type: ${type}`);
   }
 }
 
-function copyData<K extends AppActionKind>(
-  store: Record<string, AppActionData<K>>,
-  kind: K,
-  uuid: string,
-  data: AppActionData<K>
-): void {
-  const copy = createEmptyData(kind) as unknown as AppActionData<K>;
-  // Copy only the known keys and remove missing keys
-  const keys = Object.keys(copy) as (keyof AppActionData<K>)[];
+function updateData<T extends AppActionType>(
+  dst: AppActionsData[T],
+  src: Partial<AppActionsData[T]>
+): AppActionsData[T] {
+  // Copy only the known keys
+  const keys = Object.keys(dst) as (keyof AppActionsData[T])[];
   for (const key of keys) {
-    if (data.hasOwnProperty(key)) {
-      copy[key] = data[key];
-    } else if (copy[key] === null) {
-      delete copy[key];
+    const value = src[key];
+    if (typeof value === typeof dst[key]) {
+      dst[key] = value!; // Can't be undefined because of the typeof check
     }
   }
-  store[uuid] = copy;
+  return dst;
 }
 
 // Redux slice that stores rolls for the dice roller
@@ -159,39 +157,44 @@ const AppActionsSlice = createSlice({
       return getInitialState();
     },
 
-    addAppAction<K extends AppActionKind>(
+    addAppAction<T extends AppActionType>(
       state: AppActionsState,
       {
-        payload: { kind, enabled, data },
+        payload: { type, enabled, data },
       }: PayloadAction<{
-        kind: K;
+        type: T;
         enabled: boolean;
-        data: AppActionData<K>;
+        data: Partial<AppActionsData[T]>;
       }>
     ) {
-      log("addAppAction", { kind, enabled, data });
+      log("addAppAction", { type, enabled, data });
       const uuid = generateAppActionUuid(state);
-      appActionEntriesAdapter.addOne(state.entries, { uuid, kind, enabled });
-      copyData(state.data[kind], kind, uuid, data);
+      appActionEntriesAdapter.addOne(state.entries, {
+        uuid,
+        type,
+        enabled,
+      });
+      const store = state.data[type] as Record<string, AppActionsData[T]>;
+      store[uuid] = updateData(createEmptyData(type), data);
     },
 
-    updateAppAction<K extends AppActionKind>(
+    updateAppAction<T extends AppActionType>(
       state: AppActionsState,
       {
-        payload: { uuid, kind, data },
+        payload: { uuid, type, data },
       }: PayloadAction<{
         uuid: string;
-        kind: K;
-        data: AppActionData<K>;
+        type: T;
+        data: Partial<AppActionsData[T]>;
       }>
     ) {
-      log("updateAppAction", { uuid, kind, data });
+      log("updateAppAction", { uuid, type, data });
       const entry = state.entries.entities[uuid];
-      if (entry?.kind === kind) {
-        copyData(state.data[kind], kind, uuid, data);
+      if (entry?.type === type) {
+        updateData(state.data[type][uuid], data);
       } else {
         console.warn(
-          `Redux: No app action of kind ${kind} with uuid ${uuid} to update`
+          `Redux: No app action of type ${type} with uuid ${uuid} to update`
         );
       }
     },
@@ -219,7 +222,7 @@ const AppActionsSlice = createSlice({
       const entry = state.entries.entities[uuid];
       if (entry) {
         appActionEntriesAdapter.removeOne(state.entries, uuid);
-        delete state.data[entry.kind][uuid];
+        delete state.data[entry.type][uuid];
       } else {
         console.warn(`Redux: No app action with uuid ${uuid} to remove`);
       }
@@ -231,6 +234,7 @@ export const {
   resetAppActions,
   addAppAction,
   updateAppAction,
+  enableAppAction,
   removeAppAction,
 } = AppActionsSlice.actions;
 export default AppActionsSlice.reducer;
