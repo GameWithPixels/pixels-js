@@ -50,7 +50,7 @@ import {
   buildWebRequestParams,
   buildWebRequestURL,
   buildWebRequestPayload,
-  playActionMakeWebRequest,
+  playActionMakeWebRequestAsync,
 } from "~/features/appActions";
 import { getDieTypeLabel } from "~/features/dice";
 import { getBorderRadius } from "~/features/getBorderRadius";
@@ -803,7 +803,7 @@ const ConfigureMakeWebRequest = observer(function ConfigureMakeWebRequest({
         </Text>
       )}
       <OutlineButton
-        onPress={() => playActionMakeWebRequest(action, params)}
+        onPress={() => playActionMakeWebRequestAsync(action, params)}
         style={{ marginTop: 5 }}
       >
         Test Web Request

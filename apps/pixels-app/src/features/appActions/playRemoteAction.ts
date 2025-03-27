@@ -82,10 +82,10 @@ export function buildWebRequestPayload(
   }
 }
 
-export function playActionMakeWebRequest(
+export async function playActionMakeWebRequestAsync(
   action: Pick<Profiles.ActionMakeWebRequest, "url" | "format">,
   params: WebRequestParams
-): void {
+): Promise<void> {
   const bodyObj = buildWebRequestPayload(action.format, params);
   const body = bodyObj ? JSON.stringify(bodyObj) : undefined;
   const url = body ? action.url.trim() : buildWebRequestURL(action.url, params);
@@ -96,31 +96,26 @@ export function playActionMakeWebRequest(
     action.format === "json" ? `\nbody: ${body}` : ""
   }\n\n`;
   const forPixelMsg = params.pixelName ? ` for "${params.pixelName}"` : "";
-  fetch(url, {
-    method: "POST",
-    ...(body
-      ? {
-          headers: { "Content-Type": "application/json" },
-          body,
-        }
-      : {}),
-  })
-    .then(({ status }) => {
-      console.log(
-        `Action web request to ${url} returned with status ${status}`
-      );
-      showToast(`Web Request Send${forPixelMsg}!${toastMsg}Status: ${status}`);
-    })
-    .catch((e: Error) => {
-      console.log(
-        `Action web request to ${url} failed with error ${e.message ?? e}`
-      );
-      showLongToast(
-        `Failed Sending Web Request${forPixelMsg}!${toastMsg}Error: ${
-          e.message ?? e
-        }`
-      );
+  try {
+    const { status } = await fetch(url, {
+      method: "POST",
+      ...(body
+        ? {
+            headers: { "Content-Type": "application/json" },
+            body,
+          }
+        : {}),
     });
+    console.log(`Action web request to ${url} returned with status ${status}`);
+    showToast(`Web Request Send${forPixelMsg}!${toastMsg}Status: ${status}`);
+  } catch (e) {
+    console.log(
+      `Action web request to ${url} failed with error ${(e as Error).message ?? e}`
+    );
+    showLongToast(
+      `Failed Sending Web Request${forPixelMsg}!${toastMsg}Error: ${(e as Error).message ?? e}`
+    );
+  }
 }
 
 export function playActionSpeakText({
@@ -186,16 +181,16 @@ export function playActionAudioClip(
   }
 }
 
-export async function dddice(
+export async function sendToThreeDDiceAsync(
   connectionParams: ThreeDDiceConnectorParams,
   {
     pixelName,
+    value,
     dieType,
-    face,
   }: {
     pixelName?: string;
+    value: number;
     dieType: PixelDieType;
-    face: number;
   }
 ): Promise<void> {
   const { roomSlug, userUuid } = connectionParams;
@@ -204,9 +199,11 @@ export async function dddice(
   try {
     const api = new ThreeDDiceConnector(connectionParams);
     await api.connect();
-    const rollResult = await api.rollDice(dieType);
+    const rollResult = await api.rollDice(dieType, value, pixelName);
     console.log("Roll result:", JSON.stringify(rollResult));
-    showToast(`dddice request Send${forPixelMsg}!${toastMsg}Status: ${status}`);
+    showToast(
+      `dddice request Send${forPixelMsg}!${toastMsg}Value: ${rollResult.data.total_value}`
+    );
   } catch (e) {
     console.log(
       `dddice request to room ${roomSlug} failed with error ${(e as Error).message ?? e}`
