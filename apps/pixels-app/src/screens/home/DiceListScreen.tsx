@@ -226,7 +226,8 @@ function FirmwareUpdateBanner({
   );
 }
 
-function AnnouncementBanner({ style }: { style?: StyleProp<ViewStyle> }) {
+// survey#1: from March 16 to 27, 2025
+function _AnnouncementBanner({ style }: { style?: StyleProp<ViewStyle> }) {
   const appDispatch = useAppDispatch();
   const visible = useAppSelector(
     (state) => state.appSettings.showAnnouncement === "survey#1"
@@ -341,7 +342,7 @@ function DiceListPage({
             paddingBottom: 20,
           }}
         >
-          <AnnouncementBanner />
+          {/* <AnnouncementBanner /> */}
           {pairedDice.length ? (
             <BluetoothStateWarning style={{ marginVertical: 10 }}>
               <GridListSelector
