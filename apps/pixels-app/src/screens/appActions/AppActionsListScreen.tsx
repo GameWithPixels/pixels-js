@@ -1,76 +1,58 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { FlatList, View } from "react-native";
-import { Switch, Text } from "react-native-paper";
+import { Text } from "react-native-paper";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { AppActionCard } from "./components/AppActionCard";
+import { CreateAppActionModal } from "./components/CreateAppActionModal";
+
+import { useAppSelector, useAppStore } from "~/app/hooks";
 import { AppActionsListScreenProps } from "~/app/navigation";
 import { AppBackground } from "~/components/AppBackground";
 import { RotatingGradientBorderCard } from "~/components/GradientBorderCard";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientIconButton } from "~/components/buttons";
-
-const AppActionItem = React.memo(function PresetItem({
-  uuid,
-}: {
-  uuid: string;
-}) {
-  const entry = useAppSelector(
-    (state) => state.appActions.entries.entities[uuid]
-  );
-  return (
-    entry && (
-      <View>
-        <Text>UUID {uuid}</Text>
-        <Text>Kind: {entry.kind}</Text>
-        <Text>Enabled: {entry.enabled}</Text>
-      </View>
-    )
-  );
-});
+import { addAppAction } from "~/features/store";
 
 function AppActionsListPage({
   navigation,
 }: {
   navigation: AppActionsListScreenProps["navigation"];
 }) {
+  const store = useAppStore();
   const actionsUuids = useAppSelector((state) => state.appActions.entries.ids);
+  const onPressAction = React.useCallback(
+    (uuid: string) =>
+      navigation.navigate("editAppAction", { appActionUuid: uuid }),
+    [navigation]
+  );
+  const [createActionModalVisible, setCreateActionModalVisible] =
+    React.useState(false);
   return (
     <View style={{ height: "100%" }}>
       <PageHeader
         rightElement={() => (
           <GradientIconButton
             icon={(props) => <MaterialCommunityIcons name="plus" {...props} />}
-            onPress={
-              () => {}
-              // navigation.navigate("editAppAction", { presetUuid: "" })
-            }
+            onPress={() => setCreateActionModalVisible(true)}
+            style={{ marginRight: 5 }}
           />
         )}
-        onGoBack={() => navigation.goBack()}
       >
-        App Actions
+        <Text variant="titleLarge">App Actions</Text>
       </PageHeader>
-      <Text>Global Speak Text settings</Text>
-      <Switch
-        value={false}
-        onValueChange={(value) => {
-          console.log("Switch value", value);
-        }}
-      />
       {actionsUuids.length ? (
         <FlatList
           data={actionsUuids}
           renderItem={({ item: uuid }) => (
-            <AppActionItem uuid={uuid as string} />
+            <AppActionCard
+              uuid={uuid as string}
+              onPressAction={onPressAction}
+            />
           )}
           // keyExtractor={(item, index) => index.toString()}
           // alwaysBounceVertical={false}
-          contentContainerStyle={{
-            paddingVertical: 20,
-            paddingHorizontal: 20,
-            gap: 20,
-          }}
+          contentContainerStyle={{ padding: 10, gap: 10 }}
         />
       ) : (
         <RotatingGradientBorderCard
@@ -94,87 +76,19 @@ function AppActionsListPage({
           </Text>
         </RotatingGradientBorderCard>
       )}
-      {/* <Text>Those settings are stored without encryption!</Text>
-        <Text>Discord connection settings</Text>
-        <TextInput
-          label="Discord URL"
-          value={discord.webhookUrl}
-          onChangeText={(t) =>
-            appDispatch(
-              setProfilesDiscordSettings({
-                ...discord,
-                webhookUrl: t,
-              })
-            )
-          }
-        />
-        <TextInput
-          label="Dice Images URL"
-          value={discord.diceImagesUrl}
-          onChangeText={(t) =>
-            appDispatch(
-              setProfilesDiscordSettings({
-                ...discord,
-                diceImagesUrl: t,
-              })
-            )
-          }
-        />
-        <Divider style={{ marginVertical: 10 }} />
-        <Text>Twitch connection settings</Text>
-        <TextInput
-          label="Twitch URL"
-          value={twitch.url}
-          onChangeText={(t) =>
-            appDispatch(
-              setProfilesTwitchSettings({
-                ...twitch,
-                url: t,
-              })
-            )
-          }
-        />
-        <Divider style={{ marginVertical: 10 }} />
-        <Text>dddice connection settings</Text>
-        <TextInput
-          label="API Key"
-          value={dddice.apiKey}
-          onChangeText={(t) =>
-            appDispatch(
-              setProfilesThreeDDiceSettings({
-                ...dddice,
-                apiKey: t,
-              })
-            )
-          }
-        />
-        <TextInput
-          label="Room slug"
-          value={dddice.roomSlug}
-          onChangeText={(t) =>
-            appDispatch(
-              setProfilesThreeDDiceSettings({
-                ...dddice,
-                roomSlug: t,
-              })
-            )
-          }
-        />
-        <TextInput
-          label="Password"
-          value={dddice.password}
-          onChangeText={(t) =>
-            appDispatch(
-              setProfilesThreeDDiceSettings({
-                ...dddice,
-                password: t,
-              })
-            )
-          }
-        /> 
-        <Divider style={{ marginVertical: 10 }} />
-        <Text>Global Speak Text settings</Text>
-      */}
+      <CreateAppActionModal
+        visible={createActionModalVisible}
+        onCreateAppAction={(type) => {
+          store.dispatch(addAppAction({ type, enabled: true, data: {} }));
+          const appActionUuid = store
+            .getState()
+            .appActions.entries.ids.at(-1) as string | undefined;
+          setCreateActionModalVisible(false);
+          appActionUuid &&
+            navigation.navigate("editAppAction", { appActionUuid });
+        }}
+        onDismiss={() => setCreateActionModalVisible(false)}
+      />
     </View>
   );
 }

@@ -32,7 +32,7 @@ import BatteryQuarterChargingIcon from "#/icons/dice/battery-quarter-charging";
 import BatteryThreeQuartersIcon from "#/icons/dice/battery-three-quarters";
 import BatteryThreeQuartersChargingIcon from "#/icons/dice/battery-three-quarters-charging";
 import SpeakIcon from "#/icons/profiles/speak";
-import { AppActionKind } from "~/features/store";
+import { AppActionType } from "~/features/store";
 
 export interface IconProps {
   size: number;
@@ -230,13 +230,13 @@ export function AnimatedDieWireframe({
   );
 }
 
-export function AppActionKindIcon({
-  actionKind,
+export function AppActionTypeIcon({
+  appActionType: type,
   ...props
 }: {
-  actionKind: AppActionKind;
+  appActionType: AppActionType;
 } & IconProps) {
-  switch (actionKind) {
+  switch (type) {
     case "speak":
       return <SpeakIcon {...props} />;
     case "url":
@@ -249,7 +249,9 @@ export function AppActionKindIcon({
       return <MaterialCommunityIcons name="twitch" {...props} />;
     case "dddice":
       return <FontAwesome5 name="dice-d20" {...props} />;
+    case "proxy":
+      return <MaterialCommunityIcons name="lan-connect" {...props} />;
     default:
-      return assertNever(actionKind, `Unknown actionKind: ${actionKind}`);
+      return assertNever(type, `Unknown appActionType: ${type}`);
   }
 }

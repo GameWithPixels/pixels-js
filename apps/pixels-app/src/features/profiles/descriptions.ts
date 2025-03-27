@@ -8,6 +8,8 @@ import {
   Profiles,
 } from "@systemic-games/react-native-pixels-connect";
 
+import { AppActionType } from "../store";
+
 import { listToText } from "~/features/utils";
 
 export function getConditionTypeLabel(type: Profiles.ConditionType): string {
@@ -308,4 +310,40 @@ export function getKeepDiceNearDevice(pixelsCount?: number): string {
     "during the update process. They may stay in open chargers but avoid " +
     `moving charger lids or other magnets as it may turn the ${diceStr} off.`
   );
+}
+
+export function getWebRequestFormatLabel(
+  format: Profiles.WebRequestFormat
+): string {
+  switch (format) {
+    case "parameters":
+      return "Parameters";
+    case "json":
+      return "JSON";
+    case "discord":
+      return "Discord";
+    default:
+      assertNever(format, `Unsupported WebRequest format: ${format}`);
+  }
+}
+
+export function getAppActionTypeLabel(type: AppActionType): string {
+  switch (type) {
+    case "speak":
+      return "Speak Rolls";
+    case "url":
+      return "URL";
+    case "json":
+      return "JSON";
+    case "discord":
+      return "Discord";
+    case "twitch":
+      return "Twitch";
+    case "dddice":
+      return "dddice";
+    case "proxy":
+      return "Proxy";
+    default:
+      assertNever(type, `Unknown action kind: ${type}`);
+  }
 }

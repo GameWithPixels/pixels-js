@@ -436,14 +436,14 @@ export function GradientIconButton({
   disabled,
   style,
   icon,
-  iconSize,
+  size,
   outline,
   contentStyle,
   ...props
 }: React.PropsWithChildren<
   {
     icon: (props: { size: number; color: string }) => React.ReactNode;
-    iconSize?: number;
+    size?: number;
     outline?: boolean;
     style?: StyleProp<ViewStyle>;
     contentStyle?: StyleProp<ViewStyle>;
@@ -452,7 +452,8 @@ export function GradientIconButton({
 >) {
   const { colors, roundness, isV3 } = useTheme();
   const borderRadius = getBorderRadius(roundness);
-  iconSize ??= isV3 ? 24 : 22;
+  const padding = 8;
+  const iconSize = size ? size - 2 * padding : isV3 ? 24 : 22;
   const color = disabled ? colors.onSurfaceDisabled : colors.onPrimary;
   return (
     <LinearGradient
@@ -478,7 +479,7 @@ export function GradientIconButton({
       <TouchableRipple
         disabled={disabled}
         rippleColor={colors.onPrimary}
-        style={[{ alignItems: "center", padding: 8 }, contentStyle]}
+        style={[{ alignItems: "center", padding }, contentStyle]}
         {...props}
       >
         {icon({ color, size: iconSize })}

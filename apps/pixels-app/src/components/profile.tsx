@@ -137,7 +137,7 @@ export function ProfileCard({
   style,
   contentStyle,
   ...props
-}: { vertical?: boolean } & Omit<ProfileCardProps, "children" | "row">) {
+}: { vertical?: boolean } & Omit<ProfileCardProps, "row">) {
   const { colors, roundness } = useTheme();
   const borderRadius = getBorderRadius(roundness, { tight: true });
   const dieViewCornersStyle = {

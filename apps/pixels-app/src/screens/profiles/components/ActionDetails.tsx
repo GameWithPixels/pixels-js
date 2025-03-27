@@ -18,15 +18,12 @@ import { AppStyles } from "~/app/styles";
 import { DieRendererWithFocus } from "~/components/DieRendererWithFocus";
 import { ActionTypeIcon } from "~/components/actions";
 import { applyActionOverrides, getFacesAsText } from "~/features/profiles";
-import { listToText } from "~/features/utils";
-
-function getCountAsText(count: number): string {
-  return count === 1 ? "once" : count === 2 ? "twice" : `${count} times`;
-}
-
-function toPercentText(value: number): string {
-  return (100 * value).toFixed() + "%";
-}
+import {
+  getCountAsText,
+  getUrlShortText,
+  listToText,
+  toPercentText,
+} from "~/features/utils";
 
 function getAnimationActionText(action: Profiles.ActionPlayAnimation): string {
   if (action.animation) {
@@ -99,14 +96,6 @@ function getShortText(text: string, maxLength = 25, variance = 7): string {
       "..."
     );
   }
-}
-
-function getUrlShortText(url: string): string {
-  url = url.trim();
-  const httpSep = url.indexOf("://");
-  const start = httpSep >= 0 ? httpSep + 3 : 0;
-  const end = url.indexOf("/", start);
-  return url.slice(start, end > 0 ? end : undefined);
 }
 
 function getSpeakActionText(action: Profiles.ActionSpeakText): string {
