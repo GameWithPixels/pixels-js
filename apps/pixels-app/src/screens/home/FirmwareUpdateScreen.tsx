@@ -12,10 +12,7 @@ import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
 import { PixelDfuList } from "~/components/PixelDfuList";
 import { GradientButton } from "~/components/buttons";
-import {
-  getKeepAllDiceUpToDate,
-  getKeepDiceNearDevice,
-} from "~/features/profiles";
+import { getKeepAllDiceUpToDate, getKeepDiceNearDevice } from "~/features/dice";
 import {
   useBottomSheetPadding,
   useIsAppUpdatingFirmware,

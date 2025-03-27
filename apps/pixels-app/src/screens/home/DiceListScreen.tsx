@@ -25,13 +25,15 @@ import {
 import { Banner } from "~/components/banners";
 import { GradientButton } from "~/components/buttons";
 import { DiceGrid, DiceList } from "~/components/dice";
+import {
+  getFirmwareUpdateAvailable,
+  getKeepAllDiceUpToDate,
+} from "~/features/dice";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   DiceGrouping,
   DiceGroupingList,
   getDiceGroupingLabel,
-  getFirmwareUpdateAvailable,
-  getKeepAllDiceUpToDate,
   getSortModeIcon,
   getSortModeLabel,
   SortMode,

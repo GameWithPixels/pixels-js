@@ -8,7 +8,7 @@ import { Text, useTheme } from "react-native-paper";
 import { TouchableCard, TouchableCardProps } from "./TouchableCard";
 
 import { useAppSelector } from "~/app/hooks";
-import { playActionAudioClip } from "~/features/profiles";
+import { playActionAudioClip } from "~/features/appActions";
 import { FileAsset } from "~/features/store/libraryAssets";
 
 export function AudioClipCard({

@@ -60,15 +60,16 @@ import {
   TightTextButton,
 } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
-import { getDieDfuAvailability, pairDie } from "~/features/dice";
-import { getBorderRadius } from "~/features/getBorderRadius";
 import {
+  getDieDfuAvailability,
   getDieTypeAndColorwayLabel,
   getFirmwareUpdateAvailable,
   getKeepAllDiceUpToDate,
   getKeepDiceNearDevice,
   getPixelStatusLabel,
-} from "~/features/profiles";
+  pairDie,
+} from "~/features/dice";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { setShowOnboarding } from "~/features/store";
 import {
   useBatteryStateLabel,

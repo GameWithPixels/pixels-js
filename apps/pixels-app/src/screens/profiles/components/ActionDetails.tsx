@@ -17,7 +17,8 @@ import { AppStore } from "~/app/store";
 import { AppStyles } from "~/app/styles";
 import { DieRendererWithFocus } from "~/components/DieRendererWithFocus";
 import { ActionTypeIcon } from "~/components/actions";
-import { applyActionOverrides, getFacesAsText } from "~/features/profiles";
+import { getFacesAsText } from "~/features/dice";
+import { applyActionOverrides } from "~/features/profiles";
 import {
   getCountAsText,
   getUrlShortText,

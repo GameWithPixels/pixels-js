@@ -3,7 +3,7 @@ import {
   usePixelInfoProp,
 } from "@systemic-games/react-native-pixels-connect";
 
-import { getRollStateAndFaceLabel } from "~/features/profiles";
+import { getRollStateAndFaceLabel } from "~/features/dice";
 
 export function useRollStateLabel(
   pixel: PixelInfoNotifier

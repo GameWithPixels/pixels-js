@@ -18,7 +18,7 @@ import { PixelBattery } from "~/components/PixelBattery";
 import { PixelConnectionStatus } from "~/components/PixelConnectionStatus";
 import { PixelRssi } from "~/components/PixelRssi";
 import { TouchableCard, TouchableCardProps } from "~/components/TouchableCard";
-import { getDieTypeAndColorwayLabel } from "~/features/profiles";
+import { getDieTypeAndColorwayLabel } from "~/features/dice";
 import { usePixelTransferProgress, useRegisteredPixel } from "~/hooks";
 
 function AnimatedChargingIcon({

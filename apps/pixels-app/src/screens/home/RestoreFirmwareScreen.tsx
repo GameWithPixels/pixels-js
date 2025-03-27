@@ -28,7 +28,7 @@ import { DfuFilesGate } from "~/components/DfuFilesGate";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientButton } from "~/components/buttons";
 import { updateFirmware } from "~/features/dfu";
-import { getKeepDiceNearDevice } from "~/features/profiles";
+import { getKeepDiceNearDevice } from "~/features/dice";
 import { logError } from "~/features/utils";
 import { useBottomSheetPadding, usePixelsCentral } from "~/hooks";
 
