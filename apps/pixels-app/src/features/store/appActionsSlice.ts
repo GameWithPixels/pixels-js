@@ -32,6 +32,7 @@ export type AppActionsData = {
   dddice: {
     apiKey: string;
     roomSlug: string;
+    theme: string;
     password: string;
     userUuid: string;
   };
@@ -117,6 +118,7 @@ function createEmptyData<T extends AppActionType>(type: T): AppActionsData[T] {
       return {
         apiKey: "",
         roomSlug: "",
+        theme: "",
         password: "",
         userUuid: "",
       } as U;

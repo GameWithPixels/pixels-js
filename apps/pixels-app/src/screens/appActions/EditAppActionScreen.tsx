@@ -4,12 +4,11 @@ import React from "react";
 import { Platform, ScrollView, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
-import { AppActionOnOffButton } from "./components/AppActionOnOffButton";
-
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { EditAppActionScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
+import { OnOffButton } from "~/components/OnOffButton";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { TextInputWithCopyButton } from "~/components/TextInputWithCopyButton";
@@ -17,17 +16,20 @@ import { OutlineButton } from "~/components/buttons";
 import { AppActionTypeIcon } from "~/components/icons";
 import {
   buildWebRequestParams,
-  dddice,
   getAppActionTypeLabel,
-  playActionMakeWebRequest,
+  playActionMakeWebRequestAsync,
   playActionSpeakText,
+  sendToThreeDDiceAsync,
 } from "~/features/appActions";
 import {
   AppActionEntry,
   AppActionsData,
   AppActionType,
+  enableAppAction,
+  removeAppAction,
   updateAppAction,
 } from "~/features/store";
+import { useConfirmActionSheet } from "~/hooks";
 
 type AppActionMapping = {
   [T in AppActionType]: {
@@ -65,13 +67,13 @@ function testAppAction({ type, data }: AppActionMapping[AppActionType]): void {
       );
       const format =
         type === "url" ? "parameters" : type === "json" ? "json" : "discord";
-      playActionMakeWebRequest({ url: data.url, format }, params);
+      playActionMakeWebRequestAsync({ url: data.url, format }, params);
       break;
     }
     case "twitch":
       throw new Error("Not implemented");
     case "dddice":
-      dddice(data, { dieType: "d20", face: 1 });
+      sendToThreeDDiceAsync(data, { dieType: "d20", value: 1 });
       break;
     case "proxy":
       throw new Error("Not implemented");
@@ -283,6 +285,12 @@ function ConfigureThreeDDiceAction({ uuid }: { uuid: string }) {
       >
         User UUID (optional)
       </TextInputWithTitle>
+      <TextInputWithTitle
+        value={data.theme}
+        onChangeText={(theme) => updateData({ theme })}
+      >
+        Theme (optional)
+      </TextInputWithTitle>
       <NotEncryptedWarning />
     </>
   );
@@ -303,6 +311,22 @@ function ConfigureProxyAction({ uuid }: { uuid: string }) {
   );
 }
 
+export function AppActionOnOffButton({ uuid }: { uuid: string }) {
+  const dispatch = useAppDispatch();
+  const enabled = useAppSelector(
+    (state) => state.appActions.entries.entities[uuid]?.enabled
+  );
+  // <View ></View>
+  return (
+    <OnOffButton
+      enabled={enabled}
+      style={AppStyles.selfCentered}
+      onPress={() => {
+        dispatch(enableAppAction({ uuid, enabled: !enabled }));
+      }}
+    />
+  );
+}
 function EditAppActionPage({
   appActionUuid: uuid,
   appActionType: type,
@@ -335,6 +359,11 @@ function EditAppActionPage({
     }
   })();
 
+  const showConfirmDelete = useConfirmActionSheet("Delete App Action", () => {
+    store.dispatch(removeAppAction(uuid));
+    // Navigation will automatically go back
+  });
+
   const { colors } = useTheme();
   return (
     <View style={{ height: "100%" }}>
@@ -344,9 +373,9 @@ function EditAppActionPage({
       <ScrollView
         alwaysBounceVertical={false}
         contentContainerStyle={{
-          paddingVertical: 20,
-          paddingHorizontal: 20,
-          gap: 20,
+          paddingBottom: 10,
+          paddingHorizontal: 10,
+          gap: 10,
         }}
       >
         <AppActionTypeIcon
@@ -355,27 +384,33 @@ function EditAppActionPage({
           color={colors.onSurface}
           style={AppStyles.selfCentered}
         />
-        <View style={AppStyles.selfCentered}>
-          <AppActionOnOffButton uuid={uuid} color={colors.onSurface} />
-        </View>
+        <AppActionOnOffButton uuid={uuid} />
         <View style={{ gap: 5 }}>
           <ConfigureAction uuid={uuid} />
         </View>
-        <OutlineButton
-          onPress={() => {
-            const type =
-              store.getState().appActions.entries.entities[uuid]?.type;
-            const data = type && store.getState().appActions.data[type][uuid];
-            if (type && data) {
-              testAppAction(
-                // @ts-ignore
-                { type, data }
-              );
-            }
-          }}
-        >
-          Test App Action
-        </OutlineButton>
+        <View style={{ marginTop: 20, gap: 20 }}>
+          <OutlineButton
+            onPress={() => {
+              const type =
+                store.getState().appActions.entries.entities[uuid]?.type;
+              const data = type && store.getState().appActions.data[type][uuid];
+              if (type && data) {
+                testAppAction(
+                  // @ts-ignore
+                  { type, data }
+                );
+              }
+            }}
+          >
+            Test App Action
+          </OutlineButton>
+          <OutlineButton
+            style={{ backgroundColor: colors.errorContainer }}
+            onPress={() => showConfirmDelete()}
+          >
+            Delete
+          </OutlineButton>
+        </View>
       </ScrollView>
     </View>
   );

@@ -23,7 +23,7 @@ import {
 import {
   buildWebRequestParams,
   playActionAudioClip,
-  playActionMakeWebRequest,
+  playActionMakeWebRequestAsync,
   playActionSpeakText,
 } from "~/features/appActions";
 import { PixelsCentral } from "~/features/dice";
@@ -68,7 +68,7 @@ function remoteActionListener(
         log(`Got remote action of type ${action.type} with id ${actionId}`)
       );
       if (action instanceof Profiles.ActionMakeWebRequest) {
-        playActionMakeWebRequest(
+        playActionMakeWebRequestAsync(
           action,
           buildWebRequestParams(pixel, profile.name, action.value)
         );
