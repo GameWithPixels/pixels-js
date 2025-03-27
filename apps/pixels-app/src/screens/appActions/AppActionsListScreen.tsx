@@ -50,8 +50,6 @@ function AppActionsListPage({
               onPressAction={onPressAction}
             />
           )}
-          // keyExtractor={(item, index) => index.toString()}
-          // alwaysBounceVertical={false}
           contentContainerStyle={{ padding: 10, gap: 10 }}
         />
       ) : (

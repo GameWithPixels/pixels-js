@@ -34,16 +34,13 @@ export function useFlashAnimationStyle(
     ];
   }, [colorRange, colors, mode]);
   const animValue = useSharedValue(0);
-  const animStyle = useAnimatedStyle(
-    () => ({
-      backgroundColor: interpolateColor(
-        animValue.value,
-        [0, 1],
-        colorRange.value
-      ),
-    }),
-    [flash, mode]
-  );
+  const animStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      animValue.value,
+      [0, 1],
+      colorRange.value
+    ),
+  }));
   React.useEffect(() => {
     const pingPong = (x0: number, x1: number) =>
       withSequence(

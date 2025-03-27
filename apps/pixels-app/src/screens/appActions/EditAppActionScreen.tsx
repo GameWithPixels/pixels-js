@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assert, assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
-import { Platform, ScrollView, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
@@ -21,6 +21,7 @@ import {
   playActionSpeakText,
   sendToThreeDDiceAsync,
 } from "~/features/appActions";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   AppActionEntry,
   AppActionsData,
@@ -316,11 +317,20 @@ export function AppActionOnOffButton({ uuid }: { uuid: string }) {
   const enabled = useAppSelector(
     (state) => state.appActions.entries.entities[uuid]?.enabled
   );
-  // <View ></View>
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness, { tight: true });
   return (
     <OnOffButton
       enabled={enabled}
-      style={AppStyles.selfCentered}
+      style={{
+        alignSelf: "center",
+        justifyContent: "center",
+        aspectRatio: 1,
+        borderWidth: StyleSheet.hairlineWidth,
+        borderRadius,
+        borderColor: enabled ? colors.primary : colors.onSurfaceDisabled,
+        backgroundColor: colors.background,
+      }}
       onPress={() => {
         dispatch(enableAppAction({ uuid, enabled: !enabled }));
       }}
