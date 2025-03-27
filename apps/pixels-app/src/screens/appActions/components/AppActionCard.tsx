@@ -1,15 +1,23 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import React from "react";
-import { View } from "react-native";
-import { Text, TouchableRippleProps, useTheme } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
+import {
+  Divider,
+  Text,
+  TouchableRippleProps,
+  useTheme,
+} from "react-native-paper";
 
-import { AppActionOnOffButton } from "./AppActionOnOffButton";
-
-import { useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { OnOffButton } from "~/components/OnOffButton";
 import { TouchableCard } from "~/components/TouchableCard";
 import { AppActionTypeIcon } from "~/components/icons";
 import { getAppActionTypeLabel } from "~/features/appActions";
-import { AppActionsData, AppActionType } from "~/features/store";
+import {
+  AppActionsData,
+  AppActionType,
+  enableAppAction,
+} from "~/features/store";
 import { getUrlShortText, toPercentText } from "~/features/utils";
 
 type AppActionMapping = {
@@ -67,35 +75,58 @@ export const AppActionCard = React.memo(function AppActionCard({
 }: {
   uuid: string;
   onPressAction?: (uuid: string) => void;
-} & Omit<TouchableRippleProps, "children" | "style" | "onPress">) {
+} & Omit<
+  TouchableRippleProps,
+  "children" | "style" | "contentStyle" | "onPress"
+>) {
+  const dispatch = useAppDispatch();
   const actionType = useAppSelector(
     (state) => state.appActions.entries.entities[uuid]?.type
+  );
+  const enabled = useAppSelector(
+    (state) => state.appActions.entries.entities[uuid]?.enabled
   );
   const { colors } = useTheme();
   return (
     actionType && (
       <TouchableCard
         row
-        gradientBorder="bright"
         thinBorder
-        contentStyle={{ paddingLeft: 20 }}
+        gradientBorder={enabled ? "bright" : "dark"}
+        contentStyle={{ padding: 0, overflow: "hidden" }}
         onPress={onPressAction ? () => onPressAction(uuid) : undefined}
         {...props}
       >
-        <AppActionTypeIcon
-          appActionType={actionType}
-          size={42}
-          color={colors.onSurface}
-        />
         <View
-          style={{ flexGrow: 1, flexShrink: 1, alignItems: "center", gap: 5 }}
+          style={{
+            flexDirection: "row",
+            flexGrow: 1,
+            flexShrink: 1,
+            marginLeft: 20,
+          }}
         >
-          <Text variant="titleMedium" numberOfLines={1}>
-            {getAppActionTypeLabel(actionType)}
-          </Text>
-          <AppActionShortDescription uuid={uuid} />
+          <AppActionTypeIcon
+            appActionType={actionType}
+            size={36}
+            color={colors.onSurface}
+          />
+          <View
+            style={{ flexGrow: 1, flexShrink: 1, alignItems: "center", gap: 5 }}
+          >
+            <Text variant="titleMedium" numberOfLines={1}>
+              {getAppActionTypeLabel(actionType)}
+            </Text>
+            <AppActionShortDescription uuid={uuid} />
+          </View>
         </View>
-        <AppActionOnOffButton uuid={uuid} color={colors.onSurface} />
+        <Divider style={{ width: StyleSheet.hairlineWidth, height: "100%" }} />
+        <OnOffButton
+          enabled={enabled}
+          style={{ paddingVertical: 10 }}
+          onPress={() => {
+            dispatch(enableAppAction({ uuid, enabled: !enabled }));
+          }}
+        />
       </TouchableCard>
     )
   );
