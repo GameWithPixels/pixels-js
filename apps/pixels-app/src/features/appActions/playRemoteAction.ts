@@ -1,10 +1,17 @@
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import { WebRequestFormat } from "@systemic-games/pixels-edit-animation";
+import {
+  PixelDieType,
+  WebRequestFormat,
+} from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import * as Speech from "expo-speech";
 import { AppState } from "react-native";
 import Toast, { ToastOptions } from "react-native-root-toast";
 
+import {
+  ThreeDDiceConnector,
+  ThreeDDiceConnectorParams,
+} from "./ThreeDDiceConnector";
 import { WebRequestParams } from "./buildWebRequestParams";
 import { buildWebRequestURL } from "./buildWebRequestURL";
 import type { EmbedsDiscordWebhookPayload } from "./discordWebhook";
@@ -76,7 +83,7 @@ export function buildWebRequestPayload(
 }
 
 export function playActionMakeWebRequest(
-  action: Profiles.ActionMakeWebRequest,
+  action: Pick<Profiles.ActionMakeWebRequest, "url" | "format">,
   params: WebRequestParams
 ): void {
   const bodyObj = buildWebRequestPayload(action.format, params);
@@ -176,5 +183,39 @@ export function playActionAudioClip(
     play();
   } else {
     console.log(`Audio clip not found: ${clipUuid}`);
+  }
+}
+
+export async function dddice(
+  connectionParams: ThreeDDiceConnectorParams,
+  {
+    pixelName,
+    dieType,
+    face,
+  }: {
+    pixelName?: string;
+    dieType: PixelDieType;
+    face: number;
+  }
+): Promise<void> {
+  const { roomSlug, userUuid } = connectionParams;
+  const toastMsg = `\n\nRoom: ${roomSlug}${userUuid ? `\nUser UUID: ${userUuid}` : ""}\n\n`;
+  const forPixelMsg = pixelName ? ` for "${pixelName}"` : "";
+  try {
+    const api = new ThreeDDiceConnector(connectionParams);
+    await api.connect();
+    const rollResult = await api.rollDice(dieType);
+    console.log("Roll result:", JSON.stringify(rollResult));
+    showToast(`dddice request Send${forPixelMsg}!${toastMsg}Status: ${status}`);
+  } catch (e) {
+    console.log(
+      `dddice request to room ${roomSlug} failed with error ${(e as Error).message ?? e}`
+    );
+    console.log(`Error: ${e}`);
+    showLongToast(
+      `Failed Sending dddice request${forPixelMsg}!${toastMsg}Error: ${
+        (e as Error).message ?? e
+      }`
+    );
   }
 }

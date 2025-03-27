@@ -19,10 +19,10 @@ import { TabsHeaders } from "./TabsHeaders";
 import { ProfilesList } from "./profile";
 
 import { useAppStore } from "~/app/hooks";
+import { getDieTypeLabel } from "~/features/dice";
 import {
   createProfileTemplates,
   getCompatibleDieTypes,
-  getDieTypeLabel,
 } from "~/features/profiles";
 import { useFilteredProfiles, useProfilesList } from "~/hooks";
 

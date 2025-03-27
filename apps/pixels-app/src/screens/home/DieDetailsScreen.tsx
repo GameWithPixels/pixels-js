@@ -31,7 +31,7 @@ import {
   getFirmwareUpdateAvailable,
   getPixelStatusLabel,
   getRollStateLabel,
-} from "~/features/profiles";
+} from "~/features/dice";
 import {
   useHasFirmwareUpdate,
   useProfile,

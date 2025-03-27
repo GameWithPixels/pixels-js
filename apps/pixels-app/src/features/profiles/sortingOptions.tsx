@@ -7,12 +7,12 @@ import {
 } from "@systemic-games/react-native-pixels-connect";
 
 import { ProfileDieTypes } from "./ProfileDieTypes";
-import { getColorwayLabel, getProfileDieTypeLabel } from "./descriptions";
+import { getProfileDieTypeLabel } from "./descriptions";
 
 import SortAZIcon from "#/icons/items-view/sort-a-z";
 import SortZAIcon from "#/icons/items-view/sort-z-a";
 import { PairedDie } from "~/app/PairedDie";
-import { AvailableDieTypeValues } from "~/features/dice";
+import { getColorwayLabel, AvailableDieTypeValues } from "~/features/dice";
 
 function SortByDateDescendingIcon({
   size,

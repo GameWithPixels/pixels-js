@@ -55,13 +55,13 @@ import {
   GradientIconButton,
   OutlineButton,
 } from "~/components/buttons";
+import { getFacesAsText } from "~/features/dice";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   EditorActionTypes,
   getActionTypeDescription,
   getConditionTypeDescription,
   getConditionTypeLabel,
-  getFacesAsText,
   rolledConditionComparator,
 } from "~/features/profiles";
 import { makeObservable } from "~/features/utils";

@@ -29,7 +29,7 @@ import { TouchableCardProps, TouchableCard } from "./TouchableCard";
 import { DieWireframe } from "./icons";
 
 import { PairedDie } from "~/app/PairedDie";
-import { getRollStateAndFaceLabel } from "~/features/profiles";
+import { getRollStateAndFaceLabel } from "~/features/dice";
 import {
   useIsModifiedDieProfile,
   useIsPixelRolling,

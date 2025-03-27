@@ -8,11 +8,11 @@ import { AppActionOnOffButton } from "./AppActionOnOffButton";
 import { useAppSelector } from "~/app/hooks";
 import { TouchableCard } from "~/components/TouchableCard";
 import { AppActionTypeIcon } from "~/components/icons";
-import { getAppActionTypeLabel } from "~/features/profiles";
+import { getAppActionTypeLabel } from "~/features/appActions";
 import { AppActionsData, AppActionType } from "~/features/store";
 import { getUrlShortText, toPercentText } from "~/features/utils";
 
-type Mapping = {
+type AppActionMapping = {
   [T in AppActionType]: {
     type: T;
     data: AppActionsData[T];
@@ -22,7 +22,7 @@ type Mapping = {
 function getAppActionShortDescription({
   type,
   data,
-}: Mapping[AppActionType]): string {
+}: AppActionMapping[AppActionType]): string {
   switch (type) {
     case "speak":
       return `Pitch: ${toPercentText(data.pitch)}, Rate: ${toPercentText(data.rate)}`;

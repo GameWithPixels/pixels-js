@@ -6,7 +6,7 @@ import { Text, useTheme } from "react-native-paper";
 
 import { AppActionOnOffButton } from "./components/AppActionOnOffButton";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { EditAppActionScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
@@ -15,13 +15,70 @@ import { SliderWithValue } from "~/components/SliderWithValue";
 import { TextInputWithCopyButton } from "~/components/TextInputWithCopyButton";
 import { OutlineButton } from "~/components/buttons";
 import { AppActionTypeIcon } from "~/components/icons";
-import { getAppActionTypeLabel } from "~/features/profiles";
+import {
+  buildWebRequestParams,
+  dddice,
+  getAppActionTypeLabel,
+  playActionMakeWebRequest,
+  playActionSpeakText,
+} from "~/features/appActions";
 import {
   AppActionEntry,
   AppActionsData,
   AppActionType,
   updateAppAction,
 } from "~/features/store";
+
+type AppActionMapping = {
+  [T in AppActionType]: {
+    type: T;
+    data: AppActionsData[T];
+  };
+};
+
+function testAppAction({ type, data }: AppActionMapping[AppActionType]): void {
+  switch (type) {
+    case "speak":
+      playActionSpeakText({ text: "1", ...data });
+      break;
+    case "url":
+    case "json":
+    case "discord": {
+      const params = buildWebRequestParams(
+        // Fake PixelInfo for the web request params
+        {
+          name: "Pixels",
+          currentFace: 1,
+          currentFaceIndex: 0,
+          pixelId: 12345678,
+          ledCount: 20,
+          colorway: "onyxBlack",
+          dieType: "d20",
+          firmwareDate: new Date(),
+          rssi: -60,
+          batteryLevel: 0.5,
+          isCharging: false,
+          rollState: "rolled",
+        },
+        "App Action",
+        "1"
+      );
+      const format =
+        type === "url" ? "parameters" : type === "json" ? "json" : "discord";
+      playActionMakeWebRequest({ url: data.url, format }, params);
+      break;
+    }
+    case "twitch":
+      throw new Error("Not implemented");
+    case "dddice":
+      dddice(data, { dieType: "d20", face: 1 });
+      break;
+    case "proxy":
+      throw new Error("Not implemented");
+    default:
+      assertNever(type, `Unknown app action type: ${type}`);
+  }
+}
 
 function NotEncryptedWarning() {
   const { colors } = useTheme();
@@ -255,6 +312,8 @@ function EditAppActionPage({
   appActionType: AppActionEntry["type"];
   navigation: EditAppActionScreenProps["navigation"];
 }) {
+  const store = useAppStore();
+
   const ConfigureAction = (() => {
     switch (type) {
       case "speak":
@@ -304,10 +363,18 @@ function EditAppActionPage({
         </View>
         <OutlineButton
           onPress={() => {
-            //playActionSpeakText({text: "1", ...actionData });
+            const type =
+              store.getState().appActions.entries.entities[uuid]?.type;
+            const data = type && store.getState().appActions.data[type][uuid];
+            if (type && data) {
+              testAppAction(
+                // @ts-ignore
+                { type, data }
+              );
+            }
           }}
         >
-          Test
+          Test App Action
         </OutlineButton>
       </ScrollView>
     </View>

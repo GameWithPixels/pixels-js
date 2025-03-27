@@ -13,7 +13,7 @@ import { PairedDie } from "~/app/PairedDie";
 import { useAppSelector } from "~/app/hooks";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
-import { getDieTypeLabel } from "~/features/profiles";
+import { getDieTypeLabel } from "~/features/dice";
 import { listToText } from "~/features/utils";
 import {
   useBottomSheetBackHandler,
