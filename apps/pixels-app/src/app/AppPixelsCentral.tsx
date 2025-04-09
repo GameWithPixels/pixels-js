@@ -26,6 +26,7 @@ import {
   playActionMakeWebRequestAsync,
   playActionSpeakText,
 } from "~/features/appActions";
+import { appActionListener } from "~/features/appActions/playAppActions";
 import { PixelsCentral } from "~/features/dice";
 import { createProfileDataSetWithOverrides } from "~/features/profiles";
 import {
@@ -252,7 +253,7 @@ function hookToPixel(
     );
     if (pairedDie) {
       store.dispatch(addDieRoll({ pixelId: pixel.pixelId, roll }));
-      pixel.dieType !== "unknown" &&
+      if (pixel.dieType !== "unknown") {
         store.dispatch(
           addRollToRoller({
             pixelId: pixel.pixelId,
@@ -260,6 +261,8 @@ function hookToPixel(
             value: roll,
           })
         );
+        appActionListener(pixel, roll, store);
+      }
     }
   };
   pixel.addEventListener("roll", onRoll);
