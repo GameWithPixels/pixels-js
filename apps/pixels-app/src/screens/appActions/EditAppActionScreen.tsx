@@ -263,12 +263,6 @@ function ConfigureThreeDDiceAction({ uuid }: { uuid: string }) {
   return (
     <>
       <TextInputWithTitle
-        value={data.apiKey}
-        onChangeText={(apiKey) => updateData({ apiKey })}
-      >
-        API Key
-      </TextInputWithTitle>
-      <TextInputWithTitle
         value={data.roomSlug}
         onChangeText={(roomSlug) => updateData({ roomSlug })}
       >

@@ -10,7 +10,8 @@
       "distribution": "internal",
       "channel": "development",
       "env": {
-        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EAS_BUILD_PROFILE": "development"
       }
     },
     "preview": {
