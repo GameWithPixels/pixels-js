@@ -1,5 +1,6 @@
-import React from "react";
-import { Alert, AppState } from "react-native";
+import { Audio } from "expo-av";
+import React, { useRef } from "react";
+import { Alert, AppState, Platform } from "react-native";
 import { useStore } from "react-redux";
 
 import { updatePairedDiceAndProfilesFrom3to4 } from "./migrations";
@@ -80,11 +81,21 @@ export function AppInit({ children }: React.PropsWithChildren) {
   const playAudioInSilentModeIOS = useAppSelector(
     (state) => state.appSettings.playAudioInSilentModeIOS
   );
+  const dummySoundObject = useRef(new Audio.Sound());
+
   React.useEffect(() => {
-    setAudioSettingsAsync({
-      staysActiveInBackground: backgroundAudio,
-      playsInSilentModeIOS: playAudioInSilentModeIOS,
-    }).catch((e) => logError(e));
+    const enableSound = async () => {
+      if (Platform.OS === "ios") {
+        setAudioSettingsAsync({
+          staysActiveInBackground: backgroundAudio,
+          playsInSilentModeIOS: playAudioInSilentModeIOS,
+        }).catch((e) => logError(e));
+        // Apparently we need to do this to make sure Speech works in background/silent mode
+        await dummySoundObject.current.loadAsync(require("#/sounds/empty.mp3"));
+        await dummySoundObject.current.playAsync();
+      }
+    };
+    enableSound();
   }, [backgroundAudio, playAudioInSilentModeIOS]);
 
   // Load DFU files

@@ -1,5 +1,15 @@
 import { DiceUtils, PixelDieType } from "@systemic-games/pixels-core-animation";
-import { ThreeDDiceAPI } from "dddice-js";
+import { ThreeDDiceAPI, ITheme } from "dddice-js";
+
+export async function authenticate(
+  onCodeGenerated: (code: string) => void,
+  onAuthenticated: (apiKey: string) => void
+) {
+  const api = new ThreeDDiceAPI();
+  const info = await api.user.activate();
+  onCodeGenerated(info.code);
+  onAuthenticated(await info.apiKey);
+}
 
 export type ThreeDDiceConnectorParams = {
   apiKey: string;
@@ -7,6 +17,11 @@ export type ThreeDDiceConnectorParams = {
   theme?: string;
   password?: string;
   userUuid?: string;
+};
+
+export type ThreeDDiceThemes = {
+  id: string;
+  name?: string;
 };
 
 export class ThreeDDiceConnector {
@@ -35,7 +50,10 @@ export class ThreeDDiceConnector {
     // onConnectionStateChange: (callback: (state: string) => any) => ThreeDDiceAPI;
     // onConnectionError: (callback: ConnectionErrorCallback) => ThreeDDiceAPI;
     // onConnect: (callback: ConnectionCreatedCallback) => ThreeDDiceAPI;
-    this.api.connect(this.roomSlug, this.roomPasscode, this.userUuid);
+    const user = await this.api.user.get();
+    // @ts-ignore
+    const userUUID = user.data.uuid;
+    this.api.connect(this.roomSlug, this.roomPasscode, userUUID);
     console.log("Connected to 3D Dice API");
   }
 
@@ -47,13 +65,24 @@ export class ThreeDDiceConnector {
     const rollResult = await this.api.roll.create([
       {
         type: `d${DiceUtils.getFaceCount(dieType)}`,
-        theme: this.theme ?? "dddice-bees",
+        theme: this.theme,
         value,
         label: pixelName ?? "Pixels",
       },
     ]);
-    console.log("Roll result:", JSON.stringify(rollResult));
     return rollResult;
   }
+
+  async listThemes(): Promise<ThreeDDiceThemes[]> {
+    const retThemes: ThreeDDiceThemes[] = [];
+    let apiThemes: ITheme[] | undefined = (await this.api.diceBox.list()).data;
+    do {
+      apiThemes.forEach((theme) => {
+        retThemes.push({ id: theme.id, name: theme.name });
+      });
+      const themesPromise = await this.api.diceBox.next();
+      apiThemes = themesPromise?.data;
+    } while (apiThemes);
+    return retThemes;
+  }
 }
-// t4JlcqZ3y4L8CjTdwumpi922e0i17o6C6GC3Z2po45e45037

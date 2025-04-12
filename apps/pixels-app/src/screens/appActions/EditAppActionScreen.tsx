@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assert, assertNever } from "@systemic-games/pixels-core-utils";
+import { openURL } from "expo-linking";
 import React from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { Button, Text, useTheme } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { EditAppActionScreenProps } from "~/app/navigation";
@@ -21,6 +22,7 @@ import {
   playActionSpeakText,
   sendToThreeDDiceAsync,
 } from "~/features/appActions";
+import { authenticate } from "~/features/appActions/ThreeDDiceConnector";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   AppActionEntry,
@@ -260,35 +262,66 @@ function ConfigureTwitchAction({ uuid }: { uuid: string }) {
 
 function ConfigureThreeDDiceAction({ uuid }: { uuid: string }) {
   const { data, updateData } = useAppActionData(uuid, "dddice");
-  return (
-    <>
-      <TextInputWithTitle
-        value={data.roomSlug}
-        onChangeText={(roomSlug) => updateData({ roomSlug })}
-      >
-        Room Slug
-      </TextInputWithTitle>
-      <TextInputWithTitle
-        value={data.password}
-        onChangeText={(password) => updateData({ password })}
-      >
-        Password (optional)
-      </TextInputWithTitle>
-      <TextInputWithTitle
-        value={data.userUuid}
-        onChangeText={(userUuid) => updateData({ userUuid })}
-      >
-        User UUID (optional)
-      </TextInputWithTitle>
-      <TextInputWithTitle
-        value={data.theme}
-        onChangeText={(theme) => updateData({ theme })}
-      >
-        Theme (optional)
-      </TextInputWithTitle>
-      <NotEncryptedWarning />
-    </>
-  );
+  const [code, updateCode] = React.useState<string | undefined>(undefined);
+  if (data.apiKey) {
+    return (
+      <>
+        <TextInputWithTitle
+          value={data.roomSlug}
+          onChangeText={(roomSlug) => updateData({ roomSlug })}
+        >
+          Room Slug
+        </TextInputWithTitle>
+        <TextInputWithTitle
+          value={data.password}
+          onChangeText={(password) => updateData({ password })}
+        >
+          Password (optional)
+        </TextInputWithTitle>
+        <TextInputWithTitle
+          value={data.theme}
+          onChangeText={(theme) => updateData({ theme })}
+        >
+          Theme (optional)
+        </TextInputWithTitle>
+        <NotEncryptedWarning />
+      </>
+    );
+  } else if (code) {
+    return (
+      <>
+        <Text>Your Code:</Text>
+        <Text style={[AppStyles.textCentered]} variant="titleLarge">
+          {code}
+        </Text>
+        <Button
+          onPress={() => {
+            openURL("https://dddice.com/activate");
+          }}
+        >
+          Open DDDice page
+        </Button>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Text>You need to authorize your Pixels App on DDDice.</Text>
+        <Button
+          onPress={() => {
+            authenticate(
+              (code) => {
+                updateCode(code);
+              },
+              (apiKey) => updateData({ apiKey })
+            );
+          }}
+        >
+          Authorize
+        </Button>
+      </>
+    );
+  }
 }
 
 function ConfigureProxyAction({ uuid }: { uuid: string }) {
