@@ -43,6 +43,7 @@ const config = {
         NSAppTransportSecurity: {
           NSAllowsArbitraryLoads: true,
         },
+        UIBackgroundModes: ["bluetooth-central", "audio"],
       },
     },
     android: {
@@ -59,6 +60,7 @@ const config = {
       blockedPermissions: ["android.permission.SYSTEM_ALERT_WINDOW"],
     },
     plugins: [
+      "./withAndroidFeatures",
       "./withAndroidPermissions",
       "./withAndroidAsyncStorageDbSize",
       "./withAndroidMailto",

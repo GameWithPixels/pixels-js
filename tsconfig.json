@@ -8,7 +8,7 @@
     "incremental": true,
     "noEmit": false,
     "emitDeclarationOnly": true,
-    "isolatedModules": true, // From @tsconfig/react-native
+    "isolatedModules": true,
     "paths": {
       "@systemic-games/*": [
         "./packages/*/src"
@@ -56,7 +56,6 @@
     {
       "path": "./packages/react-native-zpl-print"
     },
-    // Apps
     {
       "path": "./apps/pixels-app"
     },
@@ -72,5 +71,6 @@
     {
       "path": "./apps/rgb-avg-example"
     }
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }
