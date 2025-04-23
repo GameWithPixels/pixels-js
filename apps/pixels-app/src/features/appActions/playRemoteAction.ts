@@ -1,8 +1,6 @@
+import { PixelInfo } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
-import {
-  PixelDieType,
-  WebRequestFormat,
-} from "@systemic-games/pixels-edit-animation";
+import { WebRequestFormat } from "@systemic-games/pixels-edit-animation";
 import { Profiles } from "@systemic-games/react-native-pixels-connect";
 import * as Speech from "expo-speech";
 import { AppState } from "react-native";
@@ -184,23 +182,24 @@ export function playActionAudioClip(
 export async function sendToThreeDDiceAsync(
   connectionParams: ThreeDDiceConnectorParams,
   {
-    pixelName,
     value,
-    dieType,
+    die,
   }: {
-    pixelName?: string;
     value: number;
-    dieType: PixelDieType;
+    die: Omit<PixelInfo, "systemId">;
   }
 ): Promise<void> {
   const { roomSlug, userUuid } = connectionParams;
   const toastMsg = `\n\nRoom: ${roomSlug}${userUuid ? `\nUser UUID: ${userUuid}` : ""}\n\n`;
-  const forPixelMsg = pixelName ? ` for "${pixelName}"` : "";
+  const forPixelMsg = die.name ? ` for "${die.name}"` : "";
   try {
     const api = new ThreeDDiceConnector(connectionParams);
     await api.connect();
-    const rollResult = await api.rollDice(dieType, value, pixelName);
-    console.log("Roll result:", JSON.stringify(rollResult));
+    // const themes = await api.listThemes();
+    // themes.forEach((t) => console.log(t.id + ", " + t.name));
+
+    const rollResult = await api.rollDice(die, value, die.name);
+    //console.log("Roll result:", JSON.stringify(rollResult));
     showToast(
       `dddice request Send${forPixelMsg}!${toastMsg}Value: ${rollResult.data.total_value}`
     );
