@@ -56,7 +56,7 @@ function playAppAction(
       throw new Error("Not implemented");
     case "dddice":
       sendToThreeDDiceAsync(data, {
-        dieType: die.dieType,
+        die,
         value: roll,
       });
       break;

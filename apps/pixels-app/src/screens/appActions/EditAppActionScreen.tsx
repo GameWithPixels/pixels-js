@@ -76,7 +76,24 @@ function testAppAction({ type, data }: AppActionMapping[AppActionType]): void {
     case "twitch":
       throw new Error("Not implemented");
     case "dddice":
-      sendToThreeDDiceAsync(data, { dieType: "d20", value: 1 });
+      sendToThreeDDiceAsync(data, {
+        // Fake PixelInfo for the web request params
+        die: {
+          name: "Pixels",
+          currentFace: 1,
+          currentFaceIndex: 0,
+          pixelId: 12345678,
+          ledCount: 20,
+          colorway: "onyxBlack",
+          dieType: "d20",
+          firmwareDate: new Date(),
+          rssi: -60,
+          batteryLevel: 0.5,
+          isCharging: false,
+          rollState: "rolled",
+        },
+        value: 1,
+      });
       break;
     case "proxy":
       throw new Error("Not implemented");

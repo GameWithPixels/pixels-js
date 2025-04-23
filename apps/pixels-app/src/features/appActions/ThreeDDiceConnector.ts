@@ -1,4 +1,5 @@
-import { DiceUtils, PixelDieType } from "@systemic-games/pixels-core-animation";
+import { DiceUtils } from "@systemic-games/pixels-core-animation";
+import { PixelInfo } from "@systemic-games/pixels-core-connect";
 import { ThreeDDiceAPI, ITheme } from "dddice-js";
 
 export async function authenticate(
@@ -58,14 +59,21 @@ export class ThreeDDiceConnector {
   }
 
   async rollDice(
-    dieType: PixelDieType,
+    die: Omit<PixelInfo, "systemId">,
     value: number,
     pixelName?: string
   ): ReturnType<typeof ThreeDDiceAPI.prototype.roll.create> {
+    let dieTheme = "dddice-bees";
+    if (die.colorway === "auroraSky") {
+      dieTheme = "pixels-mg-m9spm1vz";
+    } else if (die.colorway === "midnightGalaxy") {
+      dieTheme = "pixels-mg-m9splf6i";
+    }
+
     const rollResult = await this.api.roll.create([
       {
-        type: `d${DiceUtils.getFaceCount(dieType)}`,
-        theme: this.theme,
+        type: `d${DiceUtils.getFaceCount(die.dieType)}`,
+        theme: dieTheme,
         value,
         label: pixelName ?? "Pixels",
       },
