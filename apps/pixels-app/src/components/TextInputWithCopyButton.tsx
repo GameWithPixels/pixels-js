@@ -1,18 +1,20 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
-import * as Clipboard from "expo-clipboard";
 import { View } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
+
+import { CopyToClipboardButton } from "./CopyToClipboardButton";
 
 import { getBorderRadius } from "~/features/getBorderRadius";
 
 export function TextInputWithCopyButton({
   value,
   mode,
+  disabled,
   onChangeText,
 }: {
   value: string;
   mode?: "default" | "bottomSheet";
+  disabled?: boolean;
   onChangeText?: (text: string) => void;
 }) {
   const Input = mode === "bottomSheet" ? BottomSheetTextInput : TextInput;
@@ -37,6 +39,7 @@ export function TextInputWithCopyButton({
         value={value}
         onChangeText={onChangeText}
         mode="outlined"
+        disabled={disabled}
         style={{
           flex: 1,
           flexGrow: 1,
@@ -53,18 +56,7 @@ export function TextInputWithCopyButton({
         }}
         contentStyle={contentStyle}
       />
-      <MaterialCommunityIcons
-        name="content-copy"
-        size={20}
-        color={colors.onSurface}
-        onPress={() => {
-          if (value?.length) {
-            Clipboard.setStringAsync(value).catch((e: Error) =>
-              console.log(`Clipboard error: ${e}`)
-            );
-          }
-        }}
-      />
+      <CopyToClipboardButton text={value} size={20} />
     </View>
   );
 }

@@ -1,14 +1,16 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { assert, assertNever } from "@systemic-games/pixels-core-utils";
+import { useForceUpdate } from "@systemic-games/pixels-react";
 import { openURL } from "expo-linking";
 import React from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { EditAppActionScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
+import { CopyToClipboardButton } from "~/components/CopyToClipboardButton";
 import { OnOffButton } from "~/components/OnOffButton";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
@@ -22,7 +24,7 @@ import {
   playActionSpeakText,
   sendToThreeDDiceAsync,
 } from "~/features/appActions";
-import { authenticate } from "~/features/appActions/ThreeDDiceConnector";
+import { ThreeDDiceConnector } from "~/features/appActions/ThreeDDiceConnector";
 import { getBorderRadius } from "~/features/getBorderRadius";
 import {
   AppActionEntry,
@@ -32,6 +34,7 @@ import {
   removeAppAction,
   updateAppAction,
 } from "~/features/store";
+import { generateUuid } from "~/features/utils";
 import { useConfirmActionSheet } from "~/hooks";
 
 type AppActionMapping = {
@@ -119,7 +122,7 @@ function NotEncryptedWarning() {
         color={colors.onPrimary}
       />
       <Text variant="bodySmall" style={{ marginVertical: 10 }}>
-        Those settings are stored without encryption.
+        Those settings are stored without using encryption.
       </Text>
     </View>
   );
@@ -279,66 +282,175 @@ function ConfigureTwitchAction({ uuid }: { uuid: string }) {
 
 function ConfigureThreeDDiceAction({ uuid }: { uuid: string }) {
   const { data, updateData } = useAppActionData(uuid, "dddice");
-  const [code, updateCode] = React.useState<string | undefined>(undefined);
-  if (data.apiKey) {
-    return (
-      <>
-        <TextInputWithTitle
-          value={data.roomSlug}
-          onChangeText={(roomSlug) => updateData({ roomSlug })}
-        >
-          Room Slug
-        </TextInputWithTitle>
-        <TextInputWithTitle
-          value={data.password}
-          onChangeText={(password) => updateData({ password })}
-        >
-          Password (optional)
-        </TextInputWithTitle>
-        <TextInputWithTitle
-          value={data.theme}
-          onChangeText={(theme) => updateData({ theme })}
-        >
-          Theme (optional)
-        </TextInputWithTitle>
-        <NotEncryptedWarning />
-      </>
-    );
-  } else if (code) {
-    return (
-      <>
-        <Text>Your Code:</Text>
-        <Text style={[AppStyles.textCentered]} variant="titleLarge">
-          {code}
-        </Text>
-        <Button
-          onPress={() => {
-            openURL("https://dddice.com/activate");
+  return data.apiKey ? (
+    <>
+      <TextInputWithTitle
+        value={data.roomSlug}
+        onChangeText={(roomSlug) => updateData({ roomSlug })}
+      >
+        Room Slug
+      </TextInputWithTitle>
+      <TextInputWithTitle
+        value={data.password}
+        onChangeText={(password) => updateData({ password })}
+      >
+        Password (optional)
+      </TextInputWithTitle>
+      <TextInputWithTitle
+        value={data.theme}
+        onChangeText={(theme) => updateData({ theme })}
+      >
+        Theme (optional)
+      </TextInputWithTitle>
+      <Button onPress={() => updateData({ apiKey: "" })}>
+        Regenerate Activation Code
+      </Button>
+      <NotEncryptedWarning />
+    </>
+  ) : (
+    <AuthorizeOnDDDice onAPIKeyReceived={(apiKey) => updateData({ apiKey })} />
+  );
+}
+
+function AuthorizeOnDDDice({
+  onAPIKeyReceived,
+}: {
+  onAPIKeyReceived: (apiKey: string) => void;
+}) {
+  const [response, updateResponse] = React.useState<
+    { code: string; expiresAt: Date } | Error
+  >();
+  const valid = response && !(response instanceof Error);
+  const activeTaskRef = React.useRef<string>("");
+  React.useEffect(() => {
+    if (!response) {
+      const task = async () => {
+        // Generate a new UUID for this instance of the task
+        const active = generateUuid();
+        try {
+          activeTaskRef.current = active;
+          const { code, expiresAt, getAPIKeyPromise } =
+            await ThreeDDiceConnector.authorizeAsync();
+          // If the task is still active, update with code + date
+          if (activeTaskRef.current === active) {
+            updateResponse({ code, expiresAt });
+            const apiKey = await getAPIKeyPromise;
+            if (activeTaskRef.current === active) {
+              onAPIKeyReceived(apiKey);
+            }
+          }
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error(String(err));
+          console.error(
+            `ddice activation error (active: ${activeTaskRef.current === active}): ${error}`
+          );
+          // If the task is still active, update with the error
+          if (activeTaskRef.current === active) {
+            updateResponse(error);
+          }
+        }
+      };
+      task();
+    }
+  }, [response, onAPIKeyReceived]);
+  React.useEffect(() => {
+    // Discard the active task when the component unmounts
+    return () => {
+      activeTaskRef.current = "";
+    };
+  }, []);
+
+  const { fonts, colors } = useTheme();
+  const iconHeight = 20;
+  const textAndIconHeight = 1 + Math.max(iconHeight, fonts.titleLarge.fontSize);
+  return (
+    <View style={{ marginTop: 10, alignItems: "center", gap: 10 }}>
+      <Text>
+        {response
+          ? "Use this code to authorize your Pixels App on dddice:"
+          : "Generating activation code..."}
+      </Text>
+      <View
+        style={{
+          flexDirection: "row",
+          height: textAndIconHeight,
+          alignItems: "center",
+          marginTop: 10,
+          gap: 20,
+        }}
+      >
+        <View
+          style={{
+            flexShrink: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 20,
           }}
         >
-          Open DDDice page
-        </Button>
-      </>
-    );
-  } else {
-    return (
-      <>
-        <Text>You need to authorize your Pixels App on DDDice.</Text>
-        <Button
-          onPress={() => {
-            authenticate(
-              (code) => {
-                updateCode(code);
-              },
-              (apiKey) => updateData({ apiKey })
-            );
-          }}
-        >
-          Authorize
-        </Button>
-      </>
-    );
-  }
+          {response instanceof Error ? (
+            <Text style={{ color: colors.error }}>{response.message}</Text>
+          ) : response ? (
+            <>
+              <Text selectable variant="titleLarge">
+                {response.code}
+              </Text>
+              <CopyToClipboardButton text={response.code} size={iconHeight} />
+            </>
+          ) : (
+            <View
+              style={{
+                height: textAndIconHeight,
+                width: textAndIconHeight,
+                alignContent: "center",
+              }}
+            >
+              <ActivityIndicator
+                animating
+                size="small"
+                color={colors.primary}
+                style={{ position: "absolute" }}
+              />
+            </View>
+          )}
+        </View>
+        <MaterialCommunityIcons
+          name="refresh"
+          size={26}
+          color={colors.onSurface}
+          onPress={() => updateResponse(undefined)}
+        />
+      </View>
+      <ExpirationTimer expiresAt={valid ? response.expiresAt : undefined} />
+      <Button
+        disabled={!valid}
+        onPress={() => openURL("https://dddice.com/activate")}
+      >
+        https://dddice.com/activate
+      </Button>
+    </View>
+  );
+}
+
+function ExpirationTimer({ expiresAt }: { expiresAt?: Date }) {
+  const update = useForceUpdate();
+  React.useEffect(() => {
+    if (expiresAt) {
+      const id = setInterval(update, 1000);
+      return () => clearInterval(id);
+    }
+  }, [expiresAt, update]);
+  const secs =
+    expiresAt && Math.floor((expiresAt.getTime() - Date.now()) / 1000);
+  const mins = secs ? Math.round(secs / 60) : 0;
+  return (
+    <Text variant="bodySmall" style={{ marginVertical: 10 }}>
+      {!expiresAt
+        ? " " // Need empty space to avoid flickering
+        : secs && secs > 0
+          ? `Expires in ${secs >= 60 ? `about ${mins} minute${mins > 1 ? "s" : ""}` : `${secs} second${secs > 1 ? "s" : ""}`}`
+          : "Expired, tap the refresh icon to regenerate"}
+    </Text>
+  );
 }
 
 function ConfigureProxyAction({ uuid }: { uuid: string }) {
@@ -381,6 +493,37 @@ export function AppActionOnOffButton({ uuid }: { uuid: string }) {
     />
   );
 }
+
+function AppActionTestButton({ uuid }: { uuid: string }) {
+  const store = useAppStore();
+  const type = useAppSelector(
+    (state) => state.appActions.entries.entities[uuid]?.type
+  );
+  const data = useAppSelector(
+    (state) => type && state.appActions.data[type][uuid]
+  );
+  const invalid =
+    !data || (type === "dddice" && !(data as AppActionsData["dddice"]).apiKey);
+  return (
+    !invalid && (
+      <OutlineButton
+        onPress={() => {
+          const type = store.getState().appActions.entries.entities[uuid]?.type;
+          const data = type && store.getState().appActions.data[type][uuid];
+          if (type && data) {
+            testAppAction(
+              // @ts-ignore
+              { type, data }
+            );
+          }
+        }}
+      >
+        Test App Action
+      </OutlineButton>
+    )
+  );
+}
+
 function EditAppActionPage({
   appActionUuid: uuid,
   appActionType: type,
@@ -390,7 +533,7 @@ function EditAppActionPage({
   appActionType: AppActionEntry["type"];
   navigation: EditAppActionScreenProps["navigation"];
 }) {
-  const store = useAppStore();
+  const dispatch = useAppDispatch();
 
   const ConfigureAction = (() => {
     switch (type) {
@@ -414,7 +557,7 @@ function EditAppActionPage({
   })();
 
   const showConfirmDelete = useConfirmActionSheet("Delete App Action", () => {
-    store.dispatch(removeAppAction(uuid));
+    dispatch(removeAppAction(uuid));
     // Navigation will automatically go back
   });
 
@@ -429,7 +572,7 @@ function EditAppActionPage({
         contentContainerStyle={{
           paddingBottom: 10,
           paddingHorizontal: 10,
-          gap: 10,
+          gap: 20,
         }}
       >
         <AppActionTypeIcon
@@ -442,29 +585,13 @@ function EditAppActionPage({
         <View style={{ gap: 5 }}>
           <ConfigureAction uuid={uuid} />
         </View>
-        <View style={{ marginTop: 20, gap: 20 }}>
-          <OutlineButton
-            onPress={() => {
-              const type =
-                store.getState().appActions.entries.entities[uuid]?.type;
-              const data = type && store.getState().appActions.data[type][uuid];
-              if (type && data) {
-                testAppAction(
-                  // @ts-ignore
-                  { type, data }
-                );
-              }
-            }}
-          >
-            Test App Action
-          </OutlineButton>
-          <OutlineButton
-            style={{ backgroundColor: colors.errorContainer }}
-            onPress={() => showConfirmDelete()}
-          >
-            Delete
-          </OutlineButton>
-        </View>
+        <AppActionTestButton uuid={uuid} />
+        <OutlineButton
+          style={{ backgroundColor: colors.errorContainer }}
+          onPress={() => showConfirmDelete()}
+        >
+          Delete
+        </OutlineButton>
       </ScrollView>
     </View>
   );

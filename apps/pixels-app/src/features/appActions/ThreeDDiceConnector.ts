@@ -2,16 +2,6 @@ import { DiceUtils } from "@systemic-games/pixels-core-animation";
 import { PixelInfo } from "@systemic-games/pixels-core-connect";
 import { ThreeDDiceAPI, ITheme } from "dddice-js";
 
-export async function authenticate(
-  onCodeGenerated: (code: string) => void,
-  onAuthenticated: (apiKey: string) => void
-) {
-  const api = new ThreeDDiceAPI();
-  const info = await api.user.activate();
-  onCodeGenerated(info.code);
-  onAuthenticated(await info.apiKey);
-}
-
 export type ThreeDDiceConnectorParams = {
   apiKey: string;
   roomSlug: string;
@@ -31,6 +21,17 @@ export class ThreeDDiceConnector {
   readonly roomPasscode?: string;
   readonly userUuid?: string;
   readonly theme?: string;
+
+  static async authorizeAsync(): Promise<{
+    code: string;
+    expiresAt: Date;
+    getAPIKeyPromise: Promise<string>;
+  }> {
+    const api = new ThreeDDiceAPI();
+    const info = await api.user.activate();
+    const expiresAt = new Date(info.expiresAt);
+    return { code: info.code, expiresAt, getAPIKeyPromise: info.apiKey };
+  }
 
   constructor({
     apiKey,
@@ -59,7 +60,7 @@ export class ThreeDDiceConnector {
   }
 
   async rollDice(
-    die: Omit<PixelInfo, "systemId">,
+    die: Pick<PixelInfo, "colorway" | "dieType">,
     value: number,
     pixelName?: string
   ): ReturnType<typeof ThreeDDiceAPI.prototype.roll.create> {
