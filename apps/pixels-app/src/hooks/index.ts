@@ -7,7 +7,6 @@ export * from "./useBottomSheetBackHandler";
 export * from "./useBottomSheetPadding";
 export * from "./useConfirmActionSheet";
 export * from "./useDebugMode";
-export * from "./useDfuFiles";
 export * from "./useDiceNamesForProfile";
 export * from "./useEditableProfile";
 export * from "./useFilteredProfiles";

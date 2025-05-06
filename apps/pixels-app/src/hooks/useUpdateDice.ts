@@ -1,10 +1,10 @@
 import { unsigned32ToHex } from "@systemic-games/pixels-core-utils";
 import React from "react";
 
-import { DfuFilesInfo } from "./useDfuFiles";
 import { usePixelsCentral } from "./usePixelsCentral";
 
 import { useAppStore } from "~/app/hooks";
+import { DfuFilesInfo } from "~/features/dfu";
 import { updatePairedDieFirmwareTimestamp } from "~/features/store";
 import { logError } from "~/features/utils";
 
