@@ -34,9 +34,8 @@ import { PriorityQueue } from "./PriorityQueue";
 import { ScanRequesterEventMap, ScanRequester } from "./ScanRequester";
 import { getDieDfuAvailability } from "./getDieDfuAvailability";
 
-import { updateFirmware } from "~/features/dfu";
+import { DfuFilesInfo, updateFirmware } from "~/features/dfu";
 import { logError } from "~/features/utils";
-import { DfuFilesInfo } from "~/hooks";
 
 //
 // Timing parameters

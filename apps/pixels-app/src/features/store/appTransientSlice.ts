@@ -2,11 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { logWrite } from "./logWrite";
 
-export type DfuFilesInfo = {
-  timestamp: number;
-  firmwarePath: string;
-  bootloaderPath?: string;
-};
+import { DfuFilesInfo } from "~/features/dfu";
 
 export type AppTransientState = {
   update: {

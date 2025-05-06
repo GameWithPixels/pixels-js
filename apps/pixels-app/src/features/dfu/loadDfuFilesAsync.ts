@@ -5,7 +5,12 @@ import {
   unzipEmbeddedDfuBetaFilesAsync,
   unzipEmbeddedDfuFilesAsync,
 } from "~/features/dfu/unzip";
-import { DfuFilesInfo } from "~/hooks";
+
+export type DfuFilesInfo = Readonly<{
+  timestamp: number;
+  firmwarePath: string;
+  bootloaderPath?: string;
+}>;
 
 // Never throws
 export async function loadDfuFilesAsync(opt?: {
