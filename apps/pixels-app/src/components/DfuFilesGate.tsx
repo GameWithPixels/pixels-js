@@ -2,7 +2,7 @@ import React from "react";
 import { Text } from "react-native-paper";
 
 import { useAppSelector } from "~/app/hooks";
-import { DfuFilesInfo } from "~/hooks";
+import { DfuFilesInfo } from "~/features/dfu";
 
 export function DfuFilesGate({
   children,

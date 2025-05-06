@@ -169,7 +169,7 @@ const AppActionsSlice = createSlice({
         data: Partial<AppActionsData[T]>;
       }>
     ) {
-      log("addAppAction", { type, enabled, data });
+      log("addAppAction", { type, enabled });
       const uuid = generateAppActionUuid(state);
       appActionEntriesAdapter.addOne(state.entries, {
         uuid,
@@ -190,7 +190,7 @@ const AppActionsSlice = createSlice({
         data: Partial<AppActionsData[T]>;
       }>
     ) {
-      log("updateAppAction", { uuid, type, data });
+      log("updateAppAction", { uuid, type, keys: Object.keys(data) });
       const entry = state.entries.entities[uuid];
       if (entry?.type === type) {
         updateData(state.data[type][uuid], data);
