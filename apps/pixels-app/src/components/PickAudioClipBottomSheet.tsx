@@ -6,7 +6,7 @@ import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { AudioClipsGrid } from "./AudioClipsGrid";
-import { BottomSheetModalCloseButton, OutlineButton } from "./buttons";
+import { TopRightCloseButton, OutlineButton } from "./buttons";
 
 import { useAppStore } from "~/app/hooks";
 import { AppStyles } from "~/app/styles";
@@ -98,7 +98,7 @@ export function PickAudioClipBottomSheet({
               )}
             </GHScrollView>
           </BottomSheetView>
-          <BottomSheetModalCloseButton onPress={onDismiss} />
+          <TopRightCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

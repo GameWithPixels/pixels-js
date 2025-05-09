@@ -6,7 +6,7 @@ import { View } from "react-native";
 import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { BottomSheetModalCloseButton } from "./buttons";
+import { TopRightCloseButton } from "./buttons";
 import { PixelCard } from "./cards";
 
 import { PairedDie } from "~/app/PairedDie";
@@ -154,7 +154,7 @@ export function PickDieBottomSheet({
               </Text>
             )}
           </View>
-          <BottomSheetModalCloseButton onPress={onDismiss} />
+          <TopRightCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

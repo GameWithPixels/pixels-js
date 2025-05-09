@@ -1,11 +1,18 @@
 import React from "react";
 import { View } from "react-native";
-import { Modal, Portal, Text } from "react-native-paper";
+import {
+  Modal,
+  Portal,
+  Text,
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 
 import { AppStyles } from "~/app/styles";
 import { GradientBorderCard } from "~/components/GradientBorderCard";
-import { GradientIconButton } from "~/components/buttons";
+import { TopRightCloseButton } from "~/components/buttons";
 import { AppActionTypeIcon } from "~/components/icons";
+import { getBorderRadius } from "~/features/getBorderRadius";
 import { AppActionType } from "~/features/store";
 
 const appActionKinds: readonly AppActionType[] = [
@@ -13,9 +20,9 @@ const appActionKinds: readonly AppActionType[] = [
   "url",
   "json",
   "discord",
-  "twitch",
   "dddice",
-  "proxy",
+  // "twitch",
+  // "proxy",
 ] as const;
 
 function NewAppActionButtons({
@@ -23,6 +30,8 @@ function NewAppActionButtons({
 }: {
   onPress?: (format: AppActionType) => void;
 }) {
+  const { colors, roundness } = useTheme();
+  const borderRadius = getBorderRadius(roundness);
   return (
     onPress && (
       <View
@@ -35,16 +44,31 @@ function NewAppActionButtons({
         }}
       >
         {appActionKinds.map((kind) => (
-          <View key={kind} style={{ width: 50, alignItems: "center", gap: 5 }}>
-            <GradientIconButton
-              size={50}
-              icon={(props) => (
-                <AppActionTypeIcon appActionType={kind} {...props} />
-              )}
+          <GradientBorderCard key={kind}>
+            <TouchableRipple
+              rippleColor={colors.onPrimary}
+              borderless
+              style={{
+                width: 60,
+                margin: -5,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 5,
+                aspectRatio: 1,
+                borderRadius,
+              }}
               onPress={() => onPress?.(kind)}
-            />
-            <Text variant="bodySmall">{kind}</Text>
-          </View>
+            >
+              <>
+                <AppActionTypeIcon
+                  appActionType={kind}
+                  size={28}
+                  color={colors.onSurface}
+                />
+                <Text variant="bodySmall">{kind}</Text>
+              </>
+            </TouchableRipple>
+          </GradientBorderCard>
         ))}
       </View>
     )
@@ -76,11 +100,12 @@ export function CreateAppActionModal({
           }}
         >
           <Text variant="titleLarge" style={AppStyles.selfCentered}>
-            Type Of Action To Create
+            Select an App Action Type
           </Text>
           <NewAppActionButtons
             onPress={(actionType) => onCreateAppAction(actionType)}
           />
+          <TopRightCloseButton top={-5} onPress={onDismiss} />
         </GradientBorderCard>
       </Modal>
     </Portal>

@@ -19,5 +19,4 @@ const SvgComponent = ({
     />
   </Svg>
 );
-
 export default SvgComponent;

@@ -103,6 +103,7 @@ export const AppActionCard = React.memo(function AppActionCard({
             flexGrow: 1,
             flexShrink: 1,
             marginLeft: 20,
+            alignItems: "center",
           }}
         >
           <AppActionTypeIcon

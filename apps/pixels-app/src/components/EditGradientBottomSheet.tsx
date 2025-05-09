@@ -12,7 +12,7 @@ import { RootSiblingParent } from "react-native-root-siblings";
 
 import { ColorWheel } from "./ColorWheel";
 import { KeyframeGradient } from "./KeyframeGradient";
-import { BottomSheetModalCloseButton } from "./buttons";
+import { TopRightCloseButton } from "./buttons";
 
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
@@ -136,7 +136,7 @@ export function EditGradientBottomSheet({
               }}
             />
           </BottomSheetScrollView>
-          <BottomSheetModalCloseButton onPress={onDismiss} />
+          <TopRightCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

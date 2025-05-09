@@ -22,7 +22,7 @@ import {
 } from "./RollFormulaView";
 
 import { AnimatedCard, CardProps } from "~/components/Card";
-import { BottomSheetModalCloseButton } from "~/components/buttons";
+import { TopRightCloseButton } from "~/components/buttons";
 import { makeTransparent } from "~/components/colors";
 import {
   RollFormulaTree,
@@ -280,7 +280,7 @@ export function RollsTouchableCard({
         </View>
       )}
       {onDismiss && (
-        <BottomSheetModalCloseButton
+        <TopRightCloseButton
           onPress={onDismiss}
           style={{ top: -10, right: -10 }}
         />

@@ -15,10 +15,7 @@ import { getBottomSheetProps, AppThemes } from "~/app/themes";
 import { AppBackground } from "~/components/AppBackground";
 import { PageHeader } from "~/components/PageHeader";
 import { TouchableCard } from "~/components/TouchableCard";
-import {
-  BottomSheetModalCloseButton,
-  OutlineButton,
-} from "~/components/buttons";
+import { TopRightCloseButton, OutlineButton } from "~/components/buttons";
 import { setScreenTheme } from "~/features/store";
 import { useAppTheme, useBottomSheetBackHandler } from "~/hooks";
 
@@ -104,7 +101,7 @@ function ThemePicker({ screen }: { screen: RootScreenName }) {
               ))}
             </View>
           </BottomSheetScrollView>
-          <BottomSheetModalCloseButton onPress={sheetRef.current?.dismiss} />
+          <TopRightCloseButton onPress={sheetRef.current?.dismiss} />
         </BottomSheetModal>
       </ThemeProvider>
     </>
