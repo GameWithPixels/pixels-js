@@ -19,10 +19,7 @@ import { PixelBattery } from "~/components/PixelBattery";
 import { PixelRssi } from "~/components/PixelRssi";
 import { ScanningIndicator } from "~/components/ScanningIndicator";
 import { TouchableCard } from "~/components/TouchableCard";
-import {
-  BottomSheetModalCloseButton,
-  GradientButton,
-} from "~/components/buttons";
+import { TopRightCloseButton, GradientButton } from "~/components/buttons";
 import { DieWireframe } from "~/components/icons";
 import { pairDie } from "~/features/dice";
 import { TrailingSpaceFix } from "~/fixes";
@@ -317,7 +314,7 @@ export function PairDiceBottomSheet({
               </BluetoothStateWarning>
             </View>
           )}
-          <BottomSheetModalCloseButton onPress={onDismiss} />
+          <TopRightCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

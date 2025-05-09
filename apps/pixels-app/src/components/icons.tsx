@@ -1,8 +1,4 @@
-import {
-  FontAwesome5,
-  FontAwesome6,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 import { PixelDieType } from "@systemic-games/react-native-pixels-connect";
 import { Image } from "expo-image";
@@ -15,6 +11,7 @@ import Animated, {
 
 import { getIconColor } from "./colors";
 
+import DDDiceIcon from "#/icons/actions/dddice";
 import BarsFullIcon from "#/icons/dice/bars-full";
 import BarsLowIcon from "#/icons/dice/bars-low";
 import BarsMidIcon from "#/icons/dice/bars-mid";
@@ -248,7 +245,7 @@ export function AppActionTypeIcon({
     case "twitch":
       return <MaterialCommunityIcons name="twitch" {...props} />;
     case "dddice":
-      return <FontAwesome5 name="dice-d20" {...props} />;
+      return <DDDiceIcon {...props} />;
     case "proxy":
       return <MaterialCommunityIcons name="lan-connect" {...props} />;
     default:

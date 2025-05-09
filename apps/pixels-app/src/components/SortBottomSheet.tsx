@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { useTheme, Text, ThemeProvider } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
-import { BottomSheetModalCloseButton, SelectionButton } from "./buttons";
+import { TopRightCloseButton, SelectionButton } from "./buttons";
 
 import { getBottomSheetProps } from "~/app/themes";
 import { useBottomSheetBackHandler } from "~/hooks";
@@ -97,7 +97,7 @@ export function SortBottomSheet({
               ))}
             </View>
           </BottomSheetScrollView>
-          <BottomSheetModalCloseButton onPress={onDismiss} />
+          <TopRightCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

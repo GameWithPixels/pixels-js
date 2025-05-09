@@ -40,7 +40,7 @@ import {
 import { TabsHeaders } from "~/components/TabsHeaders";
 import { TextInputWithCopyButton } from "~/components/TextInputWithCopyButton";
 import {
-  BottomSheetModalCloseButton,
+  TopRightCloseButton,
   GradientButton,
   OutlineButton,
 } from "~/components/buttons";
@@ -912,7 +912,7 @@ export const ConfigureActionBottomSheet = observer(
                 <ConfigureBatteryCondition condition={condition} />
               ) : null}
             </BottomSheetScrollView>
-            <BottomSheetModalCloseButton onPress={onDismiss} />
+            <TopRightCloseButton onPress={onDismiss} />
             <SelectedPixelTransferProgressBar style={{ top: 30 }} />
           </ThemeProvider>
         </RootSiblingParent>

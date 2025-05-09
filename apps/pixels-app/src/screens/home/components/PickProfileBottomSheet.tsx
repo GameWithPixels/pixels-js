@@ -8,7 +8,7 @@ import { PairedDie } from "~/app/PairedDie";
 import { AppStyles } from "~/app/styles";
 import { getBottomSheetProps } from "~/app/themes";
 import { ProfilePicker } from "~/components/ProfilePicker";
-import { BottomSheetModalCloseButton } from "~/components/buttons";
+import { TopRightCloseButton } from "~/components/buttons";
 import { useBottomSheetBackHandler } from "~/hooks";
 
 export function PickProfileBottomSheet({
@@ -57,7 +57,7 @@ export function PickProfileBottomSheet({
               marginTop: 10,
             }}
           />
-          <BottomSheetModalCloseButton onPress={onDismiss} />
+          <TopRightCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

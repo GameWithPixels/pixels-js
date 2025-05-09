@@ -9,7 +9,7 @@ import { Text, ThemeProvider, useTheme } from "react-native-paper";
 import { RootSiblingParent } from "react-native-root-siblings";
 
 import { AnimationsGrid } from "./AnimationsGrid";
-import { BottomSheetModalCloseButton } from "./buttons";
+import { TopRightCloseButton } from "./buttons";
 
 import { AnimationsCategories } from "~/app/displayNames";
 import { AppStyles } from "~/app/styles";
@@ -124,7 +124,7 @@ export function PickAnimationBottomSheet({
               />
             </GHScrollView>
           </BottomSheetView>
-          <BottomSheetModalCloseButton onPress={onDismiss} />
+          <TopRightCloseButton onPress={onDismiss} />
         </ThemeProvider>
       </RootSiblingParent>
     </BottomSheetModal>

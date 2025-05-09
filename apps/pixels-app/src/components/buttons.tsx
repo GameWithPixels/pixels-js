@@ -757,11 +757,15 @@ export function AddDieButton({
   );
 }
 
-export function BottomSheetModalCloseButton({
+export function TopRightCloseButton({
   style,
+  right = 0,
+  top = -15,
   onPress,
 }: {
   style?: ViewProps["style"];
+  right?: number;
+  top?: number;
   onPress?: () => void;
 }) {
   const { colors } = useTheme();
@@ -769,7 +773,7 @@ export function BottomSheetModalCloseButton({
     <IconButton
       icon="close"
       iconColor={colors.primary}
-      style={[{ position: "absolute", right: 0, top: -15 }, style]}
+      style={[{ position: "absolute", right, top }, style]}
       onPress={() => onPress?.()} // Create local function to prevent passing event argument to onPress
     />
   );
