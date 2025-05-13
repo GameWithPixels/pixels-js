@@ -6,6 +6,7 @@ export * from "./useBatteryStateLabel";
 export * from "./useBottomSheetBackHandler";
 export * from "./useBottomSheetPadding";
 export * from "./useConfirmActionSheet";
+export * from "./useAppConnections";
 export * from "./useDebugMode";
 export * from "./useDiceNamesForProfile";
 export * from "./useEditableProfile";

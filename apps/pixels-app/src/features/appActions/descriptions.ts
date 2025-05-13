@@ -12,10 +12,10 @@ export function getAppActionTypeLabel(type: AppActionType): string {
       return "JSON";
     case "discord":
       return "Discord";
-    case "twitch":
-      return "Twitch";
     case "dddice":
       return "dddice";
+    case "twitch":
+      return "Twitch";
     case "proxy":
       return "Proxy";
     default:

@@ -11,6 +11,7 @@ import { reaction } from "mobx";
 import React from "react";
 import { Alert, AppState } from "react-native";
 
+import { AppConnections } from "./AppConnections";
 import { PairedDie } from "./PairedDie";
 import { useAppSelector, useAppStore } from "./hooks";
 import {
@@ -26,7 +27,7 @@ import {
   playActionMakeWebRequestAsync,
   playActionSpeakText,
 } from "~/features/appActions";
-import { appActionListener } from "~/features/appActions/playAppActions";
+import { playAppActions } from "~/features/appActions/playAppAction";
 import { PixelsCentral } from "~/features/dice";
 import { createProfileDataSetWithOverrides } from "~/features/profiles";
 import {
@@ -47,6 +48,10 @@ import {
   EditableProfileStoreGetterContext,
   PixelsCentralContext,
 } from "~/hooks";
+
+export const AppConnectionsContext = React.createContext<AppConnections>(
+  new AppConnections()
+);
 
 function remoteActionListener(
   pixel: Pixel,
@@ -125,7 +130,8 @@ function programProfileIfNeeded(
 function hookToPixel(
   pixel: Pixel,
   store: AppStore,
-  central: PixelsCentral
+  central: PixelsCentral,
+  connections: AppConnections
 ): () => void {
   // Die name
   const onRename = ({ pixelId, name }: PixelMutableProps) => {
@@ -261,8 +267,8 @@ function hookToPixel(
             value: roll,
           })
         );
-        appActionListener(pixel, roll, store);
       }
+      playAppActions(pixel, roll, store, connections);
     }
   };
   pixel.addEventListener("roll", onRoll);
@@ -288,6 +294,15 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
   const store = useAppStore();
   const [central] = React.useState(() => new PixelsCentral());
 
+  // Connections
+  const [connections] = React.useState(() => new AppConnections());
+  React.useEffect(() => {
+    return () => {
+      // Disconnect all
+      connections.clear();
+    };
+  }, [connections]);
+
   // Setup event handlers
   React.useEffect(() => {
     const disposers = new Map<number, () => void>();
@@ -300,7 +315,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
         disposers.get(device.pixelId)?.();
         const unhook =
           device instanceof Pixel
-            ? hookToPixel(device, store, central)
+            ? hookToPixel(device, store, central, connections)
             : undefined;
         if (unhook) {
           disposers.set(device.pixelId, unhook);
@@ -325,7 +340,7 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       removeOnUnregisterPixel();
       central.unregisterAll();
     };
-  }, [central, store]);
+  }, [central, connections, store]);
 
   // Update firmware timestamp on scan
   React.useEffect(() => {
@@ -493,7 +508,9 @@ export function AppPixelsCentral({ children }: React.PropsWithChildren) {
       <EditableProfileStoreGetterContext.Provider
         value={editableProfileStoreGetter}
       >
-        {children}
+        <AppConnectionsContext.Provider value={connections}>
+          {children}
+        </AppConnectionsContext.Provider>
       </EditableProfileStoreGetterContext.Provider>
     </PixelsCentralContext.Provider>
   );

@@ -26,15 +26,15 @@ export type AppActionsData = {
     url: string;
     diceImagesUrl: string;
   };
-  twitch: {
-    url: string;
-  };
   dddice: {
     apiKey: string;
     roomSlug: string;
     theme: string;
     password: string;
     userUuid: string;
+  };
+  twitch: {
+    url: string;
   };
   proxy: {
     provider: "pusher";
@@ -73,8 +73,8 @@ function getInitialState(): AppActionsState {
       url: {},
       json: {},
       discord: {},
-      twitch: {},
       dddice: {},
+      twitch: {},
       proxy: {},
     },
   };
@@ -112,8 +112,6 @@ function createEmptyData<T extends AppActionType>(type: T): AppActionsData[T] {
       return { url: "" } as U;
     case "discord":
       return { url: "", diceImagesUrl: "" } as U;
-    case "twitch":
-      return { url: "" } as U;
     case "dddice":
       return {
         apiKey: "",
@@ -122,6 +120,8 @@ function createEmptyData<T extends AppActionType>(type: T): AppActionsData[T] {
         password: "",
         userUuid: "",
       } as U;
+    case "twitch":
+      return { url: "" } as U;
     case "proxy":
       return {
         provider: "pusher",

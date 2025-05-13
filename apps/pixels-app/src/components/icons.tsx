@@ -242,10 +242,10 @@ export function AppActionTypeIcon({
       return <MaterialCommunityIcons name="code-json" {...props} />;
     case "discord":
       return <MaterialCommunityIcons name="discord" {...props} />;
-    case "twitch":
-      return <MaterialCommunityIcons name="twitch" {...props} />;
     case "dddice":
       return <DDDiceIcon {...props} />;
+    case "twitch":
+      return <MaterialCommunityIcons name="twitch" {...props} />;
     case "proxy":
       return <MaterialCommunityIcons name="lan-connect" {...props} />;
     default:
