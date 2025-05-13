@@ -6,18 +6,17 @@ import * as Speech from "expo-speech";
 import { AppState } from "react-native";
 import Toast, { ToastOptions } from "react-native-root-toast";
 
-import {
-  ThreeDDiceConnector,
-  ThreeDDiceConnectorParams,
-} from "./ThreeDDiceConnector";
+import { ThreeDDiceConnectorParams } from "./ThreeDDiceConnector";
 import { WebRequestParams } from "./buildWebRequestParams";
 import { buildWebRequestURL } from "./buildWebRequestURL";
 import type { EmbedsDiscordWebhookPayload } from "./discordWebhook";
 
+import { AppConnections } from "~/app/AppConnections";
 import { RootState } from "~/app/store";
 import { ToastSettings } from "~/app/themes";
 import { getAssetPathname, playAudioClipAsync } from "~/features/audio";
 import { logError } from "~/features/utils";
+import { DDDiceConnection } from "~/hooks";
 
 const defaultDiceIconsBaseUrl =
   "https://raw.githubusercontent.com/GameWithPixels/pixels-js/main/apps/pixels-app/assets/wireframes";
@@ -179,35 +178,36 @@ export function playActionAudioClip(
   }
 }
 
-export async function sendToThreeDDiceAsync(
+export async function sendToDDDiceAsync(
   connectionParams: ThreeDDiceConnectorParams,
   {
     value,
     die,
   }: {
     value: number;
-    die: Omit<PixelInfo, "systemId">;
-  }
+    die: Pick<PixelInfo, "name" | "colorway" | "dieType">;
+  },
+  connections: AppConnections
 ): Promise<void> {
   const { roomSlug, userUuid } = connectionParams;
   const toastMsg = `\n\nRoom: ${roomSlug}${userUuid ? `\nUser UUID: ${userUuid}` : ""}\n\n`;
   const forPixelMsg = die.name ? ` for "${die.name}"` : "";
   try {
-    const api = new ThreeDDiceConnector(connectionParams);
-    await api.connect();
-    // const themes = await api.listThemes();
-    // themes.forEach((t) => console.log(t.id + ", " + t.name));
-
-    const rollResult = await api.rollDice(die, value, die.name);
-    //console.log("Roll result:", JSON.stringify(rollResult));
-    showToast(
-      `dddice request Send${forPixelMsg}!${toastMsg}Value: ${rollResult.data.total_value}`
-    );
+    let conn = connections.getTypedConnection(roomSlug, DDDiceConnection);
+    if (conn) {
+      console.log(`Using existing connection to room ${roomSlug}`);
+    } else {
+      console.log(`Creating new connection to room ${roomSlug}`);
+      conn = new DDDiceConnection(connectionParams);
+      connections.addConnection(roomSlug, conn);
+    }
+    await conn.connectAsync();
+    await conn.sendRollAsync(die, value);
+    showToast(`dddice request Send${forPixelMsg}!${toastMsg}Value: ${value}`);
   } catch (e) {
     console.log(
       `dddice request to room ${roomSlug} failed with error ${(e as Error).message ?? e}`
     );
-    console.log(`Error: ${e}`);
     showLongToast(
       `Failed Sending dddice request${forPixelMsg}!${toastMsg}Error: ${
         (e as Error).message ?? e
