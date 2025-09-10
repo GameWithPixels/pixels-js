@@ -14,20 +14,21 @@ import { TopRightCloseButton, SelectionButton } from "./buttons";
 
 import { getBottomSheetProps } from "~/app/themes";
 import { DDDiceRoomConnection } from "~/features/appActions/DDDiceRoomConnection";
+import { ThreeDDiceTheme } from "~/features/appActions/ThreeDDiceConnector";
 import { useBottomSheetBackHandler } from "~/hooks";
 
-export function DDDiceRoomSlugsBottomSheet({
+export function DDDiceThemesBottomSheet({
   dddiceConnection,
-  roomSlug,
+  themeId,
   visible,
   onDismiss,
-  onSelectRoomSlug,
+  onSelectTheme,
 }: {
   dddiceConnection: DDDiceRoomConnection;
-  roomSlug: string;
+  themeId?: string;
   visible: boolean;
   onDismiss: () => void;
-  onSelectRoomSlug: (slug: string) => void;
+  onSelectTheme: (theme: ThreeDDiceTheme) => void;
 }) {
   const sheetRef = React.useRef<BottomSheetModal>(null);
   const onChange = useBottomSheetBackHandler(sheetRef);
@@ -39,27 +40,26 @@ export function DDDiceRoomSlugsBottomSheet({
     }
   }, [visible]);
 
-  const [roomSlugs, setRoomSlugs] = React.useState<string[] | string>();
-  const fetchRooms = React.useCallback(() => {
-    setRoomSlugs(undefined);
-    // Get room slugs
+  const [themes, setThemes] = React.useState<ThreeDDiceTheme[] | string>();
+  const fetchThemes = React.useCallback(() => {
+    setThemes(undefined);
     dddiceConnection
-      .getRoomSlugsAsync()
-      .then((slugs) => {
-        console.log(`Fetched room slugs: ${slugs}`);
-        setRoomSlugs(slugs);
+      .getThemesAsync()
+      .then((themes) => {
+        console.log(`Fetched themes: ${themes}`);
+        setThemes(themes);
       })
       .catch((err) => {
-        console.error(`Error fetching room slugs: ${err}`);
-        setRoomSlugs(
-          `Error fetching room slugs: ${err instanceof Error ? err.message : err}`
+        console.error(`Error fetching themes: ${err}`);
+        setThemes(
+          `Error fetching themes: ${err instanceof Error ? err.message : err}`
         );
       });
   }, [dddiceConnection]);
   React.useEffect(() => {
-    // Initial fetch of room slugs
-    fetchRooms();
-  }, [fetchRooms]);
+    // Initial fetch of themes
+    fetchThemes();
+  }, [fetchThemes]);
 
   const theme = useTheme();
   const { colors } = theme;
@@ -76,7 +76,7 @@ export function DDDiceRoomSlugsBottomSheet({
           <BottomSheetScrollView
             contentContainerStyle={{ padding: 20, gap: 10 }}
           >
-            {!roomSlugs || typeof roomSlugs === "string" ? (
+            {!themes || typeof themes === "string" ? (
               <View
                 style={{
                   flexDirection: "row",
@@ -88,39 +88,39 @@ export function DDDiceRoomSlugsBottomSheet({
               >
                 <Text
                   variant="bodyMedium"
-                  style={!!roomSlugs && { color: colors.error }}
+                  style={!!themes && { color: colors.error }}
                 >
-                  {roomSlugs
-                    ? roomSlugs
-                    : roomSlugs === undefined
-                      ? "Retrieving dddice rooms..."
-                      : "No dddice rooms found"}
+                  {themes
+                    ? themes
+                    : themes === undefined
+                      ? "Retrieving dddice themes..."
+                      : "No dddice themes found"}
                 </Text>
-                {roomSlugs === undefined ? (
+                {themes === undefined ? (
                   <ActivityIndicator />
                 ) : (
                   <MaterialCommunityIcons
                     name="refresh"
                     size={26}
                     color={colors.onSurface}
-                    onPress={fetchRooms}
+                    onPress={fetchThemes}
                   />
                 )}
               </View>
             ) : (
               <>
-                <Text variant="titleMedium">Available Rooms</Text>
+                <Text variant="titleMedium">Available Themes</Text>
                 <View>
-                  {roomSlugs.map((rs, i) => (
+                  {themes.map((t, i) => (
                     <SelectionButton
-                      key={rs}
-                      selected={roomSlug === rs}
+                      key={t.id}
+                      selected={themeId === t.id}
                       noTopBorder={i > 0}
                       squaredTopBorder={i > 0}
-                      squaredBottomBorder={i < roomSlugs.length - 1}
-                      onPress={() => onSelectRoomSlug(rs)}
+                      squaredBottomBorder={i < themes.length - 1}
+                      onPress={() => onSelectTheme(t)}
                     >
-                      {rs}
+                      {t.name ?? t.id}
                     </SelectionButton>
                   ))}
                 </View>

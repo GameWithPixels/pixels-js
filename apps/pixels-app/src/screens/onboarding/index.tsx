@@ -393,9 +393,7 @@ function PixelItem({
       dieType={dieType ?? "unknown"}
       style={animStyle}
     >
-      <Text style={{ textAlign: "auto" }}>
-        {name ?? scannedPixel.name + "."}
-      </Text>
+      <Text style={{ textAlign: "auto" }}>{name ?? scannedPixel.name}</Text>
       <SmallText>
         {getDieTypeAndColorwayLabel(status === "ready" ? pixel : scannedPixel)}
       </SmallText>

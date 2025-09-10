@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
 
 import { AppActionsListScreen } from "./AppActionsListScreen";
+import { EditAppActionAdvancedSettingsScreen } from "./EditAppActionAdvancedSettingsScreen";
 import { EditAppActionScreen } from "./EditAppActionScreen";
 
 import {
@@ -19,6 +20,10 @@ export function AppActionsStack({ route }: AppActionsStackProps) {
       <Stack.Navigator screenOptions={getStackNavigationOptions()}>
         <Stack.Screen name="appActionsList" component={AppActionsListScreen} />
         <Stack.Screen name="editAppAction" component={EditAppActionScreen} />
+        <Stack.Screen
+          name="editAppActionAdvancedSettings"
+          component={EditAppActionAdvancedSettingsScreen}
+        />
       </Stack.Navigator>
     </NavigationRoot>
   );

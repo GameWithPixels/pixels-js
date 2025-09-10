@@ -1,9 +1,10 @@
 import { PixelInfo } from "@systemic-games/pixels-core-connect";
 
-import { Connection } from "~/app/AppConnections";
+import { AppConnections, Connection } from "~/app/AppConnections";
 import {
   ThreeDDiceConnector,
   ThreeDDiceRoomConnectParams,
+  ThreeDDiceTheme,
 } from "~/features/appActions/ThreeDDiceConnector";
 
 export class DDDiceRoomConnection implements Connection {
@@ -22,10 +23,6 @@ export class DDDiceRoomConnection implements Connection {
     return this._connector.userUuid;
   }
 
-  get theme(): string | undefined {
-    return this._connector.theme;
-  }
-
   constructor(apiKey: string) {
     this._connector = new ThreeDDiceConnector(apiKey);
   }
@@ -33,9 +30,7 @@ export class DDDiceRoomConnection implements Connection {
   setRoomParams(params: ThreeDDiceRoomConnectParams): void {
     this._roomParams = {
       roomSlug: params.roomSlug,
-      theme: params.theme,
       password: params.password,
-      userUuid: params.userUuid,
     };
   }
 
@@ -58,10 +53,37 @@ export class DDDiceRoomConnection implements Connection {
     return this._connector.getRoomSlugsAsync();
   }
 
+  getThemesAsync(): Promise<ThreeDDiceTheme[]> {
+    return this._connector.getThemesAsync();
+  }
+
   sendRollAsync(
     die: Pick<PixelInfo, "name" | "colorway" | "dieType">,
-    value: number
+    value: number,
+    themeId?: string
   ): ReturnType<typeof ThreeDDiceConnector.prototype.rollDiceAsync> {
-    return this._connector.rollDiceAsync(die, value);
+    return this._connector.rollDiceAsync(die, value, themeId);
   }
+}
+
+function createConnection(
+  connections: AppConnections,
+  id: string,
+  apiKey: string
+): DDDiceRoomConnection {
+  console.log(`Creating new connection object for action ${id}`);
+  const conn = new DDDiceRoomConnection(apiKey);
+  connections.addConnection(id, conn);
+  return conn;
+}
+
+export function getDDDiceRoomConnection(
+  connections: AppConnections,
+  id: string,
+  apiKey: string
+): DDDiceRoomConnection {
+  return (
+    connections.getTypedConnection(id, DDDiceRoomConnection) ??
+    createConnection(connections, id, apiKey)
+  );
 }

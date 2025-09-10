@@ -202,6 +202,7 @@ export type PickColorDesignScreenProps = NativeStackScreenProps<
 export type AppActionsStackParamList = {
   appActionsList: undefined;
   editAppAction: { appActionUuid: string };
+  editAppActionAdvancedSettings: { appActionUuid: string };
 };
 
 export type AppActionsListScreenProps = CompositeScreenProps<
@@ -212,6 +213,11 @@ export type AppActionsListScreenProps = CompositeScreenProps<
 export type EditAppActionScreenProps = NativeStackScreenProps<
   AppActionsStackParamList,
   "editAppAction"
+>;
+
+export type EditAppActionAdvancedSettingsScreenProps = NativeStackScreenProps<
+  AppActionsStackParamList,
+  "editAppActionAdvancedSettings"
 >;
 
 // Settings screens

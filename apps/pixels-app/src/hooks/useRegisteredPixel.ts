@@ -5,7 +5,6 @@ import { useRegisteredPixels } from "./useRegisteredPixels";
 
 import { PairedDie } from "~/app/PairedDie";
 
-// TODO registered!!
 export function useRegisteredPixel(
   pixelOrPixelId: Pick<PairedDie, "pixelId"> | number | undefined
 ): Pixel | undefined {

@@ -27,9 +27,14 @@ export type AppActionsData = {
   dddice: {
     apiKey: string;
     roomSlug: string;
-    theme: string;
     password: string;
-    userUuid: string;
+    themes: {
+      // Map of Pixel ID to dddice theme
+      [key: number]: {
+        id: string;
+        name: string;
+      };
+    };
   };
   twitch: {
     url: string;
@@ -83,8 +88,9 @@ function log(
     | "resetAppActions"
     | "addAppAction"
     | "updateAppAction"
-    | "removeAppAction"
-    | "enableAppAction",
+    | "updateDDDiceAppActionTheme"
+    | "enableAppAction"
+    | "removeAppAction",
   payload?: unknown
 ) {
   logWrite(payload ? `${action}, payload: ${JSON.stringify(payload)}` : action);
@@ -106,9 +112,8 @@ function createEmptyData<T extends AppActionType>(type: T): AppActionsData[T] {
       return {
         apiKey: "",
         roomSlug: "",
-        theme: "",
         password: "",
-        userUuid: "",
+        themes: {},
       } as U;
     case "twitch":
       return { url: "" } as U;
@@ -191,6 +196,26 @@ const AppActionsSlice = createSlice({
       }
     },
 
+    updateDDDiceAppActionTheme(
+      state: AppActionsState,
+      {
+        payload: { uuid, pixelId, themeId, themeName },
+      }: PayloadAction<{
+        uuid: string;
+        pixelId: number;
+        themeId: string;
+        themeName: string;
+      }>
+    ) {
+      log("updateDDDiceAppActionTheme", { uuid, pixelId, themeId, themeName });
+      const data = state.data["dddice"][uuid];
+      if (data) {
+        data.themes[pixelId] = { id: themeId, name: themeName };
+      } else {
+        console.warn(`Redux: No DDDice app action with uuid ${uuid} to update`);
+      }
+    },
+
     enableAppAction(
       state,
       {
@@ -226,6 +251,7 @@ export const {
   resetAppActions,
   addAppAction,
   updateAppAction,
+  updateDDDiceAppActionTheme,
   enableAppAction,
   removeAppAction,
 } = AppActionsSlice.actions;
