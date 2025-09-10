@@ -19,6 +19,7 @@ import { TextInputWithCopyButton } from "~/components/TextInputWithCopyButton";
 import { GradientButton, OutlineButton } from "~/components/buttons";
 import { AppActionTypeIcon } from "~/components/icons";
 import { getAppActionTypeLabel } from "~/features/appActions";
+import { getDDDiceRoomConnection } from "~/features/appActions/DDDiceRoomConnection";
 import { ThreeDDiceConnector } from "~/features/appActions/ThreeDDiceConnector";
 import {
   AppActionTypeAndData,
@@ -211,23 +212,40 @@ function ConfigureTwitchAction({ uuid }: { uuid: string }) {
   );
 }
 
-function ConfigureOrAuthorizeThreeDDiceAction({ uuid }: { uuid: string }) {
+function ConfigureOrAuthorizeThreeDDiceAction({
+  uuid,
+  onOpenAdvancedSettings,
+}: {
+  uuid: string;
+  onOpenAdvancedSettings: () => void;
+}) {
   const { data, updateData } = useAppActionData(uuid, "dddice");
   return data.apiKey ? (
-    <ConfigureThreeDDiceAction data={data} updateData={updateData} />
+    <ConfigureThreeDDiceAction
+      uuid={uuid}
+      data={data}
+      updateData={updateData}
+      onOpenAdvancedSettings={onOpenAdvancedSettings}
+    />
   ) : (
     <AuthorizeOnDDDice onAPIKeyReceived={(apiKey) => updateData({ apiKey })} />
   );
 }
 
 function ConfigureThreeDDiceAction({
+  uuid,
   data,
   updateData,
+  onOpenAdvancedSettings,
 }: {
+  uuid: string;
   data: AppActionsData["dddice"];
   updateData: (data: Partial<AppActionsData["dddice"]>) => void;
+  onOpenAdvancedSettings: () => void;
 }) {
   const [showSelectRoomSlug, setShowSelectRoomSlug] = React.useState(false);
+  const connections = useAppConnections();
+  const conn = getDDDiceRoomConnection(connections, uuid, data.apiKey);
 
   return (
     <>
@@ -245,6 +263,12 @@ function ConfigureThreeDDiceAction({
         Password (optional)
       </TextInputWithTitle>
       <OutlineButton
+        style={{ margin: 10, marginTop: 20 }}
+        onPress={onOpenAdvancedSettings}
+      >
+        Assign Theme(s)
+      </OutlineButton>
+      <OutlineButton
         style={{ margin: 10 }}
         onPress={() => updateData({ apiKey: "" })}
       >
@@ -252,7 +276,7 @@ function ConfigureThreeDDiceAction({
       </OutlineButton>
       <NotEncryptedWarning />
       <DDDiceRoomSlugsBottomSheet
-        apiKey={data.apiKey}
+        dddiceConnection={conn}
         roomSlug={data.roomSlug}
         visible={showSelectRoomSlug}
         onDismiss={() => setShowSelectRoomSlug(false)}
@@ -563,7 +587,14 @@ function EditAppActionPage({
         />
         <AppActionOnOffButton uuid={uuid} />
         <View style={{ gap: 5 }}>
-          <ConfigureAction uuid={uuid} />
+          <ConfigureAction
+            uuid={uuid}
+            onOpenAdvancedSettings={() =>
+              navigation.navigate("editAppActionAdvancedSettings", {
+                appActionUuid: uuid,
+              })
+            }
+          />
         </View>
         <AppActionTestButton uuid={uuid} />
         <OutlineButton

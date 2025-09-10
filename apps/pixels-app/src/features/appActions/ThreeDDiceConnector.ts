@@ -10,12 +10,10 @@ import { logError } from "../utils";
 
 export type ThreeDDiceRoomConnectParams = {
   roomSlug: string;
-  theme?: string;
   password?: string;
-  userUuid?: string;
 };
 
-export type ThreeDDiceThemes = {
+export type ThreeDDiceTheme = {
   id: string;
   name?: string;
 };
@@ -32,7 +30,6 @@ export class ThreeDDiceConnector {
   private readonly _evEmitter =
     createTypedEventEmitter<ThreeDDiceConnectorEventMap>();
   private readonly _api: ThreeDDiceAPI;
-  private _theme?: string;
   private _connected = false;
   private _isHooked = false;
 
@@ -57,10 +54,6 @@ export class ThreeDDiceConnector {
 
   get userUuid(): string | undefined {
     return this._api.userUuid;
-  }
-
-  get theme(): string | undefined {
-    return this._theme;
   }
 
   constructor(apiKey: string) {
@@ -108,8 +101,8 @@ export class ThreeDDiceConnector {
     return data.map((room) => room.slug);
   }
 
-  async getThemesAsync(): Promise<ThreeDDiceThemes[]> {
-    const themes: ThreeDDiceThemes[] = [];
+  async getThemesAsync(): Promise<ThreeDDiceTheme[]> {
+    const themes: ThreeDDiceTheme[] = [];
     let apiThemes: ITheme[] | undefined = (await this._api.diceBox.list()).data;
     do {
       themes.push(
@@ -123,12 +116,8 @@ export class ThreeDDiceConnector {
   async connectAsync({
     roomSlug,
     password,
-    theme,
   }: ThreeDDiceRoomConnectParams): Promise<void> {
-    this._theme = theme;
-    console.log(
-      `ThreeDDiceAPI connecting to room ${roomSlug} with theme ${theme}`
-    );
+    console.log(`ThreeDDiceAPI connecting to room ${roomSlug}`);
     this._api.connect(roomSlug, password);
     if (!this._isHooked) {
       // We should hook in the constructor but we get an error when trying
@@ -149,23 +138,24 @@ export class ThreeDDiceConnector {
 
   async rollDiceAsync(
     die: Pick<PixelInfo, "name" | "colorway" | "dieType">,
-    value: number
+    value: number,
+    themeId?: string
   ): Promise<{
     roomSlug: string;
     formula: string;
     value: number;
   }> {
-    let dieTheme = "dddice-bees";
-    if (die.colorway === "auroraSky") {
-      dieTheme = "pixels-mg-m9spm1vz";
-    } else if (die.colorway === "midnightGalaxy") {
-      dieTheme = "pixels-mg-m9splf6i";
-    }
-
+    const theme =
+      themeId ??
+      (die.colorway === "auroraSky"
+        ? "pixels-mg-m9spm1vz"
+        : die.colorway === "midnightGalaxy"
+          ? "pixels-mg-m9splf6i"
+          : "dddice-bees");
     const { data } = await this._api.roll.create([
       {
         type: `d${DiceUtils.getFaceCount(die.dieType)}`,
-        theme: dieTheme,
+        theme,
         value,
         label: die.name,
       },

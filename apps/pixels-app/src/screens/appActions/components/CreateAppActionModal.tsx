@@ -94,7 +94,7 @@ export function CreateAppActionModal({
       >
         <GradientBorderCard
           contentStyle={{
-            paddingVertical: 30,
+            paddingVertical: 40,
             paddingHorizontal: 10,
             gap: 30,
           }}

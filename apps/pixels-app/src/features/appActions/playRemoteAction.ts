@@ -181,19 +181,22 @@ export async function sendToDDDiceAsync(
   dddiceConnection: DDDiceRoomConnection,
   roomParams: ThreeDDiceRoomConnectParams,
   die: Pick<PixelInfo, "name" | "colorway" | "dieType">,
-  value: number
+  value: number,
+  themeId?: string
 ): Promise<void> {
-  const { roomSlug, userUuid } = roomParams;
-  const toastMsg = `\n\nRoom: ${roomSlug}${userUuid ? `\nUser UUID: ${userUuid}` : ""}\n\n`;
+  console.log(
+    `Sending dddice request to room ${roomParams.roomSlug} for die ${die.name} with theme ${themeId}`
+  );
+  const toastMsg = `\n\nRoom: ${roomParams.roomSlug}\n\n`;
   const forPixelMsg = die.name ? ` for "${die.name}"` : "";
   try {
     dddiceConnection.setRoomParams(roomParams);
     await dddiceConnection.connectAsync();
-    await dddiceConnection.sendRollAsync(die, value);
+    await dddiceConnection.sendRollAsync(die, value, themeId);
     showToast(`dddice request Send${forPixelMsg}!${toastMsg}Value: ${value}`);
   } catch (e) {
     console.log(
-      `dddice request to room ${roomSlug} failed with error ${(e as Error).message ?? e}`
+      `dddice request to room ${roomParams.roomSlug} failed with error ${(e as Error).message ?? e}`
     );
     showLongToast(
       `Failed Sending dddice request${forPixelMsg}!${toastMsg}Error: ${

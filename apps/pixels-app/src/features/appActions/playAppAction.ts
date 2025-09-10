@@ -2,7 +2,7 @@ import { PixelInfo } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { AppActionsData, AppActionType } from "../store";
-import { DDDiceRoomConnection } from "./DDDiceRoomConnection";
+import { getDDDiceRoomConnection } from "./DDDiceRoomConnection";
 import { buildWebRequestParams } from "./buildWebRequestParams";
 import {
   playActionMakeWebRequestAsync,
@@ -80,16 +80,8 @@ export function playAppAction(
       break;
     }
     case "dddice": {
-      const createdConnection = () => {
-        console.log(`Creating new connection object for action ${id}`);
-        const conn = new DDDiceRoomConnection(data.apiKey);
-        connections.addConnection(id, conn);
-        return conn;
-      };
-      const conn =
-        connections.getTypedConnection(id, DDDiceRoomConnection) ??
-        createdConnection();
-      sendToDDDiceAsync(conn, data, die, roll);
+      const conn = getDDDiceRoomConnection(connections, id, data.apiKey);
+      sendToDDDiceAsync(conn, data, die, roll, data.themes[die.pixelId]?.id);
       break;
     }
     case "twitch":
