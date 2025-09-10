@@ -185,7 +185,7 @@ function AppSettingsPage({
         </OutlineButton>
         <OutlineButton
           onPress={() => showConfirmReset()}
-          style={{ backgroundColor: colors.errorContainer }}
+          style={{ borderWidth: 0, backgroundColor: colors.errorContainer }}
         >
           Reset All App Settings
         </OutlineButton>

@@ -12,6 +12,7 @@ import { AppBackground } from "~/components/AppBackground";
 import { RotatingGradientBorderCard } from "~/components/GradientBorderCard";
 import { PageHeader } from "~/components/PageHeader";
 import { GradientIconButton } from "~/components/buttons";
+import { generateAppActionUuid } from "~/features/appActions/generateAppActionUuid";
 import { addAppAction } from "~/features/store";
 
 function AppActionsListPage({
@@ -77,13 +78,10 @@ function AppActionsListPage({
       <CreateAppActionModal
         visible={createActionModalVisible}
         onCreateAppAction={(type) => {
-          store.dispatch(addAppAction({ type, enabled: true, data: {} }));
-          const appActionUuid = store
-            .getState()
-            .appActions.entries.ids.at(-1) as string | undefined;
+          const uuid = generateAppActionUuid(store.getState().appActions);
+          store.dispatch(addAppAction({ uuid, type, enabled: true, data: {} }));
           setCreateActionModalVisible(false);
-          appActionUuid &&
-            navigation.navigate("editAppAction", { appActionUuid });
+          uuid && navigation.navigate("editAppAction", { appActionUuid: uuid });
         }}
         onDismiss={() => setCreateActionModalVisible(false)}
       />

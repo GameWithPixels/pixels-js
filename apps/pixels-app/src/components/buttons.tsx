@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   StyleProp,
+  StyleSheet,
   TextProps,
   TextStyle,
   View,
@@ -496,6 +497,8 @@ export function OutlineButton({ style, ...props }: ButtonProps) {
       textColor={colors.onSurface}
       style={[
         {
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: colors.primary,
           backgroundColor: colors.surface,
         },
         style,

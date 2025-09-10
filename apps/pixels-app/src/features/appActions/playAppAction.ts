@@ -2,6 +2,7 @@ import { PixelInfo } from "@systemic-games/pixels-core-connect";
 import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { AppActionsData, AppActionType } from "../store";
+import { DDDiceRoomConnection } from "./DDDiceRoomConnection";
 import { buildWebRequestParams } from "./buildWebRequestParams";
 import {
   playActionMakeWebRequestAsync,
@@ -29,19 +30,23 @@ export function playAppActions(
 ) {
   const actions = store.getState().appActions;
   // Iterate over all created actions and try to trigger them
-  actions.entries.ids.forEach((id) => {
+  actions.entries.ids.forEach((id_) => {
+    const id = id_ as string;
     const action = actions.entries.entities[id];
     const type = action?.type;
     if (type) {
       if (action.enabled) {
-        const data = actions.data[type][action.uuid];
+        const td = {
+          type,
+          data: actions.data[type][action.uuid],
+        } as AppActionTypeAndData;
         playAppAction(
           die,
           roll,
           {
-            type,
-            data,
-          } as AppActionTypeAndData,
+            id,
+            ...td,
+          },
           connections
         );
       }
@@ -52,7 +57,13 @@ export function playAppActions(
 export function playAppAction(
   die: Omit<PixelInfo, "systemId">,
   roll: number,
-  { type, data }: AppActionTypeAndData,
+  {
+    type,
+    id,
+    data,
+  }: AppActionTypeAndData & {
+    id: string;
+  },
   connections: AppConnections
 ) {
   switch (type) {
@@ -68,16 +79,19 @@ export function playAppAction(
       playActionMakeWebRequestAsync({ url: data.url, format }, params);
       break;
     }
-    case "dddice":
-      sendToDDDiceAsync(
-        data,
-        {
-          die,
-          value: roll,
-        },
-        connections
-      );
+    case "dddice": {
+      const createdConnection = () => {
+        console.log(`Creating new connection object for action ${id}`);
+        const conn = new DDDiceRoomConnection(data.apiKey);
+        connections.addConnection(id, conn);
+        return conn;
+      };
+      const conn =
+        connections.getTypedConnection(id, DDDiceRoomConnection) ??
+        createdConnection();
+      sendToDDDiceAsync(conn, data, die, roll);
       break;
+    }
     case "twitch":
       throw new Error("Not implemented");
     case "proxy":
