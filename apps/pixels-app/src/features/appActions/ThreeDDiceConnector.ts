@@ -8,8 +8,7 @@ import { ThreeDDiceAPI, ITheme } from "dddice-js";
 
 import { logError } from "../utils";
 
-export type ThreeDDiceConnectorParams = {
-  apiKey: string;
+export type ThreeDDiceRoomConnectParams = {
   roomSlug: string;
   theme?: string;
   password?: string;
@@ -28,14 +27,13 @@ export type ThreeDDiceConnectorEventMap = Readonly<{
   onConnected: boolean; // The connection event may be triggered a little later than the actual connection
 }>;
 
+// Light wrapper around the dddice-js API to adapt it to our use case
 export class ThreeDDiceConnector {
   private readonly _evEmitter =
     createTypedEventEmitter<ThreeDDiceConnectorEventMap>();
   private readonly _api: ThreeDDiceAPI;
-  private readonly _roomSlug: string;
-  private readonly _roomPasscode?: string;
-  private readonly _theme?: string;
-  private readonly _connected = false;
+  private _theme?: string;
+  private _connected = false;
   private _isHooked = false;
 
   static async authorizeAsync(): Promise<{
@@ -53,20 +51,26 @@ export class ThreeDDiceConnector {
     return this._connected;
   }
 
-  constructor({
-    apiKey,
-    roomSlug,
-    password,
-    theme,
-  }: ThreeDDiceConnectorParams) {
+  get roomSlug(): string | undefined {
+    return this._api.roomSlug;
+  }
+
+  get userUuid(): string | undefined {
+    return this._api.userUuid;
+  }
+
+  get theme(): string | undefined {
+    return this._theme;
+  }
+
+  constructor(apiKey: string) {
     if (!apiKey) {
       throw new Error("API key is required");
     }
     this._api = new ThreeDDiceAPI(apiKey);
-    this._roomSlug = roomSlug;
-    this._roomPasscode = password;
-    this._theme = theme;
-    console.log("ThreeDDiceAPI created with API key " + apiKey);
+    console.log(
+      `ThreeDDiceAPI created with API key {${apiKey.substring(0, 5)}...}`
+    );
   }
 
   /**
@@ -99,17 +103,41 @@ export class ThreeDDiceConnector {
     this._evEmitter.removeListener(type, listener);
   }
 
-  async connectAsync(): Promise<void> {
-    // const user = await this._api.user.get();
-    // const userUUID = user.data.uuid;
-    this._api.connect(this._roomSlug, this._roomPasscode);
+  async getRoomSlugsAsync(): Promise<string[]> {
+    const { data } = await this._api.room.list();
+    return data.map((room) => room.slug);
+  }
+
+  async getThemesAsync(): Promise<ThreeDDiceThemes[]> {
+    const themes: ThreeDDiceThemes[] = [];
+    let apiThemes: ITheme[] | undefined = (await this._api.diceBox.list()).data;
+    do {
+      themes.push(
+        ...apiThemes.map((theme) => ({ id: theme.id, name: theme.name }))
+      );
+      apiThemes = (await this._api.diceBox.next())?.data;
+    } while (apiThemes);
+    return themes;
+  }
+
+  async connectAsync({
+    roomSlug,
+    password,
+    theme,
+  }: ThreeDDiceRoomConnectParams): Promise<void> {
+    this._theme = theme;
+    console.log(
+      `ThreeDDiceAPI connecting to room ${roomSlug} with theme ${theme}`
+    );
+    this._api.connect(roomSlug, password);
     if (!this._isHooked) {
       // We should hook in the constructor but we get an error when trying
       // to register the event listener before calling connect()
       this._isHooked = true;
       this._api.onConnectionStateChange((e) => {
         console.warn(`DDDice connection state changed: ${e}`);
-        this._emitEvent("onConnected", e === "connected");
+        this._connected = e === "connected";
+        this._emitEvent("onConnected", this._connected);
       });
     }
   }
@@ -147,18 +175,6 @@ export class ThreeDDiceConnector {
       formula: data.equation,
       value: data.total_value,
     };
-  }
-
-  async listThemesAsync(): Promise<ThreeDDiceThemes[]> {
-    const themes: ThreeDDiceThemes[] = [];
-    let apiThemes: ITheme[] | undefined = (await this._api.diceBox.list()).data;
-    do {
-      themes.push(
-        ...apiThemes.map((theme) => ({ id: theme.id, name: theme.name }))
-      );
-      apiThemes = (await this._api.diceBox.next())?.data;
-    } while (apiThemes);
-    return themes;
   }
 
   private _emitEvent<T extends keyof ThreeDDiceConnectorEventMap>(

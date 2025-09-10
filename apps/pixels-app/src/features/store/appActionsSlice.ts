@@ -8,8 +8,6 @@ import { assertNever } from "@systemic-games/pixels-core-utils";
 
 import { logWrite } from "./logWrite";
 
-import { generateUuid } from "~/features/utils";
-
 export type AppActionsData = {
   speak: {
     volume: number;
@@ -92,14 +90,6 @@ function log(
   logWrite(payload ? `${action}, payload: ${JSON.stringify(payload)}` : action);
 }
 
-function generateAppActionUuid({ entries }: AppActionsState): string {
-  let uuid: string;
-  do {
-    uuid = generateUuid();
-  } while (entries.entities[uuid]);
-  return uuid;
-}
-
 function createEmptyData<T extends AppActionType>(type: T): AppActionsData[T] {
   type U = AppActionsData[T];
   // Note: the "as AppActions[T]" cast won't be needed in TypeScript >= 5.8
@@ -162,15 +152,15 @@ const AppActionsSlice = createSlice({
     addAppAction<T extends AppActionType>(
       state: AppActionsState,
       {
-        payload: { type, enabled, data },
+        payload: { uuid, type, enabled, data },
       }: PayloadAction<{
+        uuid: string;
         type: T;
         enabled: boolean;
         data: Partial<AppActionsData[T]>;
       }>
     ) {
       log("addAppAction", { type, enabled });
-      const uuid = generateAppActionUuid(state);
       appActionEntriesAdapter.addOne(state.entries, {
         uuid,
         type,

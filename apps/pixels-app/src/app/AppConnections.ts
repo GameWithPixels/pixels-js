@@ -12,27 +12,30 @@ export class AppConnections {
     return [...this._connections.values()];
   }
 
-  addConnection(name: string, connection: Connection): void {
-    if (this._connections.has(name)) {
-      throw new Error(`Connection with name "${name}" already exists.`);
+  addConnection(id: string, connection: Connection): void {
+    if (!id) {
+      throw new Error("Connection ID is required");
     }
-    this._connections.set(name, connection);
+    if (this._connections.has(id)) {
+      throw new Error(`Connection with ID "${id}" already exists.`);
+    }
+    this._connections.set(id, connection);
   }
 
-  getConnection(name: string): Connection | undefined {
-    return this._connections.get(name);
+  getConnection(id: string): Connection | undefined {
+    return this._connections.get(id);
   }
 
   getTypedConnection<T extends Connection>(
-    name: string,
+    id: string,
     type: new (...args: any[]) => T
   ): T | undefined {
-    const connection = this._connections.get(name);
+    const connection = this._connections.get(id);
     if (connection instanceof type) {
       return connection;
     } else if (connection) {
       throw new Error(
-        `Connection with name "${name}" is not of type ${type.name}.`
+        `Connection with ID "${id}" is not of type ${type.name}.`
       );
     }
     return undefined;

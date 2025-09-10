@@ -4,18 +4,19 @@ import { useForceUpdate } from "@systemic-games/pixels-react";
 import { openURL } from "expo-linking";
 import React from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 
 import { useAppDispatch, useAppSelector, useAppStore } from "~/app/hooks";
 import { EditAppActionScreenProps } from "~/app/navigation";
 import { AppStyles } from "~/app/styles";
 import { AppBackground } from "~/components/AppBackground";
 import { CopyToClipboardButton } from "~/components/CopyToClipboardButton";
+import { DDDiceRoomSlugsBottomSheet } from "~/components/DDDiceRoomSlugsBottomSheet";
 import { OnOffButton } from "~/components/OnOffButton";
 import { PageHeader } from "~/components/PageHeader";
 import { SliderWithValue } from "~/components/SliderWithValue";
 import { TextInputWithCopyButton } from "~/components/TextInputWithCopyButton";
-import { OutlineButton } from "~/components/buttons";
+import { GradientButton, OutlineButton } from "~/components/buttons";
 import { AppActionTypeIcon } from "~/components/icons";
 import { getAppActionTypeLabel } from "~/features/appActions";
 import { ThreeDDiceConnector } from "~/features/appActions/ThreeDDiceConnector";
@@ -210,35 +211,57 @@ function ConfigureTwitchAction({ uuid }: { uuid: string }) {
   );
 }
 
-function ConfigureThreeDDiceAction({ uuid }: { uuid: string }) {
+function ConfigureOrAuthorizeThreeDDiceAction({ uuid }: { uuid: string }) {
   const { data, updateData } = useAppActionData(uuid, "dddice");
   return data.apiKey ? (
+    <ConfigureThreeDDiceAction data={data} updateData={updateData} />
+  ) : (
+    <AuthorizeOnDDDice onAPIKeyReceived={(apiKey) => updateData({ apiKey })} />
+  );
+}
+
+function ConfigureThreeDDiceAction({
+  data,
+  updateData,
+}: {
+  data: AppActionsData["dddice"];
+  updateData: (data: Partial<AppActionsData["dddice"]>) => void;
+}) {
+  const [showSelectRoomSlug, setShowSelectRoomSlug] = React.useState(false);
+
+  return (
     <>
-      <TextInputWithTitle
-        value={data.roomSlug}
-        onChangeText={(roomSlug) => updateData({ roomSlug })}
+      <Text variant="titleMedium">Room Slug</Text>
+      <OutlineButton
+        style={{ marginHorizontal: 10 }}
+        onPress={() => setShowSelectRoomSlug(true)}
       >
-        Room Slug
-      </TextInputWithTitle>
+        {data.roomSlug.length ? data.roomSlug : "Tap To Select"}
+      </OutlineButton>
       <TextInputWithTitle
         value={data.password}
         onChangeText={(password) => updateData({ password })}
       >
         Password (optional)
       </TextInputWithTitle>
-      <TextInputWithTitle
-        value={data.theme}
-        onChangeText={(theme) => updateData({ theme })}
+      <OutlineButton
+        style={{ margin: 10 }}
+        onPress={() => updateData({ apiKey: "" })}
       >
-        Theme (optional)
-      </TextInputWithTitle>
-      <Button onPress={() => updateData({ apiKey: "" })}>
         Regenerate Activation Code
-      </Button>
+      </OutlineButton>
       <NotEncryptedWarning />
+      <DDDiceRoomSlugsBottomSheet
+        apiKey={data.apiKey}
+        roomSlug={data.roomSlug}
+        visible={showSelectRoomSlug}
+        onDismiss={() => setShowSelectRoomSlug(false)}
+        onSelectRoomSlug={(roomSlug) => {
+          updateData({ roomSlug });
+          setShowSelectRoomSlug(false);
+        }}
+      />
     </>
-  ) : (
-    <AuthorizeOnDDDice onAPIKeyReceived={(apiKey) => updateData({ apiKey })} />
   );
 }
 
@@ -351,12 +374,17 @@ function AuthorizeOnDDDice({
         />
       </View>
       <ExpirationTimer expiresAt={valid ? response.expiresAt : undefined} />
-      <Button
+      <GradientButton
         disabled={!valid}
-        onPress={() => openURL("https://dddice.com/activate")}
+        style={{ width: "100%", margin: 10 }}
+        onPress={() =>
+          openURL(
+            `https://dddice.com/activate${valid ? "?code=" + response.code : ""}`
+          )
+        }
       >
-        https://dddice.com/activate
-      </Button>
+        Activate on dddice.com
+      </GradientButton>
     </View>
   );
 }
@@ -442,12 +470,17 @@ function AppActionTestButton({ uuid }: { uuid: string }) {
           const type = store.getState().appActions.entries.entities[uuid]?.type;
           const data = type && store.getState().appActions.data[type][uuid];
           if (type && data) {
+            const td = {
+              type,
+              data,
+            } as AppActionTypeAndData;
+            const face = Math.floor(Math.random() * 20) + 1;
             playAppAction(
               // Fake PixelInfo
               {
                 name: "Pixels Die",
-                currentFace: 1,
-                currentFaceIndex: 0,
+                currentFace: face,
+                currentFaceIndex: face - 1,
                 pixelId: 12345678,
                 ledCount: 20,
                 colorway: "onyxBlack",
@@ -458,8 +491,8 @@ function AppActionTestButton({ uuid }: { uuid: string }) {
                 isCharging: false,
                 rollState: "rolled",
               },
-              20,
-              { type, data } as AppActionTypeAndData,
+              face,
+              { ...td, id: uuid },
               connections
             );
           }
@@ -495,7 +528,7 @@ function EditAppActionPage({
       case "twitch":
         return ConfigureTwitchAction;
       case "dddice":
-        return ConfigureThreeDDiceAction;
+        return ConfigureOrAuthorizeThreeDDiceAction;
       case "proxy":
         return ConfigureProxyAction;
       default:
@@ -534,7 +567,7 @@ function EditAppActionPage({
         </View>
         <AppActionTestButton uuid={uuid} />
         <OutlineButton
-          style={{ backgroundColor: colors.errorContainer }}
+          style={{ borderWidth: 0, backgroundColor: colors.errorContainer }}
           onPress={() => showConfirmDelete()}
         >
           Delete
